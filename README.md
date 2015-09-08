@@ -1,4 +1,4 @@
-From the Chrome Web Store:
+From the [Chrome Web Store](https://chrome.google.com/webstore/detail/new-tab-grid-sort-filter/mippmhcfjhliihkkdobllhpdnmmciaim?hl=en-US&gl=US):
 
 New Tab Grid replaces your new tab page with a grid view of your open tabs. It provides tab sorting by page title alphabetically, website, pinned status, incognito status, and allows you to apply the sorted tab order to the currently opened Chrome window.
 
