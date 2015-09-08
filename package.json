@@ -1,0 +1,32 @@
+{
+  "name": "new-tab-grid",
+  "version": "0.0.0",
+  "dependencies": {
+    "react": "^0.13.3",
+    "reflux": "^0.2.12"
+  },
+  "devDependencies": {
+    "babel-loader": "^5.3.2",
+    "chrome-ext-screen-capture": "^1.0.1",
+    "css-loader": "^0.17.0",
+    "esbeautifier": "^4.2.11",
+    "file-loader": "^0.8.4",
+    "griddle-react": "^0.2.14",
+    "gulp": "^3.9.0",
+    "gulp-uglify": "^1.4.0",
+    "jquery": "^2.1.4",
+    "kmp": "0.0.3",
+    "lodash": "^3.10.1",
+    "radium": "^0.13.8",
+    "react-shuffle": "^0.1.1",
+    "reflux": "^0.2.12",
+    "string": "^3.3.1",
+    "style-loader": "^0.12.3",
+    "underscore": "^1.8.3",
+    "webpack": "^1.12.0",
+    "webpack-stream": "^2.1.0"
+  },
+  "engines": {
+    "node": ">=0.8.0"
+  }
+}
