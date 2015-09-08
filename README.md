@@ -8,5 +8,5 @@ You can pin and close your tabs from the grid. NTG will dynamically update in th
 
 This extension was built with [ReactJS](https://facebook.github.io/react/), [Reflux](https://github.com/reflux/refluxjs), [KMP](https://github.com/miguelmota/knuth-morris-pratt), [String.js](https://github.com/jprichardson/string.js), [Webpack](https://github.com/webpack/webpack), [Gulp](https://github.com/gulpjs/gulp), and repurposed code from [react-sort-table](https://github.com/jaszhix/new-tab-grid-chrome-react) to suit it's needs. 
 
-**Contributing**
+### Contributing
 Feel free to fork and pull request. Install node modules with ```npm install```, and start build-watch with ```gulp watch```.
