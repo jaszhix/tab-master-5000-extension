@@ -33,26 +33,26 @@ var Search = React.createClass({
   render: function() {
     return (
       <div style={style.form} className="container-fluid">
-    <div className="row">
-      <div className="col-xs-6">
-        <form 
-        role="search"
-        id="search"
-        onSubmit={this.handleWebSearch}>
-          <input 
-          type="text" 
-          value={searchStore.get_search()}
-          className="form-control" 
-          placeholder="Search..." 
-          onChange={this.handleSearch} />
-        </form>
+        <div className="row">
+          <div className="col-xs-6">
+            <form 
+            role="search"
+            id="search"
+            onSubmit={this.handleWebSearch}>
+              <input 
+              type="text" 
+              value={searchStore.get_search()}
+              className="form-control" 
+              placeholder="Search..." 
+              onChange={this.handleSearch} />
+            </form>
+          </div>
+          <div className="col-xs-6">
+            {searchStore.get_search().length > 3 ? <span style={style.searchGoogleText} className="search-msg">Press Enter to Search Google</span> : null}
+            <button onClick={this.applyTabs} style={style.navButton} className="btn btn-primary">Apply Tab Order</button>
+          </div>  
+        </div>
       </div>
-      <div className="col-xs-6">
-        {searchStore.get_search().length > 3 ? <span style={style.searchGoogleText} className="search-msg">Press Enter to Search Google</span> : null}
-        <button onClick={this.applyTabs} style={style.navButton} className="btn btn-primary">Apply Tab Order</button>
-      </div>  
-    </div>
-  </div>
     );
   }
 });
