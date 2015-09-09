@@ -17,13 +17,15 @@ var Tile = React.createClass({
       xHover: false,
       pHover: false,
       render: true,
-      close: false
+      close: false,
+      dataUrl: null
     };
   },
   componentDidMount() {
     this.listenTo(searchStore, this.filterTabs);
     this.listenTo(applyTabOrderStore, this.applyTabOrder);
     this.handleNewTab();
+    /*this.captureTabImage();*/
   },
   shouldComponentUpdate() {
     return this.state.render;
@@ -206,13 +208,27 @@ var Tile = React.createClass({
       }
     });
   },
+  /*captureTabImage(){
+    // Capture tab image
+    var p = this.props;
+    var s = this.state;
+    this.setState({render:false});
+    if (p.tab.active) {
+      chrome.tabs.captureVisibleTab(p.tab.windowId, {format: "jpeg"}, function (dataUrl){
+        var dUrl = dataUrl;
+        console.log('data URL: ',dataUrl);
+        this.setState({dataUrl: dUrl});
+      }.bind(this));
+    }
+    this.setState({render:true});
+  },*/
   render: function() {
     var s = this.state;
     var p = this.props;
     return (
       <div>
       {p.render && s.render ? <div style={s.hover ? {VendorAnimationDuration: '1s'} : null} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "row-fluid animated zoomOut" : "row-fluid"}>
-          { this.filterTabs(p.tab) ? <div style={s.hover ? style.tileHovered : style.tile} onClick={() => this.handleClick(p.tab.id)} className="col-xs-4 tile" key={p.key}>
+          { this.filterTabs(p.tab) ? <div style={s.hover ? style.tileHovered(s.dataUrl) : style.tile(s.dataUrl)} onClick={() => this.handleClick(p.tab.id)} className="col-xs-4 tile" key={p.key}>
             <div style={style.tileRowTop} className="row">
               <div className="col-xs-2" onMouseEnter={this.handlePinHoverIn} onMouseLeave={this.handlePinHoverOut} onClick={() => this.handlePinning(p.tab)}>
               {p.tab.pinned || s.hover ? 
@@ -285,12 +301,16 @@ var TileGrid = React.createClass({
   shouldComponentUpdate() {
     return this.props.render;
   },
+  applyTabs() {
+    // Set Reflux store value which will call the chrome.tabs.move function in Tile component.
+    applyTabOrderStore.set_saveTab(true);
+  },
   render: function() {
     var labels = this.props.keys.map(function(key) {
       var label = this.props.labels[key] || key;
       return (
         <div key={key} onClick={this.sort(key)}>
-          <button style={style.button} className="btn btn-primary">{label}</button>
+          <button className="ntg-btn">{label}</button>
         </div>
       );
     }, this);
@@ -300,12 +320,13 @@ var TileGrid = React.createClass({
       );
     }, this);
     return (
-      <div style={style.body}>
-          <div style={style.sortBar} className="col-xs-1">
-            <h4 style={{textAlign: 'center'}}>
+      <div className="tile-body">
+          <div className="col-xs-1 sort-bar">
+            <h4 className="sort-h4">
               Sort Tabs
             </h4>
               {labels}
+              <button onClick={this.applyTabs} className="ntg-apply-btn">Apply Order</button>
           </div>
         <div className="col-xs-11">
           <div>

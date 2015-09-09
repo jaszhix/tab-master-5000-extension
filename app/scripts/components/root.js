@@ -1,10 +1,11 @@
 import React from 'react';
 import Reflux from 'reflux';
 
-import {searchStore, reRenderStore, clickStore, applyTabOrderStore} from './store';
+import {searchStore, reRenderStore, clickStore} from './store';
 import TileGrid from './tile';
 
 import {style} from './style';
+
 
 var Search = React.createClass({
   shouldComponentUpdate() {
@@ -26,10 +27,6 @@ var Search = React.createClass({
       });
     });
   },
-  applyTabs() {
-    // Set Reflux store value which will call the chrome.tabs.move function in Tile component.
-    applyTabOrderStore.set_saveTab(true);
-  },
   render: function() {
     return (
       <div style={style.form} className="container-fluid">
@@ -49,7 +46,6 @@ var Search = React.createClass({
           </div>
           <div className="col-xs-6">
             {searchStore.get_search().length > 3 ? <span style={style.searchGoogleText} className="search-msg">Press Enter to Search Google</span> : null}
-            <button onClick={this.applyTabs} style={style.navButton} className="btn btn-primary">Apply Tab Order</button>
           </div>  
         </div>
       </div>
@@ -138,7 +134,7 @@ var Root = React.createClass({
       <div>
       {s.render ? <div style={style.container} className="tile-container">
           <Search />
-          <div style={style.childContainer} className="tile-child-container">
+          <div className="tile-child-container">
             <TileGrid
               data={s.tabs}
               keys={keys}

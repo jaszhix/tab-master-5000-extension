@@ -4,14 +4,6 @@ export var style = {
     width: window.innerWidth.toString() + 'px',
     height: window.innerHeight.toString() + 'px'
   },
-  childContainer: {
-    paddingTop: '2px',
-    marginLeft: '1.5%',
-  },
-  body: {
-    paddingLeft: '0px',
-    paddingRight: '0px'
-  },
   favicon: {
     width: '40px',
     position: 'absolute',
@@ -61,24 +53,32 @@ export var style = {
     position: 'relative',
     marginTop: '5px'
   },
-  tile: {
-    textAlign: 'center',
-    backgroundColor: 'rgb(237, 237, 237)',
-    margin: '3px',
-    height: '140px',
-    width: '200px',
-    overflowWrap: 'break-word',
-    borderRadius: '2px'
+  tile: function(dataUrl) {
+    return {
+      textAlign: 'center',
+      backgroundColor: 'rgb(237, 237, 237)',
+      backgroundImage: 'url("'+dataUrl+'")',
+      backgroundSize: 'cover',
+      margin: '3px',
+      height: '140px',
+      width: '200px',
+      overflowWrap: 'break-word',
+      borderRadius: '2px',
+    };
   },
-  tileHovered: {
-    textAlign: 'center',
-    backgroundColor: 'rgb(247, 247, 247)',
-    margin: '3px',
-    height: '140px',
-    width: '200px',
-    overflowWrap: 'break-word',
-    borderRadius: '2px',
-    cursor: 'pointer'
+  tileHovered: function(dataUrl) {
+    return {
+      textAlign: 'center',
+      backgroundColor: 'rgb(247, 247, 247)',
+      backgroundImage: 'url("'+dataUrl+'")',
+      backgroundSize: 'cover',
+      margin: '3px',
+      height: '140px',
+      width: '200px',
+      overflowWrap: 'break-word',
+      borderRadius: '2px',
+      cursor: 'pointer'
+    };
   },
   tileRowTop: {
     height: '60%',
@@ -91,33 +91,6 @@ export var style = {
   form: {
     paddingTop: '12px',
     backgroundColor: '#ededed'
-  },
-  button: {
-    width: '100%',
-    color: '#000',
-    backgroundColor: '#EDEDED',
-    textShadow: '2px 2px #FFF',
-    marginBottom: '20px',
-    border: '0',
-    paddingLeft: 0,
-    paddingRight: 0
-  },
-  navButton: {
-    position: 'relative',
-    width: '25%',
-    color: '#FFF',
-    backgroundColor: '#A8A8A8',
-    textShadow: '1px 1px #000',
-    border: '0',
-    fontWeight: '600',
-    top: '1px',
-    marginRight: '20px'
-  },
-  sortBar: {
-    position: 'relative',
-    marginTop: '3px',
-    paddingLeft: '1%',
-    paddingRight: '1%'
   },
   searchGoogleText: {
     position: 'absolute',
