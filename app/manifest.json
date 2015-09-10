@@ -1,6 +1,7 @@
 {
   "name": "New Tab Grid Sort, Filter, and Search",
-  "version": "0.1.2",
+  "short_name": "New Tab Grid",
+  "version": "0.1.3",
   "manifest_version": 2,
   "description": "This extensions replaces the new tab page with a clean, sortable, and searchable, grid view of all of your open tabs.",
   "icons": {
@@ -14,7 +15,8 @@
   "background": {
     "scripts": [
       "scripts/background.js"
-    ]
+    ],
+    "persistent": false
   },
   "page_action": {
     "default_icon": {
@@ -26,6 +28,7 @@
   "omnibox": {
     "keyword": "New Tab Grid Sort, Filter, and Search"
   },
+  "offline_enabled": true,
   "content_scripts": [
     {
       "matches": [
