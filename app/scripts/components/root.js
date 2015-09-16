@@ -91,14 +91,14 @@ var Root = React.createClass({
     chrome.tabs.query({
       windowId: chrome.windows.WINDOW_ID_CURRENT,
       currentWindow: true
-    }, function(Tab) {
+    }, (Tab) => {
       // Assign Tab to a variable to work around a console error.
       var tab = Tab;
       this.setState({
         tabs: tab
       });
       console.log(Tab);
-    }.bind(this));
+    });
     // Querying is complete, allow the component to render.
     this.setState({
       render: true

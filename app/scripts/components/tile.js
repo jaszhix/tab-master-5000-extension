@@ -240,7 +240,7 @@ var Tile = React.createClass({
     );
   }
 });
-// Tile Grid and TileContainer are modified from react-sort-table for this extension - https://github.com/happy-charlie-777/react-sort-table 
+// TileGrid is modified from react-sort-table for this extension - https://github.com/happy-charlie-777/react-sort-table 
 var TileGrid = React.createClass({
   propTypes: {
     data: React.PropTypes.array,
