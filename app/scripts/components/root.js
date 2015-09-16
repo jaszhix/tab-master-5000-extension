@@ -62,7 +62,8 @@ var Root = React.createClass({
     return {
       tabs: [],
       render: false,
-      search: ''
+      search: '',
+      window: true
     };
   },
   componentDidMount() {
@@ -74,7 +75,7 @@ var Root = React.createClass({
   },
   shouldComponentUpdate() {
     // Is only true while Chrome is not being queried for tabs.
-    return this.state.render;
+    return this.state.render && this.state.window;
   },
   captureTabs(opt) {
     if (opt !== 'init') {

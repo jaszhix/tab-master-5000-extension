@@ -25,7 +25,6 @@ var Tile = React.createClass({
     this.listenTo(searchStore, this.filterTabs);
     this.listenTo(applyTabOrderStore, this.applyTabOrder);
     this.handleNewTab();
-    /*this.captureTabImage();*/
   },
   shouldComponentUpdate() {
     return this.state.render;
@@ -159,11 +158,11 @@ var Tile = React.createClass({
     chrome.tabs.remove(id);
     this.keepNewTabOpen();
     // Stop rendering of the closed tab.
-    setTimeout(function() {
+    setTimeout(() => {
       this.setState({
         render: false
       });
-    }.bind(this), 100);
+    }, 100);
   },
   handlePinning(tab, e) {
     this.setState({
@@ -208,26 +207,12 @@ var Tile = React.createClass({
       }
     });
   },
-  /*captureTabImage(){
-    // Capture tab image
-    var p = this.props;
-    var s = this.state;
-    this.setState({render:false});
-    if (p.tab.active) {
-      chrome.tabs.captureVisibleTab(p.tab.windowId, {format: "jpeg"}, function (dataUrl){
-        var dUrl = dataUrl;
-        console.log('data URL: ',dataUrl);
-        this.setState({dataUrl: dUrl});
-      }.bind(this));
-    }
-    this.setState({render:true});
-  },*/
   render: function() {
     var s = this.state;
     var p = this.props;
     return (
       <div>
-      {p.render && s.render ? <div style={s.hover ? {VendorAnimationDuration: '1s'} : null} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "row-fluid animated zoomOut" : "row-fluid"}>
+      {p.render && s.render && p.tab.title !== 'New Tab' ? <div style={s.hover ? {VendorAnimationDuration: '1s'} : null} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "row-fluid animated zoomOut" : "row-fluid"}>
           { this.filterTabs(p.tab) ? <div style={s.hover ? style.tileHovered(s.dataUrl) : style.tile(s.dataUrl)} onClick={() => this.handleClick(p.tab.id)} className="col-xs-4 tile" key={p.key}>
             <div style={style.tileRowTop} className="row">
               <div className="col-xs-2" onMouseEnter={this.handlePinHoverIn} onMouseLeave={this.handlePinHoverOut} onClick={() => this.handlePinning(p.tab)}>
