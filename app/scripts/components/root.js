@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import Reflux from 'reflux';
 
 import {searchStore, reRenderStore, clickStore} from './store';
@@ -148,4 +149,4 @@ var Root = React.createClass({
   }
 });
 
-React.render(<Root />, document.body);
+ReactDOM.render(<Root />, document.getElementById('main'));
