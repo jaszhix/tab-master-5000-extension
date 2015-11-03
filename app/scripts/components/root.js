@@ -15,7 +15,6 @@ var Sessions = React.createClass({
   getInitialState(){return{tabs: null};},
   componentDidMount(){
     this.listenTo(tabStore, this.tabChange);
-    //console.log('clear...',chrome.storage.local.clear());
   },
   tabChange(tabs){
     this.setState({tabs: tabs});
@@ -29,7 +28,7 @@ var Sessions = React.createClass({
     });
   },
   loadSessions(){
-    chrome.storage.local.get('seshID',(item)=>{
+    chrome.storage.local.get('sessionData',(item)=>{
       console.log('get...',item);
     });
   },
