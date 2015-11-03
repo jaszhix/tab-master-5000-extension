@@ -87,11 +87,6 @@ var Settings = React.createClass({
   modalChange(){
     this.setState({modalOpen: modalStore.get_modal()});
   },
-  handleTabClick(e){
-    e.preventDefault();
-    clickStore.set_click(true);
-    settingsStore.set_settings(true);
-  },
   settingsChange(tab){
     this.setState({currentTab: tab});
     console.log(this.state.currentTab);
