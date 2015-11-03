@@ -12,45 +12,61 @@ import {style} from './style';
 // Work in progress session saving and loading.
 var Sessions = React.createClass({
   mixins: [Reflux.ListenerMixin],
-  getInitialState(){return{tabs: null};},
+  getInitialState(){
+    return {
+      tabs: null,
+      sessions: null
+    };
+  },
   componentDidMount(){
     this.listenTo(tabStore, this.tabChange);
+    this.loadSessions();
   },
   tabChange(tabs){
     this.setState({tabs: tabs});
   },
   saveSession(){
-    var tabData = tabStore.get_tab();
-    var session = {sessionData: []};
+    var tabData = {timeStamp: Date.now(), tabs: tabStore.get_tab()};
+    var session = null;
     chrome.storage.local.get('sessionData',(item)=>{
-      session.sessionData.push(tabData);
-    });
-    
-    chrome.storage.local.set(session, function(sesh) {
-      // Notify that we saved.
-      console.log('session saved...',sesh);
-      console.log('saved');
-    });
+      if (!item.sessionData) {
+        session = {sessionData: []};
+        session.sessionData.push(tabData);
+      } else {
+        console.log('item: ',item);
+        session = item;
+        session.sessionData.push(tabData);
+      }
+      chrome.storage.local.set(session, function(result) {
+        // Notify that we saved.
+        console.log('session saved...',result);
+        console.log('saved');
+      });   
+    });  
   },
   loadSessions(){
     chrome.storage.local.get('sessionData',(item)=>{
-      console.log('get...',item);
+      console.log('item retrieved: ',item);
+      this.setState({sessions: item.sessionData});
     });
   },
   clearSessions(){
     // Temporary clear method for debugging.
     chrome.storage.local.remove('sessionData', (item)=>{
-      console.log('remove: ',item)
+      console.log('remove: ',item);
     });
   },
   render: function() {
+    var s = this.state;
     var tabs = tabStore.get_tab();
     var tm20 = tabs.length - 20;
     return (
       <div className="sessions">
         <div className="col-xs-6 session-col">
           Saved Sessions
-          {this.loadSessions()}
+          {s.sessions ? s.sessions.map((session, i)=>{
+            return <div key={i} className="row">{session.timeStamp+': '+session.tabs.length+' tabs'}</div>;
+          }) : null}
         </div>
         <div className="col-xs-6 session-col">
           Current Session

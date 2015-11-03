@@ -133,7 +133,7 @@ export var settingsStore = Reflux.createStore({
 
 export var tabStore = Reflux.createStore({
   init: function() {
-    this.tab = 'sessions';
+    this.tab = [];
   },
   set_tab: function(value) {
     this.tab = value;
