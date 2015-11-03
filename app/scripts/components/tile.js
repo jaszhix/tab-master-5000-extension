@@ -213,26 +213,26 @@ var Tile = React.createClass({
     return (
       <div>
       {p.render && s.render && p.tab.title !== 'New Tab' ? <div style={s.hover ? {VendorAnimationDuration: '1s'} : null} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "row-fluid animated zoomOut" : "row-fluid"}>
-          { this.filterTabs(p.tab) ? <div style={s.hover ? style.tileHovered(s.dataUrl) : style.tile(s.dataUrl)} onClick={() => this.handleClick(p.tab.id)} className="col-xs-4 tile" key={p.key}>
-            <div style={style.tileRowTop} className="row">
+          { this.filterTabs(p.tab) ? <div style={s.hover ? style.tileHovered(s.dataUrl) : style.tile(s.dataUrl)} onClick={() => this.handleClick(p.tab.id)} className={s.hover ? "ntg-tile-hover" : "ntg-tile"} key={p.key}>
+            <div className="row ntg-tile-row-top">
               <div className="col-xs-2" onMouseEnter={this.handlePinHoverIn} onMouseLeave={this.handlePinHoverOut} onClick={() => this.handlePinning(p.tab)}>
               {p.tab.pinned || s.hover ? 
-                <img style={s.pHover ? style.pinnedHovered : style.pinned} src={p.tab.pinned ? "../images/pinned_active.png" : "../images/pinned.png"} />
+                <img className={s.pHover ? "ntg-pinned-hover" : "ntg-pinned"} src={p.tab.pinned ? "../images/pinned_active.png" : "../images/pinned.png"} />
                 : null}
               </div>
-              <div style={style.titleContainer} className="col-xs-8">
-                <h5 style={style.title}>
+              <div className="col-xs-8 ntg-title-container">
+                <h5 className="ntg-title">
                   {S(p.tab.title).truncate(125).s}
                 </h5>
               </div>
               <div className="col-xs-2" onMouseEnter={this.handleTabCloseHoverIn} onMouseLeave={this.handleTabCloseHoverOut} onClick={() => this.handleCloseTab(p.tab.id)}>
                 {s.hover ? 
-                <img style={s.xHover ? style.xHovered : style.x} src="../images/x.png" />
+                <img className={s.xHover ? "ntg-x-hover" : "ntg-x"} src="../images/x.png" />
                 : null}
               </div>
             </div>
-            <div style={style.tileRowBottom} className="row">
-              <img style={p.tab.title.length >= this.favIconBlurTextLength() ? style.faviconBlurOpacity : style.favicon } src={S(p.tab.favIconUrl).isEmpty() ? '../images/file_paper_blank_document.png' : this.filterChromeFavicons(p.tab.favIconUrl, p.tab.url) } />
+            <div className="row ntg-tile-row-bottom">
+              <img className={p.tab.title.length >= this.favIconBlurTextLength() ? "ntg-favicon-blur" : "ntg-favicon" } src={S(p.tab.favIconUrl).isEmpty() ? '../images/file_paper_blank_document.png' : this.filterChromeFavicons(p.tab.favIconUrl, p.tab.url) } />
             </div>
           </div> : null}
         </div> : null}

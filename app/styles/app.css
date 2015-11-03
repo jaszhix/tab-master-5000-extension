@@ -28,6 +28,94 @@ h4.sort-h4 {
     overflow: auto;
 }
 
+.ntg-form {
+    padding-top: 12px;
+    background-color: #ededed;
+}
+.ntg-title {
+    font-size: 15px;
+    font-weight: 500;
+    text-shadow: 2px 2px #fff;
+    position: relative;
+    margin-top: 5px;
+}
+.ntg-title-container {
+    padding: 0;
+    width: 66.66666667%;
+}
+.ntg-tile-row-top {
+    height: 60%;
+}
+.ntg-tile-row-bottom {
+    height: 40%;
+    position: absolute;
+    padding-left: 80px;
+}
+.ntg-search-google-text {
+    position: absolute;
+    left: -212px;
+    top: 7px;
+    color: #CCC;
+}
+.ntg-favicon {
+    width: 40px;
+    position: relative;
+}
+.ntg-favicon-blur {
+    opacity: 0.3;
+    -webkit-filter: blur(3px);
+    width: 40px;
+    position: relative;
+}
+.ntg-pinned {
+    width: 15px;
+    height: 15px;
+    position: absolute;
+    left: 1px;
+    opacity: 0.5;
+}
+.ntg-pinned-hover {
+    width: 15px;
+    height: 15px;
+    position: absolute;
+    left: 1px;
+}
+.ntg-x {
+    width: 15px;
+    height: 15px;
+    position: absolute;
+    right: 0px;
+    opacity: 0.5;
+}
+.ntg-x-hover {
+    width: 15px;
+    height: 15px;
+    position: absolute;
+    right: 0px;
+}
+.ntg-tile {
+    text-align: center;
+    background-color: rgb(237, 237, 237);
+    background-size: cover;
+    margin: 3px;
+    height: 140px;
+    width: 200px;
+    overflow-wrap: break-word;
+    border-radius: 2px;
+    float: left;
+}
+.ntg-tile-hover {
+    text-align: center;
+    background-color: rgb(247, 247, 247);
+    background-size: cover;
+    margin: 3px;
+    height: 140px;
+    width: 200px;
+    overflow-wrap: break-word;
+    border-radius: 2px;
+    cursor: pointer;
+    float: left;
+}
 button.ntg-btn {
     width: 100%;
     color: #000;

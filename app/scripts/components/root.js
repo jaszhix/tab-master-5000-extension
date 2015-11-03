@@ -168,7 +168,7 @@ var Search = React.createClass({
   },
   render: function() {
     return (
-      <div style={style.form} className="container-fluid">
+      <div className="container-fluid ntg-form">
         <div className="row">
           <div className="col-xs-6">
             <form 
@@ -184,7 +184,7 @@ var Search = React.createClass({
             </form>
           </div>
           <div className="col-xs-6">
-            {searchStore.get_search().length > 3 ? <span style={style.searchGoogleText} className="search-msg">Press Enter to Search Google</span> : null}
+            {searchStore.get_search().length > 3 ? <span className="search-msg ntg-search-google-text">Press Enter to Search Google</span> : null}
             <button onClick={()=>modalStore.set_modal(true)} className="ntg-top-btn"><i className="fa fa-cogs"></i> Settings</button>
           </div>  
         </div>
