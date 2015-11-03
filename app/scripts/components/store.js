@@ -1,26 +1,28 @@
 import Reflux from 'reflux';
 
 // Chrome event listeners set to trigger re-renders.
-var reRender = function(type, id) {
-  reRenderStore.set_reRender(true);
+var reRender = (type, id) => {
+  if (!modalStore.get_modal) {
+    reRenderStore.set_reRender(true);
+  }
 };
-chrome.tabs.onRemoved.addListener(function(e) {
+chrome.tabs.onRemoved.addListener((e) => {
   console.log('on removed', e);
   reRender('remove', e);
 });
-chrome.tabs.onUpdated.addListener(function(e) {
+chrome.tabs.onUpdated.addListener((e) => {
   console.log('on updated', e);
   reRender('update', e);
 });
-chrome.tabs.onMoved.addListener(function(e) {
+chrome.tabs.onMoved.addListener((e) => {
   console.log('on moved', e);
   reRender('move', e);
 });
-chrome.tabs.onAttached.addListener(function(e) {
+chrome.tabs.onAttached.addListener((e) => {
   console.log('on attached', e);
   reRender('attach', e);
 });
-chrome.tabs.onDetached.addListener(function(e) {
+chrome.tabs.onDetached.addListener((e) => {
   console.log('on detached', e);
   reRender('detach', e);
 });
@@ -84,5 +86,61 @@ export var applyTabOrderStore = Reflux.createStore({
   },
   get_saveTab: function() {
     return this.saveTab;
+  }
+});
+
+export var reRenderStore = Reflux.createStore({
+  init: function() {
+    this.reRender = null;
+  },
+  set_reRender: function(value) {
+    this.reRender = value;
+    console.log('reRender: ', value);
+    this.trigger(this.reRender);
+  },
+  get_reRender: function() {
+    return this.reRender;
+  }
+});
+
+export var modalStore = Reflux.createStore({
+  init: function() {
+    this.modal = false;
+  },
+  set_modal: function(value) {
+    this.modal = value;
+    console.log('modal: ', value);
+    this.trigger(this.modal);
+  },
+  get_modal: function() {
+    return this.modal;
+  }
+});
+
+export var settingsStore = Reflux.createStore({
+  init: function() {
+    this.settings = 'sessions';
+  },
+  set_settings: function(value) {
+    this.settings = value;
+    console.log('settings: ', value);
+    this.trigger(this.settings);
+  },
+  get_settings: function() {
+    return this.settings;
+  }
+});
+
+export var tabStore = Reflux.createStore({
+  init: function() {
+    this.tab = 'sessions';
+  },
+  set_tab: function(value) {
+    this.tab = value;
+    console.log('tab: ', value);
+    this.trigger(this.tab);
+  },
+  get_tab: function() {
+    return this.tab;
   }
 });

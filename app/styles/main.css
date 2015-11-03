@@ -4864,14 +4864,16 @@ textarea.input-group-sm>.input-group-btn>.btn {
 
 .nav-tabs>li {
     float: left;
-    margin-bottom: -1px
+    margin-bottom: -1px;
+    background-color: #eee;
 }
 
 .nav-tabs>li>a {
     margin-right: 2px;
     line-height: 1.42857143;
     border: 1px solid transparent;
-    border-radius: 4px 4px 0 0
+    border-radius: 4px 4px 0 0;
+    color: #000;
 }
 
 .nav-tabs>li>a:hover {

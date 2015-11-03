@@ -1,12 +1,135 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Reflux from 'reflux';
+import Modal from 'react-modal';
+import S from 'string';
 
-import {searchStore, reRenderStore, clickStore} from './store';
+import {searchStore, reRenderStore, clickStore, modalStore, settingsStore, tabStore} from './store';
 import TileGrid from './tile';
 
 import {style} from './style';
 
+// Work in progress session saving and loading.
+var Sessions = React.createClass({
+  mixins: [Reflux.ListenerMixin],
+  getInitialState(){return{tabs: null};},
+  componentDidMount(){
+    this.listenTo(tabStore, this.tabChange);
+    //console.log('clear...',chrome.storage.local.clear());
+  },
+  tabChange(tabs){
+    this.setState({tabs: tabs});
+  },
+  saveSession(){
+    var session = {sessionData: tabStore.get_tab()};
+    chrome.storage.local.set(session, function(sesh) {
+      // Notify that we saved.
+      console.log('session...',sesh);
+      console.log('saved');
+    });
+  },
+  loadSessions(){
+    chrome.storage.local.get('seshID',(item)=>{
+      console.log('get...',item);
+    });
+  },
+  clearSessions(){
+    // Temporary clear method for debugging.
+    chrome.storage.local.clear(()=>{
+      console.log('Sessions cleared.');
+    });
+  },
+  render: function() {
+    var tabs = tabStore.get_tab();
+    var tm20 = tabs.length - 20;
+    return (
+      <div className="sessions">
+        <div className="col-xs-6 session-col">
+          Saved Sessions
+          {this.loadSessions()}
+        </div>
+        <div className="col-xs-6 session-col">
+          Current Session
+          {tabs.map((t, i)=>{
+            if (i <= 20) {
+              return <div key={i} className="row">{S(t.title).truncate(60).s}</div>;
+            }
+          })}
+          <div className="row">{tabs.length >= 20 ? '...plus ' +tm20+ ' other tabs.' : null}</div>
+          <p/>
+          <button onClick={this.saveSession} className="ntg-setting-btn">Save Session</button>
+          <button onClick={this.clearSession} className="ntg-setting-btn">Clear Sessions</button>
+        </div>
+      </div>
+    );
+  }
+});
+
+var Theming = React.createClass({
+  render: function() {
+    return (
+      <div className="theming">Theming</div>
+    );
+  }
+});
+
+var Settings = React.createClass({
+  mixins: [Reflux.ListenerMixin],
+  getInitialState(){
+    return {
+      modalOpen: false,
+      currentTab: 'sessions'
+    };
+  },
+  componentDidMount(){
+    this.listenTo(modalStore, this.modalChange);
+    this.listenTo(modalStore, this.settingsChange);
+  },
+  modalChange(){
+    this.setState({modalOpen: modalStore.get_modal()});
+  },
+  handleTabClick(e){
+    e.preventDefault();
+    clickStore.set_click(true);
+    settingsStore.set_settings(true);
+  },
+  settingsChange(tab){
+    this.setState({currentTab: tab});
+    console.log(this.state.currentTab);
+    
+  },
+  render: function() {
+    var s = this.state;
+    var sessions = settingsStore.get_settings() === 'sessions';
+    var theming = settingsStore.get_settings() === 'theming';
+    return (
+      <Modal
+        isOpen={s.modalOpen}
+        onRequestClose={()=>modalStore.set_modal(false)}
+        style={style.modal} >
+
+        <div className="container-fluid">
+          <div className="row">
+            <div role="tabpanel"> 
+                <ul className="nav nav-tabs">
+                    <li className={sessions ? "active" : null}>
+                        <a href="#" onClick={()=>settingsStore.set_settings('sessions')}>Sessions</a>
+                    </li>
+                    <li className={theming ? "active" : null}>
+                        <a href="#" onClick={()=>settingsStore.set_settings('theming')}>Theming</a>
+                    </li>
+                </ul>
+            </div>
+          </div>
+          <div className="row">
+            {sessions ? <Sessions /> : null}
+            {theming ? <Theming /> : null}
+          </div>
+        </div>
+      </Modal>
+    );
+  }
+});
 
 var Search = React.createClass({
   shouldComponentUpdate() {
@@ -47,6 +170,7 @@ var Search = React.createClass({
           </div>
           <div className="col-xs-6">
             {searchStore.get_search().length > 3 ? <span style={style.searchGoogleText} className="search-msg">Press Enter to Search Google</span> : null}
+            <button onClick={()=>modalStore.set_modal(true)} className="ntg-top-btn"><i className="fa fa-cogs"></i> Settings</button>
           </div>  
         </div>
       </div>
@@ -64,19 +188,21 @@ var Root = React.createClass({
       tabs: [],
       render: false,
       search: '',
-      window: true
+      window: true,
+      settings: true
     };
   },
   componentDidMount() {
     // Initialize Reflux listeners.
     this.listenTo(searchStore, this.searchChanged);
     this.listenTo(reRenderStore, this.reRender);
+    this.listenTo(settingsStore, this.settingsChange);
     // Call the method that will query Chrome for tabs.
     this.captureTabs('init');
   },
   shouldComponentUpdate() {
     // Is only true while Chrome is not being queried for tabs.
-    return this.state.render && this.state.window;
+    return this.state.render && this.state.window || modalStore.get_modal();
   },
   captureTabs(opt) {
     if (opt !== 'init') {
@@ -98,6 +224,7 @@ var Root = React.createClass({
       this.setState({
         tabs: tab
       });
+      tabStore.set_tab(tab);
       console.log(Tab);
     });
     // Querying is complete, allow the component to render.
@@ -111,6 +238,9 @@ var Root = React.createClass({
     this.setState({
       search: searchStore.get_search()
     });
+  },
+  settingsChange(){
+    this.setState({settings: true});
   },
   reRender() {
     // Method triggered by Chrome event listeners.
@@ -134,8 +264,9 @@ var Root = React.createClass({
     };
     return (
       <div>
+      <Settings />
       {s.render ? <div style={style.container} className="tile-container">
-          <Search />
+          {s.settings ? <Search /> : null}
           <div className="tile-child-container">
             <TileGrid
               data={s.tabs}
