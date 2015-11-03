@@ -20,10 +20,15 @@ var Sessions = React.createClass({
     this.setState({tabs: tabs});
   },
   saveSession(){
-    var session = {sessionData: tabStore.get_tab()};
+    var tabData = tabStore.get_tab();
+    var session = {sessionData: []};
+    chrome.storage.local.get('sessionData',(item)=>{
+      session.sessionData.push(tabData);
+    });
+    
     chrome.storage.local.set(session, function(sesh) {
       // Notify that we saved.
-      console.log('session...',sesh);
+      console.log('session saved...',sesh);
       console.log('saved');
     });
   },
@@ -34,8 +39,8 @@ var Sessions = React.createClass({
   },
   clearSessions(){
     // Temporary clear method for debugging.
-    chrome.storage.local.clear(()=>{
-      console.log('Sessions cleared.');
+    chrome.storage.local.remove('sessionData', (item)=>{
+      console.log('remove: ',item)
     });
   },
   render: function() {
@@ -57,7 +62,7 @@ var Sessions = React.createClass({
           <div className="row">{tabs.length >= 20 ? '...plus ' +tm20+ ' other tabs.' : null}</div>
           <p/>
           <button onClick={this.saveSession} className="ntg-setting-btn">Save Session</button>
-          <button onClick={this.clearSession} className="ntg-setting-btn">Clear Sessions</button>
+          <button onClick={this.clearSessions} className="ntg-setting-btn">Clear Sessions</button>
         </div>
       </div>
     );
