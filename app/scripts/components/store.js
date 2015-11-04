@@ -2,9 +2,7 @@ import Reflux from 'reflux';
 
 // Chrome event listeners set to trigger re-renders.
 var reRender = (type, id) => {
-  if (!modalStore.get_modal) {
-    reRenderStore.set_reRender(true);
-  }
+  reRenderStore.set_reRender(true);
 };
 chrome.tabs.onRemoved.addListener((e) => {
   console.log('on removed', e);

@@ -42,6 +42,7 @@ h4.sort-h4 {
 .ntg-title-container {
     padding: 0;
     width: 66.66666667%;
+    float:left;
 }
 .ntg-tile-row-top {
     height: 60%;
@@ -60,6 +61,7 @@ h4.sort-h4 {
 .ntg-favicon {
     width: 40px;
     position: relative;
+    margin-top: 20px;
 }
 .ntg-favicon-blur {
     opacity: 0.3;
@@ -71,34 +73,38 @@ h4.sort-h4 {
     width: 15px;
     height: 15px;
     position: absolute;
-    left: 1px;
+    right: 0px;
     opacity: 0.5;
+    padding:1px;
 }
 .ntg-pinned-hover {
     width: 15px;
     height: 15px;
     position: absolute;
-    left: 1px;
+    right: 0px;
+    padding:1px;
 }
 .ntg-x {
     width: 15px;
     height: 15px;
     position: absolute;
-    right: 0px;
+    left: 1px;
     opacity: 0.5;
+    padding:1px;
 }
 .ntg-x-hover {
     width: 15px;
     height: 15px;
     position: absolute;
-    right: 0px;
+    left: 1px;
+    padding:1px;
 }
 .ntg-tile {
     text-align: center;
     background-color: rgb(237, 237, 237);
     background-size: cover;
     margin: 3px;
-    height: 140px;
+    height: 120px;
     width: 200px;
     overflow-wrap: break-word;
     border-radius: 2px;
@@ -109,12 +115,19 @@ h4.sort-h4 {
     background-color: rgb(247, 247, 247);
     background-size: cover;
     margin: 3px;
-    height: 140px;
+    height: 120px;
     width: 200px;
     overflow-wrap: break-word;
     border-radius: 2px;
     cursor: pointer;
     float: left;
+}
+.ntg-session-row {
+    height:30px;
+    vertical-align: middle;
+}
+.ntg-session-text {
+    font-size:14px;
 }
 button.ntg-btn {
     width: 100%;
@@ -200,6 +213,27 @@ button.ntg-setting-btn {
     vertical-align: middle;
     display: inline-block;
     padding: 6px 2px;
+    font-size: 14px;
+    line-height: 1.42857143;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    touch-action: manipulation;
+    cursor: pointer;
+    -webkit-user-select: none;
+    border-radius: 4px;
+    overflow: hidden;
+}
+button.ntg-session-btn {
+    width: 48%;
+    color: #000;
+    background-color: #EDEDED;
+    text-shadow: 2px 2px #FFF;
+    margin-left: 4px;
+    border: 0;
+    vertical-align: middle;
+    display: inline-block;
+    padding: 3px 1px;
     font-size: 14px;
     line-height: 1.42857143;
     text-align: center;

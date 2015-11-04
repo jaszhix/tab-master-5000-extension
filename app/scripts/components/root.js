@@ -15,7 +15,8 @@ var Sessions = React.createClass({
   getInitialState(){
     return {
       tabs: null,
-      sessions: null
+      sessions: null,
+      sessionHover: null
     };
   },
   componentDidMount(){
@@ -56,6 +57,12 @@ var Sessions = React.createClass({
       console.log('remove: ',item);
     });
   },
+  handleSessionHoverIn(i){
+    this.setState({sessionHover: i});
+  },
+  handleSessionHoverOut(i){
+    this.setState({sessionHover: i});
+  },
   render: function() {
     var s = this.state;
     var tabs = tabStore.get_tab();
@@ -63,13 +70,21 @@ var Sessions = React.createClass({
     return (
       <div className="sessions">
         <div className="col-xs-6 session-col">
-          Saved Sessions
+          <h3>Saved Sessions</h3>
           {s.sessions ? s.sessions.map((session, i)=>{
-            return <div key={i} className="row">{session.timeStamp+': '+session.tabs.length+' tabs'}</div>;
+            return <div onMouseEnter={()=>this.handleSessionHoverIn(i)} onMouseLeave={()=>this.handleSessionHoverOut(i)} key={i} className="row ntg-session-row">
+              <div className="col-xs-6">
+                <p className="ntg-session-text"> {session.timeStamp+': '+session.tabs.length+' tabs'}</p>
+              </div>
+              <div className="col-xs-6">
+                {s.sessionHover === i ? <button className="ntg-session-btn">Restore</button> : null}
+                {s.sessionHover === i ? <button className="ntg-session-btn">Remove</button> : null}
+              </div>
+            </div>;
           }) : null}
         </div>
         <div className="col-xs-6 session-col">
-          Current Session
+          <h3>Current Session</h3>
           {tabs.map((t, i)=>{
             if (i <= 20) {
               return <div key={i} className="row">{S(t.title).truncate(60).s}</div>;
