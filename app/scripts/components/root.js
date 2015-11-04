@@ -1,165 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Reflux from 'reflux';
-import Modal from 'react-modal';
-import S from 'string';
 
 import {searchStore, reRenderStore, clickStore, modalStore, settingsStore, tabStore} from './store';
 import TileGrid from './tile';
-
-import {style} from './style';
-
-// Work in progress session saving and loading.
-var Sessions = React.createClass({
-  mixins: [Reflux.ListenerMixin],
-  getInitialState(){
-    return {
-      tabs: null,
-      sessions: null,
-      sessionHover: null
-    };
-  },
-  componentDidMount(){
-    this.listenTo(tabStore, this.tabChange);
-    this.loadSessions();
-  },
-  tabChange(tabs){
-    this.setState({tabs: tabs});
-  },
-  saveSession(){
-    var tabData = {timeStamp: Date.now(), tabs: tabStore.get_tab()};
-    var session = null;
-    chrome.storage.local.get('sessionData',(item)=>{
-      if (!item.sessionData) {
-        session = {sessionData: []};
-        session.sessionData.push(tabData);
-      } else {
-        console.log('item: ',item);
-        session = item;
-        session.sessionData.push(tabData);
-      }
-      chrome.storage.local.set(session, function(result) {
-        // Notify that we saved.
-        console.log('session saved...',result);
-        console.log('saved');
-      });   
-    });  
-  },
-  loadSessions(){
-    chrome.storage.local.get('sessionData',(item)=>{
-      console.log('item retrieved: ',item);
-      this.setState({sessions: item.sessionData});
-    });
-  },
-  clearSessions(){
-    // Temporary clear method for debugging.
-    chrome.storage.local.remove('sessionData', (item)=>{
-      console.log('remove: ',item);
-    });
-  },
-  handleSessionHoverIn(i){
-    this.setState({sessionHover: i});
-  },
-  handleSessionHoverOut(i){
-    this.setState({sessionHover: i});
-  },
-  render: function() {
-    var s = this.state;
-    var tabs = tabStore.get_tab();
-    var tm20 = tabs.length - 20;
-    return (
-      <div className="sessions">
-        <div className="col-xs-6 session-col">
-          <h3>Saved Sessions</h3>
-          {s.sessions ? s.sessions.map((session, i)=>{
-            return <div onMouseEnter={()=>this.handleSessionHoverIn(i)} onMouseLeave={()=>this.handleSessionHoverOut(i)} key={i} className="row ntg-session-row">
-              <div className="col-xs-6">
-                <p className="ntg-session-text"> {session.timeStamp+': '+session.tabs.length+' tabs'}</p>
-              </div>
-              <div className="col-xs-6">
-                {s.sessionHover === i ? <button className="ntg-session-btn">Restore</button> : null}
-                {s.sessionHover === i ? <button className="ntg-session-btn">Remove</button> : null}
-              </div>
-            </div>;
-          }) : null}
-        </div>
-        <div className="col-xs-6 session-col">
-          <h3>Current Session</h3>
-          {tabs.map((t, i)=>{
-            if (i <= 20) {
-              return <div key={i} className="row">{S(t.title).truncate(60).s}</div>;
-            }
-          })}
-          <div className="row">{tabs.length >= 20 ? '...plus ' +tm20+ ' other tabs.' : null}</div>
-          <p/>
-          <button onClick={this.saveSession} className="ntg-setting-btn">Save Session</button>
-          <button onClick={this.clearSessions} className="ntg-setting-btn">Clear Sessions</button>
-        </div>
-      </div>
-    );
-  }
-});
-
-var Theming = React.createClass({
-  render: function() {
-    return (
-      <div className="theming">Theming</div>
-    );
-  }
-});
-
-var Settings = React.createClass({
-  mixins: [Reflux.ListenerMixin],
-  getInitialState(){
-    return {
-      modalOpen: false,
-      currentTab: 'sessions'
-    };
-  },
-  componentDidMount(){
-    this.listenTo(modalStore, this.modalChange);
-    this.listenTo(modalStore, this.settingsChange);
-  },
-  modalChange(){
-    this.setState({modalOpen: modalStore.get_modal()});
-  },
-  settingsChange(tab){
-    this.setState({currentTab: tab});
-    console.log(this.state.currentTab);
-    
-  },
-  render: function() {
-    var s = this.state;
-    var sessions = settingsStore.get_settings() === 'sessions';
-    var theming = settingsStore.get_settings() === 'theming';
-    return (
-      <Modal
-        isOpen={s.modalOpen}
-        onRequestClose={()=>modalStore.set_modal(false)}
-        style={style.modal} >
-
-        <div className="container-fluid">
-          <div className="row">
-            <div role="tabpanel"> 
-                <ul className="nav nav-tabs">
-                    <li className={sessions ? "active" : null}>
-                        <a href="#" onClick={()=>settingsStore.set_settings('sessions')}>Sessions</a>
-                    </li>
-                    <li className={theming ? "active" : null}>
-                        <a href="#" onClick={()=>settingsStore.set_settings('theming')}>Theming</a>
-                    </li>
-                </ul>
-            </div>
-          </div>
-          <div className="row">
-            {sessions ? <Sessions /> : null}
-            {theming ? <Theming /> : null}
-          </div>
-        </div>
-      </Modal>
-    );
-  }
-});
+import Settings from './settings';
 
 var Search = React.createClass({
   shouldComponentUpdate() {
@@ -295,7 +140,7 @@ var Root = React.createClass({
     return (
       <div>
       <Settings />
-      {s.render ? <div style={style.container} className="tile-container">
+      {s.render ? <div className="tile-container">
           {s.settings ? <Search /> : null}
           <div className="tile-child-container">
             <TileGrid
@@ -310,4 +155,12 @@ var Root = React.createClass({
   }
 });
 
-ReactDOM.render(<Root />, document.getElementById('main'));
+function run() {
+  ReactDOM.render(<Root />, document.getElementById('main'));
+}
+
+if ( window.addEventListener ) {
+  window.addEventListener( 'DOMContentLoaded', run );
+} else {
+  window.attachEvent( 'onload', run );
+}

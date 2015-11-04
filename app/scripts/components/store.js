@@ -1,4 +1,5 @@
 import Reflux from 'reflux';
+import kmp from 'kmp';
 
 // Chrome event listeners set to trigger re-renders.
 var reRender = (type, id) => {
@@ -140,5 +141,25 @@ export var tabStore = Reflux.createStore({
   },
   get_tab: function() {
     return this.tab;
+  }
+});
+
+export var utilityStore = Reflux.createStore({
+  init: function() {
+    this.favicon = '';
+  },
+  filterFavicons(faviconUrl, tabUrl) {
+    // Work around for Chrome favicon useage restriction.
+    if (kmp(tabUrl, 'chrome://settings') !== -1) {
+      return '../images/IDR_SETTINGS_FAVICON@2x.png';
+    } else if (kmp(tabUrl, 'chrome://extensions') !== -1) {
+      return '../images/IDR_EXTENSIONS_FAVICON@2x.png';
+    } else if (kmp(tabUrl, 'chrome://history') !== -1) {
+      return '../images/IDR_HISTORY_FAVICON@2x.png';
+    } else if (kmp(tabUrl, 'chrome://downloads') !== -1) {
+      return '../images/IDR_DOWNLOADS_FAVICON@2x.png';
+    } else {
+      return faviconUrl;
+    }
   }
 });

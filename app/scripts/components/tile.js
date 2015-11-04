@@ -3,8 +3,7 @@ import Reflux from 'reflux';
 import _ from 'lodash';
 import S from 'string';
 import kmp from 'kmp';
-import {searchStore, clickStore, applyTabOrderStore} from './store';
-import {style} from './style';
+import {searchStore, clickStore, applyTabOrderStore, utilityStore} from './store';
 
 var newTabs = [];
 var Tile = React.createClass({
@@ -74,20 +73,6 @@ var Tile = React.createClass({
     this.setState({
       render: true
     });
-  },
-  filterChromeFavicons(faviconUrl, tabUrl) {
-    // Work around for Chrome favicon useage restriction.
-    if (kmp(tabUrl, 'chrome://settings') !== -1) {
-      return '../images/IDR_SETTINGS_FAVICON@2x.png';
-    } else if (kmp(tabUrl, 'chrome://extensions') !== -1) {
-      return '../images/IDR_EXTENSIONS_FAVICON@2x.png';
-    } else if (kmp(tabUrl, 'chrome://history') !== -1) {
-      return '../images/IDR_HISTORY_FAVICON@2x.png';
-    } else if (kmp(tabUrl, 'chrome://downloads') !== -1) {
-      return '../images/IDR_DOWNLOADS_FAVICON@2x.png';
-    } else {
-      return faviconUrl;
-    }
   },
   filterTabs(tab) {
     // Filter tab method that triggers re-renders through Reflux store.
@@ -223,10 +208,9 @@ var Tile = React.createClass({
     return (
       <div>
       {p.render && s.render && p.tab.title !== 'New Tab' ? <div style={s.hover ? {VendorAnimationDuration: '1s'} : null} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "row-fluid animated zoomOut" : "row-fluid"}>
-          { this.filterTabs(p.tab) ? <div  onClick={() => this.handleClick(p.tab.id)} className={s.hover ? "ntg-tile-hover" : "ntg-tile"} key={p.key}>
+          { this.filterTabs(p.tab) ? <div className={s.hover ? "ntg-tile-hover" : "ntg-tile"} key={p.key}>
             <div className="row ntg-tile-row-top">
               <div className="col-xs-3">
-
                   <div onMouseEnter={this.handleTabCloseHoverIn} onMouseLeave={this.handleTabCloseHoverOut} onClick={() => this.handleCloseTab(p.tab.id)}>
                     {s.hover ? 
                     <img className={s.xHover ? "ntg-x-hover" : "ntg-x"} src="../images/x.png" />
@@ -237,20 +221,15 @@ var Tile = React.createClass({
                     <img className={s.pHover ? "ntg-pinned-hover" : "ntg-pinned"} src={p.tab.pinned ? "../images/pinned_active.png" : "../images/pinned.png"} />
                     : null}
                   </div>
-
                 <div className="row">
-                  <img className="ntg-favicon" src={S(p.tab.favIconUrl).isEmpty() ? '../images/file_paper_blank_document.png' : this.filterChromeFavicons(p.tab.favIconUrl, p.tab.url) } />
+                  <img className="ntg-favicon" src={S(p.tab.favIconUrl).isEmpty() ? '../images/file_paper_blank_document.png' : utilityStore.filterFavicons(p.tab.favIconUrl, p.tab.url) } />
                 </div>
               </div>
-              <div className="col-xs-9 ntg-title-container">
+              <div onClick={() => this.handleClick(p.tab.id)} className="col-xs-9 ntg-title-container">
                 <h5 className="ntg-title">
                   {S(p.tab.title).truncate(100).s}
                 </h5>
               </div>
-              
-            </div>
-            <div className="row ntg-tile-row-bottom">
-              
               
             </div>
           </div> : null}

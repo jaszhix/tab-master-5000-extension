@@ -1,5 +1,6 @@
 .tile-container {
-    position: absolute;
+    margin-right: auto;
+    margin-left: auto;
 }
 
 .tile-child-container {
@@ -69,6 +70,9 @@ h4.sort-h4 {
     width: 40px;
     position: relative;
 }
+.ntg-small-favicon {
+    width: 15px;
+}
 .ntg-pinned {
     width: 15px;
     height: 15px;
@@ -123,11 +127,21 @@ h4.sort-h4 {
     float: left;
 }
 .ntg-session-row {
-    height:30px;
     vertical-align: middle;
+    border-radius: 3px;
+    padding-top: 4px;
 }
 .ntg-session-text {
     font-size:14px;
+    cursor: pointer;
+}
+.ntg-session-expanded {
+    overflow-y: scroll;
+    height: 200px;
+    width: 265%;
+    background-color: #ffffff;
+    border-radius: 3px;
+    margin-left:-2%;
 }
 button.ntg-btn {
     width: 100%;
@@ -225,7 +239,7 @@ button.ntg-setting-btn {
     overflow: hidden;
 }
 button.ntg-session-btn {
-    width: 48%;
+    width: 40%;
     color: #000;
     background-color: #EDEDED;
     text-shadow: 2px 2px #FFF;
@@ -244,4 +258,5 @@ button.ntg-session-btn {
     -webkit-user-select: none;
     border-radius: 4px;
     overflow: hidden;
+    float: right;
 }

@@ -6,9 +6,8 @@ The search box will allow you to instantly filter your open tabs, and search Goo
 
 You can pin and close your tabs from the grid. NTG will dynamically update in the background when your tabs change, while a New Tab is open. 
 
-### To-Do
-- Fix occassional collapsing CSS, and convert static styling to CSS stylesheet.
-- Fix tab closing/pinning buttons click proximity.
+### To Do
+- Prevent tab changes in other Chrome windows from causing renders in the currently active window.
 - Implement session management.
 - Implement custom theming.
 

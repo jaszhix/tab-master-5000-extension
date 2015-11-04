@@ -1,8 +1,4 @@
-export var style = {
-  container: {
-    width: window.innerWidth.toString() + 'px',
-    height: window.innerHeight.toString() + 'px'
-  },
+var style = {
   tile: function(dataUrl) {
     return {
       backgroundImage: 'url("'+dataUrl+'")',
@@ -24,10 +20,10 @@ export var style = {
     },
     content: {
       position: 'absolute',
-      top: '160px',
-      left: '160px',
-      right: '160px',
-      bottom: '160px',
+      top: '15%',
+      left: '15%',
+      right: '15%',
+      bottom: '15%',
       border: '1px solid #ccc',
       background: '#fff',
       overflow: 'auto',
@@ -40,3 +36,5 @@ export var style = {
     }
   }
 };
+
+export default style;
