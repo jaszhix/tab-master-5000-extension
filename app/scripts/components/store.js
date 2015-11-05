@@ -1,29 +1,35 @@
 import Reflux from 'reflux';
 import kmp from 'kmp';
+import _ from 'lodash';
 
 // Chrome event listeners set to trigger re-renders.
 var reRender = (type, id) => {
-  reRenderStore.set_reRender(true);
+  var tabs = tabStore.get_tab();
+  var active = _.result(_.find(tabs, { id: id }), 'windowId');
+  console.log('windows: ', active, utilityStore.get_window());
+  if (utilityStore.get_window() === active || type === 'attachment') {
+    reRenderStore.set_reRender(true);
+  }
 };
-chrome.tabs.onRemoved.addListener((e) => {
-  console.log('on removed', e);
+chrome.tabs.onRemoved.addListener((e, info) => {
+  console.log('on removed', e, info);
   reRender('remove', e);
 });
-chrome.tabs.onUpdated.addListener((e) => {
-  console.log('on updated', e);
+chrome.tabs.onUpdated.addListener((e, info) => {
+  console.log('on updated', e, info);
   reRender('update', e);
 });
-chrome.tabs.onMoved.addListener((e) => {
-  console.log('on moved', e);
+chrome.tabs.onMoved.addListener((e, info) => {
+  console.log('on moved', e, info);
   reRender('move', e);
 });
-chrome.tabs.onAttached.addListener((e) => {
-  console.log('on attached', e);
-  reRender('attach', e);
+chrome.tabs.onAttached.addListener((e, info) => {
+  console.log('on attached', e, info);
+  reRender('attachment', e);
 });
-chrome.tabs.onDetached.addListener((e) => {
-  console.log('on detached', e);
-  reRender('detach', e);
+chrome.tabs.onDetached.addListener((e, info) => {
+  console.log('on detached', e, info);
+  reRender('attachment', e);
 });
 
 export var searchStore = Reflux.createStore({
@@ -146,7 +152,7 @@ export var tabStore = Reflux.createStore({
 
 export var utilityStore = Reflux.createStore({
   init: function() {
-    this.favicon = '';
+    this.window = null;
   },
   filterFavicons(faviconUrl, tabUrl) {
     // Work around for Chrome favicon useage restriction.
@@ -161,5 +167,13 @@ export var utilityStore = Reflux.createStore({
     } else {
       return faviconUrl;
     }
+  },
+  set_window(value){
+    this.active = value;
+    console.log('window: ', value);
+    //this.trigger(this.active);
+  },
+  get_window(){
+    return this.active;
   }
 });

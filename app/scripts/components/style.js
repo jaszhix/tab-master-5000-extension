@@ -26,7 +26,7 @@ var style = {
       bottom: '15%',
       border: '1px solid #ccc',
       background: '#fff',
-      overflow: 'auto',
+      overflow: 'hidden',
       WebkitOverflowScrolling: 'touch',
       borderRadius: '4px',
       WebkitBoxShadow: '2px 2px 15px -2px rgba(0,0,0,0.75)',
@@ -34,6 +34,10 @@ var style = {
       padding: '20px'
    
     }
+  },
+  hiddenInput: {
+    position: 'absolute',
+    top: '-9999px'
   }
 };
 

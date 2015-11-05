@@ -26,7 +26,7 @@ h4.sort-h4 {
 
 .session-col {
     overflow-wrap: normal;
-    overflow: auto;
+
 }
 
 .ntg-form {
@@ -138,10 +138,32 @@ h4.sort-h4 {
 .ntg-session-expanded {
     overflow-y: scroll;
     height: 200px;
-    width: 265%;
+    width: 215%;
     background-color: #ffffff;
     border-radius: 3px;
     margin-left:-2%;
+}
+.ntg-settings-pane {
+    overflow: auto;
+    height: 560px;
+}
+.ntg-cc {
+    margin-left: 42%;
+    margin-right: 50%;
+    position: absolute;
+    display: table;
+    top: 630px;
+}
+.ntg-about {
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+    display: table;
+}
+.ntg-about-c {
+    font-size: 12px;
+    position: relative;
+    display: table;
 }
 button.ntg-btn {
     width: 100%;
@@ -218,11 +240,12 @@ button.ntg-apply-btn {
     top: 1px;
 }
 button.ntg-setting-btn {
-    width: 50%;
+    width: 200px;
     color: #000;
     background-color: #EDEDED;
     text-shadow: 2px 2px #FFF;
     margin-bottom: 20px;
+    margin-left: 5px;
     border: 0;
     vertical-align: middle;
     display: inline-block;
@@ -237,6 +260,32 @@ button.ntg-setting-btn {
     -webkit-user-select: none;
     border-radius: 4px;
     overflow: hidden;
+    position: fixed;
+    top: 780px;
+}
+button.ntg-impexp-btn {
+    width: 150px;
+    color: #000;
+    background-color: #EDEDED;
+    text-shadow: 2px 2px #FFF;
+    margin-bottom: 20px;
+    margin-left: 5px;
+    border: 0;
+    vertical-align: middle;
+    display: inline-block;
+    padding: 6px 2px;
+    font-size: 14px;
+    line-height: 1.42857143;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    touch-action: manipulation;
+    cursor: pointer;
+    -webkit-user-select: none;
+    border-radius: 4px;
+    overflow: hidden;
+    position: fixed;
+    top: 780px;
 }
 button.ntg-session-btn {
     width: 40%;
@@ -259,4 +308,5 @@ button.ntg-session-btn {
     border-radius: 4px;
     overflow: hidden;
     float: right;
+
 }

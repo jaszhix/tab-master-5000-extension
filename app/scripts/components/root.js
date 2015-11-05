@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Reflux from 'reflux';
 
-import {searchStore, reRenderStore, clickStore, modalStore, settingsStore, tabStore} from './store';
+import {searchStore, reRenderStore, clickStore, modalStore, settingsStore, tabStore, utilityStore} from './store';
 import TileGrid from './tile';
 import Settings from './settings';
 
@@ -99,8 +99,10 @@ var Root = React.createClass({
       this.setState({
         tabs: tab
       });
+      utilityStore.set_window(tab[0].windowId);
       tabStore.set_tab(tab);
       console.log(Tab);
+      console.log('wid: ',tab[0].windowId);
     });
     // Querying is complete, allow the component to render.
     this.setState({
