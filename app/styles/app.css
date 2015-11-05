@@ -148,11 +148,10 @@ h4.sort-h4 {
     height: 560px;
 }
 .ntg-cc {
-    margin-left: 42%;
-    margin-right: 50%;
-    position: absolute;
+    position: fixed;
     display: table;
-    top: 630px;
+    top: 780px;
+    left: 48%;
 }
 .ntg-about {
     margin-left: auto;

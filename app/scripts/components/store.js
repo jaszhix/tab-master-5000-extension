@@ -169,11 +169,10 @@ export var utilityStore = Reflux.createStore({
     }
   },
   set_window(value){
-    this.active = value;
-    console.log('window: ', value);
-    //this.trigger(this.active);
+    this.window = value;
+    console.log('window ID: ', value);
   },
   get_window(){
-    return this.active;
+    return this.window;
   }
 });

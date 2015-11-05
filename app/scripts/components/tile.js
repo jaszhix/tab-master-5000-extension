@@ -229,8 +229,7 @@ var Tile = React.createClass({
                 <h5 className="ntg-title">
                   {S(p.tab.title).truncate(100).s}
                 </h5>
-              </div>
-              
+              </div> 
             </div>
           </div> : null}
         </div> : null}

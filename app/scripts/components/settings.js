@@ -30,6 +30,7 @@ var Sessions = React.createClass({
     this.setState({tabs: tabs});
   },
   saveSession(){
+    // Check if array exists, and push a new tabs object if not. Otherwise, create it.
     var tabData = {timeStamp: Date.now(), tabs: tabStore.get_tab()};
     var session = null;
     chrome.storage.local.get('sessionData',(item)=>{
@@ -56,6 +57,7 @@ var Sessions = React.createClass({
     });
   },
   removeSession(session){
+    // Remove the selected session object from the array, and replace the current sessionData in chrome.storage.local.
     var index = this.state.sessions;
     var newIndex = _.without(index, session);
     console.log(newIndex);
@@ -67,6 +69,7 @@ var Sessions = React.createClass({
     });
   },
   restoreSession(session){
+    // Opens a new chrome window with the selected tabs object.
     var urls = [];
     session.tabs.map((t)=>{
       if (t.title !== 'New Tab') {
@@ -80,6 +83,7 @@ var Sessions = React.createClass({
     });
   },
   exportSessions(){
+    // Stringify sessionData and export as JSON.
     var json = JSON.stringify(this.state.sessions);
     var filename = 'NTG-Session-'+Date.now();
     console.log(json);
@@ -87,6 +91,7 @@ var Sessions = React.createClass({
     saveAs(blob, filename+'.json');
   },
   importSessions(e){
+    // Load the JSON file, parse it, and set it to state.
     var reader = new FileReader();
     reader.onload = (e)=> {
       var json = JSON.parse(reader.result);
@@ -102,6 +107,7 @@ var Sessions = React.createClass({
     reader.readAsText(e.target.files[0], "UTF-8");
   },
   triggerInput(){
+    // Remotely trigger file input button with our own prettier button.
     ReactDOM.findDOMNode(this.refs.fileInput).click();
   },
   handleSessionHoverIn(i){
@@ -160,7 +166,7 @@ var Sessions = React.createClass({
               </div>;
             }
           })}
-          <div className="row">{tabs.length >= 20 ? '...plus ' +tm20+ ' other tabs.' : null}</div>
+          {tabs.length >= 22 ? <div className="row">{tabs.length >= 20 ? '...plus ' +tm20+ ' other tabs.' : null}</div> : null}
           <p/>
           <button onClick={this.saveSession} className="ntg-setting-btn">Save Session</button>
         </div>
@@ -193,7 +199,7 @@ var About = React.createClass({
             <li>Fixed a bug causing CSS to break occassionally.</li>
           </ul>
         </div>
-        <div className="col-xs-2"/>
+        <div className="col-xs-2 ntg-cc"/>
         <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style={{borderWidth:0}} src="https://i.creativecommons.org/l/by/4.0/88x31.png" className="ntg-cc" /></a>
       </div>
     );
