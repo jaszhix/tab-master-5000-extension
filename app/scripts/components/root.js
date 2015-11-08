@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Reflux from 'reflux';
+import ReactUtils from 'react-utils';
 
 import {searchStore, reRenderStore, clickStore, modalStore, settingsStore, tabStore, utilityStore} from './store';
 import TileGrid from './tile';
@@ -56,7 +57,8 @@ var Search = React.createClass({
 
 var Root = React.createClass({
   mixins: [
-    Reflux.ListenerMixin
+    Reflux.ListenerMixin,
+    ReactUtils.Mixins.WindowSizeWatch
   ],
   getInitialState() {
     return {
@@ -64,7 +66,8 @@ var Root = React.createClass({
       render: false,
       search: '',
       window: true,
-      settings: true
+      settings: true,
+      collapse: true
     };
   },
   componentDidMount() {
@@ -74,6 +77,7 @@ var Root = React.createClass({
     this.listenTo(settingsStore, this.settingsChange);
     // Call the method that will query Chrome for tabs.
     this.captureTabs('init');
+    this.onWindowResize(null, 'init');
   },
   shouldComponentUpdate() {
     // Is only true while Chrome is not being queried for tabs.
@@ -127,21 +131,37 @@ var Root = React.createClass({
       }
     }
   },
+  onWindowResize: function (event, opt) {
+    var threshold = 1565;
+    if (opt === 'init') {
+      if (window.innerWidth >= threshold) {
+        this.setState({collapse: true});
+      } else {
+        this.setState({collapse: false});
+      }
+    } else {
+      console.log(event.width, event.height);
+      if (event.width >= threshold) {
+        this.setState({collapse: true});
+      } else {
+        this.setState({collapse: false});
+      }
+    }
+  },
   render: function() {
     var s = this.state;
     // Our keys that will be sortable.
-    var keys = ['url', 'title', 'status', 'incognito', 'index'];
+    var keys = ['url', 'title', 'status', 'index'];
     // Map keys to labels.
     var labels = {
       index: 'Tab Order',
       url: 'Website',
       title: 'Title',
-      status: 'Downloaded',
-      incognito: 'Incognito'
+      status: 'Downloaded'
     };
     return (
       <div>
-      <Settings />
+      <Settings collapse={s.collapse} />
       {s.render ? <div className="tile-container">
           {s.settings ? <Search /> : null}
           <div className="tile-child-container">
@@ -150,6 +170,7 @@ var Root = React.createClass({
               keys={keys}
               labels={labels}
               render={s.render}
+              collapse={s.collapse}
             />
         </div></div> : null}
       </div>

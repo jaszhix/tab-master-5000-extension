@@ -30,7 +30,7 @@ h4.sort-h4 {
 }
 
 .ntg-form {
-    padding-top: 12px;
+    padding-top: 14px;
     background-color: #ededed;
 }
 .ntg-title {
@@ -166,6 +166,7 @@ h4.sort-h4 {
 }
 button.ntg-btn {
     width: 100%;
+    height: 32px;
     color: #000;
     background-color: #EDEDED;
     text-shadow: 2px 2px #FFF;
@@ -215,6 +216,7 @@ button.ntg-top-btn {
 button.ntg-apply-btn {
     position: relative;
     width: 100%;
+    height: 32px;
     color: #FFF;
     background-color: #A8A8A8;
     text-shadow: 1px 1px #000;
@@ -240,6 +242,7 @@ button.ntg-apply-btn {
 }
 button.ntg-setting-btn {
     width: 200px;
+    height: 32px;
     color: #000;
     background-color: #EDEDED;
     text-shadow: 2px 2px #FFF;
@@ -264,6 +267,7 @@ button.ntg-setting-btn {
 }
 button.ntg-impexp-btn {
     width: 150px;
+    height: 32px;
     color: #000;
     background-color: #EDEDED;
     text-shadow: 2px 2px #FFF;
@@ -288,6 +292,7 @@ button.ntg-impexp-btn {
 }
 button.ntg-session-btn {
     width: 40%;
+    height: 26px;
     color: #000;
     background-color: #EDEDED;
     text-shadow: 2px 2px #FFF;

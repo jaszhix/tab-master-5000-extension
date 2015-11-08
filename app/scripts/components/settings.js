@@ -22,6 +22,14 @@ var Sessions = React.createClass({
       expandedSession: null
     };
   },
+  propTypes: {
+    collapse: React.PropTypes.bool
+  },
+  getDefaultProps(){
+    return {
+      collapse: true
+    };
+  },
   componentDidMount(){
     this.listenTo(tabStore, this.tabChange);
     this.loadSessions();
@@ -124,6 +132,7 @@ var Sessions = React.createClass({
     }
   },
   render: function() {
+    var p = this.props;
     var s = this.state;
     var tabs = tabStore.get_tab();
     var tm20 = tabs.length - 20;
@@ -147,14 +156,14 @@ var Sessions = React.createClass({
                   </div> : null}
               </div>
               <div className="col-xs-6">
-                {s.sessionHover === i ? <button onClick={()=>this.removeSession(session)} className="ntg-session-btn">Remove</button> : null}
-                {s.sessionHover === i ? <button onClick={()=>this.restoreSession(session)} className="ntg-session-btn">Restore</button> : null}
+                {s.sessionHover === i ? <button onClick={()=>this.removeSession(session)} className="ntg-session-btn"><i className="fa fa-times"></i> {p.collapse ? 'Remove' : null}</button> : null}
+                {s.sessionHover === i ? <button onClick={()=>this.restoreSession(session)} className="ntg-session-btn"><i className="fa fa-folder-open-o"></i> {p.collapse ? 'Restore' : null}</button> : null}
               </div>
             </div>;
           }) : null}
-          <button onClick={()=>this.exportSessions()} className="ntg-impexp-btn">Export</button>
+          <button onClick={()=>this.exportSessions()} className="ntg-impexp-btn"><i className="fa fa-arrow-circle-o-down"></i> Export</button>
           <input {...this.props} children={undefined} type="file" onChange={this.importSessions} ref="fileInput" style={style.hiddenInput} />
-          <button onClick={this.triggerInput} className="ntg-impexp-btn" style={{marginLeft: '160px'}} >Import</button>
+          <button onClick={this.triggerInput} className="ntg-impexp-btn" style={{marginLeft: '160px'}}><i className="fa fa-arrow-circle-o-up"></i> Import</button>
         </div>
         <div className="col-xs-6 session-col">
           <h3>Current Session</h3>
@@ -168,7 +177,7 @@ var Sessions = React.createClass({
           })}
           {tabs.length >= 22 ? <div className="row">{tabs.length >= 20 ? '...plus ' +tm20+ ' other tabs.' : null}</div> : null}
           <p/>
-          <button onClick={this.saveSession} className="ntg-setting-btn">Save Session</button>
+          <button onClick={this.saveSession} className="ntg-setting-btn"><i className="fa fa-plus"></i> Save Session</button>
         </div>
       </div>
     );
@@ -214,6 +223,14 @@ var Settings = React.createClass({
       currentTab: 'sessions'
     };
   },
+  propTypes: {
+    collapse: React.PropTypes.bool
+  },
+  getDefaultProps(){
+    return {
+      collapse: true
+    };
+  },
   componentDidMount(){
     this.listenTo(modalStore, this.modalChange);
     this.listenTo(modalStore, this.settingsChange);
@@ -227,6 +244,7 @@ var Settings = React.createClass({
     
   },
   render: function() {
+    var p = this.props;
     var s = this.state;
     var sessions = settingsStore.get_settings() === 'sessions';
     var about = settingsStore.get_settings() === 'about';
@@ -250,7 +268,7 @@ var Settings = React.createClass({
             </div>
           </div>
           <div className="row ntg-settings-pane">
-            {sessions ? <Sessions /> : null}
+            {sessions ? <Sessions collapse={p.collapse} /> : null}
             {about ? <About /> : null}
           </div>
         </div>

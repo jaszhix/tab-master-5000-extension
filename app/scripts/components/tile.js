@@ -3,6 +3,7 @@ import Reflux from 'reflux';
 import _ from 'lodash';
 import S from 'string';
 import kmp from 'kmp';
+
 import {searchStore, clickStore, applyTabOrderStore, utilityStore} from './store';
 
 var newTabs = [];
@@ -227,7 +228,7 @@ var Tile = React.createClass({
               </div>
               <div onClick={() => this.handleClick(p.tab.id)} className="col-xs-9 ntg-title-container">
                 <h5 className="ntg-title">
-                  {S(p.tab.title).truncate(100).s}
+                  {S(p.tab.title).truncate(90).s}
                 </h5>
               </div> 
             </div>
@@ -243,14 +244,16 @@ var TileGrid = React.createClass({
     data: React.PropTypes.array,
     keys: React.PropTypes.array,
     labels: React.PropTypes.object,
-    flags: React.PropTypes.object
+    flags: React.PropTypes.object,
+    collapse: React.PropTypes.bool
   },
   getDefaultProps: function() {
     return {
       data: [],
       keys: [],
       labels: {},
-      flags: {}
+      flags: {},
+      collapse: true
     };
   },
   getInitialState: function() {
@@ -261,7 +264,8 @@ var TileGrid = React.createClass({
     return {
       data: this.props.data,
       sortFlags: flags,
-      sortPriority: this.props.keys
+      sortPriority: this.props.keys,
+      title: true
     };
   },
   sort: function(key) {
@@ -287,28 +291,37 @@ var TileGrid = React.createClass({
     // Set Reflux store value which will call the chrome.tabs.move function in Tile component.
     applyTabOrderStore.set_saveTab(true);
   },
+  handleTitleIcon(){
+    this.setState({title: !this.state.title});
+  },
   render: function() {
-    var labels = this.props.keys.map(function(key) {
-      var label = this.props.labels[key] || key;
+    var p = this.props;
+    var s = this.state;
+    var labels = p.keys.map(function(key) {
+      var label = p.labels[key] || key;
+      var cLabel = p.collapse ? label : null;
       return (
         <div key={key} onClick={this.sort(key)}>
-          <button className="ntg-btn">{label}</button>
+          {label === 'Tab Order' ? <button className="ntg-btn"><i className="fa fa-history"></i> {cLabel}</button> : null}
+          {label === 'Website' ? <button className="ntg-btn"><i className="fa fa-external-link"></i> {cLabel}</button> : null}
+          {label === 'Title' ? <button onClick={this.handleTitleIcon} className="ntg-btn"><i className={this.state.title ? "fa fa-sort-alpha-asc" : "fa fa-sort-alpha-desc"}></i> {cLabel}</button> : null}
+          {label === 'Downloaded' ? <button className="ntg-btn"><i className="fa fa-download"></i> {cLabel}</button> : null}
         </div>
       );
     }, this);
-    var grid = this.state.data.map(function(data, index) {
+    var grid = s.data.map(function(data, index) {
       return (
-        <Tile render={this.props.render} key={index} tab={data} />
+        <Tile render={p.render} key={index} tab={data} />
       );
     }, this);
     return (
       <div className="tile-body">
           <div className="col-xs-1 sort-bar">
             <h4 className="sort-h4">
-              Sort Tabs
+              {p.collapse ? 'Sort Tabs' : 'Sort'}
             </h4>
               {labels}
-              <button onClick={this.applyTabs} className="ntg-apply-btn">Apply Order</button>
+              <button onClick={this.applyTabs} className="ntg-apply-btn"><i className="fa fa-sort"></i> {p.collapse ? 'Apply' : null}</button>
           </div>
         <div className="col-xs-11">
           <div>
