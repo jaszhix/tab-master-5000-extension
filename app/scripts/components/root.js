@@ -3,9 +3,42 @@ import ReactDOM from 'react-dom';
 import Reflux from 'reflux';
 import ReactUtils from 'react-utils';
 
-import {searchStore, reRenderStore, clickStore, modalStore, settingsStore, tabStore, utilityStore} from './store';
+import {searchStore, reRenderStore, clickStore, modalStore, settingsStore, tabStore, utilityStore, contextStore, relayStore} from './store';
 import TileGrid from './tile';
 import Settings from './settings';
+
+var ContextMenu = React.createClass({
+  mixins: [
+    require('react-onclickoutside')
+  ],
+  handleClickOutside(e){
+    console.log('handleClickOutside: ',e);
+    contextStore.set_context(false, null, null, null);
+  },
+  handleCloseTab(){
+    var id = contextStore.get_context()[3];
+    console.log('relay closetab: ',id);
+    relayStore.set_relay('close', id);
+    this.handleClickOutside();
+  },
+  handlePinTab(){
+    var id = contextStore.get_context()[3];
+    console.log('relay closetab: ',id);
+    relayStore.set_relay('pin', id);
+    this.handleClickOutside();
+  },
+  render: function() {
+    var p = this.props;
+    return (
+      <div className="ntg-context">
+        <div style={{top: p.height, left: p.width}} className="ntg-context-menu">
+          <button onClick={this.handleCloseTab} className="ntg-btn">Close</button>
+          <button onClick={this.handlePinTab} className="ntg-btn">Pin</button>
+        </div>
+      </div>
+    );
+  }
+});
 
 var Search = React.createClass({
   shouldComponentUpdate() {
@@ -62,12 +95,13 @@ var Root = React.createClass({
   ],
   getInitialState() {
     return {
-      tabs: [],
+      tabs: null,
       render: false,
       search: '',
       window: true,
       settings: true,
-      collapse: true
+      collapse: true,
+      context: false
     };
   },
   componentDidMount() {
@@ -75,20 +109,17 @@ var Root = React.createClass({
     this.listenTo(searchStore, this.searchChanged);
     this.listenTo(reRenderStore, this.reRender);
     this.listenTo(settingsStore, this.settingsChange);
+    this.listenTo(contextStore, this.contextTrigger);
     // Call the method that will query Chrome for tabs.
     this.captureTabs('init');
     this.onWindowResize(null, 'init');
   },
-  shouldComponentUpdate() {
-    // Is only true while Chrome is not being queried for tabs.
-    return this.state.render && this.state.window || modalStore.get_modal();
-  },
   captureTabs(opt) {
     if (opt !== 'init') {
       // Render state is toggled to false on the subsequent re-renders only.
-      this.setState({
-        render: false
-      });
+      if (opt === 'create') {
+        this.setState({render: false});
+      }
     } else {
       // The initial query will not trigger Chrome event listeners while ClickStore returns true.
       clickStore.set_click(true);
@@ -100,18 +131,16 @@ var Root = React.createClass({
     }, (Tab) => {
       // Assign Tab to a variable to work around a console error.
       var tab = Tab;
-      this.setState({
-        tabs: tab
-      });
+      this.setState({tabs: tab});
       utilityStore.set_window(tab[0].windowId);
       tabStore.set_tab(tab);
       console.log(Tab);
-      console.log('wid: ',tab[0].windowId);
+      console.log('window id: ',tab[0].windowId);
     });
     // Querying is complete, allow the component to render.
-    this.setState({
-      render: true
-    });
+    if (opt === 'create' || opt === 'init') {
+      this.setState({render: true});
+    }
   },
   searchChanged() {
     // Trigger Root component re-render when a user types in the search box.
@@ -124,10 +153,16 @@ var Root = React.createClass({
     this.setState({settings: true});
   },
   reRender() {
+    var reRender = reRenderStore.get_reRender();
     // Method triggered by Chrome event listeners.
     if (!clickStore.get_click()) {
-      if (reRenderStore.get_reRender()) {
-        this.captureTabs();
+      if (reRender[0]) {
+        // Treat attaching/detaching and created tabs with a full re-render.
+        if (reRender[1] === 'create' || reRender[1] === 'attachment') {
+          this.captureTabs(reRender[1]);
+        } else {
+          this.captureTabs();
+        }
       }
     }
   },
@@ -148,7 +183,7 @@ var Root = React.createClass({
       }
     }
   },
-  render: function() {
+  tileGrid(){
     var s = this.state;
     // Our keys that will be sortable.
     var keys = ['url', 'title', 'status', 'index'];
@@ -160,19 +195,30 @@ var Root = React.createClass({
       status: 'Downloaded'
     };
     return (
+      <TileGrid
+        data={s.tabs}
+        keys={keys}
+        labels={labels}
+        render={true}
+        collapse={s.collapse}
+      />
+      );
+  },
+  contextTrigger(t){
+    this.setState({context: contextStore.get_context()[0]});
+  },
+  render: function() {
+    var s = this.state;
+    return (
       <div>
-      <Settings collapse={s.collapse} />
-      {s.render ? <div className="tile-container">
-          {s.settings ? <Search /> : null}
-          <div className="tile-child-container">
-            <TileGrid
-              data={s.tabs}
-              keys={keys}
-              labels={labels}
-              render={s.render}
-              collapse={s.collapse}
-            />
-        </div></div> : null}
+        {s.context ? <ContextMenu height={contextStore.get_context()[1]} width={contextStore.get_context()[2]} /> : null}
+        <Settings collapse={s.collapse} />
+          {s.tabs ? <div className="tile-container">
+              {s.settings ? <Search /> : null}
+              <div className="tile-child-container">
+                {s.render ? this.tileGrid() : null}
+            </div></div> : null}
+
       </div>
     );
   }

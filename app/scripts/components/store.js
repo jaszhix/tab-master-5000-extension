@@ -7,10 +7,14 @@ var reRender = (type, id) => {
   var tabs = tabStore.get_tab();
   var active = _.result(_.find(tabs, { id: id }), 'windowId');
   console.log('windows: ', active, utilityStore.get_window());
-  if (utilityStore.get_window() === active || type === 'attachment') {
-    reRenderStore.set_reRender(true);
+  if (utilityStore.get_window() === active || type === 'attachment' || type === 'create') {
+    reRenderStore.set_reRender(true, type, id);
   }
 };
+chrome.tabs.onCreated.addListener((e, info) => {
+  console.log('on created', e, info);
+  reRender('create', e);
+});
 chrome.tabs.onRemoved.addListener((e, info) => {
   console.log('on removed', e, info);
   reRender('remove', e);
@@ -43,19 +47,6 @@ export var searchStore = Reflux.createStore({
   },
   get_search: function() {
     return this.search;
-  }
-});
-export var reRenderStore = Reflux.createStore({
-  init: function() {
-    this.reRender = null;
-  },
-  set_reRender: function(value) {
-    this.reRender = value;
-    console.log('reRender: ', value);
-    this.trigger(this.reRender);
-  },
-  get_reRender: function() {
-    return this.reRender;
   }
 });
 
@@ -96,11 +87,13 @@ export var applyTabOrderStore = Reflux.createStore({
 
 export var reRenderStore = Reflux.createStore({
   init: function() {
-    this.reRender = null;
+    this.reRender = [null, null, null];
   },
-  set_reRender: function(value) {
-    this.reRender = value;
-    console.log('reRender: ', value);
+  set_reRender: function(value, type, object) {
+    this.reRender[0] = value;
+    this.reRender[1] = type;
+    this.reRender[2] = object;
+    console.log('reRender: ', this.reRender);
     this.trigger(this.reRender);
   },
   get_reRender: function() {
@@ -174,5 +167,40 @@ export var utilityStore = Reflux.createStore({
   },
   get_window(){
     return this.window;
+  }
+});
+
+export var contextStore = Reflux.createStore({
+  init: function() {
+    this.context = [false, null, null, null];
+  },
+  set_context: function(value, pos1, pos2, id) {
+    this.context[0] = value;
+    this.context[1] = pos1;
+    this.context[2] = pos2;
+    this.context[3] = id;
+/*    setTimeout(() => {
+      this.context = [false, null, null, null];
+    }, 500);*/
+    console.log('context: ', value);
+    this.trigger(this.context);
+  },
+  get_context: function() {
+    return this.context;
+  }
+});
+
+export var relayStore = Reflux.createStore({
+  init: function() {
+    this.relay = ['', null];
+  },
+  set_relay: function(value, id) {
+    this.relay[0] = value;
+    this.relay[1] = id;
+    console.log('relay: ', value);
+    this.trigger(this.relay);
+  },
+  get_relay: function() {
+    return this.relay;
   }
 });

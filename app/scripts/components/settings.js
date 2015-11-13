@@ -195,6 +195,15 @@ var About = React.createClass({
         <div className="col-xs-2"/>
         <div className="col-xs-8 ntg-release">
           <h4>Release Notes</h4>
+          <h5>v0.3.3</h5><h6>11-8-15</h6>
+          <ul>
+            <li>Icons have been added to all buttons, and the button text overflow is now corrected on smaller resolutions.</li>
+            <li>Fixed tab title text overflow.</li>
+          </ul>
+          <h5>v0.3.2</h5><h6>11-6-15</h6>
+          <ul>
+            <li>Minor CSS updates.</li>
+          </ul>
           <h5>v0.3.1</h5><h6>11-5-15</h6>
           <ul>
             <li>A new session manager has been added. It supports saving and loading tab sessions. You can also export your session data as JSON, and import it.</li>

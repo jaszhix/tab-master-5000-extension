@@ -17,6 +17,7 @@
     "lodash": "^3.10.1",
     "moment": "^2.10.6",
     "react-modal": "^0.6.1",
+    "react-onclickoutside": "^4.1.1",
     "react-utils": "^1.0.0",
     "string": "^3.3.1",
     "style-loader": "^0.12.3",

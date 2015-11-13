@@ -4,9 +4,10 @@ import _ from 'lodash';
 import S from 'string';
 import kmp from 'kmp';
 
-import {searchStore, clickStore, applyTabOrderStore, utilityStore} from './store';
+import {searchStore, clickStore, applyTabOrderStore, utilityStore, contextStore, relayStore, tabStore} from './store';
 
 var newTabs = [];
+var pinned = null;
 var Tile = React.createClass({
   mixins: [
     Reflux.ListenerMixin
@@ -19,16 +20,25 @@ var Tile = React.createClass({
       render: true,
       close: false,
       pinning: false,
-      dataUrl: null
+      dataUrl: null,
+      focus: false
     };
   },
   componentDidMount() {
     this.listenTo(searchStore, this.filterTabs);
     this.listenTo(applyTabOrderStore, this.applyTabOrder);
+    this.listenTo(relayStore, this.handleRelays);
+    this.listenTo(tabStore, this.update);
     this.handleNewTab();
   },
   shouldComponentUpdate() {
-    return this.state.render;
+    return this.state.render || this.props.tab.title !== 'New Tab';
+  },
+  update(){
+    var p = this.props;
+    if (pinned === p.tab.id && p.tab.pinned) {
+      this.handleFocus();
+    }
   },
   handleNewTab() {
     var p = this.props;
@@ -139,7 +149,7 @@ var Tile = React.createClass({
       pHover: false
     });
   },
-  handleCloseTab(id, e) {
+  handleCloseTab(id) {
     this.setState({
       close: true
     });
@@ -156,14 +166,20 @@ var Tile = React.createClass({
       this.setState({close: false});
     }, 500);
   },
-  handlePinning(tab, e) {
+  handlePinning(tab, opt) {
+    var id = null;
+    if (opt === 'context') {
+      id = tab;
+    } else {
+      id = tab.id;
+    }
     this.setState({
       render: false,
       pinning: true
     });
     this.keepNewTabOpen();
     // Toggle pinned state.
-    chrome.tabs.update(tab.id, {
+    chrome.tabs.update(id, {
       pinned: !tab.pinned
     });
     this.setState({
@@ -172,6 +188,7 @@ var Tile = React.createClass({
     setTimeout(()=>{
       this.setState({pinning: false});
     }, 500);
+    pinned = id;
   },
   favIconBlurTextLength() {
     // If the text overflows into the image, blur and opacify the image for legibility.
@@ -203,12 +220,39 @@ var Tile = React.createClass({
       }
     });
   },
+  handleContextClick(e){
+    e.preventDefault();
+    var rect = this.refs.tile.getBoundingClientRect();
+    var x = e.clientX - rect.left+152;
+    var y = e.clientY - rect.top+65;
+    contextStore.set_context(true, y, x, this.props.tab.id);
+    console.log(this.refs.title);
+    console.log(rect.top, rect.right, rect.bottom, rect.left);
+  },
+  handleRelays(){
+    var p = this.props;
+    var r = relayStore.get_relay();
+    if (r[1] === p.tab.id) {
+      if (r[0] === 'close') {
+        this.handleCloseTab(r[1]);
+      } else if (r[0] === 'pin') {
+        this.handlePinning(p.tab);
+      }
+    }
+  },
+  handleFocus(){
+    console.log('focus');
+    this.setState({focus: true});
+    setTimeout(()=>{
+      this.setState({focus: false});
+    },500);
+  },
   render: function() {
     var s = this.state;
     var p = this.props;
     return (
-      <div>
-      {p.render && s.render && p.tab.title !== 'New Tab' ? <div style={s.hover ? {VendorAnimationDuration: '1s'} : null} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "row-fluid animated zoomOut" : "row-fluid"}>
+      <div ref="tile">
+      {p.render && s.render && p.tab.title !== 'New Tab' ? <div style={s.hover ? {VendorAnimationDuration: '1s'} : null} onContextMenu={this.handleContextClick} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "row-fluid animated zoomOut" : s.focus ? "animated pulse" : "row-fluid"}>
           { this.filterTabs(p.tab) ? <div className={s.hover ? "ntg-tile-hover" : "ntg-tile"} key={p.key}>
             <div className="row ntg-tile-row-top">
               <div className="col-xs-3">
@@ -240,6 +284,7 @@ var Tile = React.createClass({
 });
 // TileGrid is modified from react-sort-table for this extension - https://github.com/happy-charlie-777/react-sort-table 
 var TileGrid = React.createClass({
+  mixins: [Reflux.ListenerMixin],
   propTypes: {
     data: React.PropTypes.array,
     keys: React.PropTypes.array,
@@ -265,15 +310,25 @@ var TileGrid = React.createClass({
       data: this.props.data,
       sortFlags: flags,
       sortPriority: this.props.keys,
-      title: true
+      title: true,
+      unshift: true
     };
+  },
+  componentDidMount(){
+    this.listenTo(tabStore, this.update);
+  },
+  update(){
+    var self = this;
+    self.setState({data: self.props.data});
   },
   sort: function(key) {
     var self = this;
     return function() {
       var flags = self.state.sortFlags;
       var priority = _.remove(self.state.sortPriority, key);
-      priority.unshift(key);
+      if (self.state.unshift) {
+        priority.unshift(key);
+      }
       var order = _.map(priority, function(_key) {
         return (_key === key) ? !flags[_key] : flags[_key];
       });
@@ -302,16 +357,16 @@ var TileGrid = React.createClass({
       var cLabel = p.collapse ? label : null;
       return (
         <div key={key} onClick={this.sort(key)}>
-          {label === 'Tab Order' ? <button className="ntg-btn"><i className="fa fa-history"></i> {cLabel}</button> : null}
+          {label === 'Tab Order' ? <button ref="order" className="ntg-btn"><i className="fa fa-history"></i> {cLabel}</button> : null}
           {label === 'Website' ? <button className="ntg-btn"><i className="fa fa-external-link"></i> {cLabel}</button> : null}
           {label === 'Title' ? <button onClick={this.handleTitleIcon} className="ntg-btn"><i className={this.state.title ? "fa fa-sort-alpha-asc" : "fa fa-sort-alpha-desc"}></i> {cLabel}</button> : null}
           {label === 'Downloaded' ? <button className="ntg-btn"><i className="fa fa-download"></i> {cLabel}</button> : null}
         </div>
       );
     }, this);
-    var grid = s.data.map(function(data, index) {
+    var grid = s.data.map(function(data, i) {
       return (
-        <Tile render={p.render} key={index} tab={data} />
+        <Tile render={p.render} key={i} tab={data} />
       );
     }, this);
     return (
