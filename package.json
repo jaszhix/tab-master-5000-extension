@@ -1,6 +1,6 @@
 {
   "name": "new-tab-grid-chrome-react",
-  "version": "0.3.3",
+  "version": "0.3.5",
   "dependencies": {
     "react": "^0.14.2",
     "react-dom": "^0.14.2",

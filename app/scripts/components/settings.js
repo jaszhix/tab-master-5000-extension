@@ -195,6 +195,12 @@ var About = React.createClass({
         <div className="col-xs-2"/>
         <div className="col-xs-8 ntg-release">
           <h4>Release Notes</h4>
+          <h5>v0.3.4</h5><h6>11-12-15</h6>
+          <ul>
+            <li>The flickering rendering issue has been fixed.</li>
+            <li>Added an animation to newly pinned tabs, so its easier to see where it moved.</li>
+            <li>A context menu has been added with close and pin buttons. More functionality will be added to it in later releases.</li>
+          </ul>
           <h5>v0.3.3</h5><h6>11-8-15</h6>
           <ul>
             <li>Icons have been added to all buttons, and the button text overflow is now corrected on smaller resolutions.</li>

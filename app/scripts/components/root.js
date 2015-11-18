@@ -32,8 +32,8 @@ var ContextMenu = React.createClass({
     return (
       <div className="ntg-context">
         <div style={{top: p.height, left: p.width}} className="ntg-context-menu">
-          <button onClick={this.handleCloseTab} className="ntg-btn">Close</button>
-          <button onClick={this.handlePinTab} className="ntg-btn">Pin</button>
+          <button onClick={this.handleCloseTab} className="ntg-context-btn">Close</button>
+          <button onClick={this.handlePinTab} className="ntg-context-btn">Pin</button>
         </div>
       </div>
     );
@@ -51,10 +51,10 @@ var Search = React.createClass({
     searchStore.set_search(e.target.value);
   },
   handleWebSearch(e) {
+    e.preventDefault();
     chrome.tabs.query({
-      active: true,
-      currentWindow: true
-    }, function(tabs) {
+      title: 'New Tab'
+    }, (tabs) => {
       chrome.tabs.update(tabs[0].id, {
         url: 'https://www.google.com/?gws_rd=ssl#q=' + searchStore.get_search()
       });
@@ -73,7 +73,7 @@ var Search = React.createClass({
               type="text" 
               value={searchStore.get_search()}
               className="form-control" 
-              placeholder="Search..." 
+              placeholder="Search tabs..." 
               onChange={this.handleSearch} />
             </form>
           </div>

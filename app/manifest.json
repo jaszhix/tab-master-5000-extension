@@ -1,7 +1,7 @@
 {
-  "name": "New Tab Grid Sort, Filter, and Search",
+  "name": "New Tab Grid: Sort, Filter, and Manage Sessions",
   "short_name": "New Tab Grid",
-  "version": "0.3.3",
+  "version": "0.3.5",
   "manifest_version": 2,
   "description": "This extensions replaces the new tab page with a clean, sortable, and searchable, grid view of all of your open tabs.",
   "icons": {

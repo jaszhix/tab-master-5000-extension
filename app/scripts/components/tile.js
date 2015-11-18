@@ -223,7 +223,7 @@ var Tile = React.createClass({
   handleContextClick(e){
     e.preventDefault();
     var rect = this.refs.tile.getBoundingClientRect();
-    var x = e.clientX - rect.left+152;
+    var x = e.clientX - rect.left+157;
     var y = e.clientY - rect.top+65;
     contextStore.set_context(true, y, x, this.props.tab.id);
     console.log(this.refs.title);
@@ -310,8 +310,7 @@ var TileGrid = React.createClass({
       data: this.props.data,
       sortFlags: flags,
       sortPriority: this.props.keys,
-      title: true,
-      unshift: true
+      title: true
     };
   },
   componentDidMount(){
@@ -326,9 +325,7 @@ var TileGrid = React.createClass({
     return function() {
       var flags = self.state.sortFlags;
       var priority = _.remove(self.state.sortPriority, key);
-      if (self.state.unshift) {
-        priority.unshift(key);
-      }
+      priority.unshift(key);
       var order = _.map(priority, function(_key) {
         return (_key === key) ? !flags[_key] : flags[_key];
       });
@@ -357,7 +354,7 @@ var TileGrid = React.createClass({
       var cLabel = p.collapse ? label : null;
       return (
         <div key={key} onClick={this.sort(key)}>
-          {label === 'Tab Order' ? <button ref="order" className="ntg-btn"><i className="fa fa-history"></i> {cLabel}</button> : null}
+          {label === 'Tab Order' ? <button className="ntg-btn"><i className="fa fa-history"></i> {cLabel}</button> : null}
           {label === 'Website' ? <button className="ntg-btn"><i className="fa fa-external-link"></i> {cLabel}</button> : null}
           {label === 'Title' ? <button onClick={this.handleTitleIcon} className="ntg-btn"><i className={this.state.title ? "fa fa-sort-alpha-asc" : "fa fa-sort-alpha-desc"}></i> {cLabel}</button> : null}
           {label === 'Downloaded' ? <button className="ntg-btn"><i className="fa fa-download"></i> {cLabel}</button> : null}
