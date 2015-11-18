@@ -17,6 +17,7 @@ var Tile = React.createClass({
       hover: false,
       xHover: false,
       pHover: false,
+      mHover: false,
       render: true,
       close: false,
       pinning: false,
@@ -149,6 +150,12 @@ var Tile = React.createClass({
       pHover: false
     });
   },
+  handleTabMuteHoverIn(){
+    this.setState({mHover: true});
+  },
+  handleTabMuteHoverOut(){
+    this.setState({mHover: false});
+  },
   handleCloseTab(id) {
     this.setState({
       close: true
@@ -190,6 +197,11 @@ var Tile = React.createClass({
     }, 500);
     pinned = id;
   },
+  handleMuting(tab){
+    chrome.tabs.update(tab.id, {
+      muted: !tab.mutedInfo.muted
+    });
+  },
   favIconBlurTextLength() {
     // If the text overflows into the image, blur and opacify the image for legibility.
     if (this.props.tab.pinned) {
@@ -226,7 +238,7 @@ var Tile = React.createClass({
     var x = e.clientX - rect.left+157;
     var y = e.clientY - rect.top+65;
     contextStore.set_context(true, y, x, this.props.tab.id);
-    console.log(this.refs.title);
+    console.log(this.refs.tile);
     console.log(rect.top, rect.right, rect.bottom, rect.left);
   },
   handleRelays(){
@@ -237,6 +249,8 @@ var Tile = React.createClass({
         this.handleCloseTab(r[1]);
       } else if (r[0] === 'pin') {
         this.handlePinning(p.tab);
+      } else if (r[0] === 'mute') {
+        this.handleMuting(p.tab);
       }
     }
   },
@@ -256,16 +270,21 @@ var Tile = React.createClass({
           { this.filterTabs(p.tab) ? <div className={s.hover ? "ntg-tile-hover" : "ntg-tile"} key={p.key}>
             <div className="row ntg-tile-row-top">
               <div className="col-xs-3">
-                  <div onMouseEnter={this.handleTabCloseHoverIn} onMouseLeave={this.handleTabCloseHoverOut} onClick={() => this.handleCloseTab(p.tab.id)}>
-                    {s.hover ? 
-                    <img className={s.xHover ? "ntg-x-hover" : "ntg-x"} src="../images/x.png" />
-                    : null}
-                  </div>
-                  <div onMouseEnter={this.handlePinHoverIn} onMouseLeave={this.handlePinHoverOut} onClick={() => this.handlePinning(p.tab)}>
-                  {p.tab.pinned || s.hover ? 
-                    <img className={s.pHover ? "ntg-pinned-hover" : "ntg-pinned"} src={p.tab.pinned ? "../images/pinned_active.png" : "../images/pinned.png"} />
-                    : null}
-                  </div>
+                <div onMouseEnter={this.handleTabMuteHoverIn} onMouseLeave={this.handleTabMuteHoverOut} onClick={() => this.handleMuting(p.tab)}>
+                  {s.hover || p.tab.audible || p.tab.mutedInfo.muted ? 
+                  <i className={p.tab.audible ? s.mHover ? "fa fa-volume-off ntg-mute-audible-hover" : "fa fa-volume-up ntg-mute-audible" : s.mHover ? "fa fa-volume-off ntg-mute-hover" : "fa fa-volume-off ntg-mute"} />
+                  : null}
+                </div>
+                <div onMouseEnter={this.handleTabCloseHoverIn} onMouseLeave={this.handleTabCloseHoverOut} onClick={() => this.handleCloseTab(p.tab.id)}>
+                  {s.hover ? 
+                  <i className={s.xHover ? "fa fa-times ntg-x-hover" : "fa fa-times ntg-x"} />
+                  : null}
+                </div>
+                <div onMouseEnter={this.handlePinHoverIn} onMouseLeave={this.handlePinHoverOut} onClick={() => this.handlePinning(p.tab)}>
+                {p.tab.pinned || s.hover ? 
+                  <i className={s.pHover ? "fa fa-map-pin ntg-pinned-hover" : "fa fa-map-pin ntg-pinned"} style={p.tab.pinned ? {color: '#B67777'} : null} />
+                  : null}
+                </div>
                 <div className="row">
                   <img className="ntg-favicon" src={S(p.tab.favIconUrl).isEmpty() ? '../images/file_paper_blank_document.png' : utilityStore.filterFavicons(p.tab.favIconUrl, p.tab.url) } />
                 </div>

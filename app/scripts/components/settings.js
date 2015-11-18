@@ -149,7 +149,7 @@ var Sessions = React.createClass({
                       if (i <= 20) {
                         return <div key={i} className="row" style={i % 2 ? null : {backgroundColor: 'rgb(249, 249, 249)'}}>
                           <img className="ntg-small-favicon" src={S(t.favIconUrl).isEmpty() ? '../images/file_paper_blank_document.png' : utilityStore.filterFavicons(t.favIconUrl, t.url) } /> 
-                          {' '+S(t.title).truncate(60).s}
+                          {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {S(t.title).truncate(50).s}
                         </div>;
                       }
                     })}
@@ -170,8 +170,8 @@ var Sessions = React.createClass({
           {tabs.map((t, i)=>{
             if (i <= 20) {
               return <div key={i} className="row" style={i % 2 ? null : {backgroundColor: 'rgb(249, 249, 249)'}}>
-                <img className="ntg-small-favicon" src={S(t.favIconUrl).isEmpty() ? '../images/file_paper_blank_document.png' : utilityStore.filterFavicons(t.favIconUrl, t.url) } /> 
-                {' '+S(t.title).truncate(60).s}
+                <img className="ntg-small-favicon" src={S(t.favIconUrl).isEmpty() ? '../images/file_paper_blank_document.png' : utilityStore.filterFavicons(t.favIconUrl, t.url) } />  
+                {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {S(t.title).truncate(60).s}
               </div>;
             }
           })}
@@ -195,6 +195,12 @@ var About = React.createClass({
         <div className="col-xs-2"/>
         <div className="col-xs-8 ntg-release">
           <h4>Release Notes</h4>
+          <h5>v0.3.5</h5><h6>11-18-15</h6>
+          <ul>
+            <li>Added the ability to mute, unmute, and monitor tabs producing sound.</li>
+            <li>Fixed the web search feature.</li>
+            <li>Replaced the icon images with Font Awesome icons.</li>
+          </ul>
           <h5>v0.3.4</h5><h6>11-12-15</h6>
           <ul>
             <li>The flickering rendering issue has been fixed.</li>
