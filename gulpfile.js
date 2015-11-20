@@ -2,7 +2,7 @@ var gulp = require('gulp');
 var uglify = require('gulp-uglify');
 var webpack = require('webpack-stream');
 
-var production = true; 
+var production = false; 
 var uglifyOpts = null;
 if (production) {
 	uglifyOpts = {
