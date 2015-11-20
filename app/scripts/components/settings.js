@@ -8,6 +8,7 @@ import _ from 'lodash';
 import {saveAs} from 'filesaver.js';
 
 import {modalStore, settingsStore, tabStore, utilityStore} from './store';
+import About from './about';
 
 import style from './style';
 
@@ -52,7 +53,7 @@ var Sessions = React.createClass({
       }
       chrome.storage.local.set(session, (result)=> {
         // Notify that we saved.
-        this.setState({sessions: session.sessionData});
+        this.loadSessions();
         console.log('session saved...',result);
 
       });   
@@ -61,7 +62,9 @@ var Sessions = React.createClass({
   loadSessions(){
     chrome.storage.local.get('sessionData',(item)=>{
       console.log('item retrieved: ',item);
-      this.setState({sessions: item.sessionData});
+      // Sort sessionData array to show the newest sessions at the top of the list.
+      var reverse = _.sortByOrder(item.sessionData, ['timeStamp'], ['desc']);
+      this.setState({sessions: reverse});
     });
   },
   removeSession(session){
@@ -179,58 +182,6 @@ var Sessions = React.createClass({
           <p/>
           <button onClick={this.saveSession} className="ntg-setting-btn"><i className="fa fa-plus"></i> Save Session</button>
         </div>
-      </div>
-    );
-  }
-});
-
-var About = React.createClass({
-  render: function() {
-    return (
-      <div className="about">
-        <img src="../../images/icon-128.png" className="ntg-about"/>
-        <div className="ntg-about">
-          <h3 className="ntg-about">New Tab Grid</h3>
-        </div>
-        <div className="col-xs-2"/>
-        <div className="col-xs-8 ntg-release">
-          <h4>Release Notes</h4>
-          <h5>v0.3.5</h5><h6>11-18-15</h6>
-          <ul>
-            <li>Added the ability to mute, unmute, and monitor tabs producing sound.</li>
-            <li>Fixed the web search feature.</li>
-            <li>Replaced the icon images with Font Awesome icons.</li>
-          </ul>
-          <h5>v0.3.4</h5><h6>11-12-15</h6>
-          <ul>
-            <li>The flickering rendering issue has been fixed.</li>
-            <li>Added an animation to newly pinned tabs, so its easier to see where it moved.</li>
-            <li>A context menu has been added with close and pin buttons. More functionality will be added to it in later releases.</li>
-          </ul>
-          <h5>v0.3.3</h5><h6>11-8-15</h6>
-          <ul>
-            <li>Icons have been added to all buttons, and the button text overflow is now corrected on smaller resolutions.</li>
-            <li>Fixed tab title text overflow.</li>
-          </ul>
-          <h5>v0.3.2</h5><h6>11-6-15</h6>
-          <ul>
-            <li>Minor CSS updates.</li>
-          </ul>
-          <h5>v0.3.1</h5><h6>11-5-15</h6>
-          <ul>
-            <li>A new session manager has been added. It supports saving and loading tab sessions. You can also export your session data as JSON, and import it.</li>
-            <li>Fixed a bug causing tab changes in inactive windows from triggering renders in the active window.</li>
-          </ul>
-          <h5>v0.2.1</h5><h6>11-3-15</h6>
-          <ul>
-            <li>Improved responsiveness to window size changes.</li>
-            <li>Reorganized layout for tab tiles.</li>
-            <li>Close and pin buttons have been moved, and a bug causing tabs to switch when clicking them has been fixed.</li>
-            <li>Fixed a bug causing CSS to break occassionally.</li>
-          </ul>
-        </div>
-        <div className="col-xs-2 ntg-cc"/>
-        <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style={{borderWidth:0}} src="https://i.creativecommons.org/l/by/4.0/88x31.png" className="ntg-cc" /></a>
       </div>
     );
   }
