@@ -202,6 +202,23 @@ var Tile = React.createClass({
       muted: !tab.mutedInfo.muted
     });
   },
+  handleCloseAll(tab){
+    var urlPath = tab.url.split('/');
+    chrome.tabs.query({
+      url: '*://'+urlPath[2]+'/*'
+    }, (Tab)=> {
+      console.log(Tab);
+      for (var i = Tab.length - 1; i >= 0; i--) {
+        if (Tab[i].windowId === utilityStore.get_window()) {
+          this.setState({close: true});
+          chrome.tabs.remove(Tab[i].id);
+          setTimeout(()=>{
+            this.setState({close: false});
+          },500);
+        }
+      }
+    });
+  },
   favIconBlurTextLength() {
     // If the text overflows into the image, blur and opacify the image for legibility.
     if (this.props.tab.pinned) {
@@ -247,6 +264,8 @@ var Tile = React.createClass({
     if (r[1] === p.tab.id) {
       if (r[0] === 'close') {
         this.handleCloseTab(r[1]);
+      } else if (r[0] === 'closeAll') {
+        this.handleCloseAll(p.tab);
       } else if (r[0] === 'pin') {
         this.handlePinning(p.tab);
       } else if (r[0] === 'mute') {
