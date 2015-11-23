@@ -1,7 +1,7 @@
 import React from 'react';
 import _ from 'lodash';
 
-import {contextStore, relayStore, tabStore} from './store';
+import {contextStore, relayStore, tabStore, utilityStore} from './store';
 
 var ContextMenu = React.createClass({
   mixins: [
@@ -32,13 +32,14 @@ var ContextMenu = React.createClass({
   },
   render: function() {
     var p = this.props;
+    var chromeVersion = utilityStore.chromeVersion();
     return (
       <div className="ntg-context">
         <div style={{top: p.height, left: p.width}} className="ntg-context-menu">
           <button onClick={()=>this.handleRelay('close')} className="ntg-context-btn"><i className="fa fa-times" /> Close</button>
           <button onClick={()=>this.handleRelay('closeAll')} className="ntg-context-btn-close-all"><i className="fa fa-asterisk" /> {'Close all from ' + this.getStatus('url')}</button>
           <button onClick={()=>this.handleRelay('pin')} className="ntg-context-btn"><i className="fa fa-map-pin" /> {this.getStatus('pinned') ? 'Unpin' : 'Pin'}</button>
-          <button onClick={()=>this.handleRelay('mute')} className="ntg-context-btn"><i className="fa fa-volume-off" /> {this.getStatus('muted') ? 'Unmute' : 'Mute'}</button>
+          {chromeVersion === 46 ? <button onClick={()=>this.handleRelay('mute')} className="ntg-context-btn"><i className="fa fa-volume-off" /> {this.getStatus('muted') ? 'Unmute' : 'Mute'}</button> : null}
         </div>
       </div>
     );

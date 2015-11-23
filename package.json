@@ -1,6 +1,6 @@
 {
   "name": "tab-master-5000",
-  "version": "0.3.7",
+  "version": "0.3.8",
   "dependencies": {
     "react": "^0.14.2",
     "react-dom": "^0.14.2",
@@ -12,6 +12,7 @@
     "file-loader": "^0.8.4",
     "filesaver.js": "^0.2.0",
     "gulp": "^3.9.0",
+    "gulp-imagemin": "^2.4.0",
     "gulp-uglify": "^1.4.0",
     "kmp": "0.0.3",
     "lodash": "^3.10.1",

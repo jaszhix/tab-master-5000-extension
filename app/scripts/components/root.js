@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Reflux from 'reflux';
 import ReactUtils from 'react-utils';
+import S from 'string';
 
 import {searchStore, reRenderStore, clickStore, modalStore, settingsStore, tabStore, utilityStore, contextStore} from './store';
 import TileGrid from './tile';
@@ -81,6 +82,7 @@ var Root = React.createClass({
     // Call the method that will query Chrome for tabs.
     this.captureTabs('init');
     this.onWindowResize(null, 'init');
+    console.log(utilityStore.chromeVersion());
   },
   captureTabs(opt) {
     if (opt !== 'init') {

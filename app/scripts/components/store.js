@@ -1,6 +1,7 @@
 import Reflux from 'reflux';
 import kmp from 'kmp';
 import _ from 'lodash';
+import S from 'string';
 
 // Chrome event listeners set to trigger re-renders.
 var reRender = (type, id) => {
@@ -146,6 +147,7 @@ export var tabStore = Reflux.createStore({
 export var utilityStore = Reflux.createStore({
   init: function() {
     this.window = null;
+    this.version = /Chrome\/([0-9.]+)/.exec(navigator.userAgent)[1].split('.');
   },
   filterFavicons(faviconUrl, tabUrl) {
     // Work around for Chrome favicon useage restriction.
@@ -167,6 +169,9 @@ export var utilityStore = Reflux.createStore({
   },
   get_window(){
     return this.window;
+  },
+  chromeVersion(){
+    return S(/Chrome\/([0-9.]+)/.exec(navigator.userAgent)[1].split('.')).toInt();
   }
 });
 

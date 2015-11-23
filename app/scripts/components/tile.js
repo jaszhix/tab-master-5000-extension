@@ -8,6 +8,7 @@ import {searchStore, clickStore, applyTabOrderStore, utilityStore, contextStore,
 
 var newTabs = [];
 var pinned = null;
+var chromeVersion = utilityStore.chromeVersion();
 var Tile = React.createClass({
   mixins: [
     Reflux.ListenerMixin
@@ -289,11 +290,11 @@ var Tile = React.createClass({
           { this.filterTabs(p.tab) ? <div className={s.hover ? "ntg-tile-hover" : "ntg-tile"} key={p.key}>
             <div className="row ntg-tile-row-top">
               <div className="col-xs-3">
-                <div onMouseEnter={this.handleTabMuteHoverIn} onMouseLeave={this.handleTabMuteHoverOut} onClick={() => this.handleMuting(p.tab)}>
-                  {s.hover || p.tab.audible || p.tab.mutedInfo.muted ? 
-                  <i className={p.tab.audible ? s.mHover ? "fa fa-volume-off ntg-mute-audible-hover" : "fa fa-volume-up ntg-mute-audible" : s.mHover ? "fa fa-volume-off ntg-mute-hover" : "fa fa-volume-off ntg-mute"} />
-                  : null}
-                </div>
+                {chromeVersion === 46 ? <div onMouseEnter={this.handleTabMuteHoverIn} onMouseLeave={this.handleTabMuteHoverOut} onClick={() => this.handleMuting(p.tab)}>
+                                  {s.hover || p.tab.audible || p.tab.bullshit ? 
+                                  <i className={p.tab.audible ? s.mHover ? "fa fa-volume-off ntg-mute-audible-hover" : "fa fa-volume-up ntg-mute-audible" : s.mHover ? "fa fa-volume-off ntg-mute-hover" : "fa fa-volume-off ntg-mute"} />
+                                  : null}
+                                </div> : null}
                 <div onMouseEnter={this.handleTabCloseHoverIn} onMouseLeave={this.handleTabCloseHoverOut} onClick={() => this.handleCloseTab(p.tab.id)}>
                   {s.hover ? 
                   <i className={s.xHover ? "fa fa-times ntg-x-hover" : "fa fa-times ntg-x"} />

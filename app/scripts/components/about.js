@@ -11,6 +11,10 @@ var About = React.createClass({
         <div className="col-xs-2"/>
         <div className="col-xs-8 ntg-release">
           <h4>Release Notes</h4>
+          <h5>v0.3.8</h5><h6>11-23-15</h6>
+          <ul>
+            <li>Fixed breaking change introduced by the mute functionality on Chrome 45 and older.</li>
+          </ul>
           <h5>v0.3.7</h5><h6>11-22-15</h6>
           <ul>
             <li>Changed the extension name from New Tab Grid to Tab Master 5000.</li>

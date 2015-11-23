@@ -1,6 +1,7 @@
 var gulp = require('gulp');
 var uglify = require('gulp-uglify');
 var webpack = require('webpack-stream');
+var imagemin = require('gulp-imagemin');
 
 var production = true; 
 var uglifyOpts = null;
@@ -35,6 +36,15 @@ gulp.task('build', function() {
 });
 gulp.task('watch', function() {
     gulp.watch('./app/scripts/components/*.{js,jsx,es6}', ['build']);
+});
+
+gulp.task('imgmin', function () {
+  return gulp.src('./app/images/*.{png,jpg,gif}')
+    .pipe(imagemin({
+      optimizationLevel: 3,
+      interlaced: true
+    }))
+    .pipe(gulp.dest('./server/es5/assets/images'));
 });
 
 gulp.task('default', ['watch'], function () {
