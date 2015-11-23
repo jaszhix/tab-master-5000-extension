@@ -1,6 +1,7 @@
 Tab Master 5000 replaces your new tab page with a grid view of your open tabs. 
 
-Features:
+### Features
+
 - Close, pin, and mute tabs from your New Tab page.
 - Close all tabs from a specific website.
 - Manage tabs through icons or the right click menu.
