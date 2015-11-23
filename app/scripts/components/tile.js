@@ -3,12 +3,15 @@ import Reflux from 'reflux';
 import _ from 'lodash';
 import S from 'string';
 import kmp from 'kmp';
+import Draggable from 'react-draggable';
 
-import {searchStore, clickStore, applyTabOrderStore, utilityStore, contextStore, relayStore, tabStore} from './store';
+import {searchStore, clickStore, applyTabOrderStore, utilityStore, contextStore, relayStore, tabStore, dragStore} from './store';
 
 var newTabs = [];
 var pinned = null;
 var chromeVersion = utilityStore.chromeVersion();
+var tileDrag = null;
+var tileDrop = false;
 var Tile = React.createClass({
   mixins: [
     Reflux.ListenerMixin
@@ -23,7 +26,9 @@ var Tile = React.createClass({
       close: false,
       pinning: false,
       dataUrl: null,
-      focus: false
+      focus: false,
+      drag: null,
+      dragged: null
     };
   },
   componentDidMount() {
@@ -281,14 +286,82 @@ var Tile = React.createClass({
       this.setState({focus: false});
     },500);
   },
+  handleStart(event, ui) {
+    this.setState({drag: true});
+    tileDrag = true;
+    dragStore.set_drag(ui.position.left, ui.position.top);
+    dragStore.set_dragged(this.props.tab);
+    console.log('Event: ', event);
+    console.log('Start Position: ', ui.position);
+    this.getPos(event);
+  },
+
+  handleDrag(event, ui) {
+    dragStore.set_drag(ui.position.left, ui.position.top);
+    console.log('Event: ', event);
+    console.log('Position: ', ui.position);
+    this.getPos(event);
+  },
+
+  handleStop(event, ui) {
+    setTimeout(()=>{
+      tileDrag = false;
+    },1);
+    this.setState({drag: false});
+    
+    dragStore.set_drag(ui.position.left, ui.position.top);
+    //dragStore.set_dragged(null);
+    console.log('Event: ', event);
+    console.log('Stop Position: ', ui.position);
+    this.getPos(event);
+    tileDrop = false;
+  },
+  getPos(e){
+    var rect = this.refs.tile.getBoundingClientRect();
+    var x = e.clientX - rect.left+157;
+    var y = e.clientY - rect.top+65;
+    dragStore.set_drag(x, y);
+  },
+  currentlyDraggedOver(tab){
+    if (tileDrag) {
+      console.log('current dragged over: ', tab.title);
+      if (dragStore.get_drag() && dragStore.get_dragged()) {
+        var dragged = dragStore.get_dragged();
+        console.log('dragged id: ',dragged.id);    
+        
+        
+        
+          if (!tileDrag) {
+            chrome.tabs.move(dragged.id, {index: tab.index}, (t)=>{
+            console.log('moved: ',t);
+          });
+          }
+        
+        
+        
+      }
+    }
+    
+  },
   render: function() {
     var s = this.state;
     var p = this.props;
+    var drag = dragStore.get_drag();
     return (
-      <div ref="tile">
+      <Draggable 
+                axis="both"
+                handle=".handle"
+                start={{x: drag.left, y: drag.top}}
+                moveOnStartChange={false}
+                grid={[25, 25]}
+                zIndex={100}
+                onStart={this.handleStart}
+                onDrag={this.handleDrag}
+                onStop={this.handleStop}>
+      <div onDragOver={this.currentlyDraggedOver(p.tab)} ref="tile" style={s.drag ? {position: 'fixed', left: drag.left, top: drag.top} : null}>
       {p.render && s.render && p.tab.title !== 'New Tab' ? <div style={s.hover ? {VendorAnimationDuration: '1s'} : null} onContextMenu={this.handleContextClick} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "row-fluid animated zoomOut" : s.focus ? "animated pulse" : "row-fluid"}>
           { this.filterTabs(p.tab) ? <div className={s.hover ? "ntg-tile-hover" : "ntg-tile"} key={p.key}>
-            <div className="row ntg-tile-row-top">
+            <div className="row ntg-tile-row-top handle">
               <div className="col-xs-3">
                 {chromeVersion === 46 ? <div onMouseEnter={this.handleTabMuteHoverIn} onMouseLeave={this.handleTabMuteHoverOut} onClick={() => this.handleMuting(p.tab)}>
                                   {s.hover || p.tab.audible || p.tab.bullshit ? 
@@ -318,6 +391,7 @@ var Tile = React.createClass({
           </div> : null}
         </div> : null}
       </div>
+      </Draggable>
     );
   }
 });

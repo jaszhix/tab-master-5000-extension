@@ -209,3 +209,36 @@ export var relayStore = Reflux.createStore({
     return this.relay;
   }
 });
+
+export var dragStore = Reflux.createStore({
+  init: function() {
+    this.drag = {left: null, top: null};
+    this.draggedOver = null;
+    this.dragged = null;
+  },
+  set_drag: function(left, top) {
+    this.drag.left = left;
+    this.drag.top = top;
+    console.log('drag: ', this.drag);
+    this.trigger(this.drag);
+  },
+  get_drag: function() {
+    return this.drag;
+  },
+  set_draggedOver(value){
+    this.hovered = value;
+    console.log('draggedOver: ',this.draggedOver);
+    this.trigger(this.draggedOver);
+  },
+  get_draggedOver(){
+    return this.draggedOver;
+  },
+  set_dragged(value){
+    this.dragged = value;
+    console.log('dragged: ',this.dragged);
+    this.trigger(this.dragged);
+  },
+  get_dragged(){
+    return this.dragged;
+  }
+});
