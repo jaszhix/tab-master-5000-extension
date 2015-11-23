@@ -1,15 +1,13 @@
-From the [Chrome Web Store](https://chrome.google.com/webstore/detail/new-tab-grid-sort-filter/mippmhcfjhliihkkdobllhpdnmmciaim?hl=en-US&gl=US):
+Tab Master 5000 replaces your new tab page with a grid view of your open tabs. 
 
-New Tab Grid replaces your new tab page with a grid view of your open tabs. It provides tab sorting by page title alphabetically, website, pinned status, incognito status, and allows you to apply the sorted tab order to the currently opened Chrome window.
-
-The search box will allow you to instantly filter your open tabs, and search Google by pressing Enter. 
-
-You can pin and close your tabs from the grid. NTG will dynamically update in the background when your tabs change, while a New Tab is open. 
-
-### To Do
-- Prevent tab changes in other Chrome windows from causing renders in the currently active window.
-- Implement session management.
-- Implement custom theming.
+Features:
+- Close, pin, and mute tabs from your New Tab page.
+- Close all tabs from a specific website.
+- Manage tabs through icons or the right click menu.
+- Search tabs in the top search bar.
+- Option to sort tabs by website or alphabetical order, and apply the order to your Chrome window.
+- Session manager built in for saving and restoring your current tab sessions.
+- Tab sessions can be exported and imported.
 
 ### Dependencies
 

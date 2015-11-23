@@ -6,11 +6,15 @@ var About = React.createClass({
       <div className="about">
         <img src="../../images/icon-128.png" className="ntg-about"/>
         <div className="ntg-about">
-          <h3 className="ntg-about">New Tab Grid</h3>
+          <h3 className="ntg-about">Tab Master 5000</h3>
         </div>
         <div className="col-xs-2"/>
         <div className="col-xs-8 ntg-release">
           <h4>Release Notes</h4>
+          <h5>v0.3.7</h5><h6>11-22-15</h6>
+          <ul>
+            <li>Changed the extension name from New Tab Grid to Tab Master 5000.</li>
+          </ul>
           <h5>v0.3.6</h5><h6>11-20-15</h6>
           <ul>
             <li>Added the ability to close all tabs from a particular domain through the context menu.</li>
