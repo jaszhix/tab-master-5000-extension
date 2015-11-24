@@ -28,7 +28,8 @@ var Tile = React.createClass({
       dataUrl: null,
       focus: false,
       drag: null,
-      dragged: null
+      dragged: null,
+      dragMoved: null
     };
   },
   componentDidMount() {
@@ -301,7 +302,7 @@ var Tile = React.createClass({
     //dragStore.set_drag(ui.position.left, ui.position.top);
     console.log('Event: ', e);
     console.log('Position: ', ui.position);
-    this.getPos(utilityStore.get_cursor()[0], utilityStore.get_cursor()[1]);
+    this.getPos(ui.position.left, ui.position.right);
   },
 
   handleStop(e, ui) {
@@ -315,6 +316,7 @@ var Tile = React.createClass({
     this.getPos(utilityStore.get_cursor()[0], utilityStore.get_cursor()[1]);
     tileDrop = true;
     tileDrop = false;
+    this.refs.tile.style.transform = 'none';
     reRenderStore.set_reRender(true, 'drag', this.props.tab.id);
   },
   getPos(left, top){
@@ -345,7 +347,7 @@ var Tile = React.createClass({
                 axis="both"
                 handle=".handle"
                 moveOnStartChange={false}
-                grid={[25, 25]}
+                grid={[1, 1]}
                 zIndex={1}
                 onStart={this.handleStart}
                 onDrag={this.handleDrag}
@@ -353,7 +355,7 @@ var Tile = React.createClass({
       <div onMouseEnter={this.currentlyDraggedOver(p.tab)} ref="tile" style={s.drag ? {position: 'fixed', left: drag.left, top: drag.top} : null}>
       {p.render && s.render && p.tab.title !== 'New Tab' ? <div style={s.hover ? {VendorAnimationDuration: '1s'} : null} onContextMenu={this.handleContextClick} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "row-fluid animated zoomOut" : s.focus ? "animated pulse" : "row-fluid"}>
           { this.filterTabs(p.tab) ? <div className={s.hover ? "ntg-tile-hover" : "ntg-tile"} key={p.key}>
-            <div className={s.dragMoved ? "row ntg-tile-row-top" : "row ntg-tile-row-top handle"}>
+            <div className="row ntg-tile-row-top handle">
               <div className="col-xs-3">
                 {chromeVersion === 46 ? <div onMouseEnter={this.handleTabMuteHoverIn} onMouseLeave={this.handleTabMuteHoverOut} onClick={() => this.handleMuting(p.tab)}>
                                   {s.hover || p.tab.audible || p.tab.mutedInfo.muted ? 
