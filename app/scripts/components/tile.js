@@ -1,11 +1,12 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import Reflux from 'reflux';
 import _ from 'lodash';
 import S from 'string';
 import kmp from 'kmp';
 import Draggable from 'react-draggable';
 
-import {reRenderStore, searchStore, clickStore, applyTabOrderStore, utilityStore, contextStore, relayStore, tabStore, dragStore} from './store';
+import {prefsStore, reRenderStore, searchStore, clickStore, applyTabOrderStore, utilityStore, contextStore, relayStore, tabStore, dragStore} from './store';
 
 var newTabs = [];
 var pinned = null;
@@ -22,6 +23,7 @@ var Tile = React.createClass({
       xHover: false,
       pHover: false,
       mHover: false,
+      dHover: false,
       render: true,
       close: false,
       pinning: false,
@@ -128,40 +130,34 @@ var Tile = React.createClass({
   },
   // Trigger hovers states that will update the inline CSS in style.js.
   handleHoverIn(e) {
-    this.setState({
-      hover: true
-    });
+    this.setState({hover: true});
   },
   handleHoverOut(e) {
-    this.setState({
-      hover: false
-    });
+    this.setState({hover: false});
   },
   handleTabCloseHoverIn(e) {
-    this.setState({
-      xHover: true
-    });
+    this.setState({xHover: true});
   },
   handleTabCloseHoverOut(e) {
-    this.setState({
-      xHover: false
-    });
+    this.setState({xHover: false});
   },
   handlePinHoverIn() {
-    this.setState({
-      pHover: true
-    });
+    this.setState({pHover: true});
   },
   handlePinHoverOut() {
-    this.setState({
-      pHover: false
-    });
+    this.setState({pHover: false});
   },
   handleTabMuteHoverIn(){
     this.setState({mHover: true});
   },
   handleTabMuteHoverOut(){
     this.setState({mHover: false});
+  },
+  handleDragHoverIn(){
+    this.setState({dHover: true});
+  },
+  handleDragHoverOut(){
+    this.setState({dHover: false});
   },
   handleCloseTab(id) {
     this.setState({
@@ -172,9 +168,7 @@ var Tile = React.createClass({
     this.keepNewTabOpen();
     // Stop rendering of the closed tab.
     setTimeout(() => {
-      this.setState({
-        render: false,
-      });
+      this.setState({render: false});
     }, 100);
     setTimeout(()=>{
       this.setState({close: false});
@@ -196,9 +190,7 @@ var Tile = React.createClass({
     chrome.tabs.update(id, {
       pinned: !tab.pinned
     });
-    this.setState({
-      render: true
-    });
+    this.setState({render: true});
     setTimeout(()=>{
       this.setState({pinning: false});
     }, 500);
@@ -300,9 +292,11 @@ var Tile = React.createClass({
 
   handleDrag(e, ui) {
     //dragStore.set_drag(ui.position.left, ui.position.top);
+    document.getElementById('grid').appendChild( ReactDOM.findDOMNode(this.refs.tile) );
     console.log('Event: ', e);
     console.log('Position: ', ui.position);
     this.getPos(ui.position.left, ui.position.right);
+    reRenderStore.set_reRender(true, 'drag', this.props.tab.id);
   },
 
   handleStop(e, ui) {
@@ -317,6 +311,12 @@ var Tile = React.createClass({
     tileDrop = true;
     tileDrop = false;
     this.refs.tile.style.transform = 'none';
+
+    var dragged = dragStore.get_dragged();
+    var tabIndex = dragStore.get_tabIndex();
+    chrome.tabs.move(dragged.id, {index: tabIndex}, (t)=>{
+      console.log('moved: ',t);
+    });
     reRenderStore.set_reRender(true, 'drag', this.props.tab.id);
   },
   getPos(left, top){
@@ -325,15 +325,13 @@ var Tile = React.createClass({
   },
   currentlyDraggedOver(tab){
     if (tileDrag) {
-      clickStore.set_click(true);
+      //clickStore.set_click(true);
       console.log('current dragged over: ', tab.title);
       if (dragStore.get_drag() && dragStore.get_dragged()) {
+        //document.getElementById('grid').appendChild( ReactDOM.findDOMNode(this.refs.tile) );
         var dragged = dragStore.get_dragged();
-        console.log('dragged id: ',dragged.id); 
-        
-        chrome.tabs.move(dragged.id, {index: tab.index}, (t)=>{
-          console.log('moved: ',t);
-        });
+        console.log('dragged id: ',dragged.id);
+        dragStore.set_tabIndex(tab.index);
       }
     }
     
@@ -342,6 +340,7 @@ var Tile = React.createClass({
     var s = this.state;
     var p = this.props;
     var drag = dragStore.get_drag();
+    var prefs = prefsStore.get_prefs();
     return (
       <Draggable 
                 axis="both"
@@ -354,8 +353,8 @@ var Tile = React.createClass({
                 onStop={this.handleStop}>
       <div onMouseEnter={this.currentlyDraggedOver(p.tab)} ref="tile" style={s.drag ? {position: 'fixed', left: drag.left, top: drag.top} : null}>
       {p.render && s.render && p.tab.title !== 'New Tab' ? <div style={s.hover ? {VendorAnimationDuration: '1s'} : null} onContextMenu={this.handleContextClick} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "row-fluid animated zoomOut" : s.focus ? "animated pulse" : "row-fluid"}>
-          { this.filterTabs(p.tab) ? <div className={s.hover ? "ntg-tile-hover" : "ntg-tile"} key={p.key}>
-            <div className="row ntg-tile-row-top handle">
+          { this.filterTabs(p.tab) ? <div className={s.hover ? "ntg-tile-hover" : "ntg-tile"} style={s.drag ? {cursor: 'move'} : null} key={p.key}>
+            <div className="row ntg-tile-row-top">
               <div className="col-xs-3">
                 {chromeVersion === 46 ? <div onMouseEnter={this.handleTabMuteHoverIn} onMouseLeave={this.handleTabMuteHoverOut} onClick={() => this.handleMuting(p.tab)}>
                                   {s.hover || p.tab.audible || p.tab.mutedInfo.muted ? 
@@ -380,6 +379,11 @@ var Tile = React.createClass({
                 <h5 className="ntg-title">
                   {S(p.tab.title).truncate(90).s}
                 </h5>
+                {prefs.drag ? <div onMouseEnter={this.handleDragHoverIn} onMouseLeave={this.handleDragHoverOut} onClick={() => this.handleCloseTab(p.tab.id)}>
+                                  {s.hover ? 
+                                  <i className={s.dHover ? "fa fa-hand-grab-o ntg-move-hover handle" : "fa fa-hand-grab-o ntg-move"} />
+                                  : null}
+                                </div> : null}
               </div> 
             </div>
           </div> : null}
@@ -470,7 +474,7 @@ var TileGrid = React.createClass({
     }, this);
     var grid = s.data.map(function(data, i) {
       return (
-        <Tile render={p.render} key={i} tab={data} />
+        <Tile {...this.refs} render={p.render} key={i} tab={data} />
       );
     }, this);
     return (
@@ -483,7 +487,7 @@ var TileGrid = React.createClass({
               <button onClick={this.applyTabs} className="ntg-apply-btn"><i className="fa fa-sort"></i> {p.collapse ? 'Apply' : null}</button>
           </div>
         <div className="col-xs-11">
-          <div>
+          <div id="grid" ref="grid">
               {grid}
           </div>
         </div>

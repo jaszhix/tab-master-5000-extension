@@ -44,7 +44,7 @@ gulp.task('imgmin', function () {
       optimizationLevel: 3,
       interlaced: true
     }))
-    .pipe(gulp.dest('./server/es5/assets/images'));
+    .pipe(gulp.dest('./app/images'));
 });
 
 gulp.task('default', ['watch'], function () {

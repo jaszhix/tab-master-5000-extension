@@ -225,6 +225,7 @@ export var dragStore = Reflux.createStore({
     this.draggedOver = null;
     this.dragged = null;
     this.startDrag = [null, null];
+    this.tabIndex = null;
   },
   set_drag: function(left, top) {
     this.drag.left = left;
@@ -257,6 +258,42 @@ export var dragStore = Reflux.createStore({
   },
   get_startDrag(){
     return this.startDrag;
+  },
+  set_tabIndex(value){
+    this.tabIndex = value;
+    console.log('tabIndex: ',this.tabIndex);
+  },
+  get_tabIndex(){
+    return this.tabIndex;
+  },
+});
+
+export var prefsStore = Reflux.createStore({
+  init: function() {
+    chrome.storage.local.get('preferences',(prefs)=>{
+      console.log('Preferences: ',prefs);
+      if (prefs) {
+        this.prefs = prefs.preferences;
+      } else {
+        this.prefs = {drag: false};
+      }
+    });
+    
+  },
+  set_prefs(drag) {
+    this.prefs.drag = drag;
+    console.log('Preferences: ',this.prefs);
+    this.trigger(this.prefs);
+    this.savePrefs(drag);
+  },
+  get_prefs() {
+    return this.prefs;
+  },
+  savePrefs(drag){
+    var prefs = {preferences: {drag: drag}};
+    chrome.storage.local.set(prefs, (result)=> {
+      console.log('Preferences saved: ',result);
+    }); 
   }
 });
 

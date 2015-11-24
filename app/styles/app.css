@@ -134,6 +134,27 @@ h4.sort-h4 {
     left: 1px;
     padding:1px;
 }
+.ntg-move {
+    width: 15px;
+    height: 15px;
+    position: absolute;
+    right: 0;
+    top: 0;
+    opacity: 0.5;
+    padding:1px;
+    padding-right: 1px;
+    cursor: move;
+}
+.ntg-move-hover {
+    width: 15px;
+    height: 15px;
+    position: absolute;
+    right: 0;
+    top: 0;
+    padding:1px;
+    padding-right: 1px;
+    cursor: move;
+}
 .ntg-tile {
     text-align: center;
     background-color: rgb(237, 237, 237);
@@ -155,6 +176,18 @@ h4.sort-h4 {
     overflow-wrap: break-word;
     border-radius: 2px;
     cursor: pointer;
+    float: left;
+}
+.ntg-tile-moving {
+    text-align: center;
+    background-color: rgb(247, 247, 247);
+    background-size: cover;
+    margin: 3px;
+    height: 120px;
+    width: 200px;
+    overflow-wrap: break-word;
+    border-radius: 2px;
+    cursor: move;
     float: left;
 }
 .ntg-session-pin {
