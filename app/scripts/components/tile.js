@@ -379,11 +379,11 @@ var Tile = React.createClass({
                 <h5 className="ntg-title">
                   {S(p.tab.title).truncate(90).s}
                 </h5>
-                {prefs.drag ? <div onMouseEnter={this.handleDragHoverIn} onMouseLeave={this.handleDragHoverOut} onClick={() => this.handleCloseTab(p.tab.id)}>
+                {prefs ? prefs.drag ? <div onMouseEnter={this.handleDragHoverIn} onMouseLeave={this.handleDragHoverOut} onClick={() => this.handleCloseTab(p.tab.id)}>
                                   {s.hover ? 
                                   <i className={s.dHover ? "fa fa-hand-grab-o ntg-move-hover handle" : "fa fa-hand-grab-o ntg-move"} />
                                   : null}
-                                </div> : null}
+                                </div> : null : null}
               </div> 
             </div>
           </div> : null}

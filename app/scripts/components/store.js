@@ -270,27 +270,38 @@ export var dragStore = Reflux.createStore({
 
 export var prefsStore = Reflux.createStore({
   init: function() {
-    chrome.storage.local.get('preferences',(prefs)=>{
-      console.log('Preferences: ',prefs);
+    this.prefs = {drag: false};
+    chrome.storage.local.get('preferences', (prefs)=>{
       if (prefs) {
-        this.prefs = prefs.preferences;
+        this.prefs.drag = prefs.preferences.drag;
       } else {
         this.prefs = {drag: false};
       }
     });
     
   },
-  set_prefs(drag) {
-    this.prefs.drag = drag;
+  set_prefs(opt, value) {
+    this.prefs.drag = value;
     console.log('Preferences: ',this.prefs);
     this.trigger(this.prefs);
-    this.savePrefs(drag);
+    this.savePrefs(opt, value);
   },
   get_prefs() {
     return this.prefs;
   },
-  savePrefs(drag){
-    var prefs = {preferences: {drag: drag}};
+  loadPrefs(){
+    chrome.storage.local.get('preferences', (prefs)=>{
+      if (prefs) {
+        this.prefs.drag = prefs.preferences.drag;
+      } else {
+        this.prefs.drag = false;
+      }
+    });
+  },
+  savePrefs(opt, value){
+    var prefs = {preferences: {}};
+    prefs.preferences[opt] = value;
+    console.log(prefs);
     chrome.storage.local.set(prefs, (result)=> {
       console.log('Preferences saved: ',result);
     }); 
@@ -300,27 +311,6 @@ export var prefsStore = Reflux.createStore({
 (function() {
     document.onmousemove = handleMouseMove;
     function handleMouseMove(event) {
-        var dot, eventDoc, doc, body, pageX, pageY;
-
-        event = event || window.event; // IE-ism
-
-        // If pageX/Y aren't available and clientX/Y are,
-        // calculate pageX/Y - logic taken from jQuery.
-        // (This is to support old IE)
-        if (event.pageX === null && event.clientX !== null) {
-            eventDoc = (event.target && event.target.ownerDocument) || document;
-            doc = eventDoc.documentElement;
-            body = eventDoc.body;
-
-            event.pageX = event.clientX +
-              (doc && doc.scrollLeft || body && body.scrollLeft || 0) -
-              (doc && doc.clientLeft || body && body.clientLeft || 0);
-            event.pageY = event.clientY +
-              (doc && doc.scrollTop  || body && body.scrollTop  || 0) -
-              (doc && doc.clientTop  || body && body.clientTop  || 0 );
-        }
-
-        // Use event.pageX / event.pageY here
         utilityStore.set_cursor(event.pageX, event.pageY);
     }
 })();

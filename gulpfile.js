@@ -21,7 +21,7 @@ if (production) {
 	        loops: true,
 	        if_return: true,
 	        cascade: true,
-	        unsafe: true
+	        unsafe: false
 	      },
 	      output: {
 	        comments: false
