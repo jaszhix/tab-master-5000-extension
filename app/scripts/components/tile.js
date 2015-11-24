@@ -5,7 +5,7 @@ import S from 'string';
 import kmp from 'kmp';
 import Draggable from 'react-draggable';
 
-import {searchStore, clickStore, applyTabOrderStore, utilityStore, contextStore, relayStore, tabStore, dragStore} from './store';
+import {reRenderStore, searchStore, clickStore, applyTabOrderStore, utilityStore, contextStore, relayStore, tabStore, dragStore} from './store';
 
 var newTabs = [];
 var pinned = null;
@@ -286,59 +286,52 @@ var Tile = React.createClass({
       this.setState({focus: false});
     },500);
   },
-  handleStart(event, ui) {
+  handleStart(e, ui) {
     this.setState({drag: true});
     tileDrag = true;
-    dragStore.set_drag(ui.position.left, ui.position.top);
+    //dragStore.set_drag(ui.position.left, ui.position.top);
     dragStore.set_dragged(this.props.tab);
-    console.log('Event: ', event);
+    dragStore.set_startDrag(ui.position.left, ui.position.right);
+    console.log('Event: ', e);
     console.log('Start Position: ', ui.position);
-    this.getPos(event);
+    this.getPos(utilityStore.get_cursor()[0], utilityStore.get_cursor()[1]);
   },
 
-  handleDrag(event, ui) {
-    dragStore.set_drag(ui.position.left, ui.position.top);
-    console.log('Event: ', event);
+  handleDrag(e, ui) {
+    //dragStore.set_drag(ui.position.left, ui.position.top);
+    console.log('Event: ', e);
     console.log('Position: ', ui.position);
-    this.getPos(event);
+    this.getPos(utilityStore.get_cursor()[0], utilityStore.get_cursor()[1]);
   },
 
-  handleStop(event, ui) {
-    setTimeout(()=>{
-      tileDrag = false;
-    },1);
-    this.setState({drag: false});
+  handleStop(e, ui) {
+    tileDrag = false;
+    this.setState({drag: false, dragMoved: true});
     
-    dragStore.set_drag(ui.position.left, ui.position.top);
+    //dragStore.set_drag(ui.position.left, ui.position.top);
     //dragStore.set_dragged(null);
-    console.log('Event: ', event);
+    console.log('Event: ', e);
     console.log('Stop Position: ', ui.position);
-    this.getPos(event);
+    this.getPos(utilityStore.get_cursor()[0], utilityStore.get_cursor()[1]);
+    tileDrop = true;
     tileDrop = false;
+    reRenderStore.set_reRender(true, 'drag', this.props.tab.id);
   },
-  getPos(e){
-    var rect = this.refs.tile.getBoundingClientRect();
-    var x = e.clientX - rect.left+157;
-    var y = e.clientY - rect.top+65;
-    dragStore.set_drag(x, y);
+  getPos(left, top){
+    //var rect = this.refs.tile.getBoundingClientRect();
+    dragStore.set_drag(left, top);
   },
   currentlyDraggedOver(tab){
     if (tileDrag) {
+      clickStore.set_click(true);
       console.log('current dragged over: ', tab.title);
       if (dragStore.get_drag() && dragStore.get_dragged()) {
         var dragged = dragStore.get_dragged();
-        console.log('dragged id: ',dragged.id);    
+        console.log('dragged id: ',dragged.id); 
         
-        
-        
-          if (!tileDrag) {
-            chrome.tabs.move(dragged.id, {index: tab.index}, (t)=>{
-            console.log('moved: ',t);
-          });
-          }
-        
-        
-        
+        chrome.tabs.move(dragged.id, {index: tab.index}, (t)=>{
+          console.log('moved: ',t);
+        });
       }
     }
     
@@ -351,20 +344,19 @@ var Tile = React.createClass({
       <Draggable 
                 axis="both"
                 handle=".handle"
-                start={{x: drag.left, y: drag.top}}
                 moveOnStartChange={false}
                 grid={[25, 25]}
-                zIndex={100}
+                zIndex={1}
                 onStart={this.handleStart}
                 onDrag={this.handleDrag}
                 onStop={this.handleStop}>
-      <div onDragOver={this.currentlyDraggedOver(p.tab)} ref="tile" style={s.drag ? {position: 'fixed', left: drag.left, top: drag.top} : null}>
+      <div onMouseEnter={this.currentlyDraggedOver(p.tab)} ref="tile" style={s.drag ? {position: 'fixed', left: drag.left, top: drag.top} : null}>
       {p.render && s.render && p.tab.title !== 'New Tab' ? <div style={s.hover ? {VendorAnimationDuration: '1s'} : null} onContextMenu={this.handleContextClick} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "row-fluid animated zoomOut" : s.focus ? "animated pulse" : "row-fluid"}>
           { this.filterTabs(p.tab) ? <div className={s.hover ? "ntg-tile-hover" : "ntg-tile"} key={p.key}>
-            <div className="row ntg-tile-row-top handle">
+            <div className={s.dragMoved ? "row ntg-tile-row-top" : "row ntg-tile-row-top handle"}>
               <div className="col-xs-3">
                 {chromeVersion === 46 ? <div onMouseEnter={this.handleTabMuteHoverIn} onMouseLeave={this.handleTabMuteHoverOut} onClick={() => this.handleMuting(p.tab)}>
-                                  {s.hover || p.tab.audible || p.tab.bullshit ? 
+                                  {s.hover || p.tab.audible || p.tab.mutedInfo.muted ? 
                                   <i className={p.tab.audible ? s.mHover ? "fa fa-volume-off ntg-mute-audible-hover" : "fa fa-volume-up ntg-mute-audible" : s.mHover ? "fa fa-volume-off ntg-mute-hover" : "fa fa-volume-off ntg-mute"} />
                                   : null}
                                 </div> : null}

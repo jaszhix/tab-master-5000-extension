@@ -8,7 +8,7 @@ var reRender = (type, id) => {
   var tabs = tabStore.get_tab();
   var active = _.result(_.find(tabs, { id: id }), 'windowId');
   console.log('windows: ', active, utilityStore.get_window());
-  if (utilityStore.get_window() === active || type === 'attachment' || type === 'create') {
+  if (utilityStore.get_window() === active || type === 'attachment' || type === 'create' || type === 'drag') {
     reRenderStore.set_reRender(true, type, id);
   }
 };
@@ -148,6 +148,7 @@ export var utilityStore = Reflux.createStore({
   init: function() {
     this.window = null;
     this.version = /Chrome\/([0-9.]+)/.exec(navigator.userAgent)[1].split('.');
+    this.cursor = [null, null];
   },
   filterFavicons(faviconUrl, tabUrl) {
     // Work around for Chrome favicon useage restriction.
@@ -172,6 +173,14 @@ export var utilityStore = Reflux.createStore({
   },
   chromeVersion(){
     return S(/Chrome\/([0-9.]+)/.exec(navigator.userAgent)[1].split('.')).toInt();
+  },
+  set_cursor(x, y){
+    this.cursor[0] = x;
+    this.cursor[1] = y;
+    //console.log('cursor:', this.cursor );
+  },
+  get_cursor(){
+    return this.cursor;
   }
 });
 
@@ -215,6 +224,7 @@ export var dragStore = Reflux.createStore({
     this.drag = {left: null, top: null};
     this.draggedOver = null;
     this.dragged = null;
+    this.startDrag = [null, null];
   },
   set_drag: function(left, top) {
     this.drag.left = left;
@@ -236,9 +246,44 @@ export var dragStore = Reflux.createStore({
   set_dragged(value){
     this.dragged = value;
     console.log('dragged: ',this.dragged);
-    this.trigger(this.dragged);
   },
   get_dragged(){
     return this.dragged;
+  },
+  set_startDrag(x, y){
+    this.startDrag[0] = x;
+    this.startDrag[1] = y;
+    console.log('startDrag: ',this.startDrag);
+  },
+  get_startDrag(){
+    return this.startDrag;
   }
 });
+
+(function() {
+    document.onmousemove = handleMouseMove;
+    function handleMouseMove(event) {
+        var dot, eventDoc, doc, body, pageX, pageY;
+
+        event = event || window.event; // IE-ism
+
+        // If pageX/Y aren't available and clientX/Y are,
+        // calculate pageX/Y - logic taken from jQuery.
+        // (This is to support old IE)
+        if (event.pageX === null && event.clientX !== null) {
+            eventDoc = (event.target && event.target.ownerDocument) || document;
+            doc = eventDoc.documentElement;
+            body = eventDoc.body;
+
+            event.pageX = event.clientX +
+              (doc && doc.scrollLeft || body && body.scrollLeft || 0) -
+              (doc && doc.clientLeft || body && body.clientLeft || 0);
+            event.pageY = event.clientY +
+              (doc && doc.scrollTop  || body && body.scrollTop  || 0) -
+              (doc && doc.clientTop  || body && body.clientTop  || 0 );
+        }
+
+        // Use event.pageX / event.pageY here
+        utilityStore.set_cursor(event.pageX, event.pageY);
+    }
+})();
