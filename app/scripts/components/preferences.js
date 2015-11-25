@@ -36,7 +36,7 @@ var Preferences = React.createClass({
         </div>
         <div className="col-xs-6">
           <div className="prefs-row row">
-          {s.dragHover ? <p>Enabling this experimental features adds a hand icon to the top left corner of your tab tiles. Clicking the icon and dragging a tab will allow you to re-order your tabs from the grid.</p> : null}
+          {s.dragHover ? <p>Enabling this features adds a hand icon to the top right corner of your tab tiles. Clicking the icon and dragging a tab will allow you to re-order your tabs from the grid.</p> : null}
           {s.contextHover ? <p>This option toggles the right-click context menu on and off. If you disable it, some tab control features will not be accessible.</p> : null}
           </div>
         </div>

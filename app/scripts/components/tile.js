@@ -350,7 +350,7 @@ var Tile = React.createClass({
           { this.filterTabs(p.tab) ? <div className={s.hover ? "ntg-tile-hover" : "ntg-tile"} style={s.drag ? {cursor: 'move'} : null} key={p.key}>
             <div className="row ntg-tile-row-top">
               <div className="col-xs-3">
-                {chromeVersion === 46 ? <div onMouseEnter={this.handleTabMuteHoverIn} onMouseLeave={this.handleTabMuteHoverOut} onClick={() => this.handleMuting(p.tab)}>
+                {chromeVersion >= 46 ? <div onMouseEnter={this.handleTabMuteHoverIn} onMouseLeave={this.handleTabMuteHoverOut} onClick={() => this.handleMuting(p.tab)}>
                                   {s.hover || p.tab.audible || p.tab.mutedInfo.muted ? 
                                   <i className={p.tab.audible ? s.mHover ? "fa fa-volume-off ntg-mute-audible-hover" : "fa fa-volume-up ntg-mute-audible" : s.mHover ? "fa fa-volume-off ntg-mute-hover" : "fa fa-volume-off ntg-mute"} />
                                   : null}

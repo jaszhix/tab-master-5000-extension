@@ -13,7 +13,7 @@ var About = React.createClass({
           <h4>Release Notes</h4>
           <h5>v0.4</h5><h6>11-24-15</h6>
           <ul>
-            <li>Added an experimental feature that allows you to re-order your tabs by dragging and dropping a tile. It is disabled by default, but after enabling it, a hand icon will show up on the top left corner of your tab tiles.</li>
+            <li>Added an experimental feature that allows you to re-order your tabs by dragging and dropping a tile. It is disabled by default, but after enabling it, a hand icon will show up in the top right corner of your tab tiles.</li>
             <li>Added a Preferences tab in the Settings menu. Currently you can enable draggable tabs, and toggle the context menu.</li>
             <li>Fixed the click area of the tab tiles, so you can click anywhere on a tile to switch to that tab.</li>
             <li>Fixed the context menu's orientation with the cursor.</li>
