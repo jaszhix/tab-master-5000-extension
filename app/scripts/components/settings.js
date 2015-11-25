@@ -8,11 +8,11 @@ import _ from 'lodash';
 import {saveAs} from 'filesaver.js';
 
 import {modalStore, settingsStore, tabStore, utilityStore} from './store';
+import Preferences from './preferences';
 import About from './about';
 
 import style from './style';
 
-// Work in progress session saving and loading.
 var Sessions = React.createClass({
   mixins: [Reflux.ListenerMixin],
   getInitialState(){
@@ -213,12 +213,12 @@ var Settings = React.createClass({
   settingsChange(tab){
     this.setState({currentTab: tab});
     console.log(this.state.currentTab);
-    
   },
   render: function() {
     var p = this.props;
     var s = this.state;
     var sessions = settingsStore.get_settings() === 'sessions';
+    var preferences = settingsStore.get_settings() === 'preferences';
     var about = settingsStore.get_settings() === 'about';
     return (
       <Modal
@@ -233,6 +233,9 @@ var Settings = React.createClass({
                     <li className={sessions ? "active" : null}>
                         <a href="#" onClick={()=>settingsStore.set_settings('sessions')}>Sessions</a>
                     </li>
+                    <li className={preferences ? "active" : null}>
+                        <a href="#" onClick={()=>settingsStore.set_settings('preferences')}>Preferences</a>
+                    </li>
                     <li className={about ? "active" : null}>
                         <a href="#" onClick={()=>settingsStore.set_settings('about')}>About</a>
                     </li>
@@ -241,6 +244,7 @@ var Settings = React.createClass({
           </div>
           <div className="row ntg-settings-pane">
             {sessions ? <Sessions collapse={p.collapse} /> : null}
+            {preferences ? <Preferences /> : null}
             {about ? <About /> : null}
           </div>
         </div>

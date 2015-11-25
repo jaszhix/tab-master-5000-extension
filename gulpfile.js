@@ -3,7 +3,7 @@ var uglify = require('gulp-uglify');
 var webpack = require('webpack-stream');
 var imagemin = require('gulp-imagemin');
 
-var production = true; 
+var production = false; 
 var uglifyOpts = null;
 if (production) {
 	uglifyOpts = {
@@ -21,7 +21,7 @@ if (production) {
 	        loops: true,
 	        if_return: true,
 	        cascade: true,
-	        unsafe: true
+	        unsafe: false
 	      },
 	      output: {
 	        comments: false
@@ -44,7 +44,7 @@ gulp.task('imgmin', function () {
       optimizationLevel: 3,
       interlaced: true
     }))
-    .pipe(gulp.dest('./server/es5/assets/images'));
+    .pipe(gulp.dest('./app/images'));
 });
 
 gulp.task('default', ['watch'], function () {

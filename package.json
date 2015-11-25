@@ -1,6 +1,6 @@
 {
   "name": "tab-master-5000",
-  "version": "0.3.8",
+  "version": "0.4",
   "dependencies": {
     "react": "^0.14.2",
     "react-dom": "^0.14.2",
@@ -17,6 +17,7 @@
     "kmp": "0.0.3",
     "lodash": "^3.10.1",
     "moment": "^2.10.6",
+    "react-draggable": "^1.1.1",
     "react-modal": "^0.6.1",
     "react-onclickoutside": "^4.1.1",
     "react-utils": "^1.0.0",
