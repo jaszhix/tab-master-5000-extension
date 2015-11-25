@@ -52,9 +52,9 @@ h4.sort-h4 {
     height: 60%;
 }
 .ntg-tile-row-bottom {
-    height: 40%;
-    position: absolute;
-    padding-left: 80px;
+    height: 80%;
+    position: relative;
+    top: -48px;
 }
 .ntg-search-google-text {
     position: absolute;
@@ -141,21 +141,19 @@ h4.sort-h4 {
     width: 15px;
     height: 15px;
     position: absolute;
-    right: 0;
+    right: 2;
     top: 0;
     opacity: 0.5;
     padding:1px;
-    padding-right: 1px;
     cursor: move;
 }
 .ntg-move-hover {
     width: 15px;
     height: 15px;
     position: absolute;
-    right: 0;
+    right: 2;
     top: 0;
     padding:1px;
-    padding-right: 1px;
     cursor: move;
 }
 .ntg-tile {

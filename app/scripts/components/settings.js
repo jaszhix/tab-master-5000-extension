@@ -213,7 +213,6 @@ var Settings = React.createClass({
   settingsChange(tab){
     this.setState({currentTab: tab});
     console.log(this.state.currentTab);
-    
   },
   render: function() {
     var p = this.props;

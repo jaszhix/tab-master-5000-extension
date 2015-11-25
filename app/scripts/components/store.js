@@ -55,12 +55,14 @@ export var clickStore = Reflux.createStore({
   init: function() {
     this.click = false;
   },
-  set_click: function(value) {
+  set_click: function(value, manual) {
     this.click = value;
     // This will only be true for 0.5s, long enough to prevent Chrome event listeners triggers from re-querying tabs when a user clicks in the extension.
-    setTimeout(() => {
-      this.click = false;
-    }, 500);
+    if (!manual) {
+      setTimeout(() => {
+        this.click = false;
+      }, 500);
+    }
     console.log('click: ', value);
     this.trigger(this.click);
   },
@@ -186,16 +188,11 @@ export var utilityStore = Reflux.createStore({
 
 export var contextStore = Reflux.createStore({
   init: function() {
-    this.context = [false, null, null, null];
+    this.context = [false, null];
   },
-  set_context: function(value, pos1, pos2, id) {
+  set_context: function(value, id) {
     this.context[0] = value;
-    this.context[1] = pos1;
-    this.context[2] = pos2;
-    this.context[3] = id;
-/*    setTimeout(() => {
-      this.context = [false, null, null, null];
-    }, 500);*/
+    this.context[1] = id;
     console.log('context: ', value);
     this.trigger(this.context);
   },
@@ -224,7 +221,6 @@ export var dragStore = Reflux.createStore({
     this.drag = {left: null, top: null};
     this.draggedOver = null;
     this.dragged = null;
-    this.startDrag = [null, null];
     this.tabIndex = null;
   },
   set_drag: function(left, top) {
@@ -251,14 +247,6 @@ export var dragStore = Reflux.createStore({
   get_dragged(){
     return this.dragged;
   },
-  set_startDrag(x, y){
-    this.startDrag[0] = x;
-    this.startDrag[1] = y;
-    console.log('startDrag: ',this.startDrag);
-  },
-  get_startDrag(){
-    return this.startDrag;
-  },
   set_tabIndex(value){
     this.tabIndex = value;
     console.log('tabIndex: ',this.tabIndex);
@@ -270,18 +258,19 @@ export var dragStore = Reflux.createStore({
 
 export var prefsStore = Reflux.createStore({
   init: function() {
-    this.prefs = {drag: false};
     chrome.storage.local.get('preferences', (prefs)=>{
-      if (prefs) {
-        this.prefs.drag = prefs.preferences.drag;
+      if (prefs && prefs.preferences) {
+        console.log('load prefs')
+        this.prefs = {drag: prefs.preferences.drag, context: prefs.preferences.context};
       } else {
-        this.prefs = {drag: false};
+        console.log('init prefs')
+        this.prefs = {drag: false, context: true};
       }
     });
     
   },
   set_prefs(opt, value) {
-    this.prefs.drag = value;
+    this.prefs[opt] = value;
     console.log('Preferences: ',this.prefs);
     this.trigger(this.prefs);
     this.savePrefs(opt, value);
@@ -289,22 +278,21 @@ export var prefsStore = Reflux.createStore({
   get_prefs() {
     return this.prefs;
   },
-  loadPrefs(){
-    chrome.storage.local.get('preferences', (prefs)=>{
-      if (prefs) {
-        this.prefs.drag = prefs.preferences.drag;
-      } else {
-        this.prefs.drag = false;
-      }
-    });
-  },
   savePrefs(opt, value){
-    var prefs = {preferences: {}};
-    prefs.preferences[opt] = value;
-    console.log(prefs);
-    chrome.storage.local.set(prefs, (result)=> {
-      console.log('Preferences saved: ',result);
-    }); 
+    var newPrefs = null;
+    chrome.storage.local.get('preferences', (prefs)=>{
+      if (prefs && prefs.preferences) {
+        newPrefs = prefs;
+        newPrefs.preferences[opt] = value;
+      } else {
+        newPrefs = {preferences: {}};
+        newPrefs.preferences[opt] = value;
+      }
+      console.log('newPrefs: ',newPrefs);
+      chrome.storage.local.set(newPrefs, (result)=> {
+        console.log('Preferences saved: ',result);
+      }); 
+    });
   }
 });
 

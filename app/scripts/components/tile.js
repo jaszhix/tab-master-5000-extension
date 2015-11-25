@@ -12,7 +12,6 @@ var newTabs = [];
 var pinned = null;
 var chromeVersion = utilityStore.chromeVersion();
 var tileDrag = null;
-var tileDrop = false;
 var Tile = React.createClass({
   mixins: [
     Reflux.ListenerMixin
@@ -30,8 +29,7 @@ var Tile = React.createClass({
       dataUrl: null,
       focus: false,
       drag: null,
-      dragged: null,
-      dragMoved: null
+      dragged: null
     };
   },
   componentDidMount() {
@@ -249,13 +247,10 @@ var Tile = React.createClass({
     });
   },
   handleContextClick(e){
-    e.preventDefault();
-    var rect = this.refs.tile.getBoundingClientRect();
-    var x = e.clientX - rect.left+157;
-    var y = e.clientY - rect.top+65;
-    contextStore.set_context(true, y, x, this.props.tab.id);
-    console.log(this.refs.tile);
-    console.log(rect.top, rect.right, rect.bottom, rect.left);
+    if (prefsStore.get_prefs().context) {
+      e.preventDefault();
+      contextStore.set_context(true, this.props.tab.id);
+    }
   },
   handleRelays(){
     var p = this.props;
@@ -280,58 +275,57 @@ var Tile = React.createClass({
     },500);
   },
   handleStart(e, ui) {
+    document.getElementById('main').appendChild( ReactDOM.findDOMNode(this.refs.tile) );
+    console.log('Event: ', e, ui);
+    console.log('Start Position: ', ui.position);
     this.setState({drag: true});
     tileDrag = true;
-    //dragStore.set_drag(ui.position.left, ui.position.top);
     dragStore.set_dragged(this.props.tab);
-    dragStore.set_startDrag(ui.position.left, ui.position.right);
-    console.log('Event: ', e);
-    console.log('Start Position: ', ui.position);
-    this.getPos(utilityStore.get_cursor()[0], utilityStore.get_cursor()[1]);
+    this.getPos(utilityStore.get_cursor()[0], utilityStore.get_cursor()[1], e, ui.position);
   },
 
   handleDrag(e, ui) {
-    //dragStore.set_drag(ui.position.left, ui.position.top);
-    document.getElementById('grid').appendChild( ReactDOM.findDOMNode(this.refs.tile) );
-    console.log('Event: ', e);
+    console.log('Event: ', e, ui);
     console.log('Position: ', ui.position);
-    this.getPos(ui.position.left, ui.position.right);
-    reRenderStore.set_reRender(true, 'drag', this.props.tab.id);
+    this.getPos(utilityStore.get_cursor()[0], utilityStore.get_cursor()[1], e, ui.position);
   },
 
   handleStop(e, ui) {
-    tileDrag = false;
-    this.setState({drag: false, dragMoved: true});
-    
-    //dragStore.set_drag(ui.position.left, ui.position.top);
-    //dragStore.set_dragged(null);
-    console.log('Event: ', e);
+    document.getElementById('grid').appendChild( ReactDOM.findDOMNode(this.refs.tile) );
+    console.log('Event: ', e, ui);
     console.log('Stop Position: ', ui.position);
-    this.getPos(utilityStore.get_cursor()[0], utilityStore.get_cursor()[1]);
-    tileDrop = true;
-    tileDrop = false;
-    this.refs.tile.style.transform = 'none';
-
+    tileDrag = false;
+    this.setState({drag: false});
+    this.getPos(utilityStore.get_cursor()[0], utilityStore.get_cursor()[1], e, ui.position);
+    // Fix DOM style directly to fix the tile CSS artifact from react-draggable.
     var dragged = dragStore.get_dragged();
-    var tabIndex = dragStore.get_tabIndex();
-    chrome.tabs.move(dragged.id, {index: tabIndex}, (t)=>{
-      console.log('moved: ',t);
+    var draggedOver = dragStore.get_tabIndex();
+    var draggedOverIndex = null;
+    chrome.tabs.query({pinned: true}, (t)=>{
+      if (draggedOver.pinned) {
+        var lastPinned = _.last(t);
+        draggedOverIndex = ++lastPinned.index;
+      } else {
+        draggedOverIndex = draggedOver.index;
+      }
+      chrome.tabs.move(dragged.id, {index: draggedOverIndex}, (t)=>{
+        clickStore.set_click(false, true);
+        console.log('moved: ',t);
+        reRenderStore.set_reRender(true, 'drag', this.props.tab.id);
+      });
     });
-    reRenderStore.set_reRender(true, 'drag', this.props.tab.id);
   },
-  getPos(left, top){
-    //var rect = this.refs.tile.getBoundingClientRect();
+  getPos(left, top, e, ui){
     dragStore.set_drag(left, top);
   },
   currentlyDraggedOver(tab){
     if (tileDrag) {
-      //clickStore.set_click(true);
       console.log('current dragged over: ', tab.title);
       if (dragStore.get_drag() && dragStore.get_dragged()) {
-        //document.getElementById('grid').appendChild( ReactDOM.findDOMNode(this.refs.tile) );
+        clickStore.set_click(true, true);
         var dragged = dragStore.get_dragged();
         console.log('dragged id: ',dragged.id);
-        dragStore.set_tabIndex(tab.index);
+        dragStore.set_tabIndex(tab);
       }
     }
     
@@ -342,16 +336,16 @@ var Tile = React.createClass({
     var drag = dragStore.get_drag();
     var prefs = prefsStore.get_prefs();
     return (
-      <Draggable 
+      <Draggable
                 axis="both"
                 handle=".handle"
-                moveOnStartChange={false}
+                moveOnStartChange={true}
                 grid={[1, 1]}
-                zIndex={1}
+                zIndex={100}
                 onStart={this.handleStart}
                 onDrag={this.handleDrag}
                 onStop={this.handleStop}>
-      <div onMouseEnter={this.currentlyDraggedOver(p.tab)} ref="tile" style={s.drag ? {position: 'fixed', left: drag.left, top: drag.top} : null}>
+      <div onMouseEnter={this.currentlyDraggedOver(p.tab)} ref="tile" style={s.drag ? {position: 'fixed', left: drag.left-200, top: drag.top} : null}>
       {p.render && s.render && p.tab.title !== 'New Tab' ? <div style={s.hover ? {VendorAnimationDuration: '1s'} : null} onContextMenu={this.handleContextClick} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "row-fluid animated zoomOut" : s.focus ? "animated pulse" : "row-fluid"}>
           { this.filterTabs(p.tab) ? <div className={s.hover ? "ntg-tile-hover" : "ntg-tile"} style={s.drag ? {cursor: 'move'} : null} key={p.key}>
             <div className="row ntg-tile-row-top">
@@ -386,6 +380,7 @@ var Tile = React.createClass({
                                 </div> : null : null}
               </div> 
             </div>
+            <div onClick={() => this.handleClick(p.tab.id)} className="row ntg-tile-row-bottom"></div>
           </div> : null}
         </div> : null}
       </div>
@@ -460,7 +455,7 @@ var TileGrid = React.createClass({
   render: function() {
     var p = this.props;
     var s = this.state;
-    var labels = p.keys.map(function(key) {
+    var labels = p.keys.map((key)=> {
       var label = p.labels[key] || key;
       var cLabel = p.collapse ? label : null;
       return (
@@ -471,12 +466,12 @@ var TileGrid = React.createClass({
           {label === 'Downloaded' ? <button className="ntg-btn"><i className="fa fa-download"></i> {cLabel}</button> : null}
         </div>
       );
-    }, this);
-    var grid = s.data.map(function(data, i) {
+    });
+    var grid = s.data.map((data, i)=> {
       return (
-        <Tile {...this.refs} render={p.render} key={i} tab={data} />
+        <Tile {...this.refs}render={p.render} key={i} tab={data} />
       );
-    }, this);
+    });
     return (
       <div className="tile-body">
           <div className="col-xs-1 sort-bar">
@@ -487,7 +482,7 @@ var TileGrid = React.createClass({
               <button onClick={this.applyTabs} className="ntg-apply-btn"><i className="fa fa-sort"></i> {p.collapse ? 'Apply' : null}</button>
           </div>
         <div className="col-xs-11">
-          <div id="grid" ref="grid">
+          <div style={{position: 'relative'}} id="grid" ref="grid">
               {grid}
           </div>
         </div>

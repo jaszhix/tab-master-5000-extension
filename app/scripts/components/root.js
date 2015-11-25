@@ -86,7 +86,7 @@ var Root = React.createClass({
   captureTabs(opt) {
     if (opt !== 'init') {
       // Render state is toggled to false on the subsequent re-renders only.
-      if (opt === 'create') {
+      if (opt === 'create' || opt === 'drag') {
         this.setState({render: false});
       }
     } else {
@@ -107,7 +107,7 @@ var Root = React.createClass({
       console.log('window id: ',tab[0].windowId);
     });
     // Querying is complete, allow the component to render.
-    if (opt === 'create' || opt === 'init') {
+    if (opt === 'create' || opt === 'init' || opt === 'drag') {
       this.setState({render: true});
     }
   },
@@ -127,7 +127,7 @@ var Root = React.createClass({
     if (!clickStore.get_click()) {
       if (reRender[0]) {
         // Treat attaching/detaching and created tabs with a full re-render.
-        if (reRender[1] === 'create' || reRender[1] === 'attachment') {
+        if (reRender[1] === 'create' || reRender[1] === 'attachment' || reRender[1] === 'drag') {
           this.captureTabs(reRender[1]);
         } else {
           this.captureTabs();
@@ -180,7 +180,7 @@ var Root = React.createClass({
     var s = this.state;
     return (
       <div>
-        {s.context ? <ContextMenu height={contextStore.get_context()[1]} width={contextStore.get_context()[2]} /> : null}
+        {s.context ? <ContextMenu /> : null}
         <Settings collapse={s.collapse} />
           {s.tabs ? <div className="tile-container">
               {s.settings ? <Search /> : null}
