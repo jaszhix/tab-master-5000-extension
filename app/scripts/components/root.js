@@ -86,7 +86,7 @@ var Root = React.createClass({
   captureTabs(opt) {
     if (opt !== 'init') {
       // Render state is toggled to false on the subsequent re-renders only.
-      if (opt === 'create' || opt === 'drag' || opt === 'drag') {
+      if (opt === 'create' || opt === 'drag') {
         this.setState({render: false});
       }
     } else {

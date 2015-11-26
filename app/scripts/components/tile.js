@@ -7,8 +7,9 @@ import kmp from 'kmp';
 import Draggable from 'react-draggable';
 import utils from './utils';
 
-import {dupeStore, prefsStore, reRenderStore, searchStore, applyTabOrderStore, utilityStore, contextStore, relayStore, tabStore, dragStore} from './store';
+import {dupeStore, prefsStore, reRenderStore, searchStore, clickStore, applyTabOrderStore, utilityStore, contextStore, relayStore, tabStore, dragStore} from './store';
 
+//var tabUrls = null;
 var tabUrls = null;
 var duplicateTabs = null;
 var pinned = null;
@@ -54,18 +55,17 @@ var Tile = React.createClass({
   },
   checkDuplicateTabs(opt){
     var p = this.props;
-    if (_.include(dupeStore.get_duplicateTabs(), p.tab.url)) {
+    if (_.include(duplicateTabs, p.tab.url)) {
       chrome.tabs.query({url: p.tab.url}, (t)=>{
-        var tabs = t;
-        var first = _.first(tabs);
-        var activeTab = _.pluck(_.filter(tabs, { 'active': true }), 'id');
-        console.log('checkDuplicateTabs: ',tabs, first);
-        for (var i = tabs.length - 1; i >= 0; i--) {
-          if (tabs[i].id !== first.id && tabs[i].title !== 'New Tab' && tabs[i].id !== activeTab) {
+        var first = _.first(t);
+        var activeTab = _.pluck(_.filter(t, { 'active': true }), 'id');
+        console.log('checkDuplicateTabs: ',t, first);
+        for (var i = t.length - 1; i >= 0; i--) {
+          if (t[i].id !== first.id && t[i].title !== 'New Tab' && t[i].id !== activeTab) {
             if (opt === 'close') {
+              this.handleCloseTab(t[i].id);
               this.handleFocus('duplicate',false);
-              this.handleCloseTab(tabs[i].id);
-            } else if (p.tab.id === tabs[i].id && prefsStore.get_prefs().duplicate) {
+            } else if (p.tab.id === t[i].id && prefsStore.get_prefs().duplicate) {
               this.handleFocus('duplicate',true);
             }
           }
@@ -152,16 +152,20 @@ var Tile = React.createClass({
   },
   handleCloseTab(id) {
     this.setState({close: true});
+    clickStore.set_click(true);
     chrome.tabs.remove(id);
     this.keepNewTabOpen();
     _.delay(()=>{
       this.setState({render: false});
     },100);
-    this.refs.subTile.addEventListener('webkitAnimationEnd',(e)=>{
+    _.delay(()=>{
+      this.setState({close: false});
+    },500);
+    /*this.refs.subTile.addEventListener('webkitAnimationEnd',(e)=>{
       console.log('animationend: ',e);
       this.setState({close: false});
       e.target.removeEventListener(e.type, arguments);
-    });
+    });*/
   },
   handlePinning(tab, opt) {
     var id = null;
@@ -259,18 +263,16 @@ var Tile = React.createClass({
     if (opt === 'duplicate') {
       this.setState({focus: bool});
       this.setState({duplicate: bool});
-      if (!bool) {
-        this.setState({focus: false});
-        this.setState({duplicate: false});
-        document.getElementById('subTile').classList.remove('animated','pulse');
-      }
     } else {
       this.setState({focus: true});
-      this.refs.subTile.addEventListener('animationend',(e)=>{
+      _.delay(()=>{
+        this.setState({focus: false});
+      },500);
+      /*this.refs.subTile.addEventListener('animationend',(e)=>{
         console.log('animationend: ',e);
         this.setState({focus: false});
         e.target.removeEventListener(e.type, arguments);
-      });
+      });*/
     }
   },
   handleStart(e, ui) {
