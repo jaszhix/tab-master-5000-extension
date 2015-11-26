@@ -26,7 +26,7 @@
     "default_title": "Tab Master 5000: Tab and Session Swiss Army Knife"
   },
   "omnibox": {
-    "keyword": "Tab Master 5000: Tab and Session Swiss Army Knife"
+    "keyword": "new tab"
   },
   "offline_enabled": true,
   "content_scripts": [
@@ -48,6 +48,8 @@
     "tabs",
     "http://*/*",
     "https://*/*",
-    "storage"
+    "storage",
+    "idle",
+    "system.memory"
   ]
 }

@@ -5,6 +5,17 @@ import S from 'string';
 
 // Chrome event listeners set to trigger re-renders.
 var reRender = (type, id) => {
+  var systemState = null;
+  // Detect if Chrome is idle or not, and prevent extension render updates if idle to save CPU/power.
+  chrome.idle.queryState(900, (idle)=>{
+    systemState = idle;
+  });
+  // If 10MB of RAM or less is available to Chrome, disable rendering.
+  chrome.system.memory.getInfo((info)=>{
+    if (info.availableCapacity < 10000) {
+      systemState = 'lowRAM';
+    }
+  });
   var tabs = tabStore.get_tab();
   var active = null;
   if (type === 'create') {
@@ -13,7 +24,7 @@ var reRender = (type, id) => {
     active = _.result(_.find(tabs, { id: id }), 'windowId');
   }
   console.log('windows: ', active, utilityStore.get_window());
-  if (utilityStore.get_window() === active) {
+  if (utilityStore.get_window() === active && systemState === 'active') {
     reRenderStore.set_reRender(true, type, id);
   }
 };
