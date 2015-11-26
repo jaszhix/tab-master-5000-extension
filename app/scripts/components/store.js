@@ -12,7 +12,8 @@ var reRender = (type, id) => {
   });
   // If 10MB of RAM or less is available to Chrome, disable rendering.
   chrome.system.memory.getInfo((info)=>{
-    if (info.availableCapacity < 10000) {
+    console.log(info.availableCapacity)
+    if (info.availableCapacity <= 10000000) {
       systemState = 'lowRAM';
     }
   });
