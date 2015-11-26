@@ -5,16 +5,14 @@ import S from 'string';
 
 // Chrome event listeners set to trigger re-renders.
 var reRender = (type, id) => {
-  var systemState = null;
   // Detect if Chrome is idle or not, and prevent extension render updates if idle to save CPU/power.
   chrome.idle.queryState(900, (idle)=>{
-    systemState = idle;
+    utilityStore.set_systemState(idle);
   });
   // If 10MB of RAM or less is available to Chrome, disable rendering.
   chrome.system.memory.getInfo((info)=>{
-    console.log(info.availableCapacity)
     if (info.availableCapacity <= 10000000) {
-      systemState = 'lowRAM';
+      utilityStore.set_systemState('lowRAM');
     }
   });
   var tabs = tabStore.get_tab();
@@ -25,7 +23,7 @@ var reRender = (type, id) => {
     active = _.result(_.find(tabs, { id: id }), 'windowId');
   }
   console.log('windows: ', active, utilityStore.get_window());
-  if (utilityStore.get_window() === active && systemState === 'active') {
+  if (utilityStore.get_window() === active && utilityStore.get_systemState() === 'active') {
     reRenderStore.set_reRender(true, type, id);
   }
 };
@@ -172,6 +170,7 @@ export var utilityStore = Reflux.createStore({
     this.window = null;
     this.version = /Chrome\/([0-9.]+)/.exec(navigator.userAgent)[1].split('.');
     this.cursor = [null, null];
+    this.systemState = null;
   },
   filterFavicons(faviconUrl, tabUrl) {
     // Work around for Chrome favicon useage restriction.
@@ -196,6 +195,12 @@ export var utilityStore = Reflux.createStore({
   },
   chromeVersion(){
     return S(/Chrome\/([0-9.]+)/.exec(navigator.userAgent)[1].split('.')).toInt();
+  },
+  set_systemState(value){
+    this.systemState = value;
+  },
+  get_systemState(){
+    return this.systemState;
   },
   set_cursor(x, y){
     this.cursor[0] = x;

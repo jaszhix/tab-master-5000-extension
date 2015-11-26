@@ -152,20 +152,8 @@ var Tile = React.createClass({
   },
   handleCloseTab(id) {
     this.setState({close: true});
-    clickStore.set_click(true);
     chrome.tabs.remove(id);
     this.keepNewTabOpen();
-    _.delay(()=>{
-      this.setState({render: false});
-    },100);
-    _.delay(()=>{
-      this.setState({close: false});
-    },500);
-    /*this.refs.subTile.addEventListener('webkitAnimationEnd',(e)=>{
-      console.log('animationend: ',e);
-      this.setState({close: false});
-      e.target.removeEventListener(e.type, arguments);
-    });*/
   },
   handlePinning(tab, opt) {
     var id = null;
