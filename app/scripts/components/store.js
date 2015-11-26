@@ -6,9 +6,14 @@ import S from 'string';
 // Chrome event listeners set to trigger re-renders.
 var reRender = (type, id) => {
   var tabs = tabStore.get_tab();
-  var active = _.result(_.find(tabs, { id: id }), 'windowId');
+  var active = null;
+  if (type === 'create') {
+    active = id.windowId;
+  } else {
+    active = _.result(_.find(tabs, { id: id }), 'windowId');
+  }
   console.log('windows: ', active, utilityStore.get_window());
-  if (utilityStore.get_window() === active || type === 'attachment' || type === 'create' || type === 'drag') {
+  if (utilityStore.get_window() === active) {
     reRenderStore.set_reRender(true, type, id);
   }
 };
@@ -19,6 +24,10 @@ chrome.tabs.onCreated.addListener((e, info) => {
 chrome.tabs.onRemoved.addListener((e, info) => {
   console.log('on removed', e, info);
   reRender('remove', e);
+});
+chrome.tabs.onActivated.addListener((e, info) => {
+  console.log('on updated', e, info);
+  reRender('activate', e);
 });
 chrome.tabs.onUpdated.addListener((e, info) => {
   console.log('on updated', e, info);
@@ -179,7 +188,6 @@ export var utilityStore = Reflux.createStore({
   set_cursor(x, y){
     this.cursor[0] = x;
     this.cursor[1] = y;
-    //console.log('cursor:', this.cursor );
   },
   get_cursor(){
     return this.cursor;
@@ -260,11 +268,18 @@ export var prefsStore = Reflux.createStore({
   init: function() {
     chrome.storage.local.get('preferences', (prefs)=>{
       if (prefs && prefs.preferences) {
-        console.log('load prefs')
-        this.prefs = {drag: prefs.preferences.drag, context: prefs.preferences.context};
+        console.log('load prefs');
+        this.prefs = {
+          drag: prefs.preferences.drag, 
+          context: prefs.preferences.context,
+          duplicate: prefs.preferences.duplicate
+        };
       } else {
-        console.log('init prefs')
-        this.prefs = {drag: false, context: true};
+        console.log('init prefs');
+        this.prefs = {drag: false, context: true, duplicate: false};
+        chrome.storage.local.set({preferences: this.prefs}, (result)=> {
+        console.log('Init preferences saved: ',result);
+      });
       }
     });
     
@@ -293,6 +308,20 @@ export var prefsStore = Reflux.createStore({
         console.log('Preferences saved: ',result);
       }); 
     });
+  }
+});
+
+export var dupeStore = Reflux.createStore({
+  init: function() {
+    this.tabUrls = null;
+  },
+  set_duplicateTabs: function(value) {
+    this.duplicateTabs = value;
+    console.log('duplicateTabs: ', value);
+    this.trigger(this.duplicateTabs);
+  },
+  get_duplicateTabs: function() {
+    return this.duplicateTabs;
   }
 });
 

@@ -127,11 +127,7 @@ var Root = React.createClass({
     if (!clickStore.get_click()) {
       if (reRender[0]) {
         // Treat attaching/detaching and created tabs with a full re-render.
-        if (reRender[1] === 'create' || reRender[1] === 'attachment' || reRender[1] === 'drag') {
-          this.captureTabs(reRender[1]);
-        } else {
-          this.captureTabs();
-        }
+        this.captureTabs(reRender[1]);
       }
     }
   },

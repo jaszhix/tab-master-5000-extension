@@ -3,7 +3,7 @@ var uglify = require('gulp-uglify');
 var webpack = require('webpack-stream');
 var imagemin = require('gulp-imagemin');
 
-var production = false; 
+var production = true; 
 var uglifyOpts = null;
 if (production) {
 	uglifyOpts = {
@@ -21,7 +21,7 @@ if (production) {
 	        loops: true,
 	        if_return: true,
 	        cascade: true,
-	        unsafe: false
+	        unsafe: true
 	      },
 	      output: {
 	        comments: false
