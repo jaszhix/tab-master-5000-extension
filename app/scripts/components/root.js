@@ -78,10 +78,14 @@ var Root = React.createClass({
     this.listenTo(reRenderStore, this.reRender);
     this.listenTo(settingsStore, this.settingsChange);
     this.listenTo(contextStore, this.contextTrigger);
+    this.listenTo(tabStore, this.update);
     // Call the method that will query Chrome for tabs.
     this.captureTabs('init');
     this.onWindowResize(null, 'init');
     console.log(utilityStore.chromeVersion());
+  },
+  update(){
+    this.setState({tabs: tabStore.get_tab()});
   },
   captureTabs(opt) {
     if (opt !== 'init') {
@@ -100,7 +104,9 @@ var Root = React.createClass({
     }, (Tab) => {
       // Assign Tab to a variable to work around a console error.
       var tab = Tab;
-      this.setState({tabs: tab});
+      if (opt === 'init') {
+        this.setState({tabs: tab});
+      }
       utilityStore.set_window(tab[0].windowId);
       tabStore.set_tab(tab);
       console.log(Tab);

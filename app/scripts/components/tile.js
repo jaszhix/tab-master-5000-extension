@@ -10,6 +10,7 @@ import utils from './utils';
 import {dupeStore, prefsStore, reRenderStore, searchStore, clickStore, applyTabOrderStore, utilityStore, contextStore, relayStore, tabStore, dragStore} from './store';
 
 //var tabUrls = null;
+var dataIndex = null;
 var tabUrls = null;
 var duplicateTabs = null;
 var pinned = null;
@@ -206,20 +207,27 @@ var Tile = React.createClass({
     var p = this.props;
     chrome.tabs.query({
       currentWindow: true
-    }, function(tabs) {
+    }, (Tabs)=> {
+      var tabs = _.sortByOrder(dataIndex, ['index'], ['desc']);
       if (tabs.length > 0) {
         var lastTab = tabs[tabs.length - 1];
         var tabIndex = lastTab.index + 1;
         for (var i = 0; i < tabs.length; ++i) {
-          if (tabs[i].id == p.tab.id) {
+          if (tabs[i].id === p.tab.id) {
             // Current tab is pinned, so decrement the tabIndex by one.
             --tabIndex;
             break;
           }
         }
-        chrome.tabs.move(p.tab.id, {
-          index: tabIndex
-        });
+        if (p.tab.title === 'New Tab') {
+          chrome.tabs.move(p.tab.id, {
+            index: -1
+          });
+        } else {
+          chrome.tabs.move(p.tab.id, {
+            index: tabIndex
+          });
+        }
       }
     });
   },
@@ -395,15 +403,17 @@ var TileGrid = React.createClass({
     };
   },
   getInitialState: function() {
-    var flags = _.reduce(this.props.keys, function(ret, key) {
+    var flags = _.reduce(this.props.keys, (ret, key)=> {
       if (!this.props.flags[key]) ret[key] = false;
       return ret;
-    }, {}, this);
+    }, {});
     return {
       data: this.props.data,
       sortFlags: flags,
       sortPriority: this.props.keys,
-      title: true
+      title: true,
+      sort: false,
+      render: true
     };
   },
   componentDidMount(){
@@ -452,7 +462,12 @@ var TileGrid = React.createClass({
   },
   applyTabs() {
     // Set Reflux store value which will call the chrome.tabs.move function in Tile component.
+    //this.setState({sort: true});
     applyTabOrderStore.set_saveTab(true);
+    //this.setState({render: true});
+    _.delay(()=>{
+      this.setState({sort: false});
+    },500);
   },
   handleTitleIcon(){
     this.setState({title: !this.state.title});
@@ -473,6 +488,8 @@ var TileGrid = React.createClass({
       );
     });
     var grid = s.data.map((data, i)=> {
+      dataIndex = [];
+      dataIndex.push(data);
       return (
         <Tile {...this.refs} render={p.render} key={data.id} tab={data} />
       );
@@ -488,8 +505,14 @@ var TileGrid = React.createClass({
           </div>
         <div className="col-xs-11">
           <div style={{position: 'relative'}} id="grid" ref="grid">
-              {grid}
-          </div>
+                        {s.data.map((data, i)=> {
+                          dataIndex = [];
+                          dataIndex.push(data);
+                          return (
+                            <Tile {...this.refs} keyType="id" render={p.render} key={data.id} tab={data} />
+                          );
+                        })}
+                    </div>
         </div>
       </div>
     );

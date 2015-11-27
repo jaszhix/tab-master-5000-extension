@@ -23,7 +23,7 @@ var reRender = (type, id) => {
     active = _.result(_.find(tabs, { id: id }), 'windowId');
   }
   console.log('windows: ', active, utilityStore.get_window());
-  if (utilityStore.get_window() === active && utilityStore.get_systemState() === 'active') {
+  if (utilityStore.get_window() === active && utilityStore.get_systemState() === 'active' && !applyTabOrderStore.get_saveTab()) {
     reRenderStore.set_reRender(true, type, id);
   }
 };
