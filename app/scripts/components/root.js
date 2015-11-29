@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import Reflux from 'reflux';
 import ReactUtils from 'react-utils';
 
-import {searchStore, reRenderStore, clickStore, modalStore, settingsStore, tabStore, utilityStore, contextStore} from './store';
+import {screenshotStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, tabStore, utilityStore, contextStore} from './store';
 import TileGrid from './tile';
 import Settings from './settings';
 import ContextMenu from './context';
@@ -90,12 +90,12 @@ var Root = React.createClass({
   captureTabs(opt) {
     if (opt !== 'init') {
       // Render state is toggled to false on the subsequent re-renders only.
-      if (opt === 'create' || opt === 'drag') {
+      if (opt === 'create' || opt === 'drag' ) {
         this.setState({render: false});
       }
     } else {
       // The initial query will not trigger Chrome event listeners while ClickStore returns true.
-      clickStore.set_click(true);
+      //clickStore.set_click(true);
     }
     // Query current Chrome window for tabs.
     chrome.tabs.query({
@@ -113,7 +113,7 @@ var Root = React.createClass({
       console.log('window id: ',tab[0].windowId);
     });
     // Querying is complete, allow the component to render.
-    if (opt === 'create' || opt === 'init' || opt === 'drag') {
+    if (opt === 'create' || opt === 'init' || opt === 'drag' ) {
       this.setState({render: true});
     }
   },
@@ -189,7 +189,6 @@ var Root = React.createClass({
               <div className="tile-child-container">
                 {s.render ? this.tileGrid() : null}
             </div></div> : null}
-
       </div>
     );
   }

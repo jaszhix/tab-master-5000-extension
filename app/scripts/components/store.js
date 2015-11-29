@@ -22,8 +22,8 @@ var reRender = (type, id) => {
   } else {
     active = _.result(_.find(tabs, { id: id }), 'windowId');
   }
-  console.log('windows: ', active, utilityStore.get_window());
-  if (utilityStore.get_window() === active && utilityStore.get_systemState() === 'active' && !applyTabOrderStore.get_saveTab()) {
+  console.log('window: ', active, utilityStore.get_window(), 'state: ',utilityStore.get_systemState());
+  if (active === utilityStore.get_focusedWindow() && utilityStore.get_systemState() === 'active') {
     reRenderStore.set_reRender(true, type, id);
   }
 };
@@ -36,8 +36,12 @@ chrome.tabs.onRemoved.addListener((e, info) => {
   reRender('remove', e);
 });
 chrome.tabs.onActivated.addListener((e, info) => {
-  console.log('on updated', e, info);
+  console.log('on activated', e, info);
   reRender('activate', e);
+  _.defer(()=>{
+    screenshotStore.capture(e.tabId, e.windowId);
+  });
+  
 });
 chrome.tabs.onUpdated.addListener((e, info) => {
   console.log('on updated', e, info);
@@ -168,9 +172,11 @@ export var tabStore = Reflux.createStore({
 export var utilityStore = Reflux.createStore({
   init: function() {
     this.window = null;
+    this.focusedWindow = null;
     this.version = /Chrome\/([0-9.]+)/.exec(navigator.userAgent)[1].split('.');
     this.cursor = [null, null];
     this.systemState = null;
+    this.bytesInUse = null;
   },
   filterFavicons(faviconUrl, tabUrl) {
     // Work around for Chrome favicon useage restriction.
@@ -193,6 +199,12 @@ export var utilityStore = Reflux.createStore({
   get_window(){
     return this.window;
   },
+  get_focusedWindow(){
+    chrome.windows.getLastFocused((w)=>{
+      this.focusedWindow = w.id;
+    });
+    return this.focusedWindow;
+  },
   chromeVersion(){
     return S(/Chrome\/([0-9.]+)/.exec(navigator.userAgent)[1].split('.')).toInt();
   },
@@ -201,6 +213,13 @@ export var utilityStore = Reflux.createStore({
   },
   get_systemState(){
     return this.systemState;
+  },
+  get_bytesInUse(item){
+    chrome.storage.local.getBytesInUse(item,(bytes)=>{
+      this.bytesInUse = bytes;
+      console.log('bytes in use: ',this.bytesInUse);
+    });
+    return this.bytesInUse;
   },
   set_cursor(x, y){
     this.cursor[0] = x;
@@ -289,15 +308,17 @@ export var prefsStore = Reflux.createStore({
         this.prefs = {
           drag: prefs.preferences.drag, 
           context: prefs.preferences.context,
-          duplicate: prefs.preferences.duplicate
+          duplicate: prefs.preferences.duplicate,
+          screenshot: prefs.preferences.screenshot
         };
       } else {
         console.log('init prefs');
-        this.prefs = {drag: false, context: true, duplicate: false};
+        this.prefs = {drag: false, context: true, duplicate: false, screenshot: false};
         chrome.storage.local.set({preferences: this.prefs}, (result)=> {
-        console.log('Init preferences saved: ',result);
-      });
+          console.log('Init preferences saved: ',result);
+        });
       }
+      this.trigger(this.prefs);
     });
     
   },
@@ -323,6 +344,7 @@ export var prefsStore = Reflux.createStore({
       console.log('newPrefs: ',newPrefs);
       chrome.storage.local.set(newPrefs, (result)=> {
         console.log('Preferences saved: ',result);
+        reRenderStore.set_reRender(true, 'create', null);
       }); 
     });
   }
@@ -339,6 +361,61 @@ export var dupeStore = Reflux.createStore({
   },
   get_duplicateTabs: function() {
     return this.duplicateTabs;
+  }
+});
+
+export var screenshotStore = Reflux.createStore({
+  init: function() {
+    chrome.storage.local.get('screenshots', (shots)=>{
+      if (shots && shots.screenshots) {
+        this.index = shots.screenshots;
+      } else {
+        this.index = [];
+        chrome.storage.local.set({screenshots: this.index}, (result)=> {
+          //this.screenshot = {url: null, data: null};
+          console.log('default ss index saved');
+        });
+      }
+      console.log('ss index: ', this.index);
+      this.trigger(this.index);
+    });
+  },
+  capture(id, wid){
+    var tabs = tabStore.get_tab();
+    var title = _.result(_.find(tabs, { id: id }), 'title');
+    if (title !== 'New Tab' && prefsStore.get_prefs().screenshot) {
+      var ssUrl = _.result(_.find(tabs, { id: id }), 'url');
+      chrome.tabs.captureVisibleTab({format: 'jpeg'}, (image)=> {
+        if (image && ssUrl) {
+          var screenshot = {url: null, data: null};
+          screenshot.url = ssUrl;
+          screenshot.data = image;
+          console.log('screenshot: ', ssUrl, image);
+          //var urlInIndex = _.result(_.find(this.index, { url: ssUrl }), 'url');
+          this.index.push(screenshot);
+          this.index = _.uniq(this.index, 'url');
+          this.index = _.uniq(this.index, 'data');
+          chrome.storage.local.set({screenshots: this.index}, ()=>{
+            console.log('screenshot saved: ',this.index);
+            //this.trigger(this.index);
+          });
+        } else {
+          this.capture(id, wid);
+        }
+      });
+    }
+    this.trigger(this.index);
+  },
+  get_ssIndex(){
+    return this.index;
+  },
+  clear(){
+    chrome.storage.local.remove('screenshots', (result)=>{
+      console.log('Screenshot cache cleared: ',result);
+      _.defer(()=>{
+        reRenderStore.set_reRender(true, 'create', null);
+      });
+    });
   }
 });
 

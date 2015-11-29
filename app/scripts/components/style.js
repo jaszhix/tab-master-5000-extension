@@ -2,12 +2,25 @@ var style = {
   tile: function(dataUrl) {
     return {
       backgroundImage: 'url("'+dataUrl+'")',
+      backgroundBlendMode: 'multiply'
     };
   },
   tileHovered: function(dataUrl) {
     return {
       backgroundImage: 'url("'+dataUrl+'")',
+      backgroundBlendMode: 'multiply, soft light'
     };
+  },
+  ssIconBg: {
+    backgroundColor: '#fff', 
+    borderRadius: '3px',
+    backgroundBlendMode: 'multiply'
+  },
+  ssPinnedIconBg: {
+    color: '#B67777',
+    backgroundColor: '#fff', 
+    borderRadius: '3px',
+    backgroundBlendMode: 'multiply'
   },
   modal: {
     overlay : {

@@ -7,9 +7,11 @@ import kmp from 'kmp';
 import Draggable from 'react-draggable';
 import utils from './utils';
 
-import {dupeStore, prefsStore, reRenderStore, searchStore, clickStore, applyTabOrderStore, utilityStore, contextStore, relayStore, tabStore, dragStore} from './store';
+import {screenshotStore, dupeStore, prefsStore, reRenderStore, searchStore, applyTabOrderStore, utilityStore, contextStore, relayStore, tabStore, dragStore} from './store';
+import style from './style';
 
 //var tabUrls = null;
+var newTabs = [];
 var dataIndex = null;
 var tabUrls = null;
 var duplicateTabs = null;
@@ -34,7 +36,8 @@ var Tile = React.createClass({
       focus: false,
       duplicate: false,
       drag: null,
-      dragged: null
+      dragged: null,
+      screenshot: null
     };
   },
   componentDidMount() {
@@ -42,10 +45,15 @@ var Tile = React.createClass({
     this.listenTo(applyTabOrderStore, this.applyTabOrder);
     this.listenTo(relayStore, this.handleRelays);
     this.listenTo(tabStore, this.update);
-    this.checkDuplicateTabs();
+    this.listenTo(screenshotStore, this.updateScreenshot);
+    this.initMethods();
   },
   shouldComponentUpdate() {
     return this.state.render || this.props.tab.title !== 'New Tab';
+  },
+  initMethods(){
+    this.checkDuplicateTabs();
+    this.closeNewTabs();
   },
   update(){
     var p = this.props;
@@ -53,6 +61,19 @@ var Tile = React.createClass({
       this.handleFocus();
     }
     this.checkDuplicateTabs();
+    this.closeNewTabs();
+  },
+  updateScreenshot(){
+    if (prefsStore.get_prefs().screenshot) {
+      var p = this.props;
+      var screenshotIndex = screenshotStore.get_ssIndex();
+      _.delay(()=>{
+        var ssData = _.result(_.find(screenshotIndex, { url: p.tab.url }), 'data');
+        if (ssData) {
+          this.setState({screenshot: ssData});
+        }
+      },1);
+    }
   },
   checkDuplicateTabs(opt){
     var p = this.props;
@@ -72,6 +93,34 @@ var Tile = React.createClass({
           }
         }
       });
+    }
+  },
+  closeNewTabs(){
+    var p = this.props;
+    if (prefsStore.get_prefs().screenshot) {
+      if (p.tab.title === 'New Tab') {
+        chrome.windows.getAll({populate: true}, (w)=>{
+          for (var i = w.length - 1; i >= 0; i--) {
+            _.pluck(_.where(w[i].tabs, { title: 'New Tab' }), 'id');
+            var newTab = _.pluck(_.where(w[i].tabs, { title: 'New Tab' }), 'id');
+            if (newTab) {
+              for (var x = newTab.length - 1; x >= 0; x--) {
+                if (newTab[x]) {
+                  if (w[i].id !== p.tab.windowId) {
+                    newTabs.push(newTab[x]);
+                  } else if (newTab.length > 2 && !p.tab.active) {
+                    newTabs.push(newTab[x]);
+                  }
+                }
+              }
+            }
+          }
+          for (var y = newTabs.length - 1; y >= 0; y--) {
+            chrome.tabs.remove(newTabs[y]);
+          }
+          console.log('windows: ',w);
+        });
+      }
     }
   },
   handleClick(id, e) {
@@ -342,22 +391,22 @@ var Tile = React.createClass({
                 onStop={this.handleStop}>
       <div onMouseEnter={this.currentlyDraggedOver(p.tab)} ref="tile" style={s.drag ? {position: 'fixed', left: drag.left-200, top: drag.top} : null}>
       {p.render && s.render && p.tab.title !== 'New Tab' ? <div id="subTile" ref="subTile" style={s.hover ? s.duplicate && !s.drag && !s.pinning && !s.close ? {display: 'inline', backgroundColor: 'rgb(247, 247, 247)'} : {WebkitAnimationDuration: '1s'} : s.duplicate ? {WebkitAnimationIterationCount: 'infinite', display: 'inline', backgroundColor: 'rgb(237, 237, 237)'} : null} onContextMenu={this.handleContextClick} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "row-fluid animated zoomOut" : s.focus ? "animated pulse" : "row-fluid"}>
-          { this.filterTabs(p.tab) ? <div className={s.hover ? "ntg-tile-hover" : "ntg-tile"} style={s.drag ? {cursor: 'move'} : null} key={p.key}>
+          { this.filterTabs(p.tab) ? <div className={s.hover ? "ntg-tile-hover" : "ntg-tile"} style={s.screenshot ? s.hover ? style.tileHovered(s.screenshot) : style.tile(s.screenshot) : null} key={p.key}>
             <div className="row ntg-tile-row-top">
               <div className="col-xs-3">
                 {chromeVersion >= 46 ? <div onMouseEnter={this.handleTabMuteHoverIn} onMouseLeave={this.handleTabMuteHoverOut} onClick={() => this.handleMuting(p.tab)}>
                                   {s.hover || p.tab.audible || p.tab.mutedInfo.muted ? 
-                                  <i className={p.tab.audible ? s.mHover ? "fa fa-volume-off ntg-mute-audible-hover" : "fa fa-volume-up ntg-mute-audible" : s.mHover ? "fa fa-volume-off ntg-mute-hover" : "fa fa-volume-off ntg-mute"} />
+                                  <i className={p.tab.audible ? s.mHover ? "fa fa-volume-off ntg-mute-audible-hover" : "fa fa-volume-up ntg-mute-audible" : s.mHover ? "fa fa-volume-off ntg-mute-hover" : "fa fa-volume-off ntg-mute"} style={s.screenshot && s.hover ? style.ssIconBg : null} />
                                   : null}
                                 </div> : null}
                 <div onMouseEnter={this.handleTabCloseHoverIn} onMouseLeave={this.handleTabCloseHoverOut} onClick={() => this.handleCloseTab(p.tab.id)}>
                   {s.hover ? 
-                  <i className={s.xHover ? "fa fa-times ntg-x-hover" : "fa fa-times ntg-x"} />
+                  <i className={s.xHover ? "fa fa-times ntg-x-hover" : "fa fa-times ntg-x"} style={s.screenshot && s.hover ? style.ssIconBg : null} />
                   : null}
                 </div>
                 <div onMouseEnter={this.handlePinHoverIn} onMouseLeave={this.handlePinHoverOut} onClick={() => this.handlePinning(p.tab)}>
                 {p.tab.pinned || s.hover ? 
-                  <i className={s.pHover ? "fa fa-map-pin ntg-pinned-hover" : "fa fa-map-pin ntg-pinned"} style={p.tab.pinned ? {color: '#B67777'} : null} />
+                  <i className={s.pHover ? "fa fa-map-pin ntg-pinned-hover" : "fa fa-map-pin ntg-pinned"} style={p.tab.pinned ? s.screenshot && s.hover ? style.ssPinnedIconBg : s.screenshot ? style.ssPinnedIconBg : {color: '#B67777'} : s.screenshot ? style.ssIconBg : null} />
                   : null}
                 </div>
                 <div className="row">
@@ -365,12 +414,12 @@ var Tile = React.createClass({
                 </div>
               </div>
               <div onClick={() => this.handleClick(p.tab.id)} className="col-xs-9 ntg-title-container">
-                <h5 className="ntg-title">
+                <h5 style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-title">
                   {S(p.tab.title).truncate(90).s}
                 </h5>
                 {prefs ? prefs.drag ? <div onMouseEnter={this.handleDragHoverIn} onMouseLeave={this.handleDragHoverOut} onClick={() => this.handleCloseTab(p.tab.id)}>
                                   {s.hover ? 
-                                  <i className={s.dHover ? "fa fa-hand-grab-o ntg-move-hover handle" : "fa fa-hand-grab-o ntg-move"} />
+                                  <i className={s.dHover ? "fa fa-hand-grab-o ntg-move-hover handle" : "fa fa-hand-grab-o ntg-move"} style={s.screenshot && s.hover ? style.ssIconBg : null} />
                                   : null}
                                 </div> : null : null}
               </div> 
@@ -487,13 +536,6 @@ var TileGrid = React.createClass({
         </div>
       );
     });
-    var grid = s.data.map((data, i)=> {
-      dataIndex = [];
-      dataIndex.push(data);
-      return (
-        <Tile {...this.refs} render={p.render} key={data.id} tab={data} />
-      );
-    });
     return (
       <div className="tile-body">
           <div className="col-xs-1 sort-bar">
@@ -505,14 +547,14 @@ var TileGrid = React.createClass({
           </div>
         <div className="col-xs-11">
           <div style={{position: 'relative'}} id="grid" ref="grid">
-                        {s.data.map((data, i)=> {
-                          dataIndex = [];
-                          dataIndex.push(data);
-                          return (
-                            <Tile {...this.refs} keyType="id" render={p.render} key={data.id} tab={data} />
-                          );
-                        })}
-                    </div>
+              {s.data.map((data, i)=> {
+                dataIndex = [];
+                dataIndex.push(data);
+                return (
+                  <Tile {...this.refs} keyType="id" render={p.render} key={data.id} tab={data} />
+                );
+              })}
+          </div>
         </div>
       </div>
     );

@@ -11,6 +11,10 @@ var About = React.createClass({
         <div className="col-xs-2"/>
         <div className="col-xs-8 ntg-release">
           <h4>Release Notes</h4>
+          <h5>v0.4.3</h5><h6>11-27-15</h6>
+          <ul>
+            <li>Fixed tab sorting and apply tab order functionality that was broken by changes introduced by close duplicate tabs feature.</li>
+          </ul>
           <h5>v0.4.2</h5><h6>11-26-15</h6>
           <ul>
             <li>Extension now will stop updating in the background if the system is idle for fifteen minutes, or 10MB or less of RAM is available to Chrome.</li>

@@ -1,7 +1,10 @@
 import React from 'react';
 import Reflux from 'reflux';
+import S from 'string';
 
-import {prefsStore} from './store';
+import utils from './utils';
+
+import {prefsStore, utilityStore, screenshotStore} from './store';
 
 
 var Preferences = React.createClass({
@@ -11,9 +14,11 @@ var Preferences = React.createClass({
       drag: prefsStore.get_prefs().drag,
       context: prefsStore.get_prefs().context,
       duplicate: prefsStore.get_prefs().duplicate,
+      screenshot: prefsStore.get_prefs().screenshot,
       dragHover: false,
       contextHover: false,
-      duplicateHover: false
+      duplicateHover: false,
+      screenshotHover: false
     };
   },
   componentDidMount(){
@@ -24,9 +29,12 @@ var Preferences = React.createClass({
     this.setState({drag: prefs.drag});
     this.setState({context: prefs.context});
     this.setState({duplicate: prefs.duplicate});
+    this.setState({screenshot: prefs.screenshot});
   },
   render: function() {
     var s = this.state;
+    var bytesInUse = utilityStore.get_bytesInUse('screenshots');
+    var mb = utils.formatBytes(bytesInUse, 2);
     return (
       <div className="preferences">
         <div className="col-xs-6">
@@ -39,12 +47,22 @@ var Preferences = React.createClass({
           <div onMouseEnter={()=>this.setState({duplicateHover: true})} onMouseLeave={()=>this.setState({duplicateHover: false})} className="prefs-row row">
             <input checked={s.duplicate} onChange={()=>prefsStore.set_prefs('duplicate',!s.duplicate)} type="checkbox" /> Enable pulsing duplicate tabs
           </div>
+          <div onMouseEnter={()=>this.setState({screenshotHover: true})} onMouseLeave={()=>this.setState({screenshotHover: false})}className="prefs-row row">
+            <input checked={s.screenshot} onChange={()=>prefsStore.set_prefs('screenshot',!s.screenshot)} type="checkbox" /> Enable tab screenshots
+            {s.screenshot ? 
+              <div>
+                <p>Screenshot disk useage: {mb}</p>
+                <button onClick={()=>screenshotStore.clear()} className="ntg-setting-btn">Clear Screenshot Cache</button> 
+              </div>
+            : null}
+          </div>
         </div>
         <div className="col-xs-6">
           <div className="prefs-row row">
           {s.dragHover ? <p>This features adds a hand icon to the top right corner of your tab tiles. Clicking the icon and dragging a tab will allow you to re-order your tabs from the grid.</p> : null}
           {s.contextHover ? <p>This option toggles the right-click context menu on and off. If you disable it, some tab control features will not be accessible.</p> : null}
           {s.duplicateHover ? <p>This option will make all duplicates tabs pulsate except the first tab. This makes it easier to see how many duplicate tabs you have open.</p> : null}
+          {s.screenshotHover ? <p>Enabling this feature adds a screen shot of a tab in the tab tile's background once its been clicked. After a screenshot is active, it is stored in Chrome until the page is updated.</p> : null}
           </div>
         </div>
       </div>
