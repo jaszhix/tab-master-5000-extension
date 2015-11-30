@@ -53,7 +53,9 @@ var Tile = React.createClass({
   },
   initMethods(){
     this.checkDuplicateTabs();
-    this.closeNewTabs();
+    _.defer(()=>{
+      this.closeNewTabs();
+    });
   },
   update(){
     var p = this.props;
@@ -359,7 +361,7 @@ var Tile = React.createClass({
       });
     });
   },
-  getPos(left, top, e, ui){
+  getPos(left, top){
     dragStore.set_drag(left, top);
   },
   currentlyDraggedOver(tab){
@@ -486,8 +488,7 @@ var TileGrid = React.createClass({
       if (utils.hasDuplicates(tabUrls)) {
         duplicateTabs = utils.getDuplicates(tabUrls);
         dupeStore.set_duplicateTabs(duplicateTabs);
-      }
-     
+      } 
     }
   },
   sort: function(key) {

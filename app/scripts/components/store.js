@@ -38,9 +38,20 @@ chrome.tabs.onRemoved.addListener((e, info) => {
 chrome.tabs.onActivated.addListener((e, info) => {
   console.log('on activated', e, info);
   reRender('activate', e);
-  _.defer(()=>{
+  if (prefsStore.get_prefs().screenshot) {
+    // Inject event listener that messages the extension to recapture the image on click.
+    var tabs = tabStore.get_tab();
+    var title = _.result(_.find(tabs, { id: e.tabId }), 'title');
+    if (title !== 'New Tab') {
+      chrome.tabs.executeScript(e.tabId, {
+        code: `document.body.addEventListener( 'click', function(e){ chrome.runtime.sendMessage('${chrome.runtime.id}', 'active',function (r) {console.log(r)})} );`, 
+        runAt: 'document_start'}, (result)=>{
+        console.log(result);
+      });
+    }
     screenshotStore.capture(e.tabId, e.windowId);
-  });
+  }
+  
   
 });
 chrome.tabs.onUpdated.addListener((e, info) => {
@@ -58,6 +69,11 @@ chrome.tabs.onAttached.addListener((e, info) => {
 chrome.tabs.onDetached.addListener((e, info) => {
   console.log('on detached', e, info);
   reRender('attachment', e);
+});
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  screenshotStore.capture(sender.tab.id, utilityStore.get_focusedWindow());
+  sendResponse({active: 'true'});
+  console.log('msg: ',msg, sender);
 });
 
 export var searchStore = Reflux.createStore({
@@ -392,13 +408,15 @@ export var screenshotStore = Reflux.createStore({
           screenshot.data = image;
           console.log('screenshot: ', ssUrl, image);
           var urlInIndex = _.result(_.find(this.index, { url: ssUrl }), 'url');
+          console.log('urlInIndex: ',urlInIndex);
           if (urlInIndex) {
             var dataInIndex = _.pluck(_.where(this.index, { url: ssUrl }), 'data');
             var timeInIndex = _.pluck(_.where(this.index, { url: ssUrl }), 'timeStamp');
-            var index = _.findIndex(this.index, { 'url': ssUrl, 'data': _.first(dataInIndex), timeStamp: _.first(timeInIndex) });
-            var newIndex = _.without(this.index, this.index[index]);
+            var index = _.findIndex(this.index, { 'url': ssUrl, 'data': _.last(dataInIndex), timeStamp: _.last(timeInIndex) });
+            var newIndex = _.remove(this.index, this.index[index]);
             this.index = _.without(this.index, newIndex);
             console.log('newIndex',newIndex, this.index);
+            //this.capture(id, wid);
           }
           this.index.push(screenshot);
           this.index = _.uniq(this.index, 'url');
