@@ -81,7 +81,7 @@ h4.sort-h4 {
     height: 15px;
     position: absolute;
     left: 19px;
-    opacity: 0.5;
+    opacity: 0.8;
     padding:1px;
 }
 .ntg-pinned-hover {
@@ -96,7 +96,7 @@ h4.sort-h4 {
     height: 15px;
     position: absolute;
     left: 36px;
-    opacity: 0.5;
+    opacity: 0.8;
     padding:1px;
 }
 .ntg-mute-hover {
@@ -127,7 +127,7 @@ h4.sort-h4 {
     height: 15px;
     position: absolute;
     left: 1px;
-    opacity: 0.5;
+    opacity: 0.8;
     padding:1px;
 }
 .ntg-x-hover {
@@ -143,7 +143,7 @@ h4.sort-h4 {
     position: absolute;
     right: 2;
     top: 0;
-    opacity: 0.5;
+    opacity: 0.8;
     padding:1px;
     cursor: move;
 }

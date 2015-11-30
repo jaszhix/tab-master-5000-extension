@@ -11,6 +11,19 @@ var About = React.createClass({
         <div className="col-xs-2"/>
         <div className="col-xs-8 ntg-release">
           <h4>Release Notes</h4>
+          <h5>v0.5</h5><h6>11-29-15</h6>
+          <ul>
+            <li>Added tab screenshots to tab tile backgrounds. Currently experimental, enable in Settings -> Preferences.</li>
+          </ul>
+          <h5>v0.4.3</h5><h6>11-27-15</h6>
+          <ul>
+            <li>Fixed tab sorting and apply tab order functionality that was broken by changes introduced by close duplicate tabs feature.</li>
+          </ul>
+          <h5>v0.4.2</h5><h6>11-26-15</h6>
+          <ul>
+            <li>Extension now will stop updating in the background if the system is idle for fifteen minutes, or 10MB or less of RAM is available to Chrome.</li>
+            <li>Fixed close duplicate tab bug causing only one duplicate tab to close.</li>
+          </ul>
           <h5>v0.4.1</h5><h6>11-25-15</h6>
           <ul>
             <li>Added close duplicate tabs option to the context menu. An optional mode that causes duplicate tabs to pulsate is also now available in Preferences.</li>
