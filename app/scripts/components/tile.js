@@ -69,12 +69,16 @@ var Tile = React.createClass({
     if (prefsStore.get_prefs().screenshot) {
       var p = this.props;
       var screenshotIndex = screenshotStore.get_ssIndex();
-      _.delay(()=>{
+      var ssData = _.result(_.find(screenshotIndex, { url: p.tab.url }), 'data');
+      if (ssData) {
+        this.setState({screenshot: ssData});
+      }
+      /*_.delay(()=>{
         var ssData = _.result(_.find(screenshotIndex, { url: p.tab.url }), 'data');
         if (ssData) {
           this.setState({screenshot: ssData});
         }
-      },1);
+      },1);*/
     }
   },
   checkDuplicateTabs(opt){
