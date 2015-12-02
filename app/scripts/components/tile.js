@@ -63,7 +63,9 @@ var Tile = React.createClass({
       this.handleFocus();
     }
     this.checkDuplicateTabs();
-    this.closeNewTabs();
+    _.defer(()=>{
+      this.closeNewTabs();
+    });
   },
   updateScreenshot(){
     if (prefsStore.get_prefs().screenshot) {

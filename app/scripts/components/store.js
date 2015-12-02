@@ -2,7 +2,6 @@ import Reflux from 'reflux';
 import kmp from 'kmp';
 import _ from 'lodash';
 import S from 'string';
-import injected from './injected';
 
 // Chrome event listeners set to trigger re-renders.
 var reRender = (type, id) => {
@@ -29,16 +28,6 @@ var reRender = (type, id) => {
   }
 };
 
-var captureTab = (tid,defer)=>{
-  if (defer) {
-    _.defer(()=>{
-      screenshotStore.capture(tid, utilityStore.get_focusedWindow());
-    });
-  } else {
-    screenshotStore.capture(tid, utilityStore.get_focusedWindow());
-  }
-};
-
 chrome.tabs.onCreated.addListener((e, info) => {
   console.log('on created', e, info);
   reRender('create', e);
@@ -55,13 +44,7 @@ chrome.tabs.onActivated.addListener((e, info) => {
     var tabs = tabStore.get_tab();
     var title = _.result(_.find(tabs, { id: e.tabId }), 'title');
     if (title !== 'New Tab') {
-      //screenshotStore.capture(e.tabId, e.windowId);
-      captureTab(e.tabId, true);
-      chrome.tabs.executeScript(e.tabId, {
-        code: injected,
-        runAt: 'document_start'}, (result)=>{
-        console.log(result);
-      });
+      screenshotStore.capture(e.tabId, utilityStore.get_focusedWindow());
     }
   } 
 });
@@ -80,14 +63,6 @@ chrome.tabs.onAttached.addListener((e, info) => {
 chrome.tabs.onDetached.addListener((e, info) => {
   console.log('on detached', e, info);
   reRender('attachment', e);
-});
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  if (sender.tab.windowId === utilityStore.get_window()) {
-    //screenshotStore.capture(sender.tab.id, utilityStore.get_focusedWindow());
-    captureTab(sender.tab.id, false);
-    sendResponse({active: 'true'});
-    console.log('msg: ',msg, sender);
-  }
 });
 
 export var searchStore = Reflux.createStore({
@@ -437,7 +412,6 @@ export var screenshotStore = Reflux.createStore({
           this.index = _.uniq(this.index, 'url');
           this.index = _.uniq(this.index, 'data');
           chrome.storage.local.set({screenshots: this.index}, ()=>{
-            //console.log('screenshot saved: ',this.index);
             this.trigger(this.index);
           });
         } 
