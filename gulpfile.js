@@ -3,7 +3,7 @@ var uglify = require('gulp-uglify');
 var webpack = require('webpack-stream');
 var imagemin = require('gulp-imagemin');
 
-var production = false; 
+var production = true; 
 var uglifyOpts = null;
 if (production) {
 	uglifyOpts = {
