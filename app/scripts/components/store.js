@@ -23,10 +23,11 @@ var reRender = (type, id) => {
     active = _.result(_.find(tabs, { id: id }), 'windowId');
   }
   console.log('window: ', active, utilityStore.get_window(), 'state: ',utilityStore.get_systemState());
-  if (active === utilityStore.get_focusedWindow() && utilityStore.get_systemState() === 'active') {
+  if (active === utilityStore.get_window() && utilityStore.get_systemState() === 'active') {
     reRenderStore.set_reRender(true, type, id);
   }
 };
+
 chrome.tabs.onCreated.addListener((e, info) => {
   console.log('on created', e, info);
   reRender('create', e);
@@ -38,10 +39,16 @@ chrome.tabs.onRemoved.addListener((e, info) => {
 chrome.tabs.onActivated.addListener((e, info) => {
   console.log('on activated', e, info);
   reRender('activate', e);
-  _.defer(()=>{
-    screenshotStore.capture(e.tabId, e.windowId);
-  });
-  
+  if (prefsStore.get_prefs().screenshot) {
+    // Inject event listener that messages the extension to recapture the image on click.
+    var tabs = tabStore.get_tab();
+    var title = _.result(_.find(tabs, { id: e.tabId }), 'title');
+    if (title !== 'New Tab') {
+      _.defer(()=>{
+        screenshotStore.capture(e.tabId, utilityStore.get_focusedWindow());
+      });
+    }
+  } 
 });
 chrome.tabs.onUpdated.addListener((e, info) => {
   console.log('on updated', e, info);
@@ -383,28 +390,38 @@ export var screenshotStore = Reflux.createStore({
   capture(id, wid){
     var tabs = tabStore.get_tab();
     var title = _.result(_.find(tabs, { id: id }), 'title');
+    var active = _.result(_.find(tabs, { id: id }), 'active');
+    console.log('active tab being captured is... active?', active);
     if (title !== 'New Tab' && prefsStore.get_prefs().screenshot) {
       var ssUrl = _.result(_.find(tabs, { id: id }), 'url');
-      chrome.tabs.captureVisibleTab({format: 'jpeg'}, (image)=> {
+      chrome.tabs.captureVisibleTab({format: 'png'}, (image)=> {
         if (image && ssUrl) {
-          var screenshot = {url: null, data: null};
+          var screenshot = {url: null, data: null, timeStamp: Date.now()};
           screenshot.url = ssUrl;
           screenshot.data = image;
           console.log('screenshot: ', ssUrl, image);
-          //var urlInIndex = _.result(_.find(this.index, { url: ssUrl }), 'url');
+          var urlInIndex = _.result(_.find(this.index, { url: ssUrl }), 'url');
+          console.log('urlInIndex: ',urlInIndex);
+          if (urlInIndex) {
+            var dataInIndex = _.pluck(_.where(this.index, { url: ssUrl }), 'data');
+            var timeInIndex = _.pluck(_.where(this.index, { url: ssUrl }), 'timeStamp');
+            var index = _.findIndex(this.index, { 'url': ssUrl, 'data': _.last(dataInIndex), timeStamp: _.last(timeInIndex) });
+            var newIndex = _.remove(this.index, this.index[index]);
+            this.index = _.without(this.index, newIndex);
+            console.log('newIndex',newIndex, this.index);
+          }
           this.index.push(screenshot);
           this.index = _.uniq(this.index, 'url');
           this.index = _.uniq(this.index, 'data');
           chrome.storage.local.set({screenshots: this.index}, ()=>{
-            console.log('screenshot saved: ',this.index);
-            //this.trigger(this.index);
+            this.trigger(this.index);
           });
-        } else {
-          this.capture(id, wid);
-        }
+        } 
       });
+      if (chrome.extension.lastError) {
+        this.capture(id,wid);
+      }
     }
-    this.trigger(this.index);
   },
   get_ssIndex(){
     return this.index;

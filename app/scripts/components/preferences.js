@@ -48,7 +48,7 @@ var Preferences = React.createClass({
             <input checked={s.duplicate} onChange={()=>prefsStore.set_prefs('duplicate',!s.duplicate)} type="checkbox" /> Enable pulsing duplicate tabs
           </div>
           <div onMouseEnter={()=>this.setState({screenshotHover: true})} onMouseLeave={()=>this.setState({screenshotHover: false})}className="prefs-row row">
-            <input checked={s.screenshot} onChange={()=>prefsStore.set_prefs('screenshot',!s.screenshot)} type="checkbox" /> Enable tab screenshots
+            <input checked={s.screenshot} onChange={()=>prefsStore.set_prefs('screenshot',!s.screenshot)} type="checkbox" /> Enable tab screenshots <strong>(Experimental)</strong>
             {s.screenshot ? 
               <div>
                 <p>Screenshot disk useage: {mb}</p>
@@ -62,7 +62,7 @@ var Preferences = React.createClass({
           {s.dragHover ? <p>This features adds a hand icon to the top right corner of your tab tiles. Clicking the icon and dragging a tab will allow you to re-order your tabs from the grid.</p> : null}
           {s.contextHover ? <p>This option toggles the right-click context menu on and off. If you disable it, some tab control features will not be accessible.</p> : null}
           {s.duplicateHover ? <p>This option will make all duplicates tabs pulsate except the first tab. This makes it easier to see how many duplicate tabs you have open.</p> : null}
-          {s.screenshotHover ? <p>Enabling this feature adds a screen shot of a tab in the tab tile's background once its been clicked. After a screenshot is active, it is stored in Chrome until the page is updated.</p> : null}
+          {s.screenshotHover ? <p>Enabling this feature adds a screen shot of a tab in the tab tile's background once its been clicked. After a screenshot is active, it is stored in Chrome until the page is active again. Due to performance issues, only one New Tab page can be open while screenshots are enabled.</p> : null}
           </div>
         </div>
       </div>

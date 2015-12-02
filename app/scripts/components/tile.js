@@ -53,7 +53,9 @@ var Tile = React.createClass({
   },
   initMethods(){
     this.checkDuplicateTabs();
-    this.closeNewTabs();
+    _.defer(()=>{
+      this.closeNewTabs();
+    });
   },
   update(){
     var p = this.props;
@@ -61,18 +63,24 @@ var Tile = React.createClass({
       this.handleFocus();
     }
     this.checkDuplicateTabs();
-    this.closeNewTabs();
+    _.defer(()=>{
+      this.closeNewTabs();
+    });
   },
   updateScreenshot(){
     if (prefsStore.get_prefs().screenshot) {
       var p = this.props;
       var screenshotIndex = screenshotStore.get_ssIndex();
-      _.delay(()=>{
+      var ssData = _.result(_.find(screenshotIndex, { url: p.tab.url }), 'data');
+      if (ssData) {
+        this.setState({screenshot: ssData});
+      }
+      /*_.delay(()=>{
         var ssData = _.result(_.find(screenshotIndex, { url: p.tab.url }), 'data');
         if (ssData) {
           this.setState({screenshot: ssData});
         }
-      },1);
+      },1);*/
     }
   },
   checkDuplicateTabs(opt){
@@ -101,11 +109,11 @@ var Tile = React.createClass({
       if (p.tab.title === 'New Tab') {
         chrome.windows.getAll({populate: true}, (w)=>{
           for (var i = w.length - 1; i >= 0; i--) {
-            _.pluck(_.where(w[i].tabs, { title: 'New Tab' }), 'id');
             var newTab = _.pluck(_.where(w[i].tabs, { title: 'New Tab' }), 'id');
             if (newTab) {
               for (var x = newTab.length - 1; x >= 0; x--) {
                 if (newTab[x]) {
+                  var newTabs = [];
                   if (w[i].id !== p.tab.windowId) {
                     newTabs.push(newTab[x]);
                   } else if (newTab.length > 2 && !p.tab.active) {
@@ -360,7 +368,7 @@ var Tile = React.createClass({
       });
     });
   },
-  getPos(left, top, e, ui){
+  getPos(left, top){
     dragStore.set_drag(left, top);
   },
   currentlyDraggedOver(tab){
@@ -415,7 +423,7 @@ var Tile = React.createClass({
               </div>
               <div onClick={() => this.handleClick(p.tab.id)} className="col-xs-9 ntg-title-container">
                 <h5 style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-title">
-                  {S(p.tab.title).truncate(90).s}
+                  {S(p.tab.title).truncate(83).s}
                 </h5>
                 {prefs ? prefs.drag ? <div onMouseEnter={this.handleDragHoverIn} onMouseLeave={this.handleDragHoverOut} onClick={() => this.handleCloseTab(p.tab.id)}>
                                   {s.hover ? 
@@ -468,6 +476,7 @@ var TileGrid = React.createClass({
   componentDidMount(){
     this.listenTo(tabStore, this.update);
     this.checkDuplicateTabs(this.props.data);
+    screenshotStore.init();
   },
   update(){
     var self = this;
@@ -486,8 +495,7 @@ var TileGrid = React.createClass({
       if (utils.hasDuplicates(tabUrls)) {
         duplicateTabs = utils.getDuplicates(tabUrls);
         dupeStore.set_duplicateTabs(duplicateTabs);
-      }
-     
+      } 
     }
   },
   sort: function(key) {

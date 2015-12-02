@@ -11,6 +11,15 @@ var About = React.createClass({
         <div className="col-xs-2"/>
         <div className="col-xs-8 ntg-release">
           <h4>Release Notes</h4>
+          <h5>v0.5.1</h5><h6>11-29-15</h6>
+          <ul>
+            <li>Improved performance of tab screenshot capturing, and their frequency of updates.</li>
+            <li>Corrected tab title text overflowing on titles with no spaces.</li>
+          </ul>
+          <h5>v0.5</h5><h6>11-29-15</h6>
+          <ul>
+            <li>Added tab screenshots to tab tile backgrounds. Currently experimental, enable in Settings -> Preferences.</li>
+          </ul>
           <h5>v0.4.3</h5><h6>11-27-15</h6>
           <ul>
             <li>Fixed tab sorting and apply tab order functionality that was broken by changes introduced by close duplicate tabs feature.</li>
