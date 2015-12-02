@@ -44,7 +44,9 @@ chrome.tabs.onActivated.addListener((e, info) => {
     var tabs = tabStore.get_tab();
     var title = _.result(_.find(tabs, { id: e.tabId }), 'title');
     if (title !== 'New Tab') {
-      screenshotStore.capture(e.tabId, utilityStore.get_focusedWindow());
+      _.defer(()=>{
+        screenshotStore.capture(e.tabId, utilityStore.get_focusedWindow());
+      });
     }
   } 
 });

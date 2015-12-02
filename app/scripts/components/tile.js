@@ -113,6 +113,7 @@ var Tile = React.createClass({
             if (newTab) {
               for (var x = newTab.length - 1; x >= 0; x--) {
                 if (newTab[x]) {
+                  var newTabs = [];
                   if (w[i].id !== p.tab.windowId) {
                     newTabs.push(newTab[x]);
                   } else if (newTab.length > 2 && !p.tab.active) {
@@ -422,7 +423,7 @@ var Tile = React.createClass({
               </div>
               <div onClick={() => this.handleClick(p.tab.id)} className="col-xs-9 ntg-title-container">
                 <h5 style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-title">
-                  {S(p.tab.title).truncate(90).s}
+                  {S(p.tab.title).truncate(83).s}
                 </h5>
                 {prefs ? prefs.drag ? <div onMouseEnter={this.handleDragHoverIn} onMouseLeave={this.handleDragHoverOut} onClick={() => this.handleCloseTab(p.tab.id)}>
                                   {s.hover ? 
