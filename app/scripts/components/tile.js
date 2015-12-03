@@ -113,7 +113,7 @@ var Tile = React.createClass({
             if (newTab) {
               for (var x = newTab.length - 1; x >= 0; x--) {
                 if (newTab[x]) {
-                  var newTabs = [];
+                  newTabs = [];
                   if (w[i].id !== p.tab.windowId) {
                     newTabs.push(newTab[x]);
                   } else if (newTab.length > 2 && !p.tab.active) {
@@ -329,29 +329,31 @@ var Tile = React.createClass({
     }
   },
   handleStart(e, ui) {
-    document.getElementById('main').appendChild( ReactDOM.findDOMNode(this.refs.tile) );
+    // Temporarily move tile element to the parent div, so the drag position stays in sync with the cursor.
+    document.getElementById('main').appendChild( ReactDOM.findDOMNode(this.refs.tileMain) );
     console.log('Event: ', e, ui);
     console.log('Start Position: ', ui.position);
+    // tileDrag will store the state outside of the component's lifecycle.
     this.setState({drag: true});
     tileDrag = true;
     dragStore.set_dragged(this.props.tab);
-    this.getPos(utilityStore.get_cursor()[0], utilityStore.get_cursor()[1], e, ui.position);
+    this.getPos(utilityStore.get_cursor()[0], utilityStore.get_cursor()[1]);
   },
 
   handleDrag(e, ui) {
     console.log('Event: ', e, ui);
     console.log('Position: ', ui.position);
-    this.getPos(utilityStore.get_cursor()[0], utilityStore.get_cursor()[1], e, ui.position);
+    this.getPos(utilityStore.get_cursor()[0], utilityStore.get_cursor()[1]);
   },
 
   handleStop(e, ui) {
-    document.getElementById('grid').appendChild( ReactDOM.findDOMNode(this.refs.tile) );
+    // Move the tile element back to #grid where it belongs.
+    document.getElementById('grid').appendChild( ReactDOM.findDOMNode(this.refs.tileMain) );
     console.log('Event: ', e, ui);
     console.log('Stop Position: ', ui.position);
     tileDrag = false;
     this.setState({drag: false});
-    this.getPos(utilityStore.get_cursor()[0], utilityStore.get_cursor()[1], e, ui.position);
-    // Fix DOM style directly to fix the tile CSS artifact from react-draggable.
+    this.getPos(utilityStore.get_cursor()[0], utilityStore.get_cursor()[1]);
     var dragged = dragStore.get_dragged();
     var draggedOver = dragStore.get_tabIndex();
     var draggedOverIndex = null;
@@ -377,10 +379,11 @@ var Tile = React.createClass({
       if (dragStore.get_drag() && dragStore.get_dragged()) {
         var dragged = dragStore.get_dragged();
         console.log('dragged id: ',dragged.id);
-        dragStore.set_tabIndex(tab);
+        _.defer(()=>{
+          dragStore.set_tabIndex(tab);
+        });
       }
     }
-    
   },
   render: function() {
     var s = this.state;
@@ -388,6 +391,7 @@ var Tile = React.createClass({
     var drag = dragStore.get_drag();
     var prefs = prefsStore.get_prefs();
     return (
+      <div ref="tileMain" onDragEnter={this.currentlyDraggedOver(p.tab)} >
       <Draggable
                 axis="both"
                 handle=".handle"
@@ -397,7 +401,7 @@ var Tile = React.createClass({
                 onStart={this.handleStart}
                 onDrag={this.handleDrag}
                 onStop={this.handleStop}>
-      <div onMouseEnter={this.currentlyDraggedOver(p.tab)} ref="tile" style={s.drag ? {position: 'fixed', left: drag.left-200, top: drag.top} : null}>
+      <div ref="tile" style={s.drag ? {position: 'fixed', left: drag.left-200, top: drag.top} : null}>
       {p.render && s.render && p.tab.title !== 'New Tab' ? <div id="subTile" ref="subTile" style={s.hover ? s.duplicate && !s.drag && !s.pinning && !s.close ? {display: 'inline', backgroundColor: 'rgb(247, 247, 247)'} : {WebkitAnimationDuration: '1s'} : s.duplicate ? {WebkitAnimationIterationCount: 'infinite', display: 'inline', backgroundColor: 'rgb(237, 237, 237)'} : null} onContextMenu={this.handleContextClick} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "row-fluid animated zoomOut" : s.focus ? "animated pulse" : "row-fluid"}>
           { this.filterTabs(p.tab) ? <div className={s.hover ? "ntg-tile-hover" : "ntg-tile"} style={s.screenshot ? s.hover ? style.tileHovered(s.screenshot) : style.tile(s.screenshot) : null} key={p.key}>
             <div className="row ntg-tile-row-top">
@@ -437,6 +441,7 @@ var Tile = React.createClass({
         </div> : null}
       </div>
       </Draggable>
+      </div>
     );
   }
 });
@@ -554,12 +559,12 @@ var TileGrid = React.createClass({
               <button onClick={this.applyTabs} className="ntg-apply-btn"><i className="fa fa-sort"></i> {p.collapse ? 'Apply' : null}</button>
           </div>
         <div className="col-xs-11">
-          <div style={{position: 'relative'}} id="grid" ref="grid">
+          <div id="grid" ref="grid">
               {s.data.map((data, i)=> {
                 dataIndex = [];
                 dataIndex.push(data);
                 return (
-                  <Tile {...this.refs} keyType="id" render={p.render} key={data.id} tab={data} />
+                  <Tile render={p.render} key={data.id} tab={data} />
                 );
               })}
           </div>

@@ -181,7 +181,7 @@ var Root = React.createClass({
   render: function() {
     var s = this.state;
     return (
-      <div>
+      <div className="container-main">
         {s.context ? <ContextMenu /> : null}
         <Settings collapse={s.collapse} />
           {s.tabs ? <div className="tile-container">
