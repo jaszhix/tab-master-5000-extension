@@ -228,9 +228,11 @@ var Tile = React.createClass({
       pinned: !tab.pinned
     });
     this.setState({render: true});
-    _.delay(()=>{
+    var animationEnd = (e)=>{
       this.setState({pinning: false});
-    },500);
+      this.refs.subTile.removeEventListener('animationend', animationEnd);
+    };
+    this.refs.subTile.addEventListener('animationend',animationEnd);
     pinned = id;
   },
   handleMuting(tab){
@@ -318,14 +320,12 @@ var Tile = React.createClass({
       this.setState({duplicate: bool});
     } else {
       this.setState({focus: true});
-      _.delay(()=>{
-        this.setState({focus: false});
-      },500);
-      /*this.refs.subTile.addEventListener('animationend',(e)=>{
+      var animationEnd = (e)=>{
         console.log('animationend: ',e);
         this.setState({focus: false});
-        e.target.removeEventListener(e.type, arguments);
-      });*/
+        this.refs.subTile.removeEventListener('animationend', animationEnd);
+      };
+      this.refs.subTile.addEventListener('animationend',animationEnd);
     }
   },
   handleStart(e, ui) {
@@ -402,7 +402,7 @@ var Tile = React.createClass({
                 onDrag={this.handleDrag}
                 onStop={this.handleStop}>
       <div ref="tile" style={s.drag ? {position: 'fixed', left: drag.left-200, top: drag.top} : null}>
-      {p.render && s.render && p.tab.title !== 'New Tab' ? <div id="subTile" ref="subTile" style={s.hover ? s.duplicate && !s.drag && !s.pinning && !s.close ? {display: 'inline', backgroundColor: 'rgb(247, 247, 247)'} : {WebkitAnimationDuration: '1s'} : s.duplicate ? {WebkitAnimationIterationCount: 'infinite', display: 'inline', backgroundColor: 'rgb(237, 237, 237)'} : null} onContextMenu={this.handleContextClick} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "row-fluid animated zoomOut" : s.focus ? "animated pulse" : "row-fluid"}>
+      {p.render && s.render && p.tab.title !== 'New Tab' ? <div id="subTile" ref="subTile" style={s.hover ? s.duplicate && !s.drag && !s.pinning && !s.close ? {display: 'inline', backgroundColor: 'rgb(247, 247, 247)'} : {WebkitAnimationDuration: '1s'} : s.duplicate ? {WebkitAnimationIterationCount: 'infinite', display: 'inline', backgroundColor: 'rgb(237, 237, 237)'} : null} onContextMenu={this.handleContextClick} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "row-fluid animated zoomOut" : s.focus && s.pinning || s.focus && s.duplicate ? "row-fluid animated pulse" : "row-fluid"}>
           { this.filterTabs(p.tab) ? <div className={s.hover ? "ntg-tile-hover" : "ntg-tile"} style={s.screenshot ? s.hover ? style.tileHovered(s.screenshot) : style.tile(s.screenshot) : null} key={p.key}>
             <div className="row ntg-tile-row-top">
               <div className="col-xs-3">
