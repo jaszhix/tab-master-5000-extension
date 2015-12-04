@@ -392,55 +392,54 @@ var Tile = React.createClass({
     var prefs = prefsStore.get_prefs();
     return (
       <div ref="tileMain" onDragEnter={this.currentlyDraggedOver(p.tab)} >
-      <Draggable
-                axis="both"
-                handle=".handle"
-                moveOnStartChange={true}
-                grid={[1, 1]}
-                zIndex={100}
-                onStart={this.handleStart}
-                onDrag={this.handleDrag}
-                onStop={this.handleStop}>
-      <div ref="tile" style={s.drag ? {position: 'fixed', left: drag.left-200, top: drag.top} : null}>
-      {p.render && s.render && p.tab.title !== 'New Tab' ? <div id="subTile" ref="subTile" style={s.hover ? s.duplicate && !s.drag && !s.pinning && !s.close ? {display: 'inline', backgroundColor: 'rgb(247, 247, 247)'} : {WebkitAnimationDuration: '1s'} : s.duplicate ? {WebkitAnimationIterationCount: 'infinite', display: 'inline', backgroundColor: 'rgb(237, 237, 237)'} : null} onContextMenu={this.handleContextClick} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "row-fluid animated zoomOut" : s.focus && s.pinning || s.focus && s.duplicate ? "row-fluid animated pulse" : "row-fluid"}>
-          { this.filterTabs(p.tab) ? <div className={s.hover ? "ntg-tile-hover" : "ntg-tile"} style={s.screenshot ? s.hover ? style.tileHovered(s.screenshot) : style.tile(s.screenshot) : null} key={p.key}>
-            <div className="row ntg-tile-row-top">
-              <div className="col-xs-3">
-                {chromeVersion >= 46 ? <div onMouseEnter={this.handleTabMuteHoverIn} onMouseLeave={this.handleTabMuteHoverOut} onClick={() => this.handleMuting(p.tab)}>
-                                  {s.hover || p.tab.audible || p.tab.mutedInfo.muted ? 
-                                  <i className={p.tab.audible ? s.mHover ? "fa fa-volume-off ntg-mute-audible-hover" : "fa fa-volume-up ntg-mute-audible" : s.mHover ? "fa fa-volume-off ntg-mute-hover" : "fa fa-volume-off ntg-mute"} style={s.screenshot && s.hover ? style.ssIconBg : null} />
-                                  : null}
-                                </div> : null}
-                <div onMouseEnter={this.handleTabCloseHoverIn} onMouseLeave={this.handleTabCloseHoverOut} onClick={() => this.handleCloseTab(p.tab.id)}>
-                  {s.hover ? 
-                  <i className={s.xHover ? "fa fa-times ntg-x-hover" : "fa fa-times ntg-x"} style={s.screenshot && s.hover ? style.ssIconBg : null} />
-                  : null}
+        <Draggable  axis="both"
+                    handle=".handle"
+                    moveOnStartChange={true}
+                    grid={[1, 1]}
+                    zIndex={100}
+                    onStart={this.handleStart}
+                    onDrag={this.handleDrag}
+                    onStop={this.handleStop}>
+          <div ref="tile" style={s.drag ? {position: 'fixed', left: drag.left-200, top: drag.top} : null}>
+          {p.render && s.render && p.tab.title !== 'New Tab' ? <div id="subTile" ref="subTile" style={s.hover ? s.duplicate && !s.drag && !s.pinning && !s.close ? {display: 'inline', backgroundColor: 'rgb(247, 247, 247)'} : {WebkitAnimationDuration: '1s'} : s.duplicate ? {WebkitAnimationIterationCount: 'infinite', display: 'inline', backgroundColor: 'rgb(237, 237, 237)'} : null} onContextMenu={this.handleContextClick} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "row-fluid animated zoomOut" : s.focus && s.pinning || s.focus && s.duplicate ? "row-fluid animated pulse" : "row-fluid"}>
+              { this.filterTabs(p.tab) ? <div className={s.hover ? "ntg-tile-hover" : "ntg-tile"} style={s.screenshot ? s.hover ? style.tileHovered(s.screenshot) : style.tile(s.screenshot) : null} key={p.key}>
+                <div className="row ntg-tile-row-top">
+                  <div className="col-xs-3">
+                    {chromeVersion >= 46 ? <div onMouseEnter={this.handleTabMuteHoverIn} onMouseLeave={this.handleTabMuteHoverOut} onClick={() => this.handleMuting(p.tab)}>
+                                      {s.hover || p.tab.audible || p.tab.mutedInfo.muted ? 
+                                      <i className={p.tab.audible ? s.mHover ? "fa fa-volume-off ntg-mute-audible-hover" : "fa fa-volume-up ntg-mute-audible" : s.mHover ? "fa fa-volume-off ntg-mute-hover" : "fa fa-volume-off ntg-mute"} style={s.screenshot && s.hover ? style.ssIconBg : null} />
+                                      : null}
+                                    </div> : null}
+                    <div onMouseEnter={this.handleTabCloseHoverIn} onMouseLeave={this.handleTabCloseHoverOut} onClick={() => this.handleCloseTab(p.tab.id)}>
+                      {s.hover ? 
+                      <i className={s.xHover ? "fa fa-times ntg-x-hover" : "fa fa-times ntg-x"} style={s.screenshot && s.hover ? style.ssIconBg : null} />
+                      : null}
+                    </div>
+                    <div onMouseEnter={this.handlePinHoverIn} onMouseLeave={this.handlePinHoverOut} onClick={() => this.handlePinning(p.tab)}>
+                    {p.tab.pinned || s.hover ? 
+                      <i className={s.pHover ? "fa fa-map-pin ntg-pinned-hover" : "fa fa-map-pin ntg-pinned"} style={p.tab.pinned ? s.screenshot && s.hover ? style.ssPinnedIconBg : s.screenshot ? style.ssPinnedIconBg : {color: '#B67777'} : s.screenshot ? style.ssIconBg : null} />
+                      : null}
+                    </div>
+                    <div className="row">
+                      <img className="ntg-favicon" src={S(p.tab.favIconUrl).isEmpty() ? '../images/file_paper_blank_document.png' : utilityStore.filterFavicons(p.tab.favIconUrl, p.tab.url) } />
+                    </div>
+                  </div>
+                  <div onClick={() => this.handleClick(p.tab.id)} className="col-xs-9 ntg-title-container">
+                    <h5 style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-title">
+                      {S(p.tab.title).truncate(83).s}
+                    </h5>
+                    {prefs ? prefs.drag ? <div onMouseEnter={this.handleDragHoverIn} onMouseLeave={this.handleDragHoverOut} onClick={() => this.handleCloseTab(p.tab.id)}>
+                      {s.hover ? 
+                      <i className={s.dHover ? "fa fa-hand-grab-o ntg-move-hover handle" : "fa fa-hand-grab-o ntg-move"} style={s.screenshot && s.hover ? style.ssIconBg : null} />
+                      : null}
+                    </div> : null : null}
+                  </div> 
                 </div>
-                <div onMouseEnter={this.handlePinHoverIn} onMouseLeave={this.handlePinHoverOut} onClick={() => this.handlePinning(p.tab)}>
-                {p.tab.pinned || s.hover ? 
-                  <i className={s.pHover ? "fa fa-map-pin ntg-pinned-hover" : "fa fa-map-pin ntg-pinned"} style={p.tab.pinned ? s.screenshot && s.hover ? style.ssPinnedIconBg : s.screenshot ? style.ssPinnedIconBg : {color: '#B67777'} : s.screenshot ? style.ssIconBg : null} />
-                  : null}
-                </div>
-                <div className="row">
-                  <img className="ntg-favicon" src={S(p.tab.favIconUrl).isEmpty() ? '../images/file_paper_blank_document.png' : utilityStore.filterFavicons(p.tab.favIconUrl, p.tab.url) } />
-                </div>
-              </div>
-              <div onClick={() => this.handleClick(p.tab.id)} className="col-xs-9 ntg-title-container">
-                <h5 style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-title">
-                  {S(p.tab.title).truncate(83).s}
-                </h5>
-                {prefs ? prefs.drag ? <div onMouseEnter={this.handleDragHoverIn} onMouseLeave={this.handleDragHoverOut} onClick={() => this.handleCloseTab(p.tab.id)}>
-                                  {s.hover ? 
-                                  <i className={s.dHover ? "fa fa-hand-grab-o ntg-move-hover handle" : "fa fa-hand-grab-o ntg-move"} style={s.screenshot && s.hover ? style.ssIconBg : null} />
-                                  : null}
-                                </div> : null : null}
-              </div> 
-            </div>
-            <div onClick={() => this.handleClick(p.tab.id)} className="row ntg-tile-row-bottom"></div>
-          </div> : null}
-        </div> : null}
-      </div>
-      </Draggable>
+                <div onClick={() => this.handleClick(p.tab.id)} className="row ntg-tile-row-bottom"></div>
+              </div> : null}
+            </div> : null}
+          </div>
+        </Draggable>
       </div>
     );
   }
