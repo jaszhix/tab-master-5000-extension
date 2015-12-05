@@ -373,7 +373,6 @@ export var dupeStore = Reflux.createStore({
 
 export var screenshotStore = Reflux.createStore({
   init: function() {
-    this.invoked = false;
     chrome.storage.local.get('screenshots', (shots)=>{
       if (shots && shots.screenshots) {
         this.index = shots.screenshots;
@@ -392,45 +391,41 @@ export var screenshotStore = Reflux.createStore({
     var reTrigger = ()=>{
       this.capture(id,wid);
     };
-    if (!this.invoked) {
-      this.invoked = true;
-      var tabs = tabStore.get_tab();
-      var title = _.result(_.find(tabs, { id: id }), 'title');
-      var active = _.result(_.find(tabs, { id: id }), 'active');
-      console.log('active tab being captured is... active?', active);
-      if (title !== 'New Tab' && prefsStore.get_prefs().screenshot) {
-        var ssUrl = _.result(_.find(tabs, { id: id }), 'url');
-        chrome.tabs.captureVisibleTab({format: 'png'}, (image)=> {
-          if (image && ssUrl) {
-            var screenshot = {url: null, data: null, timeStamp: Date.now()};
-            screenshot.url = ssUrl;
-            screenshot.data = image;
-            console.log('screenshot: ', ssUrl, image);
-            var urlInIndex = _.result(_.find(this.index, { url: ssUrl }), 'url');
-            console.log('urlInIndex: ',urlInIndex);
-            if (urlInIndex) {
-              var dataInIndex = _.pluck(_.where(this.index, { url: ssUrl }), 'data');
-              var timeInIndex = _.pluck(_.where(this.index, { url: ssUrl }), 'timeStamp');
-              var index = _.findIndex(this.index, { 'url': ssUrl, 'data': _.last(dataInIndex), timeStamp: _.last(timeInIndex) });
-              var newIndex = _.remove(this.index, this.index[index]);
-              this.index = _.without(this.index, newIndex);
-              console.log('newIndex',newIndex, this.index);
-            }
-            this.index.push(screenshot);
-            this.index = _.uniq(this.index, 'url');
-            this.index = _.uniq(this.index, 'data');
-            chrome.storage.local.set({screenshots: this.index}, ()=>{
-              this.invoked = false;
-              this.trigger(this.index);
-            });
-          } 
-        });
-        if (chrome.extension.lastError) {
-          reTrigger();
-        }
-      } else {
+    var tabs = tabStore.get_tab();
+    var title = _.result(_.find(tabs, { id: id }), 'title');
+    var active = _.result(_.find(tabs, { id: id }), 'active');
+    console.log('active tab being captured is... active?', active);
+    if (title !== 'New Tab' && prefsStore.get_prefs().screenshot) {
+      var ssUrl = _.result(_.find(tabs, { id: id }), 'url');
+      chrome.tabs.captureVisibleTab({format: 'png'}, (image)=> {
+        if (image && ssUrl) {
+          var screenshot = {url: null, data: null, timeStamp: Date.now()};
+          screenshot.url = ssUrl;
+          screenshot.data = image;
+          console.log('screenshot: ', ssUrl, image);
+          var urlInIndex = _.result(_.find(this.index, { url: ssUrl }), 'url');
+          console.log('urlInIndex: ',urlInIndex);
+          if (urlInIndex) {
+            var dataInIndex = _.pluck(_.where(this.index, { url: ssUrl }), 'data');
+            var timeInIndex = _.pluck(_.where(this.index, { url: ssUrl }), 'timeStamp');
+            var index = _.findIndex(this.index, { 'url': ssUrl, 'data': _.last(dataInIndex), timeStamp: _.last(timeInIndex) });
+            var newIndex = _.remove(this.index, this.index[index]);
+            this.index = _.without(this.index, newIndex);
+            console.log('newIndex',newIndex, this.index);
+          }
+          this.index.push(screenshot);
+          this.index = _.uniq(this.index, 'url');
+          this.index = _.uniq(this.index, 'data');
+          chrome.storage.local.set({screenshots: this.index}, ()=>{
+            this.trigger(this.index);
+          });
+        } 
+      });
+      if (chrome.extension.lastError) {
         reTrigger();
       }
+    } else {
+      reTrigger();
     }
   },
   get_ssIndex(){
