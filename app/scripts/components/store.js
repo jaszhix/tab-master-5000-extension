@@ -17,7 +17,7 @@ var reRender = (type, id) => {
   });
   var tabs = tabStore.get_tab();
   var active = null;
-  if (type === 'create') {
+  if (type === 'create' || type === 'actviate') {
     active = id.windowId;
   } else {
     active = _.result(_.find(tabs, { id: id }), 'windowId');
@@ -38,7 +38,6 @@ chrome.tabs.onRemoved.addListener((e, info) => {
 });
 chrome.tabs.onActivated.addListener((e, info) => {
   console.log('on activated', e, info);
-  reRender('activate', e);
   if (prefsStore.get_prefs().screenshot) {
     // Inject event listener that messages the extension to recapture the image on click.
     var tabs = tabStore.get_tab();
@@ -48,7 +47,8 @@ chrome.tabs.onActivated.addListener((e, info) => {
         screenshotStore.capture(e.tabId, utilityStore.get_focusedWindow());
       });
     }
-  } 
+  }
+  reRender('activate', e);
 });
 chrome.tabs.onUpdated.addListener((e, info) => {
   console.log('on updated', e, info);
