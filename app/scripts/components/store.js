@@ -222,11 +222,14 @@ export var utilityStore = Reflux.createStore({
     return this.systemState;
   },
   get_bytesInUse(item){
-    chrome.storage.local.getBytesInUse(item,(bytes)=>{
-      this.bytesInUse = bytes;
-      console.log('bytes in use: ',this.bytesInUse);
+    return new Promise((resolve, reject)=>{
+      chrome.storage.local.getBytesInUse(item,(bytes)=>{
+        this.bytesInUse = bytes;
+        this.bytesInUse = resolve(this.bytesInUse);
+        console.log('bytes in use: ',this.bytesInUse);
+      });
+      return this.bytesInUse;
     });
-    return this.bytesInUse;
   },
   set_cursor(x, y){
     this.cursor[0] = x;
@@ -373,9 +376,11 @@ export var dupeStore = Reflux.createStore({
 
 export var screenshotStore = Reflux.createStore({
   init: function() {
+    this.invoked = false;
     chrome.storage.local.get('screenshots', (shots)=>{
       if (shots && shots.screenshots) {
         this.index = shots.screenshots;
+        this.purge(shots.screenshots);
       } else {
         this.index = [];
         chrome.storage.local.set({screenshots: this.index}, (result)=> {
@@ -391,41 +396,47 @@ export var screenshotStore = Reflux.createStore({
     var reTrigger = ()=>{
       this.capture(id,wid);
     };
-    var tabs = tabStore.get_tab();
-    var title = _.result(_.find(tabs, { id: id }), 'title');
-    var active = _.result(_.find(tabs, { id: id }), 'active');
-    console.log('active tab being captured is... active?', active);
-    if (title !== 'New Tab' && prefsStore.get_prefs().screenshot) {
-      var ssUrl = _.result(_.find(tabs, { id: id }), 'url');
-      chrome.tabs.captureVisibleTab({format: 'png'}, (image)=> {
-        if (image && ssUrl) {
-          var screenshot = {url: null, data: null, timeStamp: Date.now()};
-          screenshot.url = ssUrl;
-          screenshot.data = image;
-          console.log('screenshot: ', ssUrl, image);
-          var urlInIndex = _.result(_.find(this.index, { url: ssUrl }), 'url');
-          console.log('urlInIndex: ',urlInIndex);
-          if (urlInIndex) {
-            var dataInIndex = _.pluck(_.where(this.index, { url: ssUrl }), 'data');
-            var timeInIndex = _.pluck(_.where(this.index, { url: ssUrl }), 'timeStamp');
-            var index = _.findIndex(this.index, { 'url': ssUrl, 'data': _.last(dataInIndex), timeStamp: _.last(timeInIndex) });
-            var newIndex = _.remove(this.index, this.index[index]);
-            this.index = _.without(this.index, newIndex);
-            console.log('newIndex',newIndex, this.index);
-          }
-          this.index.push(screenshot);
-          this.index = _.uniq(this.index, 'url');
-          this.index = _.uniq(this.index, 'data');
-          chrome.storage.local.set({screenshots: this.index}, ()=>{
-            this.trigger(this.index);
+    if (!this.invoked) {
+      this.invoked = true;
+      var tabs = tabStore.get_tab();
+      var title = _.result(_.find(tabs, { id: id }), 'title');
+      var active = _.result(_.find(tabs, { id: id }), 'active');
+      console.log('active tab being captured is... active?', active);
+      if (title !== 'New Tab' && prefsStore.get_prefs().screenshot) {
+        var ssUrl = _.result(_.find(tabs, { id: id }), 'url');
+        if (ssUrl) {
+          chrome.tabs.captureVisibleTab({format: 'png'}, (image)=> {
+            if (image) {
+              var screenshot = {url: null, data: null, timeStamp: Date.now()};
+              screenshot.url = ssUrl;
+              screenshot.data = image;
+              console.log('screenshot: ', ssUrl, image);
+              var urlInIndex = _.result(_.find(this.index, { url: ssUrl }), 'url');
+              console.log('urlInIndex: ',urlInIndex);
+              if (urlInIndex) {
+                var dataInIndex = _.pluck(_.where(this.index, { url: ssUrl }), 'data');
+                var timeInIndex = _.pluck(_.where(this.index, { url: ssUrl }), 'timeStamp');
+                var index = _.findIndex(this.index, { 'url': ssUrl, 'data': _.last(dataInIndex), timeStamp: _.last(timeInIndex) });
+                var newIndex = _.remove(this.index, this.index[index]);
+                this.index = _.without(this.index, newIndex);
+                console.log('newIndex',newIndex, this.index);
+              }
+              this.index.push(screenshot);
+              this.index = _.uniq(this.index, 'url');
+              this.index = _.uniq(this.index, 'data');
+              chrome.storage.local.set({screenshots: this.index}, ()=>{
+                this.invoked = false;
+                this.trigger(this.index);
+              });
+            } 
           });
-        } 
-      });
-      if (chrome.extension.lastError) {
+        }
+        if (chrome.extension.lastError) {
+          reTrigger();
+        }
+      } else {
         reTrigger();
       }
-    } else {
-      reTrigger();
     }
   },
   get_ssIndex(){
@@ -441,6 +452,29 @@ export var screenshotStore = Reflux.createStore({
       _.defer(()=>{
         reRenderStore.set_reRender(true, 'create', null);
       });
+    });
+  },
+  purge(index){
+    utilityStore.get_bytesInUse('screenshots').then((bytes)=>{
+      var tabs = tabStore.get_tab();
+      //var bytes = utilityStore.get_bytesInUse('screenshots');
+      var ssUrl = null;
+      var purgedScreenshots = index;
+      console.log('bytes: ',bytes);
+      // If screenshot cache is above 50MB, start purging urls that are not currently open.
+      if (bytes > 50000000) {
+        for (var i = index.length - 1; i >= 0; i--) {
+          ssUrl = _.result(_.find(tabs, { url: index[i].url }), 'url');
+          if (ssUrl) {
+            purgedScreenshots = index;
+          } else {
+            purgedScreenshots = _.remove(purgedScreenshots, index[i]);
+            console.log('Remove ',index[i]);
+          }
+        }
+        console.log('purgedScreenshots: ',purgedScreenshots);
+        this.index = purgedScreenshots;
+      }
     });
   }
 });

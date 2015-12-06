@@ -18,11 +18,13 @@ var Preferences = React.createClass({
       dragHover: false,
       contextHover: false,
       duplicateHover: false,
-      screenshotHover: false
+      screenshotHover: false,
+      bytesInUse: null
     };
   },
   componentDidMount(){
     this.listenTo(prefsStore, this.prefsChange);
+    this.getBytesInUse();
   },
   prefsChange(){
     var prefs = prefsStore.get_prefs();
@@ -31,10 +33,15 @@ var Preferences = React.createClass({
     this.setState({duplicate: prefs.duplicate});
     this.setState({screenshot: prefs.screenshot});
   },
+  getBytesInUse(){
+    if (this.state.screenshot) {
+      utilityStore.get_bytesInUse('screenshots').then((bytes)=>{
+        this.setState({bytesInUse: bytes});
+      });
+    }
+  },
   render: function() {
     var s = this.state;
-    var bytesInUse = utilityStore.get_bytesInUse('screenshots');
-    var mb = utils.formatBytes(bytesInUse, 2);
     return (
       <div className="preferences">
         <div className="col-xs-6">
@@ -51,7 +58,7 @@ var Preferences = React.createClass({
             <input checked={s.screenshot} onChange={()=>prefsStore.set_prefs('screenshot',!s.screenshot)} type="checkbox" /> Enable tab screenshots <strong>(Experimental)</strong>
             {s.screenshot ? 
               <div>
-                <p>Screenshot disk useage: {mb}</p>
+                <p>Screenshot disk useage: {s.bytesInUse ? utils.formatBytes(s.bytesInUse, 2) : null}</p>
                 <button onClick={()=>screenshotStore.clear()} className="ntg-setting-btn">Clear Screenshot Cache</button> 
               </div>
             : null}
