@@ -44,7 +44,7 @@ chrome.tabs.onActivated.addListener((e, info) => {
     var title = _.result(_.find(tabs, { id: e.tabId }), 'title');
     if (title !== 'New Tab') {
       _.defer(()=>{
-        screenshotStore.capture(e.tabId, utilityStore.get_focusedWindow());
+        screenshotStore.capture(e.tabId, e.windowId);
       });
     }
   }
@@ -165,6 +165,7 @@ export var settingsStore = Reflux.createStore({
 export var tabStore = Reflux.createStore({
   init: function() {
     this.tab = [];
+    this.allTabs = null;
   },
   set_tab: function(value) {
     this.tab = value;
@@ -173,6 +174,17 @@ export var tabStore = Reflux.createStore({
   },
   get_tab: function() {
     return this.tab;
+  },
+  getAllTabs(){
+    chrome.windows.getAll({populate: true}, (w)=>{
+      var allTabs = [];
+      for (var i = w.length - 1; i >= 0; i--) {
+        allTabs.push(w[i].tabs);
+      }
+      this.allTabs = _.flatten(allTabs);
+      console.log('all tabs: ',_.flatten(allTabs), this.allTabs, allTabs);
+    });
+    return this.allTabs;
   }
 });
 
@@ -376,17 +388,18 @@ export var dupeStore = Reflux.createStore({
 
 export var screenshotStore = Reflux.createStore({
   init: function() {
+    var save = (msg)=>{
+      chrome.storage.local.set({screenshots: this.index}, (result)=> {
+        console.log(msg);
+      });
+    };
     this.invoked = false;
     chrome.storage.local.get('screenshots', (shots)=>{
       if (shots && shots.screenshots) {
         this.index = shots.screenshots;
-        this.purge(shots.screenshots);
       } else {
         this.index = [];
-        chrome.storage.local.set({screenshots: this.index}, (result)=> {
-          //this.screenshot = {url: null, data: null};
-          console.log('default ss index saved');
-        });
+        save('default ss index saved');
       }
       console.log('ss index: ', this.index);
       this.trigger(this.index);
@@ -396,6 +409,11 @@ export var screenshotStore = Reflux.createStore({
     var reTrigger = ()=>{
       this.capture(id,wid);
     };
+    var getScreenshot = new Promise((resolve, reject)=>{
+      chrome.tabs.captureVisibleTab({format: 'png'}, (image)=> {
+        resolve(image);
+      });
+    });
     if (!this.invoked) {
       this.invoked = true;
       var tabs = tabStore.get_tab();
@@ -405,7 +423,7 @@ export var screenshotStore = Reflux.createStore({
       if (title !== 'New Tab' && prefsStore.get_prefs().screenshot) {
         var ssUrl = _.result(_.find(tabs, { id: id }), 'url');
         if (ssUrl) {
-          chrome.tabs.captureVisibleTab({format: 'png'}, (image)=> {
+          getScreenshot.then((image)=>{
             if (image) {
               var screenshot = {url: null, data: null, timeStamp: Date.now()};
               screenshot.url = ssUrl;
@@ -424,6 +442,7 @@ export var screenshotStore = Reflux.createStore({
               this.index.push(screenshot);
               this.index = _.uniq(this.index, 'url');
               this.index = _.uniq(this.index, 'data');
+              this.purge(this.index);
               chrome.storage.local.set({screenshots: this.index}, ()=>{
                 this.invoked = false;
                 this.trigger(this.index);
@@ -457,23 +476,27 @@ export var screenshotStore = Reflux.createStore({
   purge(index){
     utilityStore.get_bytesInUse('screenshots').then((bytes)=>{
       var tabs = tabStore.get_tab();
-      //var bytes = utilityStore.get_bytesInUse('screenshots');
       var ssUrl = null;
-      var purgedScreenshots = index;
+      var windowId = null;
+      var wid = utilityStore.get_window();
+      var purged = [];
       console.log('bytes: ',bytes);
       // If screenshot cache is above 50MB, start purging urls that are not currently open.
-      if (bytes > 50000000) {
+      if (bytes > 1000000) {
         for (var i = index.length - 1; i >= 0; i--) {
           ssUrl = _.result(_.find(tabs, { url: index[i].url }), 'url');
-          if (ssUrl) {
-            purgedScreenshots = index;
-          } else {
-            purgedScreenshots = _.remove(purgedScreenshots, index[i]);
+          windowId = _.result(_.find(tabs, { url: index[i].url }), 'windowId');
+          console.log('purge windowId', windowId, wid);
+          if (!ssUrl && wid === windowId) {
+            purged.push(index[i]);
             console.log('Remove ',index[i]);
           }
         }
-        console.log('purgedScreenshots: ',purgedScreenshots);
-        this.index = purgedScreenshots;
+        if (purged.length > 0) {
+          for (var y = purged.length - 1; y >= 0; y--) {
+            this.index = _.without(this.index, purged[y]);
+          }
+        }
       }
     });
   }

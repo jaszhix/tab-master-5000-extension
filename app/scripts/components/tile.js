@@ -52,6 +52,7 @@ var Tile = React.createClass({
     return this.state.render || this.props.tab.title !== 'New Tab';
   },
   initMethods(){
+    this.updateScreenshot();
     this.checkDuplicateTabs();
     _.defer(()=>{
       this.closeNewTabs();
@@ -75,12 +76,6 @@ var Tile = React.createClass({
       if (ssData) {
         this.setState({screenshot: ssData});
       }
-      /*_.delay(()=>{
-        var ssData = _.result(_.find(screenshotIndex, { url: p.tab.url }), 'data');
-        if (ssData) {
-          this.setState({screenshot: ssData});
-        }
-      },1);*/
     }
   },
   checkDuplicateTabs(opt){
@@ -480,7 +475,7 @@ var TileGrid = React.createClass({
   componentDidMount(){
     this.listenTo(tabStore, this.update);
     this.checkDuplicateTabs(this.props.data);
-    screenshotStore.init();
+    //screenshotStore.init();
   },
   update(){
     var self = this;
