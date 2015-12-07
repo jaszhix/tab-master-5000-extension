@@ -81,21 +81,22 @@ var Tile = React.createClass({
   checkDuplicateTabs(opt){
     var p = this.props;
     if (_.include(duplicateTabs, p.tab.url)) {
-      chrome.tabs.query({url: p.tab.url}, (t)=>{
-        var first = _.first(t);
-        var activeTab = _.pluck(_.filter(t, { 'active': true }), 'id');
-        console.log('checkDuplicateTabs: ',t, first);
-        for (var i = t.length - 1; i >= 0; i--) {
-          if (t[i].id !== first.id && t[i].title !== 'New Tab' && t[i].id !== activeTab) {
-            if (opt === 'close') {
-              this.handleCloseTab(t[i].id);
-              this.handleFocus('duplicate',false);
-            } else if (p.tab.id === t[i].id && prefsStore.get_prefs().duplicate) {
-              this.handleFocus('duplicate',true);
-            }
+      var t = _.where(tabStore.get_tab(), { url: p.tab.url });
+      console.log('dupes t: ',t);
+      var first = _.first(t);
+      var activeTab = _.pluck(_.filter(t, { 'active': true }), 'id');
+      console.log('checkDuplicateTabs: ',t, first);
+      for (var i = t.length - 1; i >= 0; i--) {
+        if (t[i].id !== first.id && t[i].title !== 'New Tab' && t[i].id !== activeTab) {
+          if (opt === 'close') {
+            this.handleCloseTab(t[i].id);
+            this.handleFocus('duplicate',false);
+          } else if (p.tab.id === t[i].id && prefsStore.get_prefs().duplicate) {
+            this.handleFocus('duplicate',true);
           }
         }
-      });
+      }
+      
     }
   },
   closeNewTabs(){

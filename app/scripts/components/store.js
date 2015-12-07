@@ -451,10 +451,9 @@ export var screenshotStore = Reflux.createStore({
           });
         }
         if (chrome.extension.lastError) {
+          console.log('error, reTrigger');
           reTrigger();
         }
-      } else {
-        reTrigger();
       }
     }
   },
@@ -500,6 +499,10 @@ export var screenshotStore = Reflux.createStore({
       }
     });
   }
+});
+
+window.addEventListener('onerror',(err)=>{
+  console.log('error:',err)
 });
 
 (function() {
