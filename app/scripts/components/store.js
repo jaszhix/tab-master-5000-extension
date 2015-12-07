@@ -249,6 +249,15 @@ export var utilityStore = Reflux.createStore({
   },
   get_cursor(){
     return this.cursor;
+  },
+  restartNewTab(){
+    var tabs = tabStore.get_tab();
+    var newTab = _.find(tabs, {title: 'New Tab'})
+    chrome.tabs.remove(newTab.id, ()=>{
+      chrome.tabs.create({windowId: newTab.windowId, index: newTab.index, active: newTab.active, pinned: newTab.pinned}, (newTab)=>{
+        console.log('newTab restarted: ',newTab);
+      });
+    });
   }
 });
 
@@ -407,9 +416,6 @@ export var screenshotStore = Reflux.createStore({
     });
   },
   capture(id, wid){
-    var reTrigger = ()=>{
-      this.capture(id,wid);
-    };
     var getScreenshot = new Promise((resolve, reject)=>{
       if (!this.invoked) {
         this.invoked = true;
@@ -417,8 +423,8 @@ export var screenshotStore = Reflux.createStore({
           if (image) {
             resolve(image);
           } else {
-            reject(chrome.extension.lastError);
-            throw new Error(chrome.extension.lastError);
+            // Temporary work around to chrome throwing 'unknown error' during capturing until the call is moved to background.js.
+            utilityStore.restartNewTab();
           }
         });
       }
@@ -429,9 +435,6 @@ export var screenshotStore = Reflux.createStore({
       var ssUrl = _.result(_.find(tabs, { id: id }), 'url');
       if (ssUrl) {
         getScreenshot.then((image, err)=>{
-          if (err) {
-            console.log('err: ',err, 'ssUrl: ', ssUrl, 'title: ',title, 'urlInIndex: ',urlInIndex, 'timeInIndex: ',timeInIndex);
-          }
           var screenshot = {url: null, data: null, timeStamp: Date.now()};
           screenshot.url = ssUrl;
           screenshot.data = image;
