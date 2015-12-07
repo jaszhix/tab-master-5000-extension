@@ -397,6 +397,7 @@ export var screenshotStore = Reflux.createStore({
     chrome.storage.local.get('screenshots', (shots)=>{
       if (shots && shots.screenshots) {
         this.index = shots.screenshots;
+        this.purge(this.index);
       } else {
         this.index = [];
         save('default ss index saved');
@@ -411,7 +412,11 @@ export var screenshotStore = Reflux.createStore({
     };
     var getScreenshot = new Promise((resolve, reject)=>{
       chrome.tabs.captureVisibleTab({format: 'png'}, (image)=> {
-        resolve(image);
+        if (chrome.extension.lastError) {
+           reTrigger();
+        } else {
+          resolve(image);
+        }
       });
     });
     if (!this.invoked) {
@@ -423,7 +428,7 @@ export var screenshotStore = Reflux.createStore({
       if (title !== 'New Tab' && prefsStore.get_prefs().screenshot) {
         var ssUrl = _.result(_.find(tabs, { id: id }), 'url');
         if (ssUrl) {
-          getScreenshot.then((image)=>{
+          getScreenshot.then((image, err)=>{
             if (image) {
               var screenshot = {url: null, data: null, timeStamp: Date.now()};
               screenshot.url = ssUrl;
@@ -442,17 +447,12 @@ export var screenshotStore = Reflux.createStore({
               this.index.push(screenshot);
               this.index = _.uniq(this.index, 'url');
               this.index = _.uniq(this.index, 'data');
-              this.purge(this.index);
               chrome.storage.local.set({screenshots: this.index}, ()=>{
                 this.invoked = false;
                 this.trigger(this.index);
               });
-            } 
+            }
           });
-        }
-        if (chrome.extension.lastError) {
-          console.log('error, reTrigger');
-          reTrigger();
         }
       }
     }
@@ -472,37 +472,48 @@ export var screenshotStore = Reflux.createStore({
       });
     });
   },
-  purge(index){
+  purge(index, windowId){
     utilityStore.get_bytesInUse('screenshots').then((bytes)=>{
-      var tabs = tabStore.get_tab();
-      var ssUrl = null;
-      var windowId = null;
-      var wid = utilityStore.get_window();
-      var purged = [];
+      //var tabs = tabStore.get_tab();
+      //var ssUrl = null;
+      //var windowId = null;
+      //var wid = utilityStore.get_window();
+      //var purged = [];
+      var timeStamp = null;
+      var timeStampIndex = null;
       console.log('bytes: ',bytes);
-      // If screenshot cache is above 50MB, start purging urls that are not currently open.
-      if (bytes > 1000000) {
+      // If screenshot cache is above 50MB, start purging screenshots that are 3 days old.
+      if (bytes > 52428800) {
+        var now = new Date(Date.now()).getTime();
         for (var i = index.length - 1; i >= 0; i--) {
+          timeStampIndex = _.find(index, { timeStamp: index[i].timeStamp });
+          timeStamp = new Date(timeStampIndex.timeStamp).getTime();
+          if (timeStamp + 259200000 < now) {
+            console.log('3 days old: ',index[i]);
+            this.index = _.without(this.index, index[i]);
+          }
+          chrome.storage.local.set({screenshots: this.index});
+          console.log('timeStamp: ',timeStamp);
+        }
+        /*for (var i = index.length - 1; i >= 0; i--) {
           ssUrl = _.result(_.find(tabs, { url: index[i].url }), 'url');
-          windowId = _.result(_.find(tabs, { url: index[i].url }), 'windowId');
-          console.log('purge windowId', windowId, wid);
-          if (!ssUrl && wid === windowId) {
+          console.log('purge ssUrl: ', ssUrl);
+          //windowId = _.result(_.find(tabs, { url: index[i].url }), 'windowId');
+          console.log('purge windowId', windowId, wid, tabs[0].windowId);
+          if (!ssUrl && tabs[0].windowId === windowId) {
             purged.push(index[i]);
             console.log('Remove ',index[i]);
           }
         }
-        if (purged.length > 0) {
+        if (purged && purged.length > 0) {
           for (var y = purged.length - 1; y >= 0; y--) {
             this.index = _.without(this.index, purged[y]);
           }
-        }
+          chrome.storage.local.set({screenshots: this.index});
+        }*/
       }
     });
   }
-});
-
-window.addEventListener('onerror',(err)=>{
-  console.log('error:',err)
 });
 
 (function() {

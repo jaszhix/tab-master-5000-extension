@@ -82,7 +82,6 @@ var Tile = React.createClass({
     var p = this.props;
     if (_.include(duplicateTabs, p.tab.url)) {
       var t = _.where(tabStore.get_tab(), { url: p.tab.url });
-      console.log('dupes t: ',t);
       var first = _.first(t);
       var activeTab = _.pluck(_.filter(t, { 'active': true }), 'id');
       console.log('checkDuplicateTabs: ',t, first);
@@ -90,9 +89,10 @@ var Tile = React.createClass({
         if (t[i].id !== first.id && t[i].title !== 'New Tab' && t[i].id !== activeTab) {
           if (opt === 'close') {
             this.handleCloseTab(t[i].id);
-            this.handleFocus('duplicate',false);
           } else if (p.tab.id === t[i].id && prefsStore.get_prefs().duplicate) {
-            this.handleFocus('duplicate',true);
+            _.defer(()=>{
+              this.handleFocus('duplicate',true);
+            });
           }
         }
       }
