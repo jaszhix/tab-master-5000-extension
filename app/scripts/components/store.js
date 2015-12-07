@@ -411,51 +411,52 @@ export var screenshotStore = Reflux.createStore({
       this.capture(id,wid);
     };
     var getScreenshot = new Promise((resolve, reject)=>{
-      chrome.tabs.captureVisibleTab({format: 'png'}, (image)=> {
-        if (chrome.extension.lastError) {
-           reTrigger();
-        } else {
-          resolve(image);
-        }
-      });
+      if (!this.invoked) {
+        this.invoked = true;
+        chrome.tabs.captureVisibleTab({format: 'jpeg'}, (image)=> {
+          if (image) {
+            resolve(image);
+          } else {
+            reject(chrome.extension.lastError);
+            throw new Error(chrome.extension.lastError);
+          }
+        });
+      }
     });
-    if (!this.invoked) {
-      this.invoked = true;
-      var tabs = tabStore.get_tab();
-      var title = _.result(_.find(tabs, { id: id }), 'title');
-      var active = _.result(_.find(tabs, { id: id }), 'active');
-      console.log('active tab being captured is... active?', active);
-      if (title !== 'New Tab' && prefsStore.get_prefs().screenshot) {
-        var ssUrl = _.result(_.find(tabs, { id: id }), 'url');
-        if (ssUrl) {
-          getScreenshot.then((image, err)=>{
-            if (image) {
-              var screenshot = {url: null, data: null, timeStamp: Date.now()};
-              screenshot.url = ssUrl;
-              screenshot.data = image;
-              console.log('screenshot: ', ssUrl, image);
-              var urlInIndex = _.result(_.find(this.index, { url: ssUrl }), 'url');
-              console.log('urlInIndex: ',urlInIndex);
-              if (urlInIndex) {
-                var dataInIndex = _.pluck(_.where(this.index, { url: ssUrl }), 'data');
-                var timeInIndex = _.pluck(_.where(this.index, { url: ssUrl }), 'timeStamp');
-                var index = _.findIndex(this.index, { 'url': ssUrl, 'data': _.last(dataInIndex), timeStamp: _.last(timeInIndex) });
-                var newIndex = _.remove(this.index, this.index[index]);
-                this.index = _.without(this.index, newIndex);
-                console.log('newIndex',newIndex, this.index);
-              }
-              this.index.push(screenshot);
-              this.index = _.uniq(this.index, 'url');
-              this.index = _.uniq(this.index, 'data');
-              chrome.storage.local.set({screenshots: this.index}, ()=>{
-                this.invoked = false;
-                this.trigger(this.index);
-              });
-            }
+    var tabs = tabStore.get_tab();
+    var title = _.result(_.find(tabs, { id: id }), 'title');
+    if (title !== 'New Tab' && prefsStore.get_prefs().screenshot) {
+      var ssUrl = _.result(_.find(tabs, { id: id }), 'url');
+      if (ssUrl) {
+        getScreenshot.then((image, err)=>{
+          if (err) {
+            console.log('err: ',err, 'ssUrl: ', ssUrl, 'title: ',title, 'urlInIndex: ',urlInIndex, 'timeInIndex: ',timeInIndex);
+          }
+          var screenshot = {url: null, data: null, timeStamp: Date.now()};
+          screenshot.url = ssUrl;
+          screenshot.data = image;
+          console.log('screenshot: ', ssUrl, image);
+          var urlInIndex = _.result(_.find(this.index, { url: ssUrl }), 'url');
+          console.log('urlInIndex: ',urlInIndex);
+          if (urlInIndex) {
+            var dataInIndex = _.pluck(_.where(this.index, { url: ssUrl }), 'data');
+            var timeInIndex = _.pluck(_.where(this.index, { url: ssUrl }), 'timeStamp');
+            var index = _.findIndex(this.index, { 'url': ssUrl, 'data': _.last(dataInIndex), timeStamp: _.last(timeInIndex) });
+            var newIndex = _.remove(this.index, this.index[index]);
+            this.index = _.without(this.index, newIndex);
+            console.log('newIndex',newIndex, this.index);
+          }
+          this.index.push(screenshot);
+          this.index = _.uniq(this.index, 'url');
+          this.index = _.uniq(this.index, 'data');
+          chrome.storage.local.set({screenshots: this.index}, ()=>{
+            this.invoked = false;
+            this.trigger(this.index);
           });
-        }
+        });
       }
     }
+    
   },
   get_ssIndex(){
     if (!this.invoked) {
