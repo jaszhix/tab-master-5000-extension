@@ -3,7 +3,9 @@ import ReactDOM from 'react-dom';
 import Reflux from 'reflux';
 import ReactUtils from 'react-utils';
 
-import {screenshotStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, tabStore, utilityStore, contextStore} from './store';
+import {searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore} from './store';
+import tabStore from './tabStore';
+
 import TileGrid from './tile';
 import Settings from './settings';
 import ContextMenu from './context';
@@ -82,7 +84,7 @@ var Root = React.createClass({
     // Call the method that will query Chrome for tabs.
     this.captureTabs('init');
     this.onWindowResize(null, 'init');
-    console.log(utilityStore.chromeVersion());
+    console.log('Chrome Version: ',utilityStore.chromeVersion());
   },
   update(){
     this.setState({tabs: tabStore.get_tab()});

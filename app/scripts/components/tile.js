@@ -7,11 +7,11 @@ import kmp from 'kmp';
 import Draggable from 'react-draggable';
 import utils from './utils';
 
-import {screenshotStore, dupeStore, prefsStore, reRenderStore, searchStore, applyTabOrderStore, utilityStore, contextStore, relayStore, tabStore, dragStore} from './store';
+import {screenshotStore, dupeStore, prefsStore, reRenderStore, searchStore, applyTabOrderStore, utilityStore, contextStore, relayStore, dragStore} from './store';
+import tabStore from './tabStore';
+
 import style from './style';
 
-//var tabUrls = null;
-var newTabs = [];
 var dataIndex = null;
 var tabUrls = null;
 var duplicateTabs = null;
@@ -49,14 +49,16 @@ var Tile = React.createClass({
     this.initMethods();
   },
   shouldComponentUpdate() {
-    return this.state.render || this.props.tab.title !== 'New Tab';
+    return this.state.render;
   },
   initMethods(){
     this.updateScreenshot();
     this.checkDuplicateTabs();
-    _.defer(()=>{
-      this.closeNewTabs();
-    });
+    if (this.props.tab.title === 'New Tab') {
+      _.defer(()=>{
+        this.closeNewTabs();
+      });
+    }
   },
   update(){
     var p = this.props;
@@ -64,11 +66,14 @@ var Tile = React.createClass({
       this.handleFocus();
     }
     this.checkDuplicateTabs();
-    _.defer(()=>{
+    if (this.props.tab.title === 'New Tab') {
       this.closeNewTabs();
-    });
+    }
   },
   updateScreenshot(){
+    if (chrome.extension.lastError) {
+      utilityStore.restartNewTab();
+    }
     if (prefsStore.get_prefs().screenshot) {
       var p = this.props;
       var screenshotIndex = screenshotStore.get_ssIndex();
@@ -100,31 +105,26 @@ var Tile = React.createClass({
     }
   },
   closeNewTabs(){
-    var p = this.props;
     if (prefsStore.get_prefs().screenshot) {
-      if (p.tab.title === 'New Tab') {
-        chrome.windows.getAll({populate: true}, (w)=>{
-          for (var i = w.length - 1; i >= 0; i--) {
-            var newTab = _.pluck(_.where(w[i].tabs, { title: 'New Tab' }), 'id');
-            if (newTab) {
-              for (var x = newTab.length - 1; x >= 0; x--) {
-                if (newTab[x]) {
-                  newTabs = [];
-                  if (w[i].id !== p.tab.windowId) {
-                    newTabs.push(newTab[x]);
-                  } else if (newTab.length > 2 && !p.tab.active) {
-                    newTabs.push(newTab[x]);
-                  }
-                }
-              }
+      var p = this.props;
+      var newTabs = tabStore.getNewTabs();
+      console.log('#newtabs: ',newTabs);
+      if (newTabs) {
+        var lastNewTab = _.last(newTabs);
+        console.log('first nt: ', lastNewTab);
+        for (var i = 0; i < newTabs.length; i++) {
+          if (newTabs[i]) {
+            if (p.tab.windowId !== newTabs[i].windowId && p.tab.active) {
+              chrome.tabs.remove(newTabs[i].id);
+            } else if (newTabs.length > 2 && !p.tab.active) {
+              chrome.tabs.remove(newTabs[i].id);
             }
           }
-          for (var y = newTabs.length - 1; y >= 0; y--) {
-            chrome.tabs.remove(newTabs[y]);
-          }
-          console.log('windows: ',w);
-        });
+        }
       }
+      /*for (var y = newTabs.length - 1; y >= 0; y--) {
+        chrome.tabs.remove(newTabs[y]);
+      }*/
     }
   },
   handleClick(id, e) {

@@ -3,6 +3,11 @@ import kmp from 'kmp';
 import _ from 'lodash';
 import S from 'string';
 
+import tabStore from './tabStore';
+
+var tabs = ()=>{
+  return tabStore.get_tab();
+};
 // Chrome event listeners set to trigger re-renders.
 var reRender = (type, id) => {
   // Detect if Chrome is idle or not, and prevent extension render updates if idle to save CPU/power.
@@ -15,12 +20,11 @@ var reRender = (type, id) => {
       utilityStore.set_systemState('lowRAM');
     }
   });
-  var tabs = tabStore.get_tab();
   var active = null;
   if (type === 'create' || type === 'activate') {
     active = id.windowId;
   } else {
-    active = _.result(_.find(tabs, { id: id }), 'windowId');
+    active = _.result(_.find(tabs(), { id: id }), 'windowId');
   }
   console.log('window: ', active, utilityStore.get_window(), 'state: ',utilityStore.get_systemState());
   if (active === utilityStore.get_window() && utilityStore.get_systemState() === 'active') {
@@ -40,15 +44,14 @@ chrome.tabs.onActivated.addListener((e, info) => {
   console.log('on activated', e, info);
   if (prefsStore.get_prefs().screenshot) {
     // Inject event listener that messages the extension to recapture the image on click.
-    var tabs = tabStore.get_tab();
-    var title = _.result(_.find(tabs, { id: e.tabId }), 'title');
+    var title = _.result(_.find(tabs(), { id: e.tabId }), 'title');
     if (title !== 'New Tab') {
       _.defer(()=>{
         screenshotStore.capture(e.tabId, e.windowId);
       });
+      reRender('activate', e);
     }
   }
-  reRender('activate', e);
 });
 chrome.tabs.onUpdated.addListener((e, info) => {
   console.log('on updated', e, info);
@@ -89,9 +92,9 @@ export var clickStore = Reflux.createStore({
     this.click = value;
     // This will only be true for 0.5s, long enough to prevent Chrome event listeners triggers from re-querying tabs when a user clicks in the extension.
     if (!manual) {
-      setTimeout(() => {
+      _.defer(()=>{
         this.click = false;
-      }, 500);
+      });
     }
     console.log('click: ', value);
     this.trigger(this.click);
@@ -162,31 +165,6 @@ export var settingsStore = Reflux.createStore({
   }
 });
 
-export var tabStore = Reflux.createStore({
-  init: function() {
-    this.tab = [];
-    this.allTabs = null;
-  },
-  set_tab: function(value) {
-    this.tab = value;
-    console.log('tab: ', value);
-    this.trigger(this.tab);
-  },
-  get_tab: function() {
-    return this.tab;
-  },
-  getAllTabs(){
-    chrome.windows.getAll({populate: true}, (w)=>{
-      var allTabs = [];
-      for (var i = w.length - 1; i >= 0; i--) {
-        allTabs.push(w[i].tabs);
-      }
-      this.allTabs = _.flatten(allTabs);
-    });
-    return this.allTabs;
-  }
-});
-
 export var utilityStore = Reflux.createStore({
   init: function() {
     this.window = null;
@@ -250,12 +228,7 @@ export var utilityStore = Reflux.createStore({
     return this.cursor;
   },
   restartNewTab(){
-    var tabs = tabStore.get_tab();
-    var newTab = _.find(tabs, {title: 'New Tab'});
-    chrome.tabs.create({windowId: newTab.windowId, pinned: newTab.pinned}, (newTab)=>{
-      console.log('newTab restarted: ',newTab);
-      chrome.tabs.remove(newTab.id);
-    });
+    location.reload();
     
   }
 });
@@ -429,10 +402,9 @@ export var screenshotStore = Reflux.createStore({
         });
       }
     });
-    var tabs = tabStore.get_tab();
-    var title = _.result(_.find(tabs, { id: id }), 'title');
+    var title = _.result(_.find(tabs(), { id: id }), 'title');
     if (title !== 'New Tab' && prefsStore.get_prefs().screenshot) {
-      var ssUrl = _.result(_.find(tabs, { id: id }), 'url');
+      var ssUrl = _.result(_.find(tabs(), { id: id }), 'url');
       if (ssUrl) {
         getScreenshot.then((image, err)=>{
           var screenshot = {url: null, data: null, timeStamp: Date.now()};
@@ -474,11 +446,6 @@ export var screenshotStore = Reflux.createStore({
   },
   purge(index, windowId){
     utilityStore.get_bytesInUse('screenshots').then((bytes)=>{
-      //var tabs = tabStore.get_tab();
-      //var ssUrl = null;
-      //var windowId = null;
-      //var wid = utilityStore.get_window();
-      //var purged = [];
       var timeStamp = null;
       var timeStampIndex = null;
       console.log('bytes: ',bytes);
@@ -495,22 +462,6 @@ export var screenshotStore = Reflux.createStore({
           chrome.storage.local.set({screenshots: this.index});
           console.log('timeStamp: ',timeStamp);
         }
-        /*for (var i = index.length - 1; i >= 0; i--) {
-          ssUrl = _.result(_.find(tabs, { url: index[i].url }), 'url');
-          console.log('purge ssUrl: ', ssUrl);
-          //windowId = _.result(_.find(tabs, { url: index[i].url }), 'windowId');
-          console.log('purge windowId', windowId, wid, tabs[0].windowId);
-          if (!ssUrl && tabs[0].windowId === windowId) {
-            purged.push(index[i]);
-            console.log('Remove ',index[i]);
-          }
-        }
-        if (purged && purged.length > 0) {
-          for (var y = purged.length - 1; y >= 0; y--) {
-            this.index = _.without(this.index, purged[y]);
-          }
-          chrome.storage.local.set({screenshots: this.index});
-        }*/
       }
     });
   }

@@ -1,7 +1,8 @@
 import React from 'react';
 import _ from 'lodash';
 
-import {dupeStore, contextStore, relayStore, tabStore, utilityStore} from './store';
+import {dupeStore, contextStore, relayStore, utilityStore} from './store';
+import tabStore from './tabStore';
 
 var ContextMenu = React.createClass({
   mixins: [

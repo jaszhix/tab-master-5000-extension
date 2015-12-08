@@ -7,7 +7,9 @@ import moment from 'moment';
 import _ from 'lodash';
 import {saveAs} from 'filesaver.js';
 
-import {modalStore, settingsStore, tabStore, utilityStore} from './store';
+import {modalStore, settingsStore, utilityStore} from './store';
+import tabStore from './tabStore';
+
 import Preferences from './preferences';
 import About from './about';
 
