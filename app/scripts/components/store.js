@@ -17,7 +17,7 @@ var reRender = (type, id) => {
   });
   var tabs = tabStore.get_tab();
   var active = null;
-  if (type === 'create' || type === 'actviate') {
+  if (type === 'create' || type === 'activate') {
     active = id.windowId;
   } else {
     active = _.result(_.find(tabs, { id: id }), 'windowId');
@@ -182,7 +182,6 @@ export var tabStore = Reflux.createStore({
         allTabs.push(w[i].tabs);
       }
       this.allTabs = _.flatten(allTabs);
-      console.log('all tabs: ',_.flatten(allTabs), this.allTabs, allTabs);
     });
     return this.allTabs;
   }
@@ -252,12 +251,12 @@ export var utilityStore = Reflux.createStore({
   },
   restartNewTab(){
     var tabs = tabStore.get_tab();
-    var newTab = _.find(tabs, {title: 'New Tab'})
-    chrome.tabs.remove(newTab.id, ()=>{
-      chrome.tabs.create({windowId: newTab.windowId, index: newTab.index, active: newTab.active, pinned: newTab.pinned}, (newTab)=>{
-        console.log('newTab restarted: ',newTab);
-      });
+    var newTab = _.find(tabs, {title: 'New Tab'});
+    chrome.tabs.create({windowId: newTab.windowId, pinned: newTab.pinned}, (newTab)=>{
+      console.log('newTab restarted: ',newTab);
+      chrome.tabs.remove(newTab.id);
     });
+    
   }
 });
 
@@ -423,6 +422,7 @@ export var screenshotStore = Reflux.createStore({
           if (image) {
             resolve(image);
           } else {
+            this.invoked = false;
             // Temporary work around to chrome throwing 'unknown error' during capturing until the call is moved to background.js.
             utilityStore.restartNewTab();
           }
@@ -462,11 +462,7 @@ export var screenshotStore = Reflux.createStore({
     
   },
   get_ssIndex(){
-    if (!this.invoked) {
-      return this.index;
-    } else {
-      this.get_ssIndex();
-    }
+    return this.index;
   },
   clear(){
     chrome.storage.local.remove('screenshots', (result)=>{
