@@ -1,5 +1,1 @@
-'use strict';
-
-chrome.tabs.onUpdated.addListener(null, {pinned: true}, function (tabId) {
-  chrome.pageAction.hide(tabId);
-});
+!function(e){function t(o){if(n[o])return n[o].exports;var r=n[o]={exports:{},id:o,loaded:!1};return e[o].call(r.exports,r,r.exports,t),r.loaded=!0,r.exports}var n={};return t.m=e,t.c=n,t.p="",t(0)}([function(e,t){"use strict";var n=function(e){chrome.runtime.sendMessage(chrome.runtime.id,e)};chrome.tabs.onCreated.addListener(function(e,t){n({e:e,type:"create"})}),chrome.tabs.onRemoved.addListener(function(e,t){n({e:e,type:"remove"})}),chrome.tabs.onActivated.addListener(function(e,t){n({e:e,type:"activate"})}),chrome.tabs.onUpdated.addListener(function(e,t){n({e:e,type:"update"})}),chrome.tabs.onMoved.addListener(function(e,t){n({e:e,type:"move"})}),chrome.tabs.onAttached.addListener(function(e,t){n({e:e,type:"attach"})}),chrome.tabs.onDetached.addListener(function(e,t){n({e:e,type:"detach"})})}]);

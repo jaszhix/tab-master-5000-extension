@@ -34,8 +34,15 @@ gulp.task('build', function() {
         .pipe(uglify(uglifyOpts))
         .pipe(gulp.dest('./app/scripts/'));
 });
+gulp.task('build-bg', function() {
+    return gulp.src('./app/scripts/background.js')
+        .pipe(webpack( require('./webpack.config.bg.js') ))
+        .pipe(uglify(uglifyOpts))
+        .pipe(gulp.dest('./app/scripts/'));
+});
 gulp.task('watch', function() {
     gulp.watch('./app/scripts/components/*.{js,jsx,es6}', ['build']);
+    gulp.watch('./app/scripts/bg/*.{js,jsx,es6}', ['build-bg']);
 });
 
 gulp.task('imgmin', function () {

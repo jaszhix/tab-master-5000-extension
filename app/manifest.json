@@ -16,7 +16,7 @@
     "scripts": [
       "scripts/background.js"
     ],
-    "persistent": false
+    "persistent": true
   },
   "page_action": {
     "default_icon": {

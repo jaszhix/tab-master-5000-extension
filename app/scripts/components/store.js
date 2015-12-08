@@ -31,43 +31,33 @@ var reRender = (type, id) => {
     reRenderStore.set_reRender(true, type, id);
   }
 };
-
-chrome.tabs.onCreated.addListener((e, info) => {
-  console.log('on created', e, info);
-  reRender('create', e);
-});
-chrome.tabs.onRemoved.addListener((e, info) => {
-  console.log('on removed', e, info);
-  reRender('remove', e);
-});
-chrome.tabs.onActivated.addListener((e, info) => {
-  console.log('on activated', e, info);
-  if (prefsStore.get_prefs().screenshot) {
-    // Inject event listener that messages the extension to recapture the image on click.
-    var title = _.result(_.find(tabs(), { id: e.tabId }), 'title');
-    if (title !== 'New Tab') {
-      _.defer(()=>{
-        screenshotStore.capture(e.tabId, e.windowId);
-      });
-      reRender('activate', e);
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {   
+  sendResponse({active: 'true'});    
+  console.log('msg: ',msg);
+  if (msg.type === 'create') {
+    reRender(msg.type, msg.e);
+  } else if (msg.type === 'remove') {
+    reRender(msg.type, msg.e);
+  } else if (msg.type === 'activate') {
+    if (prefsStore.get_prefs().screenshot) {
+      // Inject event listener that messages the extension to recapture the image on click.
+      var title = _.result(_.find(tabs(), { id: msg.e.tabId }), 'title');
+      if (title !== 'New Tab') {
+        _.defer(()=>{
+          screenshotStore.capture(msg.e.tabId, msg.e.windowId);
+        });
+        reRender('activate', msg.e);
+      }
     }
+  } else if (msg.type === 'update') {
+    reRender(msg.type, msg.e);
+  } else if (msg.type === 'move') {
+    reRender(msg.type, msg.e);
+  } else if (msg.type === 'attach') {
+    reRender(msg.type, msg.e);
+  } else if (msg.type === 'detach') {
+    reRender(msg.type, msg.e);
   }
-});
-chrome.tabs.onUpdated.addListener((e, info) => {
-  console.log('on updated', e, info);
-  reRender('update', e);
-});
-chrome.tabs.onMoved.addListener((e, info) => {
-  console.log('on moved', e, info);
-  reRender('move', e);
-});
-chrome.tabs.onAttached.addListener((e, info) => {
-  console.log('on attached', e, info);
-  reRender('attachment', e);
-});
-chrome.tabs.onDetached.addListener((e, info) => {
-  console.log('on detached', e, info);
-  reRender('attachment', e);
 });
 
 export var searchStore = Reflux.createStore({
