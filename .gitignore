@@ -1,2 +1,4 @@
 /node_modules
 .sublime-gulp.cache
+sublime-gulp.log
+/dist

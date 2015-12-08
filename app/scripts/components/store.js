@@ -5,7 +5,7 @@ import S from 'string';
 
 import tabStore from './tabStore';
 
-var tabs = ()=>{
+export var tabs = ()=>{
   return tabStore.get_tab();
 };
 // Chrome event listeners set to trigger re-renders.
@@ -31,8 +31,7 @@ var reRender = (type, id) => {
     reRenderStore.set_reRender(true, type, id);
   }
 };
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {   
-  sendResponse({active: 'true'});    
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {      
   console.log('msg: ',msg);
   if (msg.type === 'create') {
     reRender(msg.type, msg.e);
@@ -43,6 +42,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       // Inject event listener that messages the extension to recapture the image on click.
       var title = _.result(_.find(tabs(), { id: msg.e.tabId }), 'title');
       if (title !== 'New Tab') {
+        //screenshotStore.capture(msg.e.tabId, msg.e.windowId);
         _.defer(()=>{
           screenshotStore.capture(msg.e.tabId, msg.e.windowId);
         });
@@ -381,13 +381,14 @@ export var screenshotStore = Reflux.createStore({
     var getScreenshot = new Promise((resolve, reject)=>{
       if (!this.invoked) {
         this.invoked = true;
-        chrome.tabs.captureVisibleTab({format: 'jpeg'}, (image)=> {
-          if (image) {
-            resolve(image);
+        chrome.runtime.sendMessage({method: 'captureTabs'}, (response) => {
+          console.log('response image: ',response);
+          if (response.image) {
+            resolve(response.image);
           } else {
-            this.invoked = false;
+            this.capture(id,wid);
             // Temporary work around to chrome throwing 'unknown error' during capturing until the call is moved to background.js.
-            utilityStore.restartNewTab();
+            //utilityStore.restartNewTab();
           }
         });
       }
@@ -426,12 +427,24 @@ export var screenshotStore = Reflux.createStore({
   get_ssIndex(){
     return this.index;
   },
+  set_ssIndex(value){
+    this.index = value;
+    this.trigger(this.index);
+  },
+  get_invoked(){
+    return this.invoked;
+  },
+  set_invoked(value){
+    this.invoked = value;
+  },
   clear(){
     chrome.storage.local.remove('screenshots', (result)=>{
       console.log('Screenshot cache cleared: ',result);
       _.defer(()=>{
-        reRenderStore.set_reRender(true, 'create', null);
+        reRenderStore.set_reRender(true, 'create', tabs()[2].id);
       });
+      this.index = [];
+      this.trigger(this.index);
     });
   },
   purge(index, windowId){

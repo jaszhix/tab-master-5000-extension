@@ -11,6 +11,15 @@ var About = React.createClass({
         <div className="col-xs-2"/>
         <div className="col-xs-8 ntg-release">
           <h4>Release Notes</h4>
+          <h5>v0.6</h5><h6>12-8-15</h6>
+          <ul>
+            <li>Rewrote screenshot capturing code, so it captures screenshots more reliably. It is now using JPEG compression at 25% quality to save disk space.</li>
+            <li>Improved the enforcement of only one New Tab allowed being open while screenshot capturing is enabled.</li>
+            <li>Now the screenshot cache will start purging screenshots that belong to tabs that haven't been accessed in three days, after the cache exceeds 50MB.</li>
+            <li>Moved captureVisibleTabs and the Chrome event listeners to the background script.</li>
+            <li>Fixed duplicate URL filtering not working with URLs containg a # character.</li>
+            <li>Fixed pinning animation from re-triggering during other animation events.</li>
+          </ul>
           <h5>v0.5.1</h5><h6>11-29-15</h6>
           <ul>
             <li>Improved performance of tab screenshot capturing, and their frequency of updates.</li>

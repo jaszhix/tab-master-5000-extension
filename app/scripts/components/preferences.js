@@ -23,6 +23,7 @@ var Preferences = React.createClass({
   },
   componentDidMount(){
     this.listenTo(prefsStore, this.prefsChange);
+    this.listenTo(screenshotStore, this.getBytesInUse);
     this.getBytesInUse();
   },
   prefsChange(){
@@ -57,7 +58,7 @@ var Preferences = React.createClass({
             <input checked={s.screenshot} onChange={()=>prefsStore.set_prefs('screenshot',!s.screenshot)} type="checkbox" /> Enable tab screenshots <strong>(Experimental)</strong>
             {s.screenshot ? 
               <div>
-                <p>Screenshot disk useage: {s.bytesInUse ? utils.formatBytes(s.bytesInUse, 2) : null}</p>
+                {s.bytesInUse ? <p>Screenshot disk useage: {utils.formatBytes(s.bytesInUse, 2)}</p> : null}
                 <button onClick={()=>screenshotStore.clear()} className="ntg-setting-btn">Clear Screenshot Cache</button> 
               </div>
             : null}
