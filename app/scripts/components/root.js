@@ -30,7 +30,12 @@ var Search = React.createClass({
       });
     });
   },
+  openAbout(){   
+    settingsStore.set_settings('about');
+    modalStore.set_modal(true);
+  },
   render: function() {
+    var p = this.props;
     return (
       <div className="container-fluid ntg-form">
         <div className="row">
@@ -50,6 +55,9 @@ var Search = React.createClass({
           <div className="col-xs-6">
             {searchStore.get_search().length > 3 ? <span className="search-msg ntg-search-google-text">Press Enter to Search Google</span> : null}
             <button onClick={()=>modalStore.set_modal(true)} className="ntg-top-btn"><i className="fa fa-cogs"></i> Settings</button>
+            {p.event === 'newVersion' ? <button onClick={()=>chrome.runtime.reload()} className="ntg-update-avail-btn"><i className="fa fa-rocket"></i> New Version Available</button> : null}
+            {p.event === 'versionUpdate' ? <button onClick={this.openAbout} className="ntg-update-btn"><i className="fa fa-info-circle"></i> Updated to {utilityStore.get_manifest().version}</button> : null}
+            {p.event === 'installed' ? <button onClick={this.openAbout} className="ntg-update-btn"><i className="fa fa-thumbs-o-up"></i> Thank you for installing TM5K</button> : null}
           </div>  
         </div>
       </div>
@@ -71,7 +79,8 @@ var Root = React.createClass({
       window: true,
       settings: true,
       collapse: true,
-      context: false
+      context: false,
+      event: ''
     };
   },
   componentDidMount() {
@@ -85,6 +94,7 @@ var Root = React.createClass({
     this.captureTabs('init');
     this.onWindowResize(null, 'init');
     console.log('Chrome Version: ',utilityStore.chromeVersion());
+    console.log('Manifest: ', utilityStore.get_manifest());
   },
   update(){
     this.setState({tabs: tabStore.get_tab()});
@@ -178,7 +188,16 @@ var Root = React.createClass({
       );
   },
   contextTrigger(t){
-    this.setState({context: contextStore.get_context()[0]});
+    var context = contextStore.get_context();
+    if (context[1] === 'newVersion') {
+      this.setState({event: 'newVersion'});
+    } else if (context[1] === 'installed') {
+      this.setState({event: 'installed'});
+    } else if (context[1] === 'versionUpdate') {
+      this.setState({event: 'versionUpdate'});
+    } else {
+      this.setState({context: context[0]});
+    }
   },
   render: function() {
     var s = this.state;
@@ -187,7 +206,7 @@ var Root = React.createClass({
         {s.context ? <ContextMenu /> : null}
         <Settings collapse={s.collapse} />
           {s.tabs ? <div className="tile-container">
-              {s.settings ? <Search /> : null}
+              {s.settings ? <Search event={s.event} /> : null}
               <div className="tile-child-container">
                 {s.render ? this.tileGrid() : null}
             </div></div> : null}

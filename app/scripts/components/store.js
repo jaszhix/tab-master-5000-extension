@@ -57,6 +57,14 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     reRender(msg.type, msg.e);
   } else if (msg.type === 'detach') {
     reRender(msg.type, msg.e);
+  } else if (msg.type === 'error') {
+    utilityStore.restartNewTab();
+  } else if (msg.type === 'newVersion') {
+    contextStore.set_context(null, 'newVersion');
+  } else if (msg.type === 'installed') {
+    contextStore.set_context(null, 'installed');
+  } else if (msg.type === 'versionUpdate') {
+    contextStore.set_context(null, 'versionUpdate');
   }
 });
 
@@ -210,6 +218,9 @@ export var utilityStore = Reflux.createStore({
       return this.bytesInUse;
     });
   },
+  get_manifest(){
+    return chrome.runtime.getManifest();
+  },
   set_cursor(x, y){
     this.cursor[0] = x;
     this.cursor[1] = y;
@@ -218,8 +229,7 @@ export var utilityStore = Reflux.createStore({
     return this.cursor;
   },
   restartNewTab(){
-    location.reload();
-    
+    location.reload();  
   }
 });
 
@@ -385,10 +395,6 @@ export var screenshotStore = Reflux.createStore({
           console.log('response image: ',response);
           if (response.image) {
             resolve(response.image);
-          } else {
-            this.capture(id,wid);
-            // Temporary work around to chrome throwing 'unknown error' during capturing until the call is moved to background.js.
-            //utilityStore.restartNewTab();
           }
         });
       }

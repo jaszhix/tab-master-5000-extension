@@ -20,7 +20,7 @@ var About = React.createClass({
             <li>Fixed duplicate URL filtering not working with URLs containg a # character.</li>
             <li>Fixed pinning animation from re-triggering during other animation events.</li>
           </ul>
-          <h5>v0.5.1</h5><h6>11-29-15</h6>
+          <h5>v0.5.1</h5><h6>12-2-15</h6>
           <ul>
             <li>Improved performance of tab screenshot capturing, and their frequency of updates.</li>
             <li>Corrected tab title text overflowing on titles with no spaces.</li>
