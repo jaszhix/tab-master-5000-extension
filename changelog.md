@@ -3,6 +3,7 @@
 ##### v0.6.1 / *12-9-15*
 
 *   Improved handling of errors during screenshot capturing.
+*   A button now displays at the top notifying you if the extension has an update available, has updated, or just was initially installed. Clicking it opens the About tab.
 
 ##### v0.6 / *12-8-15*
 

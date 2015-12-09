@@ -5,7 +5,7 @@ var imagemin = require('gulp-imagemin');
 var del = require('del');
 var zip = require('gulp-zip');
 
-var production = false; 
+var production = true; 
 var uglifyOpts = null;
 if (production) {
 	uglifyOpts = {
