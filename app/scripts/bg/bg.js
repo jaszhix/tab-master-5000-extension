@@ -50,20 +50,22 @@ chrome.runtime.onInstalled.addListener((details)=>{
 });
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  if (chrome.runtime.lastError) {
-    sendMsg({e: null, type: 'error'});
-  }
   if (msg.method === 'captureTabs') {
     var capture = new Promise((resolve, reject)=>{
       chrome.tabs.captureVisibleTab({format: 'jpeg', quality: 25}, (image)=> {
         if (image) {
           resolve(image);
+        } else {
+          reject();
         }
       });
     });
     capture.then((image)=>{
       console.log(image);
       sendResponse({'image': image});
+    }).catch(()=>{
+      sendMsg({e: null, type: 'error'});
+      location.reload();
     });
   }
   return true;

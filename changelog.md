@@ -1,5 +1,9 @@
 #### Release Notes
 
+##### v0.6.1 / *12-9-15*
+
+*   Improved handling of errors during screenshot capturing.
+
 ##### v0.6 / *12-8-15*
 
 *   Rewrote screenshot capturing code, so it captures screenshots more reliably. It is now using JPEG compression at 25% quality to save disk space.

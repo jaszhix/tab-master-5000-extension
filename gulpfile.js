@@ -5,7 +5,7 @@ var imagemin = require('gulp-imagemin');
 var del = require('del');
 var zip = require('gulp-zip');
 
-var production = true; 
+var production = false; 
 var uglifyOpts = null;
 if (production) {
 	uglifyOpts = {
@@ -56,6 +56,7 @@ gulp.task('package', ['copy'], function() {
 });
 gulp.task('watch', function() {
     gulp.watch('./app/scripts/components/*.{js,jsx,es6}', ['build']);
+    gulp.watch('./app/scripts/bg/*.{js,jsx,es6}', ['build-bg']);
 });
 
 gulp.task('imgmin', function () {
