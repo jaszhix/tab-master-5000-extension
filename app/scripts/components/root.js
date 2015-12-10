@@ -57,7 +57,7 @@ var Search = React.createClass({
             <button onClick={()=>modalStore.set_modal(true)} className="ntg-top-btn"><i className="fa fa-cogs"></i> Settings</button>
             {p.event === 'newVersion' ? <button onClick={()=>chrome.runtime.reload()} className="ntg-update-avail-btn"><i className="fa fa-rocket"></i> New Version Available</button> : null}
             {p.event === 'versionUpdate' ? <button onClick={this.openAbout} className="ntg-update-btn"><i className="fa fa-info-circle"></i> Updated to {utilityStore.get_manifest().version}</button> : null}
-            {p.event === 'installed' ? <button onClick={this.openAbout} className="ntg-update-btn"><i className="fa fa-thumbs-o-up"></i> Thank you for installing TM5K</button> : null}
+            {p.event === 'installed' ? <button onClick={this.openAbout} className="ntg-ty-btn"><i className="fa fa-thumbs-o-up"></i> Thank you for installing TM5K</button> : null}
           </div>  
         </div>
       </div>

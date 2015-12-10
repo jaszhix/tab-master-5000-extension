@@ -1,5 +1,9 @@
 #### Release Notes
 
+##### v0.6.2 / *12-10-15*
+
+*   Fixed the width of the initial install button at the top.
+
 ##### v0.6.1 / *12-9-15*
 
 *   Improved handling of errors during screenshot capturing.
