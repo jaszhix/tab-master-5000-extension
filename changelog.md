@@ -1,5 +1,9 @@
 #### Release Notes
 
+##### v0.6.3 / *12-13-15*
+
+*   Fixed screenshot capturing bug causing captures of the New Tab page when cycling between the active tab and New Tab quickly.
+
 ##### v0.6.2 / *12-10-15*
 
 *   Fixed the width of the initial install button at the top.

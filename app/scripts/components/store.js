@@ -388,18 +388,20 @@ export var screenshotStore = Reflux.createStore({
     });
   },
   capture(id, wid){
+    var title = _.result(_.find(tabs(), { id: id }), 'title');
     var getScreenshot = new Promise((resolve, reject)=>{
       if (!this.invoked) {
         this.invoked = true;
         chrome.runtime.sendMessage({method: 'captureTabs'}, (response) => {
           console.log('response image: ',response);
-          if (response.image) {
+          if (response.image && title !== 'New Tab') {
             resolve(response.image);
+          } else {
+            reject();
           }
         });
       }
     });
-    var title = _.result(_.find(tabs(), { id: id }), 'title');
     if (title !== 'New Tab' && prefsStore.get_prefs().screenshot) {
       var ssUrl = _.result(_.find(tabs(), { id: id }), 'url');
       if (ssUrl) {
@@ -422,9 +424,14 @@ export var screenshotStore = Reflux.createStore({
           this.index = _.uniq(this.index, 'url');
           this.index = _.uniq(this.index, 'data');
           chrome.storage.local.set({screenshots: this.index}, ()=>{
-            this.invoked = false;
+            _.defer(()=>{
+              this.invoked = false;
+            });
             this.trigger(this.index);
           });
+        }).catch(()=>{
+          this.invoked = false;
+          utilityStore.restartNewTab();
         });
       }
     }
