@@ -2,7 +2,7 @@
 
 ##### v0.6.3 / *12-13-15*
 
-*   Fixed screenshot capturing bug causing captures of the New Tab page when cycling between the active tab and New Tab quickly.
+*   Screenshot capturing now prevents the New Tab page from being captured in the active tab's tile more often.
 
 ##### v0.6.2 / *12-10-15*
 

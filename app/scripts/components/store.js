@@ -431,7 +431,8 @@ export var screenshotStore = Reflux.createStore({
           });
         }).catch(()=>{
           this.invoked = false;
-          utilityStore.restartNewTab();
+          this.capture(id);
+          //utilityStore.restartNewTab();
         });
       }
     }
