@@ -13,9 +13,7 @@
    },
   "default_locale": "en",
   "background": {
-    "scripts": [
-      "scripts/background.js"
-    ],
+    "page": "bg.html",
     "persistent": true
   },
   "page_action": {

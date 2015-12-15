@@ -4,8 +4,9 @@ var webpack = require('webpack-stream');
 var imagemin = require('gulp-imagemin');
 var del = require('del');
 var zip = require('gulp-zip');
+//var exec = require('child_process').exec;
 
-var production = true;
+var production = false;
 var uglifyOpts = null;
 if (production) {
   uglifyOpts = {
@@ -30,13 +31,22 @@ if (production) {
     }
   };
 }
+
+/*gulp.task('reload', ['build-bg'],function(cb) {
+    console.log('Pausing watch during ES6 formatting.');
+    exec('chrome-extensions-reloader --single-run', function(err, stdout, stderr) {
+        console.log(stdout);
+        console.log(stderr);
+        cb(err);
+    });
+});*/
 gulp.task('build', ['build-bg'], function() {
   return gulp.src('./app/scripts/components/root.js')
     .pipe(webpack(require('./webpack.config.js')))
     .pipe(uglify(uglifyOpts))
     .pipe(gulp.dest('./app/scripts/'));
 });
-gulp.task('build-bg', function() {
+gulp.task('build-bg',function() {
   return gulp.src('./app/scripts/background.js')
     .pipe(webpack(require('./webpack.config.bg.js')))
     .pipe(uglify(uglifyOpts))
