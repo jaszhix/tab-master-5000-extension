@@ -330,8 +330,8 @@ var Tile = React.createClass({
     console.log('Event: ', e, ui);
     console.log('Start Position: ', ui.position);
     // tileDrag will store the state outside of the component's lifecycle.
-    this.setState({drag: true});
     tileDrag = true;
+    this.setState({drag: tileDrag});
     dragStore.set_dragged(this.props.tab);
     this.getPos(utilityStore.get_cursor()[0], utilityStore.get_cursor()[1]);
   },
@@ -348,7 +348,7 @@ var Tile = React.createClass({
     console.log('Event: ', e, ui);
     console.log('Stop Position: ', ui.position);
     tileDrag = false;
-    this.setState({drag: false});
+    this.setState({drag: tileDrag});
     this.getPos(utilityStore.get_cursor()[0], utilityStore.get_cursor()[1]);
     var dragged = dragStore.get_dragged();
     var draggedOver = dragStore.get_tabIndex();
@@ -372,13 +372,16 @@ var Tile = React.createClass({
   currentlyDraggedOver(tab){
     if (tileDrag) {
       console.log('current dragged over: ', tab.title);
-      if (dragStore.get_drag() && dragStore.get_dragged()) {
-        var dragged = dragStore.get_dragged();
-        console.log('dragged id: ',dragged.id);
-        _.defer(()=>{
-          dragStore.set_tabIndex(tab);
-        });
-      }
+      var setHoveredTab = new Promise((resolve, reject)=>{
+        if (dragStore.get_drag() && dragStore.get_dragged()) {
+          var dragged = dragStore.get_dragged();
+          console.log('dragged id: ',dragged.id);
+          resolve(tab);
+        }
+      });
+      setHoveredTab.then((tab)=>{
+        dragStore.set_tabIndex(tab);
+      });
     }
   },
   render: function() {
