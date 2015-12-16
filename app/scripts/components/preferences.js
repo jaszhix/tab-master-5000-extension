@@ -26,10 +26,12 @@ var Preferences = React.createClass({
       context: prefsStore.get_prefs().context,
       duplicate: prefsStore.get_prefs().duplicate,
       screenshot: prefsStore.get_prefs().screenshot,
+      screenshotBg: prefsStore.get_prefs().screenshotBg,
       dragHover: false,
       contextHover: false,
       duplicateHover: false,
       screenshotHover: false,
+      screenshotBgHover: false,
       bytesInUse: null
     };
   },
@@ -44,6 +46,7 @@ var Preferences = React.createClass({
     this.setState({context: prefs.context});
     this.setState({duplicate: prefs.duplicate});
     this.setState({screenshot: prefs.screenshot});
+    this.setState({screenshotBg: prefs.screenshotBg});
   },
   getBytesInUse(){
     if (this.state.screenshot) {
@@ -80,13 +83,19 @@ var Preferences = React.createClass({
                   onClick={()=>prefsStore.set_prefs('screenshot',!s.screenshot)}
                   on={s.screenshot}>
                     Enable tab screenshots <strong>(Experimental)</strong>
-                    {s.screenshot ? 
-                      <div>
-                        {s.bytesInUse ? <p>Screenshot disk useage: {utils.formatBytes(s.bytesInUse, 2)}</p> : null}
-                        <button onClick={()=>screenshotStore.clear()} className="ntg-setting-btn"><i className="fa fa-trash"></i> Clear Screenshot Cache</button> 
-                      </div>
-                    : null}
           </Toggle>
+          {s.screenshot ? 
+            <div>
+              <Toggle onMouseEnter={()=>this.setState({screenshotBgHover: true})} 
+                      onMouseLeave={()=>this.setState({screenshotBgHover: false})} 
+                      onClick={()=>prefsStore.set_prefs('screenshotBg',!s.screenshotBg)} 
+                      on={s.screenshotBg}>
+                        Enable screenshots in the background on hover
+              </Toggle>
+              {s.bytesInUse ? <p>Screenshot disk useage: {utils.formatBytes(s.bytesInUse, 2)}</p> : null}
+              <button onClick={()=>screenshotStore.clear()} className="ntg-setting-btn"><i className="fa fa-trash"></i> Clear Screenshot Cache</button> 
+            </div>
+          : null}
         </div>
         <div className="col-xs-6">
           <div className="prefs-row row">

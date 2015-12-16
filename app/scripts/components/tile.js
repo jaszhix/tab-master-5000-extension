@@ -176,9 +176,13 @@ var Tile = React.createClass({
   // Trigger hovers states that will update the inline CSS in style.js.
   handleHoverIn(e) {
     this.setState({hover: true});
+    if (prefsStore.get_prefs().screenshot && prefsStore.get_prefs().screenshotBg) {
+      document.body.style.backgroundImage = `url("${this.state.screenshot}")`;
+    }
   },
   handleHoverOut(e) {
     this.setState({hover: false});
+
   },
   handleTabCloseHoverIn(e) {
     this.setState({xHover: true});
@@ -390,7 +394,7 @@ var Tile = React.createClass({
     var drag = dragStore.get_drag();
     var prefs = prefsStore.get_prefs();
     return (
-      <div ref="tileMain" onDragEnter={this.currentlyDraggedOver(p.tab)} >
+      <div ref="tileMain" onDragEnter={this.currentlyDraggedOver(p.tab)} style={prefs.screenshot && prefs.screenshotBg ? {opacity: '0.95'} : null}>
         <Draggable  axis="both"
                     handle=".handle"
                     moveOnStartChange={true}
@@ -478,8 +482,19 @@ var TileGrid = React.createClass({
   },
   componentDidMount(){
     this.listenTo(tabStore, this.update);
+    this.prefsInit();
     this.checkDuplicateTabs(this.props.data);
-    //screenshotStore.init();
+  },
+  prefsInit(){
+    var prefs = prefsStore.get_prefs();
+    if (!prefs.screenshotBg || !prefs.screenshot) {
+      document.body.style.backgroundImage = 'none';
+      document.body.style.backgroundBlendMode = 'normal';
+    } else {
+      document.body.style.backgroundColor = 'rgba(255, 255, 255, 0.45)';
+      document.body.style.backgroundBlendMode = 'soft-light';
+      document.body.style.backgroundSize = 'cover';
+    }
   },
   update(){
     var self = this;
@@ -535,6 +550,7 @@ var TileGrid = React.createClass({
   render: function() {
     var p = this.props;
     var s = this.state;
+    var prefs = prefsStore.get_prefs();
     var labels = p.keys.map((key)=> {
       var label = p.labels[key] || key;
       var cLabel = p.collapse ? label : null;
@@ -550,7 +566,7 @@ var TileGrid = React.createClass({
     return (
       <div className="tile-body">
           <div className="col-xs-1 sort-bar">
-            <h4 className="sort-h4">
+            <h4 style={prefs.screenshot && prefs.screenshotBg ? {backgroundColor: 'rgba(255, 255, 255, 0.88)', borderRadius: '3px'} : null} className="sort-h4">
               {p.collapse ? 'Sort Tabs' : 'Sort'}
             </h4>
               {labels}

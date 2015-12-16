@@ -3,7 +3,6 @@ import React from 'react';
 import {utilityStore} from './store';
 import changelog from 'html!markdown!../../../changelog.md';
 
-console.log(changelog);
 var About = React.createClass({
   render: function() {
     function createMarkup() { return {__html: changelog};}

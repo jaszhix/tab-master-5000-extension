@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import Reflux from 'reflux';
 import ReactUtils from 'react-utils';
 
-import {searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore} from './store';
+import {searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore, prefsStore} from './store';
 import tabStore from './tabStore';
 
 import TileGrid from './tile';
@@ -36,8 +36,9 @@ var Search = React.createClass({
   },
   render: function() {
     var p = this.props;
+    var prefs = prefsStore.get_prefs();
     return (
-      <div className="container-fluid ntg-form">
+      <div style={prefs.screenshot && prefs.screenshotBg ? {backgroundColor: 'rgba(237, 237, 237, 0.8)'} : null} className="container-fluid ntg-form">
         <div className="row">
           <div className="col-xs-6">
             <form 
@@ -105,9 +106,6 @@ var Root = React.createClass({
       if (opt === 'create' || opt === 'drag' ) {
         this.setState({render: false});
       }
-    } else {
-      // The initial query will not trigger Chrome event listeners while ClickStore returns true.
-      //clickStore.set_click(true);
     }
     // Query current Chrome window for tabs.
     chrome.tabs.query({

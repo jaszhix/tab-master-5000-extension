@@ -8,7 +8,7 @@ var style = {
   tileHovered: function(dataUrl) {
     return {
       backgroundImage: 'url("'+dataUrl+'")',
-      backgroundBlendMode: 'multiply, soft light'
+      backgroundBlendMode: 'multiply, soft-light'
     };
   },
   ssIconBg: {
