@@ -52,6 +52,12 @@ gulp.task('build-bg',function() {
     .pipe(uglify(uglifyOpts))
     .pipe(gulp.dest('./app/scripts/'));
 });
+gulp.task('build-content',function() {
+  return gulp.src('./app/scripts/content.js')
+    .pipe(webpack(require('./webpack.config.content.js')))
+    .pipe(uglify(uglifyOpts))
+    .pipe(gulp.dest('./app/scripts/'));
+});
 
 gulp.task('copy', ['build'], function() {
   del.sync(['./dist/**/**/*']);
@@ -67,6 +73,7 @@ gulp.task('package', ['copy'], function() {
 gulp.task('watch', function() {
   gulp.watch('./app/scripts/components/*.{js,jsx,es6}', ['build']);
   gulp.watch('./app/scripts/bg/*.{js,jsx,es6}', ['build-bg']);
+  gulp.watch('./app/scripts/content/*.{js,jsx,es6}', ['build-content']);
 });
 
 gulp.task('imgmin', function() {

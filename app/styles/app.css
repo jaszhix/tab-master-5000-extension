@@ -223,7 +223,7 @@ h4.sort-h4 {
 .ntg-cc {
     position: fixed;
     display: table;
-    top: 780px;
+    top: 800px;
     left: 48%;
 }
 .ntg-about {
@@ -419,7 +419,7 @@ button.ntg-apply-btn {
     outline: none;
 }
 button.ntg-setting-btn {
-    width: 200px;
+    width: auto;
     height: 32px;
     color: #000;
     background-color: #EDEDED;
@@ -429,7 +429,8 @@ button.ntg-setting-btn {
     border: 0;
     vertical-align: middle;
     display: inline-block;
-    padding: 6px 2px;
+    padding-left: 10px;
+    padding-right: 10px;
     font-size: 14px;
     line-height: 1.42857143;
     text-align: center;
@@ -441,7 +442,7 @@ button.ntg-setting-btn {
     border-radius: 4px;
     overflow: hidden;
     position: fixed;
-    top: 780px;
+    top: 800px;
     outline: none;
 }
 button.ntg-impexp-btn {
@@ -467,7 +468,7 @@ button.ntg-impexp-btn {
     border-radius: 4px;
     overflow: hidden;
     position: fixed;
-    top: 780px;
+    top: 800px;
     outline: none;
 }
 button.ntg-session-btn {

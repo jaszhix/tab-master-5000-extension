@@ -5,6 +5,18 @@ import utils from './utils';
 
 import {prefsStore, utilityStore, screenshotStore} from './store';
 
+var Toggle = React.createClass({
+  render: function() {
+    var p = this.props;
+    return (
+      <div className="Toggle">
+        <div onMouseEnter={p.onMouseEnter} onMouseLeave={p.onMouseLeave} className="prefs-row row">
+          <span onClick={p.onClick}><i className={p.on ? "fa fa-toggle-on" : "fa fa-toggle-off"} style={{cursor: 'pointer', fontSize: '18px'}}/> {p.children}</span>
+        </div>
+      </div>
+    );
+  }
+});
 
 var Preferences = React.createClass({
   mixins: [Reflux.ListenerMixin],
@@ -45,24 +57,36 @@ var Preferences = React.createClass({
     return (
       <div className="preferences">
         <div className="col-xs-6">
-          <div onMouseEnter={()=>this.setState({dragHover: true})} onMouseLeave={()=>this.setState({dragHover: false})} className="prefs-row row">
-            <input checked={s.drag} onChange={()=>prefsStore.set_prefs('drag',!s.drag)} type="checkbox" /> Enable draggable tab re-ordering <strong>(Experimental)</strong>
-          </div>
-          <div onMouseEnter={()=>this.setState({contextHover: true})} onMouseLeave={()=>this.setState({contextHover: false})} className="prefs-row row">
-            <input checked={s.context} onChange={()=>prefsStore.set_prefs('context',!s.context)} type="checkbox" /> Enable context menu
-          </div>
-          <div onMouseEnter={()=>this.setState({duplicateHover: true})} onMouseLeave={()=>this.setState({duplicateHover: false})} className="prefs-row row">
-            <input checked={s.duplicate} onChange={()=>prefsStore.set_prefs('duplicate',!s.duplicate)} type="checkbox" /> Enable pulsing duplicate tabs
-          </div>
-          <div onMouseEnter={()=>this.setState({screenshotHover: true})} onMouseLeave={()=>this.setState({screenshotHover: false})}className="prefs-row row">
-            <input checked={s.screenshot} onChange={()=>prefsStore.set_prefs('screenshot',!s.screenshot)} type="checkbox" /> Enable tab screenshots <strong>(Experimental)</strong>
-            {s.screenshot ? 
-              <div>
-                {s.bytesInUse ? <p>Screenshot disk useage: {utils.formatBytes(s.bytesInUse, 2)}</p> : null}
-                <button onClick={()=>screenshotStore.clear()} className="ntg-setting-btn">Clear Screenshot Cache</button> 
-              </div>
-            : null}
-          </div>
+          <Toggle onMouseEnter={()=>this.setState({contextHover: true})} 
+                  onMouseLeave={()=>this.setState({contextHover: false})} 
+                  onClick={()=>prefsStore.set_prefs('context',!s.context)} 
+                  on={s.context}>
+                    Enable context menu
+          </Toggle>
+          <Toggle onMouseEnter={()=>this.setState({duplicateHover: true})} 
+                  onMouseLeave={()=>this.setState({duplicateHover: false})} 
+                  onClick={()=>prefsStore.set_prefs('duplicate',!s.duplicate)} 
+                  on={s.duplicate}>
+                    Enable pulsing duplicate tabs
+          </Toggle>
+          <Toggle onMouseEnter={()=>this.setState({dragHover: true})} 
+                  onMouseLeave={()=>this.setState({dragHover: false})} 
+                  onClick={()=>prefsStore.set_prefs('drag',!s.drag)} 
+                  on={s.drag}>
+                    Enable draggable tab re-ordering <strong>(Experimental)</strong>
+          </Toggle>
+          <Toggle onMouseEnter={()=>this.setState({screenshotHover: true})} 
+                  onMouseLeave={()=>this.setState({screenshotHover: false})} 
+                  onClick={()=>prefsStore.set_prefs('screenshot',!s.screenshot)}
+                  on={s.screenshot}>
+                    Enable tab screenshots <strong>(Experimental)</strong>
+                    {s.screenshot ? 
+                      <div>
+                        {s.bytesInUse ? <p>Screenshot disk useage: {utils.formatBytes(s.bytesInUse, 2)}</p> : null}
+                        <button onClick={()=>screenshotStore.clear()} className="ntg-setting-btn"><i className="fa fa-trash"></i> Clear Screenshot Cache</button> 
+                      </div>
+                    : null}
+          </Toggle>
         </div>
         <div className="col-xs-6">
           <div className="prefs-row row">

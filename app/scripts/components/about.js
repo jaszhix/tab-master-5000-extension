@@ -1,4 +1,6 @@
 import React from 'react';
+
+import {utilityStore} from './store';
 import changelog from 'html!markdown!../../../changelog.md';
 
 console.log(changelog);
@@ -7,6 +9,7 @@ var About = React.createClass({
     function createMarkup() { return {__html: changelog};}
     return (
       <div className="about">
+        <button onClick={()=>utilityStore.createTab('https://github.com/jaszhix/tab-master-5000-chrome-extension')} className="ntg-setting-btn"><i className="fa fa-github-square" /> Github</button>
         <img src="../../images/icon-128.png" className="ntg-about"/>
         <div className="ntg-about">
           <h3 className="ntg-about">Tab Master 5000</h3>

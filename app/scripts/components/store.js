@@ -230,6 +230,11 @@ export var utilityStore = Reflux.createStore({
   },
   restartNewTab(){
     location.reload();  
+  },
+  createTab(href){
+    chrome.tabs.create({url: href}, (t)=>{
+      console.log('Tab created from utilityStore.createTab: ',t);
+    });
   }
 });
 
