@@ -1,5 +1,13 @@
 #### Release Notes
 
+##### v0.7 / *12-17-15*
+
+*   Added a blacklist preference option. Enter a comma seperated list of domains in Settings -> Preferences, and they will be automatically closed under any circumstance. This is useful for blocking websites which may inhibit productivity. Currently only works while a New Tab page is open.
+
+*   There is now an optional setting which enables full-size tab screenshots to fill the background of the New Tab page, while you are hovering over a tab with a screenshot. Screenshots are blurred and blended into the background. Screenshot capturing must be enabled for this to work.
+
+*   Minor CSS changes: opening the settings menu causes a gradual blur transition. There is now a quick transition for the background color of the tab tiles during hovering.
+
 ##### v0.6.3 / *12-13-15*
 
 *   Screenshot capturing now prevents the New Tab page from being captured in the active tab's tile more often.
