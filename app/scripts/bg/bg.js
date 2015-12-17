@@ -67,6 +67,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       sendMsg({e: null, type: 'error'});
       location.reload();
     });
+  } else if (msg.method === 'close') {
+    chrome.tabs.remove(sender.tab.id);
   }
   return true;
 });
