@@ -516,24 +516,13 @@ export var blacklistStore = Reflux.createStore({
       this.blacklist.push(valueArr[i]);
     }
     console.log('blacklist: ', value);
-    var newBl = null;
-    chrome.storage.local.get('blacklist', (bl)=>{
-      if (bl && bl.blacklist) {
-        newBl = bl.blacklist;
-        newBl.push(this.blacklist);
-        newBl = _.flatten(newBl);
-      } else {
-        newBl = this.blacklist;
-      }
-      console.log('newBl: ',newBl);
-      newBl = _.uniq(newBl);
-      this.blacklist = newBl;
-      chrome.storage.local.set({blacklist: newBl}, (result)=> {
-        this.trigger(this.blacklist);
-        console.log('Blacklist saved: ',result);
-        reRenderStore.set_reRender(true, 'create', null);
-      }); 
-    });
+    valueArr = _.uniq(valueArr);
+    this.blacklist = valueArr;
+    chrome.storage.local.set({blacklist: valueArr}, (result)=> {
+      this.trigger(this.blacklist);
+      console.log('Blacklist saved: ',result);
+      reRenderStore.set_reRender(true, 'create', null);
+    }); 
   },
   get_blacklist: function() {
     return this.blacklist;
