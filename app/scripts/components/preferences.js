@@ -160,7 +160,7 @@ var Preferences = React.createClass({
                     Enable tab screenshots <strong>(Experimental)</strong>
           </Toggle>
           {s.screenshot ? 
-            <div>
+            <div className="col-xs-12">
               <Toggle onMouseEnter={()=>this.setState({screenshotBgHover: true})} 
                       onMouseLeave={()=>this.setState({screenshotBgHover: false})} 
                       onClick={()=>prefsStore.set_prefs('screenshotBg',!s.screenshotBg)} 
