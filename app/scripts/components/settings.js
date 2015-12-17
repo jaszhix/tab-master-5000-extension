@@ -210,7 +210,14 @@ var Settings = React.createClass({
     this.listenTo(modalStore, this.settingsChange);
   },
   modalChange(){
-    this.setState({modalOpen: modalStore.get_modal()});
+    var modal = modalStore.get_modal();
+    this.setState({modalOpen: modal});
+    if (modal) {
+      document.getElementById('main').style.transition = '-webkit-filter .2s ease-in';
+      document.getElementById('main').style.WebkitFilter = 'blur(5px)';
+    } else {
+      document.getElementById('main').style.WebkitFilter = 'none';
+    }
   },
   settingsChange(tab){
     this.setState({currentTab: tab});
@@ -224,6 +231,7 @@ var Settings = React.createClass({
     var about = settingsStore.get_settings() === 'about';
     return (
       <Modal
+        id="modal"
         isOpen={s.modalOpen}
         onRequestClose={()=>modalStore.set_modal(false)}
         style={style.modal} >

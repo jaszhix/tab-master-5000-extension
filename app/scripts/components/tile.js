@@ -7,7 +7,7 @@ import kmp from 'kmp';
 import Draggable from 'react-draggable';
 import utils from './utils';
 
-import {screenshotStore, dupeStore, prefsStore, reRenderStore, searchStore, applyTabOrderStore, utilityStore, contextStore, relayStore, dragStore} from './store';
+import {blacklistStore, screenshotStore, dupeStore, prefsStore, reRenderStore, searchStore, applyTabOrderStore, utilityStore, contextStore, relayStore, dragStore} from './store';
 import tabStore from './tabStore';
 
 import style from './style';
@@ -62,12 +62,30 @@ var Tile = React.createClass({
   },
   update(){
     var p = this.props;
+    if (prefsStore.get_prefs().blacklist) {
+      _.defer(()=>{
+        this.enforceBlacklist();
+      });
+    }
     if (pinned === p.tab.id && p.tab.pinned) {
       this.handleFocus();
     }
     this.checkDuplicateTabs();
     if (this.props.tab.title === 'New Tab') {
       this.closeNewTabs();
+    }
+  },
+  enforceBlacklist(){
+    var p = this.props;
+    var blacklist = blacklistStore.get_blacklist();
+    if (blacklist.length > 0) {
+      for (var i = 0; i < blacklist.length; i++) {
+        if(kmp(p.tab.url.toLowerCase(), blacklist[i]) !== -1) {
+          if (p.tab.id) {
+            chrome.tabs.remove(p.tab.id);
+          }
+        }
+      }
     }
   },
   updateScreenshot(){
@@ -175,9 +193,11 @@ var Tile = React.createClass({
   },
   // Trigger hovers states that will update the inline CSS in style.js.
   handleHoverIn(e) {
+    var s = this.state;
+    var prefs = prefsStore.get_prefs();
     this.setState({hover: true});
-    if (prefsStore.get_prefs().screenshot && prefsStore.get_prefs().screenshotBg) {
-      document.body.style.backgroundImage = `url("${this.state.screenshot}")`;
+    if (prefs.screenshot && prefs.screenshotBg && s.screenshot) {
+      document.getElementById('bgImg').style.backgroundImage = `url("${s.screenshot}")`;
     }
   },
   handleHoverOut(e) {
@@ -488,12 +508,13 @@ var TileGrid = React.createClass({
   prefsInit(){
     var prefs = prefsStore.get_prefs();
     if (!prefs.screenshotBg || !prefs.screenshot) {
-      document.body.style.backgroundImage = 'none';
-      document.body.style.backgroundBlendMode = 'normal';
+      document.getElementById('bgImg').style.display = 'none';
+      document.getElementById('bgImg').style.backgroundImage = 'none';
+      document.getElementById('bgImg').style.backgroundBlendMode = 'normal';
     } else {
-      document.body.style.backgroundColor = 'rgba(255, 255, 255, 0.45)';
-      document.body.style.backgroundBlendMode = 'soft-light';
-      document.body.style.backgroundSize = 'cover';
+      document.getElementById('bgImg').style.display = 'block';
+      document.getElementById('bgImg').style.width = window.innerWidth + 30;
+      document.getElementById('bgImg').style.height = window.innerHeight + 5;
     }
   },
   update(){
@@ -551,26 +572,28 @@ var TileGrid = React.createClass({
     var p = this.props;
     var s = this.state;
     var prefs = prefsStore.get_prefs();
+    var ssBg = prefs.screenshot && prefs.screenshotBg;
+    var buttonTransparent = {backgroundColor: 'rgba(237, 237, 237, 0.8)'};
     var labels = p.keys.map((key)=> {
       var label = p.labels[key] || key;
       var cLabel = p.collapse ? label : null;
       return (
         <div key={key} onClick={this.sort(key)}>
-          {label === 'Tab Order' ? <button className="ntg-btn"><i className="fa fa-history"></i> {cLabel}</button> : null}
-          {label === 'Website' ? <button className="ntg-btn"><i className="fa fa-external-link"></i> {cLabel}</button> : null}
-          {label === 'Title' ? <button onClick={this.handleTitleIcon} className="ntg-btn"><i className={this.state.title ? "fa fa-sort-alpha-asc" : "fa fa-sort-alpha-desc"}></i> {cLabel}</button> : null}
-          {label === 'Downloaded' ? <button className="ntg-btn"><i className="fa fa-download"></i> {cLabel}</button> : null}
+          {label === 'Tab Order' ? <button style={ssBg ? buttonTransparent : null} className="ntg-btn"><i className="fa fa-history"></i> {cLabel}</button> : null}
+          {label === 'Website' ? <button style={ssBg ? buttonTransparent : null} className="ntg-btn"><i className="fa fa-external-link"></i> {cLabel}</button> : null}
+          {label === 'Title' ? <button style={ssBg ? buttonTransparent : null} onClick={this.handleTitleIcon} className="ntg-btn"><i className={this.state.title ? "fa fa-sort-alpha-asc" : "fa fa-sort-alpha-desc"}></i> {cLabel}</button> : null}
+          {label === 'Downloaded' ? <button style={ssBg ? buttonTransparent : null} className="ntg-btn"><i className="fa fa-download"></i> {cLabel}</button> : null}
         </div>
       );
     });
     return (
       <div className="tile-body">
           <div className="col-xs-1 sort-bar">
-            <h4 style={prefs.screenshot && prefs.screenshotBg ? {backgroundColor: 'rgba(255, 255, 255, 0.88)', borderRadius: '3px'} : null} className="sort-h4">
+            <h4 style={ssBg ? {backgroundColor: 'rgba(255, 255, 255, 0.88)', borderRadius: '3px'} : null} className="sort-h4">
               {p.collapse ? 'Sort Tabs' : 'Sort'}
             </h4>
               {labels}
-              <button onClick={this.applyTabs} className="ntg-apply-btn"><i className="fa fa-sort"></i> {p.collapse ? 'Apply' : null}</button>
+              <button style={ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.applyTabs} className="ntg-apply-btn"><i className="fa fa-sort"></i> {p.collapse ? 'Apply' : null}</button>
           </div>
         <div className="col-xs-11">
           <div id="grid" ref="grid">

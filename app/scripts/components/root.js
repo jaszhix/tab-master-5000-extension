@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Reflux from 'reflux';
+import _ from 'lodash';
 import ReactUtils from 'react-utils';
 
 import {searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore, prefsStore} from './store';
@@ -156,13 +157,19 @@ var Root = React.createClass({
         this.setState({collapse: false});
       }
     } else {
-      console.log(event.width, event.height);
       if (event.width >= threshold) {
         this.setState({collapse: true});
       } else {
         this.setState({collapse: false});
       }
     }
+    _.defer(()=>{
+      var prefs = prefsStore.get_prefs();
+      if (prefs.screenshotBg || prefs.screenshot) {
+        document.getElementById('bgImg').style.width = window.innerWidth + 30;
+        document.getElementById('bgImg').style.height = window.innerHeight + 5;
+      }
+    });
   },
   tileGrid(){
     var s = this.state;

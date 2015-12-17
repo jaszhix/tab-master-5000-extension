@@ -1,3 +1,25 @@
+#main {
+    position: fixed;
+    left: 0;
+    right: 0;
+    z-index: 9998;
+}
+#bgImg {
+    position: fixed;
+    display: none;
+    left: -5px;
+    right: 0;
+    z-index: 1;
+    overflow-x: none;
+    -webkit-filter: blur(5px);
+    background-color: rgba(255, 255, 255, 0.45);
+    background-blend-mode: soft-light;
+    background-size: cover;
+
+}
+.blacklist {
+    width: 100%;
+}
 .tile-container {
     margin-right: auto;
     margin-left: auto;
@@ -160,6 +182,7 @@ h4.sort-h4 {
 .ntg-tile {
     text-align: center;
     background-color: rgb(237, 237, 237);
+    transition: background-color .05s ease-in;
     background-size: cover;
     margin: 3px;
     height: 120px;
@@ -171,6 +194,7 @@ h4.sort-h4 {
 .ntg-tile-hover {
     text-align: center;
     background-color: rgb(247, 247, 247);
+    transition: background-color .05s ease-in;
     background-size: cover;
     margin: 3px;
     height: 120px;
@@ -183,6 +207,7 @@ h4.sort-h4 {
 .ntg-tile-moving {
     text-align: center;
     background-color: rgb(247, 247, 247);
+    transition: background-color .05s ease-in;
     background-size: cover;
     margin: 3px;
     height: 120px;
@@ -195,6 +220,7 @@ h4.sort-h4 {
 .ntg-tile-focus-hover {
     display: inline;
     background-color: rgb(247, 247, 247);
+    transition: background-color .05s ease-in;
 }
 .ntg-session-pin {
     padding-left: 3px;

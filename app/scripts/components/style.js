@@ -29,7 +29,9 @@ var style = {
       left: 0,
       right: 0,
       bottom: 0,
-      backgroundColor: 'rgba(216, 216, 216, 0.59)'
+      zIndex: '9999',
+      backgroundColor: 'rgba(216, 216, 216, 0.21)',
+      transition: 'background-color .2s ease-in'
     },
     content: {
       position: 'absolute',
@@ -44,8 +46,7 @@ var style = {
       borderRadius: '4px',
       WebkitBoxShadow: '2px 2px 15px -2px rgba(0,0,0,0.75)',
       outline: 'none',
-      padding: '20px'
-   
+      padding: '20px'  
     }
   },
   hiddenInput: {

@@ -318,11 +318,12 @@ export var prefsStore = Reflux.createStore({
           context: prefs.preferences.context,
           duplicate: prefs.preferences.duplicate,
           screenshot: prefs.preferences.screenshot,
-          screenshotBg: prefs.preferences.screenshotBg
+          screenshotBg: prefs.preferences.screenshotBg,
+          blacklist: prefs.preferences.blacklist
         };
       } else {
         console.log('init prefs');
-        this.prefs = {drag: false, context: true, duplicate: false, screenshot: false, screenshotBg: false};
+        this.prefs = {drag: false, context: true, duplicate: false, screenshot: false, screenshotBg: false, blacklist: true};
         chrome.storage.local.set({preferences: this.prefs}, (result)=> {
           console.log('Init preferences saved: ',result);
         });
@@ -400,10 +401,12 @@ export var screenshotStore = Reflux.createStore({
         this.invoked = true;
         chrome.runtime.sendMessage({method: 'captureTabs'}, (response) => {
           console.log('response image: ',response);
-          if (response.image && title !== 'New Tab') {
-            resolve(response.image);
-          } else {
-            reject();
+          if (response) {
+            if (response.image && title !== 'New Tab') {
+              resolve(response.image);
+            } else {
+              reject();
+            }
           }
         });
       }
@@ -489,6 +492,54 @@ export var screenshotStore = Reflux.createStore({
     });
   }
 });
+
+export var blacklistStore = Reflux.createStore({
+  init: function() {
+    chrome.storage.local.get('blacklist', (bl)=>{
+      if (bl && bl.blacklist) {
+        console.log('load blacklist');
+        this.blacklist = bl.blacklist;
+      } else {
+        console.log('init blacklist');
+        this.blacklist = [];
+        chrome.storage.local.set({blacklist: this.blacklist}, (result)=> {
+          console.log('Init blacklist saved: ',result);
+        });
+      }
+      this.trigger(this.blacklist);
+    });
+  },
+  set_blacklist: function(value) {
+    var valueArr = value.split(',');
+    for (var i = 0; i < valueArr.length; i++) {
+      valueArr[i] = _.trim(valueArr[i]);
+      this.blacklist.push(valueArr[i]);
+    }
+    console.log('blacklist: ', value);
+    var newBl = null;
+    chrome.storage.local.get('blacklist', (bl)=>{
+      if (bl && bl.blacklist) {
+        newBl = bl.blacklist;
+        newBl.push(this.blacklist);
+        newBl = _.flatten(newBl);
+      } else {
+        newBl = this.blacklist;
+      }
+      console.log('newBl: ',newBl);
+      newBl = _.uniq(newBl);
+      this.blacklist = newBl;
+      chrome.storage.local.set({blacklist: newBl}, (result)=> {
+        this.trigger(this.blacklist);
+        console.log('Blacklist saved: ',result);
+        reRenderStore.set_reRender(true, 'create', null);
+      }); 
+    });
+  },
+  get_blacklist: function() {
+    return this.blacklist;
+  },
+});
+
 
 (function() {
     document.onmousemove = handleMouseMove;

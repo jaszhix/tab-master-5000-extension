@@ -1,9 +1,11 @@
 import React from 'react';
 import Reflux from 'reflux';
+import _ from 'lodash';
+import S from 'string';
 
 import utils from './utils';
 
-import {prefsStore, utilityStore, screenshotStore} from './store';
+import {prefsStore, utilityStore, screenshotStore, blacklistStore} from './store';
 
 var Toggle = React.createClass({
   render: function() {
@@ -12,6 +14,69 @@ var Toggle = React.createClass({
       <div className="Toggle">
         <div onMouseEnter={p.onMouseEnter} onMouseLeave={p.onMouseLeave} className="prefs-row row">
           <span onClick={p.onClick}><i className={p.on ? "fa fa-toggle-on" : "fa fa-toggle-off"} style={{cursor: 'pointer', fontSize: '18px'}}/> {p.children}</span>
+        </div>
+      </div>
+    );
+  }
+});
+
+var Blacklist = React.createClass({
+  mixins: [Reflux.ListenerMixin],
+  getInitialState(){
+    return {
+      blacklistValue: null,
+      blacklist: blacklistStore.get_blacklist(),
+      formatError: null
+    };
+  },
+  componentDidMount(){
+    this.listenTo(blacklistStore, this.blacklistChange);
+    this.updateValue();
+  },
+  updateValue(){
+    this.replaceState({blacklistValue: blacklistStore.get_blacklist()});
+  },
+  setBlacklist(e){
+    this.setState({blacklistValue: e.target.value});
+  },
+  blacklistChange(e){
+    if (this.state.formatError) {
+      this.setState({formatError: false});
+    }
+    this.setState({blacklist: e});
+    this.updateValue();
+  },
+  blacklistSubmit(){
+    var s = this.state;
+    var list = s.blacklistValue.split(',');
+    var formatError = [];
+    for (var i = 0; i < list.length; i++) {
+      if (!S(list[i]).include('.')) {
+        formatError.push(list[i]);
+      }
+    }
+    if (formatError.length === 0) {
+      blacklistStore.set_blacklist(s.blacklistValue);
+    } else {
+      if (formatError.length >= 2) {
+        formatError[formatError.length - 1] = 'and '+_.last(formatError)+' are not valid website domains.';
+      } else {
+        formatError[formatError.length - 1] = _.last(formatError)+' is not a valid website domain.';
+      }
+      this.setState({formatError: formatError});
+    }
+  },
+  render: function() {
+    var s = this.state;
+    return (
+      <div className="col-xs-12">
+        <div style={{width: '350px'}} className="col-xs-6">
+          {s.formatError ? <span style={{width: '350px', color: 'A94442'}}>{s.formatError.join(', ')}</span> : null}
+          <textarea value={s.blacklistValue} onChange={this.setBlacklist} name="" id="input" className="form-control blacklist" rows="3" required="required" />
+          <button onClick={this.blacklistSubmit} className="ntg-btn">Save</button>
+        </div>
+        <div className="col-xs-6">
+          
         </div>
       </div>
     );
@@ -27,11 +92,13 @@ var Preferences = React.createClass({
       duplicate: prefsStore.get_prefs().duplicate,
       screenshot: prefsStore.get_prefs().screenshot,
       screenshotBg: prefsStore.get_prefs().screenshotBg,
+      blacklist: prefsStore.get_prefs().blacklist,
       dragHover: false,
       contextHover: false,
       duplicateHover: false,
       screenshotHover: false,
       screenshotBgHover: false,
+      blacklistHover: false,
       bytesInUse: null
     };
   },
@@ -47,6 +114,7 @@ var Preferences = React.createClass({
     this.setState({duplicate: prefs.duplicate});
     this.setState({screenshot: prefs.screenshot});
     this.setState({screenshotBg: prefs.screenshotBg});
+    this.setState({blacklist: prefs.blacklist});
   },
   getBytesInUse(){
     if (this.state.screenshot) {
@@ -72,6 +140,13 @@ var Preferences = React.createClass({
                   on={s.duplicate}>
                     Enable pulsing duplicate tabs
           </Toggle>
+          <Toggle onMouseEnter={()=>this.setState({blacklistHover: true})} 
+                  onMouseLeave={()=>this.setState({blacklistHover: false})} 
+                  onClick={()=>prefsStore.set_prefs('blacklist',!s.blacklist)} 
+                  on={s.blacklist}>
+                    Enable website blacklist
+          </Toggle>
+          {s.blacklist ? <Blacklist /> : null}
           <Toggle onMouseEnter={()=>this.setState({dragHover: true})} 
                   onMouseLeave={()=>this.setState({dragHover: false})} 
                   onClick={()=>prefsStore.set_prefs('drag',!s.drag)} 
