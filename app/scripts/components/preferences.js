@@ -69,11 +69,11 @@ var Blacklist = React.createClass({
   render: function() {
     var s = this.state;
     return (
-      <div className="col-xs-12">
+      <div style={{marginTop: '3px'}} className="col-xs-12">
         <div style={{width: '350px'}} className="col-xs-6">
           {s.formatError ? <span style={{width: '350px', color: 'A94442'}}>{s.formatError.join(', ')}</span> : null}
           <textarea value={s.blacklistValue} onChange={this.setBlacklist} name="" id="input" className="form-control blacklist" rows="3" required="required" />
-          <button onClick={this.blacklistSubmit} className="ntg-btn">Save</button>
+          <button style={{marginTop: '7px'}} onClick={this.blacklistSubmit} className="ntg-btn">Save</button>
         </div>
         <div className="col-xs-6">
           
@@ -178,6 +178,7 @@ var Preferences = React.createClass({
           {s.contextHover ? <p>This option toggles the right-click context menu on and off. If you disable it, some tab control features will not be accessible.</p> : null}
           {s.duplicateHover ? <p>This option will make all duplicates tabs pulsate except the first tab. This makes it easier to see how many duplicate tabs you have open.</p> : null}
           {s.screenshotHover ? <p>Enabling this feature adds a screen shot of a tab in the tab tile's background once its been clicked. After a screenshot is active, it is stored in Chrome until the page is active again. Due to performance issues, only one New Tab page can be open while screenshots are enabled.</p> : null}
+          {s.blacklistHover ? <p>Enter a comma separated list of domains, and they will be automatically closed under any circumstance. This is useful for blocking websites which may inhibit productivity, or you simply don't like.</p> : null}
           </div>
         </div>
       </div>

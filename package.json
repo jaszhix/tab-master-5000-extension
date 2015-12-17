@@ -1,6 +1,6 @@
 {
   "name": "tab-master-5000",
-  "version": "0.6.3",
+  "version": "0.7.1",
   "dependencies": {
     "react": "^0.14.2",
     "react-dom": "^0.14.2",
