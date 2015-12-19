@@ -4,7 +4,7 @@ import Reflux from 'reflux';
 import _ from 'lodash';
 import ReactUtils from 'react-utils';
 
-import {searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore, prefsStore} from './store';
+import {sortStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore, prefsStore} from './store';
 import tabStore from './tabStore';
 
 import TileGrid from './tile';
@@ -57,6 +57,7 @@ var Search = React.createClass({
           <div className="col-xs-6">
             {searchStore.get_search().length > 3 ? <span className="search-msg ntg-search-google-text">Press Enter to Search Google</span> : null}
             <button onClick={()=>modalStore.set_modal(true)} className="ntg-top-btn"><i className="fa fa-cogs"></i> Settings</button>
+            <button onClick={()=>sortStore.set_sort(!sortStore.get_sort())} className="ntg-top-btn"><i className="fa fa-reorder"></i> Sort</button>
             {p.event === 'newVersion' ? <button onClick={()=>chrome.runtime.reload()} className="ntg-update-avail-btn"><i className="fa fa-rocket"></i> New Version Available</button> : null}
             {p.event === 'versionUpdate' ? <button onClick={this.openAbout} className="ntg-update-btn"><i className="fa fa-info-circle"></i> Updated to {utilityStore.get_manifest().version}</button> : null}
             {p.event === 'installed' ? <button onClick={this.openAbout} className="ntg-ty-btn"><i className="fa fa-thumbs-o-up"></i> Thank you for installing TM5K</button> : null}
@@ -82,7 +83,8 @@ var Root = React.createClass({
       settings: true,
       collapse: true,
       context: false,
-      event: ''
+      event: '',
+      sort: sortStore.get_sort()
     };
   },
   componentDidMount() {
@@ -91,6 +93,7 @@ var Root = React.createClass({
     this.listenTo(reRenderStore, this.reRender);
     this.listenTo(settingsStore, this.settingsChange);
     this.listenTo(contextStore, this.contextTrigger);
+    this.listenTo(sortStore, this.sortTrigger);
     this.listenTo(tabStore, this.update);
     // Call the method that will query Chrome for tabs.
     this.captureTabs('init');
@@ -189,6 +192,7 @@ var Root = React.createClass({
         labels={labels}
         render={true}
         collapse={s.collapse}
+        sort={s.sort}
       />
       );
   },
@@ -203,6 +207,9 @@ var Root = React.createClass({
     } else {
       this.setState({context: context[0]});
     }
+  },
+  sortTrigger(){
+    this.setState({sort: sortStore.get_sort()});
   },
   render: function() {
     var s = this.state;

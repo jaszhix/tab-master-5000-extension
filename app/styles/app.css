@@ -24,7 +24,7 @@
 
 .tile-child-container {
     padding-top: 2px;
-    margin-left: 1.5%;
+    margin-left: 1%;
 }
 
 .tile-body {
@@ -306,7 +306,7 @@ button.ntg-btn {
 }
 button.ntg-top-btn {
     position: relative;
-    width: 100px;
+    width: auto;
     color: #FFF;
     background-color: #A8A8A8;
     text-shadow: 1px 1px #000;
@@ -360,7 +360,7 @@ button.ntg-update-avail-btn {
 }
 button.ntg-update-btn {
     position: relative;
-    width: 150px;
+    width: auto;
     color: #FFF;
     background-color: #A8A8A8;
     text-shadow: 1px 1px #000;
@@ -388,7 +388,7 @@ button.ntg-update-btn {
 
 button.ntg-ty-btn {
     position: relative;
-    width: 240px;
+    width: auto;
     color: #FFF;
     background-color: #A8A8A8;
     text-shadow: 1px 1px #000;

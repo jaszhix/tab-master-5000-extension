@@ -467,6 +467,22 @@ var Tile = React.createClass({
     );
   }
 });
+
+var Sortbar = React.createClass({
+  render: function() {
+    var p = this.props;
+    return (
+      <div className="sort-bar col-xs-1">
+        <h4 style={p.ssBg ? {backgroundColor: 'rgba(255, 255, 255, 0.88)', borderRadius: '3px'} : null} className="sort-h4">
+          {p.collapse ? 'Sort Tabs' : 'Sort'}
+        </h4>
+          {p.labels}
+          <button style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={p.onClick} className="ntg-apply-btn"><i className="fa fa-sort"></i> {p.collapse ? 'Apply' : null}</button>
+      </div>
+    );
+  }
+});
+
 // TileGrid is modified from react-sort-table for this extension - https://github.com/happy-charlie-777/react-sort-table 
 var TileGrid = React.createClass({
   mixins: [Reflux.ListenerMixin],
@@ -588,14 +604,8 @@ var TileGrid = React.createClass({
     });
     return (
       <div className="tile-body">
-          <div className="col-xs-1 sort-bar">
-            <h4 style={ssBg ? {backgroundColor: 'rgba(255, 255, 255, 0.88)', borderRadius: '3px'} : null} className="sort-h4">
-              {p.collapse ? 'Sort Tabs' : 'Sort'}
-            </h4>
-              {labels}
-              <button style={ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.applyTabs} className="ntg-apply-btn"><i className="fa fa-sort"></i> {p.collapse ? 'Apply' : null}</button>
-          </div>
-        <div className="col-xs-11">
+        {p.sort ? <Sortbar labels={labels} collapse={p.collapse} ssBg={ssBg} onClick={this.applyTabs} /> : null}
+        <div className={p.sort ? "col-xs-11" : "col-xs-12"}>
           <div id="grid" ref="grid">
               {s.data.map((data, i)=> {
                 dataIndex = [];
