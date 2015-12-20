@@ -320,11 +320,12 @@ export var prefsStore = Reflux.createStore({
           screenshot: prefs.preferences.screenshot,
           screenshotBg: prefs.preferences.screenshotBg,
           blacklist: prefs.preferences.blacklist,
-          sort: prefs.preferences.sort
+          sort: prefs.preferences.sort,
+          animations: prefs.preferences.animations
         };
       } else {
         console.log('init prefs');
-        this.prefs = {drag: false, context: true, duplicate: false, screenshot: false, screenshotBg: false, blacklist: true, sort: false};
+        this.prefs = {drag: false, context: true, duplicate: false, screenshot: false, screenshotBg: false, blacklist: true, sort: false, animations: true};
         chrome.storage.local.set({preferences: this.prefs}, (result)=> {
           console.log('Init preferences saved: ',result);
         });

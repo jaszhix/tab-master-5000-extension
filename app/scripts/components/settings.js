@@ -7,7 +7,7 @@ import moment from 'moment';
 import _ from 'lodash';
 import {saveAs} from 'filesaver.js';
 
-import {modalStore, settingsStore, utilityStore} from './store';
+import {prefsStore, modalStore, settingsStore, utilityStore} from './store';
 import tabStore from './tabStore';
 
 import Preferences from './preferences';
@@ -212,10 +212,16 @@ var Settings = React.createClass({
   modalChange(){
     var modal = modalStore.get_modal();
     this.setState({modalOpen: modal});
-    if (modal) {
-      document.getElementById('main').style.transition = '-webkit-filter .2s ease-in';
-      document.getElementById('main').style.WebkitFilter = 'blur(5px)';
+    if (prefsStore.get_prefs().animations) {
+      style.modal.overlay.backgroundColor = 'rgba(216, 216, 216, 0.21)';
+      if (modal) {
+        document.getElementById('main').style.transition = '-webkit-filter .2s ease-in';
+        document.getElementById('main').style.WebkitFilter = 'blur(5px)';
+      } else {
+        document.getElementById('main').style.WebkitFilter = 'none';
+      }
     } else {
+      style.modal.overlay.backgroundColor = 'rgba(216, 216, 216, 0.59)';
       document.getElementById('main').style.WebkitFilter = 'none';
     }
   },

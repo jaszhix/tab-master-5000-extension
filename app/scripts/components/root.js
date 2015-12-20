@@ -43,20 +43,20 @@ var Search = React.createClass({
         <div className="row">
           <div className="col-xs-6">
             <div className="col-xs-1">
-            <button onClick={()=>sortStore.set_sort(!sortStore.get_sort())} className="ntg-sort-btn"><i className="fa fa-reorder"></i></button>
+              <button onClick={()=>sortStore.set_sort(!sortStore.get_sort())} className="ntg-sort-btn"><i className="fa fa-reorder"></i></button>
             </div>
             <div className="col-xs-11">
-            <form 
-            role="search"
-            id="search"
-            onSubmit={this.handleWebSearch}>
-              <input 
-              type="text" 
-              value={searchStore.get_search()}
-              className="form-control" 
-              placeholder="Search tabs..." 
-              onChange={this.handleSearch} />
-            </form>
+              <form 
+              role="search"
+              id="search"
+              onSubmit={this.handleWebSearch}>
+                <input 
+                type="text" 
+                value={searchStore.get_search()}
+                className="form-control search-tabs" 
+                placeholder="Search tabs..." 
+                onChange={this.handleSearch} />
+              </form>
             </div>
           </div>
           <div className="col-xs-6">

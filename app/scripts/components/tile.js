@@ -140,9 +140,6 @@ var Tile = React.createClass({
           }
         }
       }
-      /*for (var y = newTabs.length - 1; y >= 0; y--) {
-        chrome.tabs.remove(newTabs[y]);
-      }*/
     }
   },
   handleClick(id, e) {
@@ -229,7 +226,9 @@ var Tile = React.createClass({
     this.setState({dHover: false});
   },
   handleCloseTab(id) {
-    this.setState({close: true});
+    if (prefsStore.get_prefs().animations) {
+      this.setState({close: true});
+    }
     chrome.tabs.remove(id);
     this.keepNewTabOpen();
   },
@@ -334,18 +333,19 @@ var Tile = React.createClass({
     }
   },
   handleFocus(opt, bool){
-    console.log('focus');
-    if (opt === 'duplicate') {
-      this.setState({focus: bool});
-      this.setState({duplicate: bool});
-    } else {
-      this.setState({focus: true});
-      var animationEnd = (e)=>{
-        console.log('animationend: ',e);
-        this.setState({focus: false});
-        this.refs.subTile.removeEventListener('animationend', animationEnd);
-      };
-      this.refs.subTile.addEventListener('animationend',animationEnd);
+    if (prefsStore.get_prefs().animations) {
+      if (opt === 'duplicate') {
+        this.setState({focus: bool});
+        this.setState({duplicate: bool});
+      } else {
+        this.setState({focus: true});
+        var animationEnd = (e)=>{
+          console.log('animationend: ',e);
+          this.setState({focus: false});
+          this.refs.subTile.removeEventListener('animationend', animationEnd);
+        };
+        this.refs.subTile.addEventListener('animationend',animationEnd);
+      }
     }
   },
   handleStart(e, ui) {

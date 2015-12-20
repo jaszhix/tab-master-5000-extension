@@ -12,7 +12,7 @@ var Toggle = React.createClass({
     var p = this.props;
     return (
       <div className="Toggle">
-        <div onMouseEnter={p.onMouseEnter} onMouseLeave={p.onMouseLeave} className="prefs-row row">
+        <div onMouseEnter={p.onMouseEnter} onMouseLeave={p.onMouseLeave} className={p.child ? "prefs-row-child row" : "prefs-row row"}>
           <span onClick={p.onClick}><i className={p.on ? "fa fa-toggle-on" : "fa fa-toggle-off"} style={{cursor: 'pointer', fontSize: '18px'}}/> {p.children}</span>
         </div>
       </div>
@@ -51,7 +51,7 @@ var Blacklist = React.createClass({
     var list = s.blacklistValue.split(',');
     var formatError = [];
     for (var i = 0; i < list.length; i++) {
-      if (!S(list[i]).include('.') && list[i] !== '.') {
+      if (!S(list[i]).include('.') || list[i] === '.') {
         formatError.push(list[i]);
       }
     }
@@ -93,12 +93,14 @@ var Preferences = React.createClass({
       screenshot: prefsStore.get_prefs().screenshot,
       screenshotBg: prefsStore.get_prefs().screenshotBg,
       blacklist: prefsStore.get_prefs().blacklist,
+      animations: prefsStore.get_prefs().animations,
       dragHover: false,
       contextHover: false,
       duplicateHover: false,
       screenshotHover: false,
       screenshotBgHover: false,
       blacklistHover: false,
+      animationsHover: false,
       bytesInUse: null
     };
   },
@@ -115,6 +117,7 @@ var Preferences = React.createClass({
     this.setState({screenshot: prefs.screenshot});
     this.setState({screenshotBg: prefs.screenshotBg});
     this.setState({blacklist: prefs.blacklist});
+    this.setState({animations: prefs.animations});
   },
   getBytesInUse(){
     if (this.state.screenshot) {
@@ -134,12 +137,22 @@ var Preferences = React.createClass({
                   on={s.context}>
                     Enable context menu
           </Toggle>
-          <Toggle onMouseEnter={()=>this.setState({duplicateHover: true})} 
-                  onMouseLeave={()=>this.setState({duplicateHover: false})} 
-                  onClick={()=>prefsStore.set_prefs('duplicate',!s.duplicate)} 
-                  on={s.duplicate}>
-                    Enable pulsing duplicate tabs
+          <Toggle onMouseEnter={()=>this.setState({animationsHover: true})} 
+                  onMouseLeave={()=>this.setState({animationsHover: false})} 
+                  onClick={()=>prefsStore.set_prefs('animations',!s.animations)} 
+                  on={s.animations}>
+                    Enable animations
           </Toggle>
+          {s.animations ? 
+            <div className="col-xs-12">
+              <Toggle onMouseEnter={()=>this.setState({duplicateHover: true})} 
+                      onMouseLeave={()=>this.setState({duplicateHover: false})} 
+                      onClick={()=>prefsStore.set_prefs('duplicate',!s.duplicate)} 
+                      on={s.duplicate} child={true}>
+                        Enable pulsing duplicate tabs
+              </Toggle>
+            </div> 
+          : null}
           <Toggle onMouseEnter={()=>this.setState({blacklistHover: true})} 
                   onMouseLeave={()=>this.setState({blacklistHover: false})} 
                   onClick={()=>prefsStore.set_prefs('blacklist',!s.blacklist)} 
@@ -164,7 +177,7 @@ var Preferences = React.createClass({
               <Toggle onMouseEnter={()=>this.setState({screenshotBgHover: true})} 
                       onMouseLeave={()=>this.setState({screenshotBgHover: false})} 
                       onClick={()=>prefsStore.set_prefs('screenshotBg',!s.screenshotBg)} 
-                      on={s.screenshotBg}>
+                      on={s.screenshotBg} child={true}>
                         Enable screenshots in the background on hover
               </Toggle>
               {s.bytesInUse ? <p>Screenshot disk useage: {utils.formatBytes(s.bytesInUse, 2)}</p> : null}
@@ -179,6 +192,7 @@ var Preferences = React.createClass({
           {s.duplicateHover ? <p>This option will make all duplicates tabs pulsate except the first tab. This makes it easier to see how many duplicate tabs you have open.</p> : null}
           {s.screenshotHover ? <p>Enabling this feature adds a screen shot of a tab in the tab tile's background once its been clicked. After a screenshot is active, it is stored in Chrome until the page is active again. Due to performance issues, only one New Tab page can be open while screenshots are enabled.</p> : null}
           {s.blacklistHover ? <p>Enter a comma separated list of domains, and they will be automatically closed under any circumstance. This is useful for blocking websites which may inhibit productivity, or you simply don't like.</p> : null}
+          {s.animationsHover ? <p>This option toggles tab action animations as well as the blur effects. Disabling this is useful on lower end computer with limited hardware acceleration.</p> : null}
           </div>
         </div>
       </div>
