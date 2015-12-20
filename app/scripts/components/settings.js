@@ -44,7 +44,6 @@ var Sessions = React.createClass({
     // Check if array exists, and push a new tabs object if not. Otherwise, create it.
     var screenshots = null;
     var prefs = prefsStore.get_prefs();
-    // screenshotsInSessionData
     if (prefs.screenshot && prefs.screenshotsInSessionData) {
       screenshots = screenshotStore.get_ssIndex();
     }
@@ -63,7 +62,6 @@ var Sessions = React.createClass({
         // Notify that we saved.
         this.loadSessions();
         console.log('session saved...',result);
-
       });   
     });  
   },

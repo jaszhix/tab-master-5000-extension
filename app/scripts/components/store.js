@@ -444,7 +444,7 @@ export var screenshotStore = Reflux.createStore({
         }).catch(()=>{
           this.invoked = false;
           this.capture(id);
-          //utilityStore.restartNewTab();
+          utilityStore.restartNewTab();
         });
       }
     }
@@ -554,6 +554,16 @@ export var sortStore = Reflux.createStore({
   },
   get_sort: function() {
     return this.sort;
+  }
+});
+
+export var contentStore = Reflux.createStore({
+  init: function() {
+    this.blacklist;
+  },
+  get_blacklist(){
+    var blacklist = prefsStore.get_prefs().blacklist;
+    return blacklist;
   }
 });
 

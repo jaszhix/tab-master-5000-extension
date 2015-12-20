@@ -187,7 +187,7 @@ var Preferences = React.createClass({
                       onMouseLeave={()=>this.setState({screenshotsInSessionDataHover: false})} 
                       onClick={()=>prefsStore.set_prefs('screenshotsInSessionData',!s.screenshotsInSessionData)} 
                       on={s.screenshotsInSessionData} child={true}>
-                        Include screenshot data in Session data
+                        Include screenshot data in session data
               </Toggle>
               {s.bytesInUse ? <p>Screenshot disk useage: {utils.formatBytes(s.bytesInUse, 2)}</p> : null}
               <button onClick={()=>screenshotStore.clear()} className="ntg-setting-btn"><i className="fa fa-trash"></i> Clear Screenshot Cache</button> 
@@ -200,8 +200,10 @@ var Preferences = React.createClass({
           {s.contextHover ? <p>This option toggles the right-click context menu on and off. If you disable it, some tab control features will not be accessible.</p> : null}
           {s.duplicateHover ? <p>This option will make all duplicates tabs pulsate except the first tab. This makes it easier to see how many duplicate tabs you have open.</p> : null}
           {s.screenshotHover ? <p>Enabling this feature adds a screen shot of a tab in the tab tile's background once its been clicked. After a screenshot is active, it is stored in Chrome until the page is active again. Due to performance issues, only one New Tab page can be open while screenshots are enabled.</p> : null}
+          {s.screenshotBgHover ? <p>This setting enables full-size tab screenshots to fill the background of the New Tab page, while you are hovering over a tab with a screenshot. Screenshots are blurred and blended into the background.</p> : null}
+          {s.screenshotsInSessionDataHover ? <p>Enabling this option will include screenshot data in session data, and screenshot data will be restored along with the session.</p> : null}
           {s.blacklistHover ? <p>Enter a comma separated list of domains, and they will be automatically closed under any circumstance. This is useful for blocking websites which may inhibit productivity, or you simply don't like.</p> : null}
-          {s.animationsHover ? <p>This option toggles tab action animations as well as the blur effects. Disabling this is useful on lower end computer with limited hardware acceleration.</p> : null}
+          {s.animationsHover ? <p>This option toggles tab action animations as well as the blur effects. Disabling this is useful on lower end computers with limited hardware acceleration.</p> : null}
           </div>
         </div>
       </div>

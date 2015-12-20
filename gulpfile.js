@@ -46,7 +46,7 @@ gulp.task('build', ['build-bg'], function() {
     .pipe(uglify(uglifyOpts))
     .pipe(gulp.dest('./app/scripts/'));
 });
-gulp.task('build-bg',function() {
+gulp.task('build-bg',['build-content'],function() {
   return gulp.src('./app/scripts/background.js')
     .pipe(webpack(require('./webpack.config.bg.js')))
     .pipe(uglify(uglifyOpts))
