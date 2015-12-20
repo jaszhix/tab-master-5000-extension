@@ -51,6 +51,10 @@ h4.sort-h4 {
 .session-col {
     overflow-wrap: normal;
 }
+span.session-data-screenshots {
+    position: relative;
+    top: 6px;
+}
 
 .prefs-row {
     margin-top: 18px;
@@ -250,12 +254,12 @@ h4.sort-h4 {
 }
 .ntg-settings-pane {
     overflow: auto;
-    height: 560px;
+    height: 85%;
 }
 .ntg-cc {
     position: fixed;
     display: table;
-    top: 800px;
+    top: 80%;
     left: 48%;
 }
 .ntg-about {

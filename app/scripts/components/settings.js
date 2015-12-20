@@ -7,7 +7,7 @@ import moment from 'moment';
 import _ from 'lodash';
 import {saveAs} from 'filesaver.js';
 
-import {prefsStore, modalStore, settingsStore, utilityStore} from './store';
+import {screenshotStore, prefsStore, modalStore, settingsStore, utilityStore} from './store';
 import tabStore from './tabStore';
 
 import Preferences from './preferences';
@@ -42,7 +42,13 @@ var Sessions = React.createClass({
   },
   saveSession(){
     // Check if array exists, and push a new tabs object if not. Otherwise, create it.
-    var tabData = {timeStamp: Date.now(), tabs: tabStore.get_tab()};
+    var screenshots = null;
+    var prefs = prefsStore.get_prefs();
+    // screenshotsInSessionData
+    if (prefs.screenshot && prefs.screenshotsInSessionData) {
+      screenshots = screenshotStore.get_ssIndex();
+    }
+    var tabData = {timeStamp: Date.now(), tabs: tabStore.get_tab(), screenshots: screenshots};
     var session = null;
     chrome.storage.local.get('sessionData',(item)=>{
       if (!item.sessionData) {
@@ -82,6 +88,10 @@ var Sessions = React.createClass({
     });
   },
   restoreSession(session){
+    var prefs = prefsStore.get_prefs();
+    if (prefs.screenshot && prefs.screenshotsInSessionData) {
+      screenshotStore.set_ssIndex(session.screenshots);
+    }
     // Opens a new chrome window with the selected tabs object.
     var urls = [];
     session.tabs.map((t)=>{
@@ -93,12 +103,13 @@ var Sessions = React.createClass({
       url: urls
     }, (Window)=>{
       console.log('restored session...',Window);
+      utilityStore.restartNewTab();
     });
   },
   exportSessions(){
     // Stringify sessionData and export as JSON.
     var json = JSON.stringify(this.state.sessions);
-    var filename = 'NTG-Session-'+Date.now();
+    var filename = 'TM5K-Session-'+Date.now();
     console.log(json);
     var blob = new Blob([json], {type: "application/json;charset=utf-8"});
     saveAs(blob, filename+'.json');
@@ -161,6 +172,7 @@ var Sessions = React.createClass({
                   </div> : null}
               </div>
               <div className="col-xs-6">
+                {session.screenshots ? <span className="session-data-screenshots" title="This session data includes screenshots data."><i className="fa fa-photo" /></span> : null}
                 {s.sessionHover === i ? <button onClick={()=>this.removeSession(session)} className="ntg-session-btn"><i className="fa fa-times"></i> {p.collapse ? 'Remove' : null}</button> : null}
                 {s.sessionHover === i ? <button onClick={()=>this.restoreSession(session)} className="ntg-session-btn"><i className="fa fa-folder-open-o"></i> {p.collapse ? 'Restore' : null}</button> : null}
               </div>

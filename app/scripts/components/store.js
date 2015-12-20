@@ -319,13 +319,14 @@ export var prefsStore = Reflux.createStore({
           duplicate: prefs.preferences.duplicate,
           screenshot: prefs.preferences.screenshot,
           screenshotBg: prefs.preferences.screenshotBg,
+          screenshotsInSessionData: prefs.preferences.screenshotsInSessionData,
           blacklist: prefs.preferences.blacklist,
           sort: prefs.preferences.sort,
-          animations: prefs.preferences.animations
+          animations: prefs.preferences.animations,
         };
       } else {
         console.log('init prefs');
-        this.prefs = {drag: false, context: true, duplicate: false, screenshot: false, screenshotBg: false, blacklist: true, sort: false, animations: true};
+        this.prefs = {drag: false, context: true, duplicate: false, screenshot: false, screenshotBg: false, screenshotsInSessionData: false, blacklist: true, sort: false, animations: true};
         chrome.storage.local.set({preferences: this.prefs}, (result)=> {
           console.log('Init preferences saved: ',result);
         });
@@ -454,7 +455,9 @@ export var screenshotStore = Reflux.createStore({
   },
   set_ssIndex(value){
     this.index = value;
-    this.trigger(this.index);
+    chrome.storage.local.set({screenshots: this.index}, ()=>{
+      this.trigger(this.index);
+    });
   },
   get_invoked(){
     return this.invoked;

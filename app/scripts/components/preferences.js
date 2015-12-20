@@ -92,6 +92,7 @@ var Preferences = React.createClass({
       duplicate: prefsStore.get_prefs().duplicate,
       screenshot: prefsStore.get_prefs().screenshot,
       screenshotBg: prefsStore.get_prefs().screenshotBg,
+      screenshotsInSessionData: prefsStore.get_prefs().screenshotsInSessionData,
       blacklist: prefsStore.get_prefs().blacklist,
       animations: prefsStore.get_prefs().animations,
       dragHover: false,
@@ -99,6 +100,7 @@ var Preferences = React.createClass({
       duplicateHover: false,
       screenshotHover: false,
       screenshotBgHover: false,
+      screenshotsInSessionDataHover: false,
       blacklistHover: false,
       animationsHover: false,
       bytesInUse: null
@@ -118,6 +120,7 @@ var Preferences = React.createClass({
     this.setState({screenshotBg: prefs.screenshotBg});
     this.setState({blacklist: prefs.blacklist});
     this.setState({animations: prefs.animations});
+    this.setState({screenshotsInSessionData: prefs.screenshotsInSessionData});
   },
   getBytesInUse(){
     if (this.state.screenshot) {
@@ -179,6 +182,12 @@ var Preferences = React.createClass({
                       onClick={()=>prefsStore.set_prefs('screenshotBg',!s.screenshotBg)} 
                       on={s.screenshotBg} child={true}>
                         Enable screenshots in the background on hover
+              </Toggle>
+              <Toggle onMouseEnter={()=>this.setState({screenshotsInSessionDataHover: true})} 
+                      onMouseLeave={()=>this.setState({screenshotsInSessionDataHover: false})} 
+                      onClick={()=>prefsStore.set_prefs('screenshotsInSessionData',!s.screenshotsInSessionData)} 
+                      on={s.screenshotsInSessionData} child={true}>
+                        Include screenshot data in Session data
               </Toggle>
               {s.bytesInUse ? <p>Screenshot disk useage: {utils.formatBytes(s.bytesInUse, 2)}</p> : null}
               <button onClick={()=>screenshotStore.clear()} className="ntg-setting-btn"><i className="fa fa-trash"></i> Clear Screenshot Cache</button> 
