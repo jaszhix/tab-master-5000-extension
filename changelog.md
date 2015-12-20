@@ -1,11 +1,18 @@
 #### Release Notes
 
+##### v0.7.1 / *12-20-15*
+
+*   Added a toggle button to the left of the top search field which now toggles the Sort Tabs column. The state of its display is stored in Chrome.
+*   Added a preferences option to bundle screenshot data with session data. Saving and restoring session data while this option is enabled will save and restore your tab screenshots as well.
+*   Added a preferences option to disable all animations in TM5K. Particularly useful for lower-end computers.
+*   Fixed the fixed positioning of the bottom settings buttons in the Settings menu. They will no longer look detached from the menu in lower resolutions.
+*   Fixed a bug causing a New Tab to not render after restoring a session.
+*   Fixed the code that is injected into tabs when the Blacklist preference option is enabled. It no longer will show debugging information in the development console, or pull any resources from other TM5K javascripts.
+
 ##### v0.7 / *12-17-15*
 
 *   Added a blacklist preference option. Enter a comma separated list of domains in Settings -> Preferences, and they will be automatically closed under any circumstance. This is useful for blocking websites which may inhibit productivity.
-
 *   There is now an optional setting which enables full-size tab screenshots to fill the background of the New Tab page, while you are hovering over a tab with a screenshot. Screenshots are blurred and blended into the background. Screenshot capturing must be enabled for this to work.
-
 *   Minor CSS changes: opening the settings menu causes a gradual blur transition. There is now a quick transition for the background color of the tab tiles during hovering.
 
 ##### v0.6.3 / *12-13-15*

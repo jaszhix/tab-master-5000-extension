@@ -5,7 +5,6 @@ var tabStore = Reflux.createStore({
   init: function() {
     this.tab = [];
     this.allTabs = null;
-    this.windows = null;
   },
   set_tab: function(value) {
     this.tab = value;

@@ -326,7 +326,7 @@ export var prefsStore = Reflux.createStore({
         };
       } else {
         console.log('init prefs');
-        this.prefs = {drag: false, context: true, duplicate: false, screenshot: false, screenshotBg: false, screenshotsInSessionData: false, blacklist: true, sort: false, animations: true};
+        this.prefs = {drag: false, context: true, animations: true, duplicate: false, screenshot: false, screenshotBg: false, screenshotsInSessionData: false, blacklist: true, sort: false};
         chrome.storage.local.set({preferences: this.prefs}, (result)=> {
           console.log('Init preferences saved: ',result);
         });
@@ -556,17 +556,6 @@ export var sortStore = Reflux.createStore({
     return this.sort;
   }
 });
-
-export var contentStore = Reflux.createStore({
-  init: function() {
-    this.blacklist;
-  },
-  get_blacklist(){
-    var blacklist = prefsStore.get_prefs().blacklist;
-    return blacklist;
-  }
-});
-
 
 (function() {
     document.onmousemove = handleMouseMove;

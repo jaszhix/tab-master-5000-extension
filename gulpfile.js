@@ -6,7 +6,7 @@ var del = require('del');
 var zip = require('gulp-zip');
 //var exec = require('child_process').exec;
 
-var production = false;
+var production = true;
 var uglifyOpts = null;
 if (production) {
   uglifyOpts = {
@@ -46,7 +46,7 @@ gulp.task('build', ['build-bg'], function() {
     .pipe(uglify(uglifyOpts))
     .pipe(gulp.dest('./app/scripts/'));
 });
-gulp.task('build-bg',['build-content'],function() {
+gulp.task('build-bg', ['build-content'],function() {
   return gulp.src('./app/scripts/background.js')
     .pipe(webpack(require('./webpack.config.bg.js')))
     .pipe(uglify(uglifyOpts))
@@ -58,14 +58,13 @@ gulp.task('build-content',function() {
     .pipe(uglify(uglifyOpts))
     .pipe(gulp.dest('./app/scripts/'));
 });
-
 gulp.task('copy', ['build'], function() {
   del.sync(['./dist/**/**/*']);
   return gulp.src('./app/**/*')
     .pipe(gulp.dest('./dist/'));
 });
 gulp.task('package', ['copy'], function() {
-  del.sync(['./dist/scripts/components/', './dist/scripts/bg/']);
+  del.sync(['./dist/scripts/components/', './dist/scripts/bg/', './dist/scripts/content/']);
   return gulp.src('./dist/**/**/*')
     .pipe(zip('tm5k-dist-' + Date.now() + '.zip'))
     .pipe(gulp.dest('./dist/'));
@@ -84,5 +83,4 @@ gulp.task('imgmin', function() {
     }))
     .pipe(gulp.dest('./app/images'));
 });
-
 gulp.task('default', ['watch'], function() {});
