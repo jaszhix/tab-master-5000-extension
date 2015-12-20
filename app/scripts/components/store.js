@@ -163,33 +163,6 @@ export var settingsStore = Reflux.createStore({
   }
 });
 
-export var sortStore = Reflux.createStore({
-  init: function() {
-    var prefsSort = new Promise((resolve, reject)=>{
-      prefsStore.get_prefs().sort;
-      if (prefsSort) {
-        resolve(prefsSort);
-      } else {
-        reject();
-      }
-    });
-    prefsSort.then((sort)=>{
-      this.sort = sort;
-    }).catch(()=>{
-      this.sort = false;
-    });
-  },
-  set_sort: function(value) {
-    prefsStore.set_prefs('sort', value);
-    this.sort = value;
-    console.log('sort: ', value);
-    this.trigger(this.sort);
-  },
-  get_sort: function() {
-    return this.sort;
-  }
-});
-
 export var utilityStore = Reflux.createStore({
   init: function() {
     this.window = null;
@@ -555,6 +528,29 @@ export var blacklistStore = Reflux.createStore({
   get_blacklist: function() {
     return this.blacklist;
   },
+});
+
+export var sortStore = Reflux.createStore({
+  init: function() {
+    _.defer(()=>{
+      var sort = prefsStore.get_prefs().sort;
+      if (sort) {
+        this.sort = sort;
+        this.trigger(this.sort);
+      } else {
+        this.sort = false;
+      }
+    });
+  },
+  set_sort: function(value) {
+    prefsStore.set_prefs('sort', value);
+    this.sort = value;
+    console.log('sort: ', value);
+    this.trigger(this.sort);
+  },
+  get_sort: function() {
+    return this.sort;
+  }
 });
 
 

@@ -42,6 +42,10 @@ var Search = React.createClass({
       <div style={prefs.screenshot && prefs.screenshotBg ? {backgroundColor: 'rgba(237, 237, 237, 0.8)'} : null} className="container-fluid ntg-form">
         <div className="row">
           <div className="col-xs-6">
+            <div className="col-xs-1">
+            <button onClick={()=>sortStore.set_sort(!sortStore.get_sort())} className="ntg-sort-btn"><i className="fa fa-reorder"></i></button>
+            </div>
+            <div className="col-xs-11">
             <form 
             role="search"
             id="search"
@@ -53,11 +57,11 @@ var Search = React.createClass({
               placeholder="Search tabs..." 
               onChange={this.handleSearch} />
             </form>
+            </div>
           </div>
           <div className="col-xs-6">
             {searchStore.get_search().length > 3 ? <span className="search-msg ntg-search-google-text">Press Enter to Search Google</span> : null}
-            <button onClick={()=>modalStore.set_modal(true)} className="ntg-top-btn"><i className="fa fa-cogs"></i> Settings</button>
-            <button onClick={()=>sortStore.set_sort(!sortStore.get_sort())} className="ntg-top-btn"><i className="fa fa-reorder"></i> Sort</button>
+            <button style={{float: 'left'}} onClick={()=>modalStore.set_modal(true)} className="ntg-top-btn"><i className="fa fa-cogs"></i> Settings</button>
             {p.event === 'newVersion' ? <button onClick={()=>chrome.runtime.reload()} className="ntg-update-avail-btn"><i className="fa fa-rocket"></i> New Version Available</button> : null}
             {p.event === 'versionUpdate' ? <button onClick={this.openAbout} className="ntg-update-btn"><i className="fa fa-info-circle"></i> Updated to {utilityStore.get_manifest().version}</button> : null}
             {p.event === 'installed' ? <button onClick={this.openAbout} className="ntg-ty-btn"><i className="fa fa-thumbs-o-up"></i> Thank you for installing TM5K</button> : null}

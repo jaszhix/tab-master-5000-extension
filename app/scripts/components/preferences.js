@@ -51,7 +51,7 @@ var Blacklist = React.createClass({
     var list = s.blacklistValue.split(',');
     var formatError = [];
     for (var i = 0; i < list.length; i++) {
-      if (!S(list[i]).include('.')) {
+      if (!S(list[i]).include('.') && list[i] !== '.') {
         formatError.push(list[i]);
       }
     }
