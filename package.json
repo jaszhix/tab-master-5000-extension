@@ -1,6 +1,23 @@
 {
   "name": "tab-master-5000",
   "version": "0.7.1",
+  "description": "Tab Master 5000",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jhen0409/react-chrome-extension-boilerplate"
+  },
+  "homepage": "https://chrome.google.com/webstore/detail/tab-master-5000-tab-swiss/mippmhcfjhliihkkdobllhpdnmmciaim",
+  "keywords": [
+    "react",
+    "reactjs",
+    "webpack",
+    "reflux",
+    "chrome",
+    "extension",
+    "tabs"
+  ],
+  "author": "jaszhix <jaszhix@gmail.com>",
+  "license": "CC-BY-4.0",
   "dependencies": {
     "react": "^0.14.2",
     "react-dom": "^0.14.2",
@@ -27,7 +44,9 @@
     "react-utils": "^1.0.0",
     "string": "^3.3.1",
     "style-loader": "^0.12.3",
+    "vquery": "^3.0.0",
     "webpack": "^1.12.0",
+    "webpack-module-hot-accept": "^1.0.3",
     "webpack-stream": "^2.1.0"
   },
   "engines": {

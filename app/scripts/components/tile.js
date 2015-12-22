@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import Reflux from 'reflux';
 import _ from 'lodash';
 import S from 'string';
+import v from 'vquery';
 import kmp from 'kmp';
 import Draggable from 'react-draggable';
 import utils from './utils';
@@ -350,7 +351,8 @@ var Tile = React.createClass({
   },
   handleStart(e, ui) {
     // Temporarily move tile element to the parent div, so the drag position stays in sync with the cursor.
-    document.getElementById('main').appendChild( ReactDOM.findDOMNode(this.refs.tileMain) );
+    v('#main').append(ReactDOM.findDOMNode(this.refs.tileMain));
+    //document.getElementById('main').appendChild( ReactDOM.findDOMNode(this.refs.tileMain) );
     console.log('Event: ', e, ui);
     console.log('Start Position: ', ui.position);
     // tileDrag will store the state outside of the component's lifecycle.
@@ -368,7 +370,8 @@ var Tile = React.createClass({
 
   handleStop(e, ui) {
     // Move the tile element back to #grid where it belongs.
-    document.getElementById('grid').appendChild( ReactDOM.findDOMNode(this.refs.tileMain) );
+    v('#grid').append(ReactDOM.findDOMNode(this.refs.tileMain));
+    //document.getElementById('grid').appendChild( ReactDOM.findDOMNode(this.refs.tileMain) );
     console.log('Event: ', e, ui);
     console.log('Stop Position: ', ui.position);
     tileDrag = false;
@@ -524,13 +527,23 @@ var TileGrid = React.createClass({
   prefsInit(){
     var prefs = prefsStore.get_prefs();
     if (!prefs.screenshotBg || !prefs.screenshot) {
-      document.getElementById('bgImg').style.display = 'none';
+      v('#bgImg').css({
+        display: 'none',
+        backgroundImage: 'none',
+        backgroundBlendMode: 'normal'
+      });
+      /*document.getElementById('bgImg').style.display = 'none';
       document.getElementById('bgImg').style.backgroundImage = 'none';
-      document.getElementById('bgImg').style.backgroundBlendMode = 'normal';
+      document.getElementById('bgImg').style.backgroundBlendMode = 'normal';*/
     } else {
-      document.getElementById('bgImg').style.display = 'block';
+      v('#bgImg').css({
+        display: 'block',
+        width: window.innerWidth + 30,
+        height: window.innerHeight + 5
+      });
+      /*document.getElementById('bgImg').style.display = 'block';
       document.getElementById('bgImg').style.width = window.innerWidth + 30;
-      document.getElementById('bgImg').style.height = window.innerHeight + 5;
+      document.getElementById('bgImg').style.height = window.innerHeight + 5;*/
     }
   },
   update(){

@@ -6,6 +6,7 @@ import S from 'string';
 import moment from 'moment';
 import _ from 'lodash';
 import {saveAs} from 'filesaver.js';
+import v from 'vquery';
 
 import {screenshotStore, prefsStore, modalStore, settingsStore, utilityStore} from './store';
 import tabStore from './tabStore';
@@ -225,14 +226,19 @@ var Settings = React.createClass({
     if (prefsStore.get_prefs().animations) {
       style.modal.overlay.backgroundColor = 'rgba(216, 216, 216, 0.21)';
       if (modal) {
-        document.getElementById('main').style.transition = '-webkit-filter .2s ease-in';
-        document.getElementById('main').style.WebkitFilter = 'blur(5px)';
+        v('#main').css({
+          transition: '-webkit-filter .2s ease-in',
+          WebkitFilter: 'blur(5px)'
+        });
+        /*document.getElementById('main').style.transition = '-webkit-filter .2s ease-in';
+        document.getElementById('main').style.WebkitFilter = 'blur(5px)';*/
       } else {
-        document.getElementById('main').style.WebkitFilter = 'none';
+        v('#main').css({WebkitFilter: 'none'});
       }
     } else {
       style.modal.overlay.backgroundColor = 'rgba(216, 216, 216, 0.59)';
-      document.getElementById('main').style.WebkitFilter = 'none';
+      v('#main').css({WebkitFilter: 'none'});
+      //document.getElementById('main').style.WebkitFilter = 'none';
     }
   },
   settingsChange(tab){

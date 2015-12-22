@@ -6,7 +6,7 @@ var del = require('del');
 var zip = require('gulp-zip');
 //var exec = require('child_process').exec;
 
-var production = true;
+var production = false;
 var uglifyOpts = null;
 if (production) {
   uglifyOpts = {
