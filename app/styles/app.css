@@ -50,9 +50,12 @@ h4.sort-h4 {
 .session-col {
     overflow-wrap: normal;
 }
+input.label-session-input {
+    height: 20px;
+}
 span.session-data-screenshots {
     position: relative;
-    top: 6px;
+    top: 3px;
 }
 
 .prefs-row {
@@ -238,6 +241,8 @@ span.session-data-screenshots {
     vertical-align: middle;
     border-radius: 3px;
     padding-top: 4px;
+    padding-bottom: 4px;
+    height: auto;
 }
 .ntg-session-text {
     font-size:14px;
@@ -534,8 +539,8 @@ button.ntg-impexp-btn {
     outline: none;
 }
 button.ntg-session-btn {
-    width: 40%;
-    height: 26px;
+    width: auto;
+    height: 20px;
     color: #000;
     background-color: #EDEDED;
     text-shadow: 2px 2px #FFF;
@@ -543,7 +548,8 @@ button.ntg-session-btn {
     border: 0;
     vertical-align: middle;
     display: inline-block;
-    padding: 3px 1px;
+    padding-left: 10px;
+    padding-right: 10px;
     font-size: 14px;
     line-height: 1.42857143;
     text-align: center;

@@ -24,7 +24,9 @@ var Sessions = React.createClass({
       sessions: null,
       sessionHover: null,
       selectedSessionTabHover: null,
-      expandedSession: null
+      expandedSession: null,
+      labelSession: null,
+      sessionLabelValue: null
     };
   },
   propTypes: {
@@ -42,14 +44,25 @@ var Sessions = React.createClass({
   tabChange(tabs){
     this.setState({tabs: tabs});
   },
-  saveSession(){
+  saveSession(opt, sess, label){
     // Check if array exists, and push a new tabs object if not. Otherwise, create it.
+    var sessionLabel = null;
+    var tabs = null;
+    var timeStamp = null;
+    if (opt === 'label') {
+      sessionLabel = label;
+      tabs = sess.tabs;
+      timeStamp = sess.timeStamp;
+    } else {
+      tabs = tabStore.get_tab();
+      timeStamp = Date.now();
+    }
     var screenshots = null;
     var prefs = prefsStore.get_prefs();
     if (prefs.screenshot && prefs.screenshotsInSessionData) {
       screenshots = screenshotStore.get_ssIndex();
     }
-    var tabData = {timeStamp: Date.now(), tabs: tabStore.get_tab(), screenshots: screenshots};
+    var tabData = {timeStamp: timeStamp, tabs: tabs, screenshots: screenshots, label: sessionLabel};
     var session = null;
     chrome.storage.local.get('sessionData',(item)=>{
       if (!item.sessionData) {
@@ -60,8 +73,16 @@ var Sessions = React.createClass({
         session = item;
         session.sessionData.push(tabData);
       }
+      if (opt === 'label') {
+        var replacedSession = _.where(session.sessionData, { timeStamp: timeStamp });
+        console.log('replacedSession: ',replacedSession);
+        session.sessionData = _.without(session.sessionData, _.first(replacedSession));
+      }
       chrome.storage.local.set(session, (result)=> {
         // Notify that we saved.
+        if (opt === 'label') {
+          this.setState({sessionLabelValue: null});
+        }
         this.loadSessions();
         console.log('session saved...',result);
       });   
@@ -105,6 +126,14 @@ var Sessions = React.createClass({
       console.log('restored session...',Window);
       utilityStore.restartNewTab();
     });
+  },
+  labelSession(session){
+    console.log(session);
+    this.saveSession('label', session, this.state.sessionLabelValue);
+    this.setState({labelSession: null});
+  },
+  setLabel(e){
+    this.setState({sessionLabelValue: e.target.value});
   },
   exportSessions(){
     // Stringify sessionData and export as JSON.
@@ -160,21 +189,36 @@ var Sessions = React.createClass({
     var tm20 = tabs.length - 20;
     return (
       <div className="sessions">
-        <div className="col-xs-6 session-col">
+        <div className="col-xs-7 session-col">
           <h3>Saved Sessions</h3>
           {s.sessions ? s.sessions.map((session, i)=>{
             return <div onMouseEnter={()=>this.handleSessionHoverIn(i)} onMouseLeave={()=>this.handleSessionHoverOut(i)} key={i} className="row ntg-session-row" style={i % 2 ? s.expandedSession === i ? {paddingBottom: '6px'} : null : s.expandedSession === i ? {backgroundColor: 'rgb(249, 249, 249)', paddingBottom: '6px'} : {backgroundColor: 'rgb(249, 249, 249)'} }>
               <div className="col-xs-6">
-                <p onClick={()=>this.expandSelectedSession(i)} className="ntg-session-text">{S(moment(session.timeStamp).fromNow()).capitalize().s+': '+session.tabs.length+' tabs'}</p>
+                <div onClick={()=>this.expandSelectedSession(i)} className={"ntg-session-text session-text-"+i}>
+                  {s.labelSession === i ? 
+                    <div>
+                      <div className="col-xs-8">
+                        <input children={undefined} type="text"
+                          value={s.sessionLabelValue}
+                          className="form-control label-session-input"
+                          placeholder="Label session..."
+                          onChange={this.setLabel} />
+                      </div>
+                      <div className="col-xs-4">
+                        <button onClick={()=>this.labelSession(session)} className="ntg-session-btn">Save</button>
+                      </div>
+                    </div>
+                    : session.label ? session.label+': '+session.tabs.length+' tabs' : S(moment(session.timeStamp).fromNow()).capitalize().s+': '+session.tabs.length+' tabs'}
+                </div>
                 {s.expandedSession === i ? <div className="row ntg-session-expanded" >
                     {session.tabs.map((t, i)=>{
                       if (i <= 20) {
                         return <div onMouseEnter={()=>this.handleSelectedSessionTabHoverIn(i)} onMouseLeave={()=>this.handleSelectedSessionTabHoverOut(i)} key={i} className="row" style={i % 2 ? null : {backgroundColor: 'rgb(249, 249, 249)'}}>
-                            <div className="col-xs-11">
+                            <div className="col-xs-10">
                               <img className="ntg-small-favicon" src={S(t.favIconUrl).isEmpty() ? '../images/file_paper_blank_document.png' : utilityStore.filterFavicons(t.favIconUrl, t.url) } /> 
                               {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {S(t.title).truncate(50).s}
                             </div>
-                            <div className="col-xs-1">
+                            <div className="col-xs-2">
                               {s.selectedSessionTabHover === i ? <button onClick={()=>utilityStore.createTab(t.url)} className="ntg-expanded-session-tab-btn"><i className="fa fa-external-link"/></button> : null}
                             </div>
                         </div>;
@@ -186,6 +230,7 @@ var Sessions = React.createClass({
                 {session.screenshots ? <span className="session-data-screenshots" title="This session data includes screenshots data."><i className="fa fa-photo" /></span> : null}
                 {s.sessionHover === i ? <button onClick={()=>this.removeSession(session)} className="ntg-session-btn"><i className="fa fa-times"></i> {p.collapse ? 'Remove' : null}</button> : null}
                 {s.sessionHover === i ? <button onClick={()=>this.restoreSession(session)} className="ntg-session-btn"><i className="fa fa-folder-open-o"></i> {p.collapse ? 'Restore' : null}</button> : null}
+                {s.sessionHover === i ? <button onClick={()=>this.setState({labelSession: i})} className="ntg-session-btn"><i className="fa fa-pencil"></i> {p.collapse ? 'Label' : null}</button> : null}
               </div>
             </div>;
           }) : null}
@@ -193,7 +238,7 @@ var Sessions = React.createClass({
           <input {...this.props} children={undefined} type="file" onChange={this.importSessions} ref="fileInput" style={style.hiddenInput} />
           <button onClick={this.triggerInput} className="ntg-impexp-btn" style={{marginLeft: '160px'}}><i className="fa fa-arrow-circle-o-up"></i> Import</button>
         </div>
-        <div className="col-xs-6 session-col">
+        <div className="col-xs-5 session-col">
           <h3>Current Session</h3>
           {tabs.map((t, i)=>{
             if (i <= 20) {
