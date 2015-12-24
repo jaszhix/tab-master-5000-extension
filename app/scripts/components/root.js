@@ -4,7 +4,7 @@ import Reflux from 'reflux';
 import _ from 'lodash';
 import ReactUtils from 'react-utils';
 import v from 'vquery';
-
+window.v = v;
 import {sortStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore, prefsStore} from './store';
 import tabStore from './tabStore';
 

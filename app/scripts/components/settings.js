@@ -23,6 +23,7 @@ var Sessions = React.createClass({
       tabs: null,
       sessions: null,
       sessionHover: null,
+      selectedSessionTabHover: null,
       expandedSession: null
     };
   },
@@ -139,6 +140,12 @@ var Sessions = React.createClass({
   handleSessionHoverOut(i){
     this.setState({sessionHover: i});
   },
+  handleSelectedSessionTabHoverIn(i){
+    this.setState({selectedSessionTabHover: i});
+  },
+  handleSelectedSessionTabHoverOut(i){
+    this.setState({selectedSessionTabHover: i});
+  },
   expandSelectedSession(i){
     if (i === this.state.expandedSession) {
       this.setState({expandedSession: null});
@@ -162,9 +169,14 @@ var Sessions = React.createClass({
                 {s.expandedSession === i ? <div className="row ntg-session-expanded" >
                     {session.tabs.map((t, i)=>{
                       if (i <= 20) {
-                        return <div key={i} className="row" style={i % 2 ? null : {backgroundColor: 'rgb(249, 249, 249)'}}>
-                          <img className="ntg-small-favicon" src={S(t.favIconUrl).isEmpty() ? '../images/file_paper_blank_document.png' : utilityStore.filterFavicons(t.favIconUrl, t.url) } /> 
-                          {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {S(t.title).truncate(50).s}
+                        return <div onMouseEnter={()=>this.handleSelectedSessionTabHoverIn(i)} onMouseLeave={()=>this.handleSelectedSessionTabHoverOut(i)} key={i} className="row" style={i % 2 ? null : {backgroundColor: 'rgb(249, 249, 249)'}}>
+                            <div className="col-xs-11">
+                              <img className="ntg-small-favicon" src={S(t.favIconUrl).isEmpty() ? '../images/file_paper_blank_document.png' : utilityStore.filterFavicons(t.favIconUrl, t.url) } /> 
+                              {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {S(t.title).truncate(50).s}
+                            </div>
+                            <div className="col-xs-1">
+                              {s.selectedSessionTabHover === i ? <button onClick={()=>utilityStore.createTab(t.url)} className="ntg-expanded-session-tab-btn"><i className="fa fa-external-link"/></button> : null}
+                            </div>
                         </div>;
                       }
                     })}
@@ -230,15 +242,12 @@ var Settings = React.createClass({
           transition: '-webkit-filter .2s ease-in',
           WebkitFilter: 'blur(5px)'
         });
-        /*document.getElementById('main').style.transition = '-webkit-filter .2s ease-in';
-        document.getElementById('main').style.WebkitFilter = 'blur(5px)';*/
       } else {
         v('#main').css({WebkitFilter: 'none'});
       }
     } else {
       style.modal.overlay.backgroundColor = 'rgba(216, 216, 216, 0.59)';
       v('#main').css({WebkitFilter: 'none'});
-      //document.getElementById('main').style.WebkitFilter = 'none';
     }
   },
   settingsChange(tab){

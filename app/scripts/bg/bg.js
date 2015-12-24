@@ -2,6 +2,11 @@ var sendMsg = (msg) => {
   chrome.runtime.sendMessage(chrome.runtime.id, msg, (response)=>{
   });
 };
+var reload = (reason)=>{
+  // console log messages before error triggered location.reload() calls. Preserve console logging in the browser to see them.
+  console.log('Reload background script. Reason: ',reason);
+  location.reload();
+};
 chrome.tabs.onCreated.addListener((e, info) => {
   sendMsg({e: e, type: 'create'});
 });
@@ -65,10 +70,12 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       sendResponse({'image': image});
     }).catch(()=>{
       sendMsg({e: null, type: 'error'});
-      location.reload();
+      reload('Screenshot capture error.');
     });
   } else if (msg.method === 'close') {
     chrome.tabs.remove(sender.tab.id);
+  } else if (msg.method === 'reload') {
+    reload('Screenshot reloading condition triggered from tile.js.');
   }
   return true;
 });
