@@ -352,7 +352,6 @@ var Tile = React.createClass({
   handleStart(e, ui) {
     // Temporarily move tile element to the parent div, so the drag position stays in sync with the cursor.
     v('#main').append(ReactDOM.findDOMNode(this.refs.tileMain));
-    //document.getElementById('main').appendChild( ReactDOM.findDOMNode(this.refs.tileMain) );
     console.log('Event: ', e, ui);
     console.log('Start Position: ', ui.position);
     // tileDrag will store the state outside of the component's lifecycle.
@@ -371,7 +370,6 @@ var Tile = React.createClass({
   handleStop(e, ui) {
     // Move the tile element back to #grid where it belongs.
     v('#grid').append(ReactDOM.findDOMNode(this.refs.tileMain));
-    //document.getElementById('grid').appendChild( ReactDOM.findDOMNode(this.refs.tileMain) );
     console.log('Event: ', e, ui);
     console.log('Stop Position: ', ui.position);
     tileDrag = false;
@@ -428,7 +426,7 @@ var Tile = React.createClass({
                     onStop={this.handleStop}>
           <div ref="tile" style={s.drag ? {position: 'fixed', left: drag.left-200, top: drag.top} : null}>
           {p.render && s.render && p.tab.title !== 'New Tab' ? <div id="subTile" ref="subTile" style={s.hover ? s.duplicate && !s.drag && !s.pinning && !s.close ? {display: 'inline', backgroundColor: 'rgb(247, 247, 247)'} : {WebkitAnimationDuration: '1s'} : s.duplicate ? {WebkitAnimationIterationCount: 'infinite', display: 'inline', backgroundColor: 'rgb(237, 237, 237)'} : null} onContextMenu={this.handleContextClick} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "row-fluid animated zoomOut" : s.focus && s.pinning || s.focus && s.duplicate ? "row-fluid animated pulse" : "row-fluid"}>
-              { this.filterTabs(p.tab) ? <div className={s.hover ? "ntg-tile-hover" : "ntg-tile"} style={s.screenshot ? s.hover ? style.tileHovered(s.screenshot) : style.tile(s.screenshot) : null} key={p.key}>
+              { this.filterTabs(p.tab) ? <div id={'innerTile-'+p.i}className={s.hover ? "ntg-tile-hover" : "ntg-tile"} style={s.screenshot ? s.hover ? style.tileHovered(s.screenshot) : style.tile(s.screenshot) : null} key={p.key}>
                 <div className="row ntg-tile-row-top">
                   <div className="col-xs-3">
                     {chromeVersion >= 46 ? <div onMouseEnter={this.handleTabMuteHoverIn} onMouseLeave={this.handleTabMuteHoverOut} onClick={() => this.handleMuting(p.tab)}>
@@ -527,23 +525,19 @@ var TileGrid = React.createClass({
   prefsInit(){
     var prefs = prefsStore.get_prefs();
     if (!prefs.screenshotBg || !prefs.screenshot) {
+      v('#main').css({position: ''});
       v('#bgImg').css({
         display: 'none',
         backgroundImage: 'none',
         backgroundBlendMode: 'normal'
       });
-      /*document.getElementById('bgImg').style.display = 'none';
-      document.getElementById('bgImg').style.backgroundImage = 'none';
-      document.getElementById('bgImg').style.backgroundBlendMode = 'normal';*/
     } else {
+      v('#main').css({position: 'absolute'});
       v('#bgImg').css({
         display: 'block',
         width: window.innerWidth + 30,
         height: window.innerHeight + 5
       });
-      /*document.getElementById('bgImg').style.display = 'block';
-      document.getElementById('bgImg').style.width = window.innerWidth + 30;
-      document.getElementById('bgImg').style.height = window.innerHeight + 5;*/
     }
   },
   update(){
@@ -624,7 +618,7 @@ var TileGrid = React.createClass({
                 dataIndex = [];
                 dataIndex.push(data);
                 return (
-                  <Tile render={p.render} key={data.id} tab={data} />
+                  <Tile render={p.render} i={i} key={data.id} tab={data} />
                 );
               })}
           </div>

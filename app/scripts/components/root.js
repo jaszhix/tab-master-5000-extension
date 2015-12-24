@@ -11,7 +11,6 @@ import tabStore from './tabStore';
 import TileGrid from './tile';
 import Settings from './settings';
 import ContextMenu from './context';
-window.v = v;
 var Search = React.createClass({
   shouldComponentUpdate() {
     return searchStore.get_search().length > -1;
@@ -238,7 +237,6 @@ function run() {
 
 if ( window.addEventListener ) {
   v().ready(run);
-  //window.addEventListener( 'DOMContentLoaded', run );
 } else {
   v().load(run);
 }

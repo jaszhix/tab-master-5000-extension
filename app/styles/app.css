@@ -1,8 +1,7 @@
 #main {
-    position: fixed;
     left: 0;
     right: 0;
-    z-index: 9998;
+    z-index: 9990;
 }
 #bgImg {
     position: fixed;
