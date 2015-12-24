@@ -29,7 +29,7 @@ var style = {
       left: 0,
       right: 0,
       bottom: 0,
-      zIndex: '9999',
+      zIndex: '9995',
       backgroundColor: 'rgba(216, 216, 216, 0.21)',
       transition: 'background-color .2s ease-in'
     },

@@ -55,7 +55,7 @@ var Blacklist = React.createClass({
         formatError.push(list[i]);
       }
     }
-    if (formatError.length === 0) {
+    if (formatError.length === 0 || s.blacklistValue === '') {
       blacklistStore.set_blacklist(s.blacklistValue);
     } else {
       if (formatError.length >= 2) {
