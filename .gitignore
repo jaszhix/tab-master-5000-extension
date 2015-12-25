@@ -2,3 +2,6 @@
 .sublime-gulp.cache
 sublime-gulp.log
 /dist
+app/scripts/app.js
+app/scripts/background.js
+app/scripts/content.js

@@ -7,14 +7,16 @@ import utils from './utils';
 
 import {prefsStore, utilityStore, screenshotStore, blacklistStore} from './store';
 
+import {Btn, Col, Row} from './bootstrap';
+
 var Toggle = React.createClass({
   render: function() {
     var p = this.props;
     return (
       <div className="Toggle">
-        <div onMouseEnter={p.onMouseEnter} onMouseLeave={p.onMouseLeave} className={p.child ? "prefs-row-child row" : "prefs-row row"}>
+        <Row onMouseEnter={p.onMouseEnter} onMouseLeave={p.onMouseLeave} className={p.child ? "prefs-row-child" : "prefs-row"}>
           <span onClick={p.onClick}><i className={p.on ? "fa fa-toggle-on" : "fa fa-toggle-off"} style={{cursor: 'pointer', fontSize: '18px'}}/> {p.children}</span>
-        </div>
+        </Row>
       </div>
     );
   }
@@ -69,16 +71,14 @@ var Blacklist = React.createClass({
   render: function() {
     var s = this.state;
     return (
-      <div style={{marginTop: '3px'}} className="col-xs-12">
-        <div style={{width: '350px'}} className="col-xs-6">
+      <Col size="12" style={{marginTop: '3px'}}>
+        <Col size="6" style={{width: '350px'}}>
           {s.formatError ? <span style={{width: '350px', color: 'A94442'}}>{s.formatError.join(', ')}</span> : null}
           <textarea value={s.blacklistValue} onChange={this.setBlacklist} name="" id="input" className="form-control blacklist" rows="3" required="required" />
-          <button style={{marginTop: '7px'}} onClick={this.blacklistSubmit} className="ntg-btn">Save</button>
-        </div>
-        <div className="col-xs-6">
-          
-        </div>
-      </div>
+          <Btn style={{marginTop: '7px'}} onClick={this.blacklistSubmit} className="ntg-btn" fa="plus">Save</Btn>
+        </Col>
+        <Col size="6" />
+      </Col>
     );
   }
 });
@@ -130,7 +130,7 @@ var Preferences = React.createClass({
     var s = this.state;
     return (
       <div className="preferences">
-        <div className="col-xs-6">
+        <Col size="6">
           <Toggle onMouseEnter={()=>this.setState({contextHover: true})} 
                   onMouseLeave={()=>this.setState({contextHover: false})} 
                   onClick={()=>prefsStore.set_prefs('context',!s.context)} 
@@ -144,14 +144,14 @@ var Preferences = React.createClass({
                     Enable animations
           </Toggle>
           {s.animations ? 
-            <div className="col-xs-12">
+            <Col size="12">
               <Toggle onMouseEnter={()=>this.setState({duplicateHover: true})} 
                       onMouseLeave={()=>this.setState({duplicateHover: false})} 
                       onClick={()=>prefsStore.set_prefs('duplicate',!s.duplicate)} 
                       on={s.duplicate} child={true}>
                         Enable pulsing duplicate tabs
               </Toggle>
-            </div> 
+            </Col> 
           : null}
           <Toggle onMouseEnter={()=>this.setState({blacklistHover: true})} 
                   onMouseLeave={()=>this.setState({blacklistHover: false})} 
@@ -173,7 +173,7 @@ var Preferences = React.createClass({
                     Enable tab screenshots <strong>(Experimental)</strong>
           </Toggle>
           {s.screenshot ? 
-            <div className="col-xs-12">
+            <Col size="12">
               <Toggle onMouseEnter={()=>this.setState({screenshotBgHover: true})} 
                       onMouseLeave={()=>this.setState({screenshotBgHover: false})} 
                       onClick={()=>prefsStore.set_prefs('screenshotBg',!s.screenshotBg)} 
@@ -181,21 +181,21 @@ var Preferences = React.createClass({
                         Enable screenshots in the background on hover
               </Toggle>
               {s.bytesInUse ? <p>Screenshot disk useage: {utils.formatBytes(s.bytesInUse, 2)}</p> : null}
-              <button onClick={()=>screenshotStore.clear()} className="ntg-setting-btn"><i className="fa fa-trash"></i> Clear Screenshot Cache</button> 
-            </div>
+              <Btn onClick={()=>screenshotStore.clear()} className="ntg-setting-btn" fa="trash">Clear Screenshot Cache</Btn> 
+            </Col>
           : null}
-        </div>
-        <div className="col-xs-6">
-          <div className="prefs-row row">
-          {s.dragHover ? <p>This features adds a hand icon to the top right corner of your tab tiles. Clicking the icon and dragging a tab will allow you to re-order your tabs from the grid.</p> : null}
-          {s.contextHover ? <p>This option toggles the right-click context menu on and off. If you disable it, some tab control features will not be accessible.</p> : null}
-          {s.duplicateHover ? <p>This option will make all duplicates tabs pulsate except the first tab. This makes it easier to see how many duplicate tabs you have open.</p> : null}
-          {s.screenshotHover ? <p>Enabling this feature adds a screen shot of a tab in the tab tile's background once its been clicked. After a screenshot is active, it is stored in Chrome until the page is active again. Due to performance issues, only one New Tab page can be open while screenshots are enabled.</p> : null}
-          {s.screenshotBgHover ? <p>This setting enables full-size tab screenshots to fill the background of the New Tab page, while you are hovering over a tab with a screenshot. Screenshots are blurred and blended into the background.</p> : null}
-          {s.blacklistHover ? <p>Enter a comma separated list of domains, and they will be automatically closed under any circumstance. This is useful for blocking websites which may inhibit productivity, or you simply don't like.</p> : null}
-          {s.animationsHover ? <p>This option toggles tab action animations as well as the blur effects. Disabling this is useful on lower end computers with limited hardware acceleration.</p> : null}
-          </div>
-        </div>
+        </Col>
+        <Col size="6">
+          <Row className="prefs-row">
+            {s.dragHover ? <p>This features adds a hand icon to the top right corner of your tab tiles. Clicking the icon and dragging a tab will allow you to re-order your tabs from the grid.</p> : null}
+            {s.contextHover ? <p>This option toggles the right-click context menu on and off. If you disable it, some tab control features will not be accessible.</p> : null}
+            {s.duplicateHover ? <p>This option will make all duplicates tabs pulsate except the first tab. This makes it easier to see how many duplicate tabs you have open.</p> : null}
+            {s.screenshotHover ? <p>Enabling this feature adds a screen shot of a tab in the tab tile's background once its been clicked. After a screenshot is active, it is stored in Chrome until the page is active again. Due to performance issues, only one New Tab page can be open while screenshots are enabled.</p> : null}
+            {s.screenshotBgHover ? <p>This setting enables full-size tab screenshots to fill the background of the New Tab page, while you are hovering over a tab with a screenshot. Screenshots are blurred and blended into the background.</p> : null}
+            {s.blacklistHover ? <p>Enter a comma separated list of domains, and they will be automatically closed under any circumstance. This is useful for blocking websites which may inhibit productivity, or you simply don't like.</p> : null}
+            {s.animationsHover ? <p>This option toggles tab action animations as well as the blur effects. Disabling this is useful on lower end computers with limited hardware acceleration.</p> : null}
+          </Row>
+        </Col>
       </div>
     );
   }

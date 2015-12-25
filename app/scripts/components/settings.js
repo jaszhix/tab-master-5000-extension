@@ -8,12 +8,13 @@ import _ from 'lodash';
 import {saveAs} from 'filesaver.js';
 import v from 'vquery';
 
-import {screenshotStore, prefsStore, modalStore, settingsStore, utilityStore} from './store';
+import {prefsStore, modalStore, settingsStore, utilityStore} from './store';
 import tabStore from './tabStore';
 
 import Preferences from './preferences';
 import About from './about';
 
+import {Btn, Col, Row, Container} from './bootstrap';
 import style from './style';
 
 var Sessions = React.createClass({
@@ -197,69 +198,69 @@ var Sessions = React.createClass({
     };
     return (
       <div className="sessions">
-        <div className="col-xs-7 session-col">
+        <Col size="7" className="session-col">
           <h4>Saved Sessions</h4>
           {s.sessions ? s.sessions.map((session, i)=>{
-            return <div onMouseEnter={()=>this.handleSessionHoverIn(i)} onMouseLeave={()=>this.handleSessionHoverOut(i)} key={i} className="row ntg-session-row" style={i % 2 ? s.expandedSession === i ? {paddingBottom: '6px'} : null : s.expandedSession === i ? {backgroundColor: 'rgb(249, 249, 249)', paddingBottom: '6px'} : {backgroundColor: 'rgb(249, 249, 249)'} }>
-              <div className="col-xs-6">
+            return <Row onMouseEnter={()=>this.handleSessionHoverIn(i)} onMouseLeave={()=>this.handleSessionHoverOut(i)} key={i} className="ntg-session-row" style={i % 2 ? s.expandedSession === i ? {paddingBottom: '6px'} : null : s.expandedSession === i ? {backgroundColor: 'rgb(249, 249, 249)', paddingBottom: '6px'} : {backgroundColor: 'rgb(249, 249, 249)'} }>
+              <Col size="6">
                 <div onClick={(e)=>this.expandSelectedSession(i, e)} className={"ntg-session-text session-text-"+i}>
                   {s.labelSession === i ? 
                     <div>
-                      <div className="col-xs-8">
+                      <Col size="8">
                         <input children={undefined} type="text"
                           value={s.sessionLabelValue}
                           className="form-control label-session-input"
                           placeholder="Label..."
                           onChange={this.setLabel} />
-                      </div>
-                      <div className="col-xs-4">
-                        <button onClick={()=>this.labelSession(session)} className="ntg-session-btn"><i className="fa fa-plus"></i> Save</button>
-                      </div>
+                      </Col>
+                      <Col size="4">
+                        <Btn onClick={()=>this.labelSession(session)} className="ntg-session-btn" fa="plus">Save</Btn>
+                      </Col>
                     </div>
                     : session.label ? session.label+': '+session.tabs.length+' tabs' : S(moment(session.timeStamp).fromNow()).capitalize().s+': '+session.tabs.length+' tabs'}
                 </div>
-                {s.expandedSession === i ? <div className="row ntg-session-expanded" >
+                {s.expandedSession === i ? <Row className="ntg-session-expanded">
                     {session.tabs.map((t, i)=>{
                       if (i <= 20) {
-                        return <div onMouseEnter={()=>this.handleSelectedSessionTabHoverIn(i)} onMouseLeave={()=>this.handleSelectedSessionTabHoverOut(i)} key={i} className="row" style={i % 2 ? null : {backgroundColor: 'rgb(249, 249, 249)'}}>
-                            <div className="col-xs-10">
+                        return <Row onMouseEnter={()=>this.handleSelectedSessionTabHoverIn(i)} onMouseLeave={()=>this.handleSelectedSessionTabHoverOut(i)} key={i} style={i % 2 ? null : {backgroundColor: 'rgb(249, 249, 249)'}}>
+                            <Col size="10">
                               <img className="ntg-small-favicon" src={S(t.favIconUrl).isEmpty() ? '../images/file_paper_blank_document.png' : utilityStore.filterFavicons(t.favIconUrl, t.url) } /> 
                               {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {S(t.title).truncate(50).s}
-                            </div>
-                            <div className="col-xs-2">
-                              {s.selectedSessionTabHover === i ? <button onClick={()=>removeTabFromSession(t.id, session)} className="ntg-expanded-session-tab-btn"><i className="fa fa-times"/></button> : null}
-                              {s.selectedSessionTabHover === i ? <button onClick={()=>utilityStore.createTab(t.url)} className="ntg-expanded-session-tab-btn"><i className="fa fa-external-link"/></button> : null}
-                            </div>
-                        </div>;
+                            </Col>
+                            <Col size="2">
+                              {s.selectedSessionTabHover === i ? <Btn onClick={()=>removeTabFromSession(t.id, session)} className="ntg-expanded-session-tab-btn" fa="times" /> : null}
+                              {s.selectedSessionTabHover === i ? <Btn onClick={()=>utilityStore.createTab(t.url)} className="ntg-expanded-session-tab-btn" fa="external-link" /> : null}
+                            </Col>
+                        </Row>;
                       }
                     })}
-                  </div> : null}
-              </div>
-              <div className="col-xs-6">
-                {s.sessionHover === i ? <button onClick={()=>this.removeSession(session)} className="ntg-session-btn"><i className="fa fa-times"></i> {p.collapse ? 'Remove' : null}</button> : null}
-                {s.sessionHover === i ? <button onClick={()=>this.restoreSession(session)} className="ntg-session-btn"><i className="fa fa-folder-open-o"></i> {p.collapse ? 'Restore' : null}</button> : null}
-                {s.sessionHover === i ? <button onClick={()=>this.setState({labelSession: i})} className="ntg-session-btn"><i className="fa fa-pencil"></i> {p.collapse ? 'Label' : null}</button> : null}
-              </div>
-            </div>;
+                  </Row> : null}
+              </Col>
+              <Col size="6">
+                {s.sessionHover === i ? <Btn onClick={()=>this.removeSession(session)} className="ntg-session-btn" fa="times">{p.collapse ? 'Remove' : null}</Btn> : null}
+                {s.sessionHover === i ? <Btn onClick={()=>this.restoreSession(session)} className="ntg-session-btn" fa="folder-open-o">{p.collapse ? 'Restore' : null}</Btn> : null}
+                {s.sessionHover === i ? <Btn onClick={()=>this.setState({labelSession: i})} className="ntg-session-btn" fa="pencil">{p.collapse ? 'Label' : null}</Btn> : null}
+              </Col>
+            </Row>;
           }) : null}
-          <button onClick={()=>this.exportSessions()} className="ntg-impexp-btn"><i className="fa fa-arrow-circle-o-down"></i> Export</button>
+          <Btn onClick={()=>this.exportSessions()} className="ntg-impexp-btn" fa="arrow-circle-o-down">Export</Btn>
           <input {...this.props} children={undefined} type="file" onChange={this.importSessions} ref="fileInput" style={style.hiddenInput} />
-          <button onClick={this.triggerInput} className="ntg-impexp-btn" style={{marginLeft: '160px'}}><i className="fa fa-arrow-circle-o-up"></i> Import</button>
-        </div>
-        <div className="col-xs-5 session-col">
+          <Btn onClick={this.triggerInput} className="ntg-impexp-btn" style={{marginLeft: '160px'}} fa="arrow-circle-o-up">Import</Btn>
+        </Col>
+        <Col size="5" className="session-col">
           <h4>Current Session</h4>
           {tabs.map((t, i)=>{
             if (i <= 20) {
-              return <div key={i} className="row" style={i % 2 ? null : {backgroundColor: 'rgb(249, 249, 249)'}}>
+              return <Row key={i} style={i % 2 ? null : {backgroundColor: 'rgb(249, 249, 249)'}}>
                 <img className="ntg-small-favicon" src={S(t.favIconUrl).isEmpty() ? '../images/file_paper_blank_document.png' : utilityStore.filterFavicons(t.favIconUrl, t.url) } />  
                 {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {S(t.title).truncate(60).s}
-              </div>;
+              </Row>;
             }
           })}
-          {tabs.length >= 22 ? <div className="row">{tabs.length >= 20 ? '...plus ' +tm20+ ' other tabs.' : null}</div> : null}
+          {tabs.length >= 22 ? <Row>{tabs.length >= 20 ? '...plus ' +tm20+ ' other tabs.' : null}</Row> : null}
           <p/>
-          <button onClick={this.saveSession} className="ntg-setting-btn"><i className="fa fa-plus"></i> Save Session</button>
-        </div>
+          <Btn onClick={this.saveSession} className="ntg-setting-btn" fa="plus">Save Session</Btn>
+        </Col>
       </div>
     );
   }
@@ -320,8 +321,8 @@ var Settings = React.createClass({
         onRequestClose={()=>modalStore.set_modal(false)}
         style={style.modal} >
 
-        <div className="container-fluid">
-          <div className="row ntg-tabs">
+        <Container fluid={true}>
+          <Row className="ntg-tabs">
             <div role="tabpanel"> 
                 <ul className="nav nav-tabs">
                     <li className={sessions ? "active" : null}>
@@ -335,13 +336,13 @@ var Settings = React.createClass({
                     </li>
                 </ul>
             </div>
-          </div>
-          <div className="row ntg-settings-pane">
+          </Row>
+          <Row className="ntg-settings-pane">
             {sessions ? <Sessions collapse={p.collapse} /> : null}
             {preferences ? <Preferences /> : null}
             {about ? <About /> : null}
-          </div>
-        </div>
+          </Row>
+        </Container>
       </Modal>
     );
   }

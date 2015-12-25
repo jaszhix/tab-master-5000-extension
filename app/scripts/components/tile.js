@@ -11,6 +11,7 @@ import utils from './utils';
 import {blacklistStore, screenshotStore, dupeStore, prefsStore, reRenderStore, searchStore, applyTabOrderStore, utilityStore, contextStore, relayStore, dragStore} from './store';
 import tabStore from './tabStore';
 
+import {Btn, Col, Row} from './bootstrap';
 import style from './style';
 
 var dataIndex = null;
@@ -234,6 +235,7 @@ var Tile = React.createClass({
     this.keepNewTabOpen();
   },
   handlePinning(tab, opt) {
+    var p = this.props;
     var id = null;
     if (opt === 'context') {
       id = tab;
@@ -250,9 +252,9 @@ var Tile = React.createClass({
     this.setState({render: true});
     var animationEnd = (e)=>{
       this.setState({pinning: false});
-      this.refs.subTile.removeEventListener('animationend', animationEnd);
+      document.getElementById('subTile-'+p.i).removeEventListener('animationend', animationEnd);
     };
-    this.refs.subTile.addEventListener('animationend',animationEnd);
+    document.getElementById('subTile-'+p.i).addEventListener('animationend',animationEnd);
     pinned = id;
   },
   handleMuting(tab){
@@ -335,6 +337,7 @@ var Tile = React.createClass({
   },
   handleFocus(opt, bool){
     if (prefsStore.get_prefs().animations) {
+      var p = this.props;
       if (opt === 'duplicate') {
         this.setState({focus: bool});
         this.setState({duplicate: bool});
@@ -343,9 +346,9 @@ var Tile = React.createClass({
         var animationEnd = (e)=>{
           console.log('animationend: ',e);
           this.setState({focus: false});
-          this.refs.subTile.removeEventListener('animationend', animationEnd);
+          document.getElementById('subTile-'+p.i).removeEventListener('animationend', animationEnd);
         };
-        this.refs.subTile.addEventListener('animationend',animationEnd);
+        document.getElementById('subTile-'+p.i).addEventListener('animationend',animationEnd);
       }
     }
   },
@@ -425,10 +428,10 @@ var Tile = React.createClass({
                     onDrag={this.handleDrag}
                     onStop={this.handleStop}>
           <div ref="tile" style={s.drag ? {position: 'fixed', left: drag.left-200, top: drag.top} : null}>
-          {p.render && s.render && p.tab.title !== 'New Tab' ? <div id="subTile" ref="subTile" style={s.hover ? s.duplicate && !s.drag && !s.pinning && !s.close ? {display: 'inline', backgroundColor: 'rgb(247, 247, 247)'} : {WebkitAnimationDuration: '1s'} : s.duplicate ? {WebkitAnimationIterationCount: 'infinite', display: 'inline', backgroundColor: 'rgb(237, 237, 237)'} : null} onContextMenu={this.handleContextClick} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "row-fluid animated zoomOut" : s.focus && s.pinning || s.focus && s.duplicate ? "row-fluid animated pulse" : "row-fluid"}>
-              { this.filterTabs(p.tab) ? <div id={'innerTile-'+p.i}className={s.hover ? "ntg-tile-hover" : "ntg-tile"} style={s.screenshot ? s.hover ? style.tileHovered(s.screenshot) : style.tile(s.screenshot) : null} key={p.key}>
-                <div className="row ntg-tile-row-top">
-                  <div className="col-xs-3">
+          {p.render && s.render && p.tab.title !== 'New Tab' ? <Row fluid={true} id={"subTile-"+p.i} style={s.hover ? s.duplicate && !s.drag && !s.pinning && !s.close ? {display: 'inline', backgroundColor: 'rgb(247, 247, 247)'} : {WebkitAnimationDuration: '1s'} : s.duplicate ? {WebkitAnimationIterationCount: 'infinite', display: 'inline', backgroundColor: 'rgb(237, 237, 237)'} : null} onContextMenu={this.handleContextClick} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "animated zoomOut" : s.focus && s.pinning || s.focus && s.duplicate ? "animated pulse" : null}>
+              { this.filterTabs(p.tab) ? <div id={'innerTile-'+p.i} className={s.hover ? "ntg-tile-hover" : "ntg-tile"} style={s.screenshot ? s.hover ? style.tileHovered(s.screenshot) : style.tile(s.screenshot) : null} key={p.key}>
+                <Row className="ntg-tile-row-top">
+                  <Col size="3">
                     {chromeVersion >= 46 ? <div onMouseEnter={this.handleTabMuteHoverIn} onMouseLeave={this.handleTabMuteHoverOut} onClick={() => this.handleMuting(p.tab)}>
                                       {s.hover || p.tab.audible || p.tab.mutedInfo.muted ? 
                                       <i className={p.tab.audible ? s.mHover ? "fa fa-volume-off ntg-mute-audible-hover" : "fa fa-volume-up ntg-mute-audible" : s.mHover ? "fa fa-volume-off ntg-mute-hover" : "fa fa-volume-off ntg-mute"} style={s.screenshot && s.hover ? style.ssIconBg : null} />
@@ -444,11 +447,11 @@ var Tile = React.createClass({
                       <i className={s.pHover ? "fa fa-map-pin ntg-pinned-hover" : "fa fa-map-pin ntg-pinned"} style={p.tab.pinned ? s.screenshot && s.hover ? style.ssPinnedIconBg : s.screenshot ? style.ssPinnedIconBg : {color: '#B67777'} : s.screenshot ? style.ssIconBg : null} />
                       : null}
                     </div>
-                    <div className="row">
+                    <Row>
                       <img className="ntg-favicon" src={S(p.tab.favIconUrl).isEmpty() ? '../images/file_paper_blank_document.png' : utilityStore.filterFavicons(p.tab.favIconUrl, p.tab.url) } />
-                    </div>
-                  </div>
-                  <div onClick={() => this.handleClick(p.tab.id)} className="col-xs-9 ntg-title-container">
+                    </Row>
+                  </Col>
+                  <Col size="9" onClick={() => this.handleClick(p.tab.id)} className="ntg-title-container">
                     <h5 style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-title">
                       {S(p.tab.title).truncate(83).s}
                     </h5>
@@ -457,11 +460,11 @@ var Tile = React.createClass({
                       <i className={s.dHover ? "fa fa-hand-grab-o ntg-move-hover handle" : "fa fa-hand-grab-o ntg-move"} style={s.screenshot && s.hover ? style.ssIconBg : null} />
                       : null}
                     </div> : null : null}
-                  </div> 
-                </div>
-                <div onClick={() => this.handleClick(p.tab.id)} className="row ntg-tile-row-bottom"></div>
+                  </Col> 
+                </Row>
+                <Row onClick={() => this.handleClick(p.tab.id)} className="ntg-tile-row-bottom" />
               </div> : null}
-            </div> : null}
+            </Row> : null}
           </div>
         </Draggable>
       </div>
@@ -473,13 +476,13 @@ var Sortbar = React.createClass({
   render: function() {
     var p = this.props;
     return (
-      <div className="sort-bar col-xs-1">
+      <Col size="1" className="sort-bar">
         <h4 style={p.ssBg ? {backgroundColor: 'rgba(255, 255, 255, 0.88)', borderRadius: '3px'} : null} className="sort-h4">
           {p.collapse ? 'Sort Tabs' : 'Sort'}
         </h4>
           {p.labels}
-          <button style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={p.onClick} className="ntg-apply-btn"><i className="fa fa-sort"></i> {p.collapse ? 'Apply' : null}</button>
-      </div>
+          <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={p.onClick} className="ntg-apply-btn" fa="sort">{p.collapse ? 'Apply' : null}</Btn>
+      </Col>
     );
   }
 });
@@ -602,17 +605,17 @@ var TileGrid = React.createClass({
       var cLabel = p.collapse ? label : null;
       return (
         <div key={key} onClick={this.sort(key)}>
-          {label === 'Tab Order' ? <button style={ssBg ? buttonTransparent : null} className="ntg-btn"><i className="fa fa-history"></i> {cLabel}</button> : null}
-          {label === 'Website' ? <button style={ssBg ? buttonTransparent : null} className="ntg-btn"><i className="fa fa-external-link"></i> {cLabel}</button> : null}
-          {label === 'Title' ? <button style={ssBg ? buttonTransparent : null} onClick={this.handleTitleIcon} className="ntg-btn"><i className={this.state.title ? "fa fa-sort-alpha-asc" : "fa fa-sort-alpha-desc"}></i> {cLabel}</button> : null}
-          {label === 'Downloaded' ? <button style={ssBg ? buttonTransparent : null} className="ntg-btn"><i className="fa fa-download"></i> {cLabel}</button> : null}
+          {label === 'Tab Order' ? <Btn style={ssBg ? buttonTransparent : null} className="ntg-btn" fa="history">{cLabel}</Btn> : null}
+          {label === 'Website' ? <Btn style={ssBg ? buttonTransparent : null} className="ntg-btn" fa="external-link">{cLabel}</Btn> : null}
+          {label === 'Title' ? <Btn style={ssBg ? buttonTransparent : null} onClick={this.handleTitleIcon} className="ntg-btn" fa={s.title ? 'sort-alpha-asc' : 'sort-alpha-desc'}>{cLabel}</Btn> : null}
+          {label === 'Downloaded' ? <Btn style={ssBg ? buttonTransparent : null} className="ntg-btn" fa="download">{cLabel}</Btn> : null}
         </div>
       );
     });
     return (
       <div className="tile-body">
         {p.sort ? <Sortbar labels={labels} collapse={p.collapse} ssBg={ssBg} onClick={this.applyTabs} /> : null}
-        <div className={p.sort ? "col-xs-11" : "col-xs-12"}>
+        <Col size={p.sort ? '11' : '12'}>
           <div id="grid" ref="grid">
               {s.data.map((data, i)=> {
                 dataIndex = [];
@@ -622,7 +625,7 @@ var TileGrid = React.createClass({
                 );
               })}
           </div>
-        </div>
+        </Col>
       </div>
     );
   }

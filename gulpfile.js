@@ -1,15 +1,16 @@
 var gulp = require('gulp');
-var uglify = require('gulp-uglify');
-var webpack = require('webpack-stream');
+var webpack = require('webpack');
+var path = require('path');
+var webpackStream = require('webpack-stream');
 var imagemin = require('gulp-imagemin');
 var del = require('del');
 var zip = require('gulp-zip');
 //var exec = require('child_process').exec;
 
+var plugins = [];
 var production = false;
-var uglifyOpts = null;
 if (production) {
-  uglifyOpts = {
+  plugins.push(new webpack.optimize.UglifyJsPlugin({
     compress: {
       warnings: false,
       drop_console: true,
@@ -29,9 +30,36 @@ if (production) {
     output: {
       comments: false
     }
-  };
+  }));
 }
-
+var scssIncludePaths = [
+  path.join(__dirname, './node_modules')
+];
+var config = {
+  entry: '',
+  module: {
+    loaders: [{
+      test: /\.js$/,
+      loader: 'babel'
+    },{
+      test: /\.css$/,
+      loader: 'style-loader!css-loader'
+    },{
+      test: /\.scss$/,
+      loader: 'style-loader!css-loader!sass-loader?outputStyle=compressed&sourceComments=false&' + scssIncludePaths.join('&includePaths[]=')
+    },{
+      test: /\.(png|jpg|gif)$/,
+      loader: 'file-loader?name=[name].[ext]'
+    },{
+      test: /\.(ttf|eot|svg|woff(2)?)(\S+)?$/,
+      loader: 'file-loader?name=[name].[ext]'
+    }],
+  },
+  plugins: plugins,
+  output: {
+    filename: '',
+  }
+};
 /*gulp.task('reload', ['build-bg'],function(cb) {
     console.log('Pausing watch during ES6 formatting.');
     exec('chrome-extensions-reloader --single-run', function(err, stdout, stderr) {
@@ -41,21 +69,24 @@ if (production) {
     });
 });*/
 gulp.task('build', ['build-bg'], function() {
+  config.entry = './app/scripts/components/root.js';
+  config.output.filename = 'app.js';
   return gulp.src('./app/scripts/components/root.js')
-    .pipe(webpack(require('./webpack.config.js')))
-    .pipe(uglify(uglifyOpts))
+    .pipe(webpackStream(config))
     .pipe(gulp.dest('./app/scripts/'));
 });
 gulp.task('build-bg', ['build-content'],function() {
+  config.entry = './app/scripts/bg/bg.js';
+  config.output.filename = 'background.js';
   return gulp.src('./app/scripts/background.js')
-    .pipe(webpack(require('./webpack.config.bg.js')))
-    .pipe(uglify(uglifyOpts))
+    .pipe(webpackStream(config))
     .pipe(gulp.dest('./app/scripts/'));
 });
 gulp.task('build-content',function() {
+  config.entry = './app/scripts/content/content.js';
+  config.output.filename = 'content.js';
   return gulp.src('./app/scripts/content.js')
-    .pipe(webpack(require('./webpack.config.content.js')))
-    .pipe(uglify(uglifyOpts))
+    .pipe(webpackStream(config))
     .pipe(gulp.dest('./app/scripts/'));
 });
 gulp.task('copy', ['build'], function() {
