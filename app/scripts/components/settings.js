@@ -57,12 +57,7 @@ var Sessions = React.createClass({
       tabs = tabStore.get_tab();
       timeStamp = Date.now();
     }
-    var screenshots = null;
-    var prefs = prefsStore.get_prefs();
-    if (prefs.screenshot && prefs.screenshotsInSessionData) {
-      screenshots = screenshotStore.get_ssIndex();
-    }
-    var tabData = {timeStamp: timeStamp, tabs: tabs, screenshots: screenshots, label: sessionLabel};
+    var tabData = {timeStamp: timeStamp, tabs: tabs, label: sessionLabel};
     var session = null;
     chrome.storage.local.get('sessionData',(item)=>{
       if (!item.sessionData) {
@@ -109,10 +104,6 @@ var Sessions = React.createClass({
     });
   },
   restoreSession(session){
-    var prefs = prefsStore.get_prefs();
-    if (prefs.screenshot && prefs.screenshotsInSessionData) {
-      screenshotStore.set_ssIndex(session.screenshots);
-    }
     // Opens a new chrome window with the selected tabs object.
     var urls = [];
     session.tabs.map((t)=>{

@@ -92,7 +92,6 @@ var Preferences = React.createClass({
       duplicate: prefsStore.get_prefs().duplicate,
       screenshot: prefsStore.get_prefs().screenshot,
       screenshotBg: prefsStore.get_prefs().screenshotBg,
-      screenshotsInSessionData: prefsStore.get_prefs().screenshotsInSessionData,
       blacklist: prefsStore.get_prefs().blacklist,
       animations: prefsStore.get_prefs().animations,
       dragHover: false,
@@ -100,7 +99,6 @@ var Preferences = React.createClass({
       duplicateHover: false,
       screenshotHover: false,
       screenshotBgHover: false,
-      screenshotsInSessionDataHover: false,
       blacklistHover: false,
       animationsHover: false,
       bytesInUse: null
@@ -120,7 +118,6 @@ var Preferences = React.createClass({
     this.setState({screenshotBg: prefs.screenshotBg});
     this.setState({blacklist: prefs.blacklist});
     this.setState({animations: prefs.animations});
-    this.setState({screenshotsInSessionData: prefs.screenshotsInSessionData});
   },
   getBytesInUse(){
     if (this.state.screenshot) {
@@ -183,12 +180,6 @@ var Preferences = React.createClass({
                       on={s.screenshotBg} child={true}>
                         Enable screenshots in the background on hover
               </Toggle>
-              <Toggle onMouseEnter={()=>this.setState({screenshotsInSessionDataHover: true})} 
-                      onMouseLeave={()=>this.setState({screenshotsInSessionDataHover: false})} 
-                      onClick={()=>prefsStore.set_prefs('screenshotsInSessionData',!s.screenshotsInSessionData)} 
-                      on={s.screenshotsInSessionData} child={true}>
-                        Include screenshot data in session data
-              </Toggle>
               {s.bytesInUse ? <p>Screenshot disk useage: {utils.formatBytes(s.bytesInUse, 2)}</p> : null}
               <button onClick={()=>screenshotStore.clear()} className="ntg-setting-btn"><i className="fa fa-trash"></i> Clear Screenshot Cache</button> 
             </div>
@@ -201,7 +192,6 @@ var Preferences = React.createClass({
           {s.duplicateHover ? <p>This option will make all duplicates tabs pulsate except the first tab. This makes it easier to see how many duplicate tabs you have open.</p> : null}
           {s.screenshotHover ? <p>Enabling this feature adds a screen shot of a tab in the tab tile's background once its been clicked. After a screenshot is active, it is stored in Chrome until the page is active again. Due to performance issues, only one New Tab page can be open while screenshots are enabled.</p> : null}
           {s.screenshotBgHover ? <p>This setting enables full-size tab screenshots to fill the background of the New Tab page, while you are hovering over a tab with a screenshot. Screenshots are blurred and blended into the background.</p> : null}
-          {s.screenshotsInSessionDataHover ? <p>Enabling this option will include screenshot data in session data, and screenshot data will be restored along with the session.</p> : null}
           {s.blacklistHover ? <p>Enter a comma separated list of domains, and they will be automatically closed under any circumstance. This is useful for blocking websites which may inhibit productivity, or you simply don't like.</p> : null}
           {s.animationsHover ? <p>This option toggles tab action animations as well as the blur effects. Disabling this is useful on lower end computers with limited hardware acceleration.</p> : null}
           </div>
