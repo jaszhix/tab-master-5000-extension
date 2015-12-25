@@ -91,6 +91,9 @@ var Root = React.createClass({
       sort: sortStore.get_sort()
     };
   },
+  componentWillMount(){
+    v('#main').css({cursor: 'wait'});
+  },
   componentDidMount() {
     // Initialize Reflux listeners.
     this.listenTo(searchStore, this.searchChanged);
@@ -110,6 +113,7 @@ var Root = React.createClass({
   },
   captureTabs(opt) {
     if (opt !== 'init') {
+      v('#main').css({cursor: 'wait'});
       // Render state is toggled to false on the subsequent re-renders only.
       if (opt === 'create' || opt === 'drag' ) {
         this.setState({render: false});
@@ -129,6 +133,7 @@ var Root = React.createClass({
       tabStore.set_tab(tab);
       console.log(Tab);
       console.log('window id: ',tab[0].windowId);
+      v('#main').css({cursor: 'default'});
     });
     // Querying is complete, allow the component to render.
     if (opt === 'create' || opt === 'init' || opt === 'drag' ) {

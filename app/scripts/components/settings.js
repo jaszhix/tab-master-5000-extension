@@ -45,11 +45,12 @@ var Sessions = React.createClass({
     this.setState({tabs: tabs});
   },
   saveSession(opt, sess, label){
+    v('div.ReactModalPortal > div').css({cursor: 'wait'});
     // Check if array exists, and push a new tabs object if not. Otherwise, create it.
     var sessionLabel = null;
     var tabs = null;
     var timeStamp = null;
-    if (opt === 'label') {
+    if (opt === 'update') {
       sessionLabel = label;
       tabs = sess.tabs;
       timeStamp = sess.timeStamp;
@@ -68,14 +69,14 @@ var Sessions = React.createClass({
         session = item;
         session.sessionData.push(tabData);
       }
-      if (opt === 'label') {
+      if (opt === 'update') {
         var replacedSession = _.where(session.sessionData, { timeStamp: timeStamp });
         console.log('replacedSession: ',replacedSession);
         session.sessionData = _.without(session.sessionData, _.first(replacedSession));
       }
       chrome.storage.local.set(session, (result)=> {
         // Notify that we saved.
-        if (opt === 'label') {
+        if (opt === 'update') {
           this.setState({sessionLabelValue: null});
         }
         this.loadSessions();
@@ -89,6 +90,7 @@ var Sessions = React.createClass({
       // Sort sessionData array to show the newest sessions at the top of the list.
       var reverse = _.sortByOrder(item.sessionData, ['timeStamp'], ['desc']);
       this.setState({sessions: reverse});
+      v('div.ReactModalPortal > div').css({cursor: 'default'});
     });
   },
   removeSession(session){
@@ -120,7 +122,7 @@ var Sessions = React.createClass({
   },
   labelSession(session){
     console.log(session);
-    this.saveSession('label', session, this.state.sessionLabelValue);
+    this.saveSession('update', session, this.state.sessionLabelValue);
     this.setState({labelSession: null});
   },
   setLabel(e){
@@ -166,11 +168,16 @@ var Sessions = React.createClass({
   handleSelectedSessionTabHoverOut(i){
     this.setState({selectedSessionTabHover: i});
   },
-  expandSelectedSession(i){
-    if (i === this.state.expandedSession) {
-      this.setState({expandedSession: null});
+  expandSelectedSession(i, e){
+    var s = this.state;
+    if (s.labelSession) {
+      e.preventDefault();
     } else {
-      this.setState({expandedSession: i});
+      if (i === this.state.expandedSession) {
+        this.setState({expandedSession: null});
+      } else {
+        this.setState({expandedSession: i});
+      }
     }
   },
   render: function() {
@@ -178,6 +185,19 @@ var Sessions = React.createClass({
     var s = this.state;
     var tabs = tabStore.get_tab();
     var tm20 = tabs.length - 20;
+    var removeTabFromSession = (id, session)=>{
+      console.log('id: ',id, session);
+      //var newSession =  _.without(session.tabs, _.where(session.tabs, { id: id }));
+      var index = _.findIndex(session.tabs, { 'id': id });
+      var newSessionTabs = _.remove(session.tabs, session.tabs[index]);
+      session.tabs = _.without(session.tabs, newSessionTabs);
+      console.log('session.tabs: ',session.tabs);
+      var label = null;
+      if (session.label) {
+        label = session.label;
+      }
+      this.saveSession('update', session, label);
+    };
     return (
       <div className="sessions">
         <div className="col-xs-7 session-col">
@@ -185,18 +205,18 @@ var Sessions = React.createClass({
           {s.sessions ? s.sessions.map((session, i)=>{
             return <div onMouseEnter={()=>this.handleSessionHoverIn(i)} onMouseLeave={()=>this.handleSessionHoverOut(i)} key={i} className="row ntg-session-row" style={i % 2 ? s.expandedSession === i ? {paddingBottom: '6px'} : null : s.expandedSession === i ? {backgroundColor: 'rgb(249, 249, 249)', paddingBottom: '6px'} : {backgroundColor: 'rgb(249, 249, 249)'} }>
               <div className="col-xs-6">
-                <div onClick={()=>this.expandSelectedSession(i)} className={"ntg-session-text session-text-"+i}>
+                <div onClick={(e)=>this.expandSelectedSession(i, e)} className={"ntg-session-text session-text-"+i}>
                   {s.labelSession === i ? 
                     <div>
                       <div className="col-xs-8">
                         <input children={undefined} type="text"
                           value={s.sessionLabelValue}
                           className="form-control label-session-input"
-                          placeholder="Label session..."
+                          placeholder="Label..."
                           onChange={this.setLabel} />
                       </div>
                       <div className="col-xs-4">
-                        <button onClick={()=>this.labelSession(session)} className="ntg-session-btn">Save</button>
+                        <button onClick={()=>this.labelSession(session)} className="ntg-session-btn"><i className="fa fa-plus"></i> Save</button>
                       </div>
                     </div>
                     : session.label ? session.label+': '+session.tabs.length+' tabs' : S(moment(session.timeStamp).fromNow()).capitalize().s+': '+session.tabs.length+' tabs'}
@@ -211,6 +231,7 @@ var Sessions = React.createClass({
                             </div>
                             <div className="col-xs-2">
                               {s.selectedSessionTabHover === i ? <button onClick={()=>utilityStore.createTab(t.url)} className="ntg-expanded-session-tab-btn"><i className="fa fa-external-link"/></button> : null}
+                              {s.selectedSessionTabHover === i ? <button onClick={()=>removeTabFromSession(t.id, session)} className="ntg-expanded-session-tab-btn"><i className="fa fa-times"/></button> : null}
                             </div>
                         </div>;
                       }
@@ -218,7 +239,6 @@ var Sessions = React.createClass({
                   </div> : null}
               </div>
               <div className="col-xs-6">
-                {session.screenshots ? <span className="session-data-screenshots" title="This session data includes screenshots data."><i className="fa fa-photo" /></span> : null}
                 {s.sessionHover === i ? <button onClick={()=>this.removeSession(session)} className="ntg-session-btn"><i className="fa fa-times"></i> {p.collapse ? 'Remove' : null}</button> : null}
                 {s.sessionHover === i ? <button onClick={()=>this.restoreSession(session)} className="ntg-session-btn"><i className="fa fa-folder-open-o"></i> {p.collapse ? 'Restore' : null}</button> : null}
                 {s.sessionHover === i ? <button onClick={()=>this.setState({labelSession: i})} className="ntg-session-btn"><i className="fa fa-pencil"></i> {p.collapse ? 'Label' : null}</button> : null}

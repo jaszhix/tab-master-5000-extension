@@ -53,10 +53,6 @@ h4.sort-h4 {
 input.label-session-input {
     height: 20px;
 }
-span.session-data-screenshots {
-    position: relative;
-    top: 3px;
-}
 
 .prefs-row {
     margin-top: 18px;
