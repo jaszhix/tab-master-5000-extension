@@ -186,12 +186,9 @@ var Sessions = React.createClass({
     var tabs = tabStore.get_tab();
     var tm20 = tabs.length - 20;
     var removeTabFromSession = (id, session)=>{
-      console.log('id: ',id, session);
-      //var newSession =  _.without(session.tabs, _.where(session.tabs, { id: id }));
       var index = _.findIndex(session.tabs, { 'id': id });
-      var newSessionTabs = _.remove(session.tabs, session.tabs[index]);
-      session.tabs = _.without(session.tabs, newSessionTabs);
-      console.log('session.tabs: ',session.tabs);
+      var tabToRemove = _.remove(session.tabs, session.tabs[index]);
+      session.tabs = _.without(session.tabs, tabToRemove);
       var label = null;
       if (session.label) {
         label = session.label;
@@ -201,7 +198,7 @@ var Sessions = React.createClass({
     return (
       <div className="sessions">
         <div className="col-xs-7 session-col">
-          <h3>Saved Sessions</h3>
+          <h4>Saved Sessions</h4>
           {s.sessions ? s.sessions.map((session, i)=>{
             return <div onMouseEnter={()=>this.handleSessionHoverIn(i)} onMouseLeave={()=>this.handleSessionHoverOut(i)} key={i} className="row ntg-session-row" style={i % 2 ? s.expandedSession === i ? {paddingBottom: '6px'} : null : s.expandedSession === i ? {backgroundColor: 'rgb(249, 249, 249)', paddingBottom: '6px'} : {backgroundColor: 'rgb(249, 249, 249)'} }>
               <div className="col-xs-6">
@@ -230,8 +227,8 @@ var Sessions = React.createClass({
                               {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {S(t.title).truncate(50).s}
                             </div>
                             <div className="col-xs-2">
-                              {s.selectedSessionTabHover === i ? <button onClick={()=>utilityStore.createTab(t.url)} className="ntg-expanded-session-tab-btn"><i className="fa fa-external-link"/></button> : null}
                               {s.selectedSessionTabHover === i ? <button onClick={()=>removeTabFromSession(t.id, session)} className="ntg-expanded-session-tab-btn"><i className="fa fa-times"/></button> : null}
+                              {s.selectedSessionTabHover === i ? <button onClick={()=>utilityStore.createTab(t.url)} className="ntg-expanded-session-tab-btn"><i className="fa fa-external-link"/></button> : null}
                             </div>
                         </div>;
                       }
@@ -250,7 +247,7 @@ var Sessions = React.createClass({
           <button onClick={this.triggerInput} className="ntg-impexp-btn" style={{marginLeft: '160px'}}><i className="fa fa-arrow-circle-o-up"></i> Import</button>
         </div>
         <div className="col-xs-5 session-col">
-          <h3>Current Session</h3>
+          <h4>Current Session</h4>
           {tabs.map((t, i)=>{
             if (i <= 20) {
               return <div key={i} className="row" style={i % 2 ? null : {backgroundColor: 'rgb(249, 249, 249)'}}>
