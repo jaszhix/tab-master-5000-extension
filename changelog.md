@@ -1,10 +1,14 @@
 #### Release Notes
 
-##### v0.8 / *12-26-15*
+##### v0.8.1 / *12-26-15*
+
+*   Fixed flickering rendering while dragging tab tiles.
+
+##### v0.8 / *12-25-15*
 
 *   The option to bundle screenshot data with session data has been removed because exporting those saved sessions as JSON causes the extension to crash.
 *   In the expanded session view in the session manager, you can now open and remove individual tabs in a saved session.
-*   Added a Label button to saved sessions in the session manager. It will alow you to name your tab session, so it easy to refer to later.
+*   Added a Label button to saved sessions in the session manager. It will allow you to name your tab session, so it easy to refer to later.
 *   Miscellaneous code refactoring and new tools being used have improved performance. The file size of the extension has been reduced.
 *   Fixed two new tabs being able to stay open in the same window while tab screenshots are enabled.
 *   Fixed a bug that prevents the website blacklist from being cleared.

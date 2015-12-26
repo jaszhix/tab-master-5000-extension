@@ -166,7 +166,7 @@ gulp.task('package', function() {
     './dist/scripts/components/', 
     './dist/scripts/bg/', 
     './dist/scripts/content/',
-/*    './dist/styles/*.scss'*/
+    './dist/styles/*.scss'
     ]);
   return gulp.src('./dist/**/**/*')
     .pipe(zip('tm5k-dist-' + Date.now() + '.zip'))
