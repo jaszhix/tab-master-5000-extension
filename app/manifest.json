@@ -9,11 +9,13 @@
     "128": "images/icon-128.png"
   },
   "chrome_url_overrides": {
-      "newtab": "newtab.html"
-   },
+    "newtab": "newtab.html"
+  },
   "default_locale": "en",
   "background": {
-    "scripts": ["scripts/background.js"],
+    "scripts": [
+      "scripts/background.js"
+    ],
     "persistent": true
   },
   "page_action": {
