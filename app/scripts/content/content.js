@@ -1,11 +1,23 @@
 import kmp from 'kmp';
 
-chrome.storage.local.get('blacklist', (bl)=>{
-  chrome.storage.local.get('preferences', (prefs)=>{
+var getBlacklist = new Promise((resolve, reject)=>{
+  chrome.storage.local.get('blacklist', (bl)=>{
+    if (bl && bl.blacklist) {
+      resolve(bl);
+    }
+  });
+});
+getBlacklist.then((bl)=>{
+  var getPrefs = new Promise((resolve, reject)=>{
+    chrome.storage.local.get('preferences', (prefs)=>{
       if (prefs && prefs.preferences) {
-        var blacklistPref = prefs.preferences.blacklist;
+        resolve(prefs);
       }
-      if (blacklistPref && bl && bl.blacklist) {
+    });
+  });
+  getPrefs.then((prefs)=>{
+    var blacklistPref = prefs.preferences.blacklist;
+    if (blacklistPref) {
       for (var i = 0; i < bl.blacklist.length; i++) {
         if (kmp(window.location.href, bl.blacklist[i]) !== -1) {
           chrome.runtime.sendMessage({method: 'close'}, (response)=>{
@@ -13,5 +25,5 @@ chrome.storage.local.get('blacklist', (bl)=>{
         }
       }
     }
-    });
+  });
 });

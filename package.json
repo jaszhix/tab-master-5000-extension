@@ -1,6 +1,6 @@
 {
   "name": "tab-master-5000",
-  "version": "0.7.2",
+  "version": "0.8.0",
   "description": "Tab Master 5000",
   "repository": {
     "type": "git",
@@ -24,6 +24,7 @@
     "reflux": "^0.3.0"
   },
   "devDependencies": {
+    "autoprefixer": "^6.2.1",
     "babel-loader": "^5.3.2",
     "css-loader": "^0.17.0",
     "del": "^2.2.0",

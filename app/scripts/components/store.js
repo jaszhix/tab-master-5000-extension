@@ -88,11 +88,10 @@ export var clickStore = Reflux.createStore({
   },
   set_click: function(value, manual) {
     this.click = value;
-    // This will only be true for 0.5s, long enough to prevent Chrome event listeners triggers from re-querying tabs when a user clicks in the extension.
     if (!manual) {
-      _.defer(()=>{
+      _.delay(()=>{
         this.click = false;
-      });
+      },500);
     }
     console.log('click: ', value);
     this.trigger(this.click);
@@ -314,26 +313,34 @@ export var dragStore = Reflux.createStore({
 
 export var prefsStore = Reflux.createStore({
   init: function() {
-    chrome.storage.local.get('preferences', (prefs)=>{
-      if (prefs && prefs.preferences) {
-        console.log('load prefs');
-        this.prefs = {
-          drag: prefs.preferences.drag, 
-          context: prefs.preferences.context,
-          duplicate: prefs.preferences.duplicate,
-          screenshot: prefs.preferences.screenshot,
-          screenshotBg: prefs.preferences.screenshotBg,
-          blacklist: prefs.preferences.blacklist,
-          sort: prefs.preferences.sort,
-          animations: prefs.preferences.animations,
-        };
-      } else {
-        console.log('init prefs');
-        this.prefs = {drag: false, context: true, animations: true, duplicate: false, screenshot: false, screenshotBg: false, blacklist: true, sort: false};
-        chrome.storage.local.set({preferences: this.prefs}, (result)=> {
-          console.log('Init preferences saved: ',result);
-        });
-      }
+    var getPrefs = new Promise((resolve, reject)=>{
+      chrome.storage.local.get('preferences', (prefs)=>{
+        if (prefs && prefs.preferences) {
+          resolve(prefs);
+        } else {
+          reject();
+        }
+      });
+    });
+    getPrefs.then((prefs)=>{
+      console.log('load prefs');
+      this.prefs = {
+        drag: prefs.preferences.drag, 
+        context: prefs.preferences.context,
+        duplicate: prefs.preferences.duplicate,
+        screenshot: prefs.preferences.screenshot,
+        screenshotBg: prefs.preferences.screenshotBg,
+        blacklist: prefs.preferences.blacklist,
+        sort: prefs.preferences.sort,
+        animations: prefs.preferences.animations,
+      };
+      this.trigger(this.prefs);
+    }).catch(()=>{
+      console.log('init prefs');
+      this.prefs = {drag: false, context: true, animations: true, duplicate: false, screenshot: false, screenshotBg: false, blacklist: true, sort: false};
+      chrome.storage.local.set({preferences: this.prefs}, (result)=> {
+        console.log('Init preferences saved: ',result);
+      });
       this.trigger(this.prefs);
     });
     
@@ -503,17 +510,25 @@ export var screenshotStore = Reflux.createStore({
 
 export var blacklistStore = Reflux.createStore({
   init: function() {
-    chrome.storage.local.get('blacklist', (bl)=>{
-      if (bl && bl.blacklist) {
-        console.log('load blacklist');
-        this.blacklist = bl.blacklist;
-      } else {
-        console.log('init blacklist');
-        this.blacklist = [];
-        chrome.storage.local.set({blacklist: this.blacklist}, (result)=> {
-          console.log('Init blacklist saved: ',result);
-        });
-      }
+    var getBlacklist = new Promise((resolve, reject)=>{
+      chrome.storage.local.get('blacklist', (bl)=>{
+        if (bl && bl.blacklist) {
+          resolve(bl);
+        } else {
+          reject();
+        }
+      });
+    });
+    getBlacklist.then((bl)=>{
+      console.log('load blacklist');
+      this.blacklist = bl.blacklist;
+      this.trigger(this.blacklist);
+    }).catch(()=>{
+      console.log('init blacklist');
+      this.blacklist = [];
+      chrome.storage.local.set({blacklist: this.blacklist}, (result)=> {
+        console.log('Init blacklist saved: ',result);
+      });
       this.trigger(this.blacklist);
     });
   },

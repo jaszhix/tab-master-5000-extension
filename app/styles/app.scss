@@ -37,6 +37,9 @@
     padding-left: 0px;
     padding-right: 0px;
 }
+.duplicate-tile {
+    display: inline;
+}
 
 .sort-bar {
     position: relative;
@@ -55,6 +58,7 @@ h4.sort-h4 {
 }
 input.label-session-input {
     height: 20px;
+    width: 120%;
 }
 
 .prefs-row {
@@ -75,6 +79,7 @@ input.label-session-input {
     text-shadow: 2px 2px #fff;
     position: relative;
     margin-top: 5px;
+    margin-left: 10px;
 }
 .ntg-title-container {
     padding: 0;
@@ -113,7 +118,7 @@ input.label-session-input {
     width: 15px;
     height: 15px;
     position: absolute;
-    left: 19px;
+    left: 17px;
     opacity: 0.8;
     padding:1px;
 }
@@ -121,14 +126,14 @@ input.label-session-input {
     width: 15px;
     height: 15px;
     position: absolute;
-    left: 19px;
+    left: 17px;
     padding:1px;
 }
 .ntg-mute {
     width: 15px;
     height: 15px;
     position: absolute;
-    left: 36px;
+    left: 34px;
     opacity: 0.8;
     padding:1px;
 }
@@ -136,14 +141,15 @@ input.label-session-input {
     width: 15px;
     height: 15px;
     position: absolute;
-    left: 36px;
+    left: 34px;
     padding:1px;
 }
 .ntg-mute-audible {
     width: 15px;
     height: 15px;
     position: absolute;
-    left: 36px;
+    left: 34px;
+    opacity: 0.8;
     padding:1px;
     color: #B67777;
 }
@@ -151,7 +157,7 @@ input.label-session-input {
     width: 15px;
     height: 15px;
     position: absolute;
-    left: 36px;
+    left: 34px;
     padding:1px;
     color: #B67777;
 }
@@ -159,7 +165,7 @@ input.label-session-input {
     width: 15px;
     height: 15px;
     position: absolute;
-    left: 1px;
+    left: 0;
     opacity: 0.8;
     padding:1px;
 }
@@ -167,14 +173,14 @@ input.label-session-input {
     width: 15px;
     height: 15px;
     position: absolute;
-    left: 1px;
+    left: 0;
     padding:1px;
 }
 .ntg-move {
     width: 15px;
     height: 15px;
     position: absolute;
-    right: 2;
+    right: -17;
     top: 0;
     opacity: 0.8;
     padding:1px;
@@ -184,7 +190,7 @@ input.label-session-input {
     width: 15px;
     height: 15px;
     position: absolute;
-    right: 2;
+    right: -17;
     top: 0;
     padding:1px;
     cursor: move;
@@ -548,8 +554,6 @@ button.ntg-session-btn {
     border: 0;
     vertical-align: middle;
     display: inline-block;
-    padding-left: 10px;
-    padding-right: 10px;
     font-size: 14px;
     line-height: 1.42857143;
     text-align: center;

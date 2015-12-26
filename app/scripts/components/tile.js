@@ -69,6 +69,11 @@ var Tile = React.createClass({
         this.enforceBlacklist();
       });
     }
+    if (this.state.duplicate) {
+      _.delay(()=>{
+        document.getElementById('subTile-'+p.i).style.display = 'inline';
+      },500);
+    }
     if (pinned === p.tab.id && p.tab.pinned) {
       this.handleFocus();
     }
@@ -136,7 +141,7 @@ var Tile = React.createClass({
           if (newTabs[i]) {
             if (p.tab.windowId !== newTabs[i].windowId && p.tab.active) {
               chrome.tabs.remove(newTabs[i].id);
-            } else if (newTabs.length > 2 && !p.tab.active) {
+            } else if (newTabs.length > 1 && !p.tab.active && !newTabs[i].active) {
               chrome.tabs.remove(newTabs[i].id);
             }
           }
@@ -263,6 +268,7 @@ var Tile = React.createClass({
     });
   },
   handleCloseAll(tab){
+    document.getElementById('subTile-'+this.props.i).style.display = '';
     var urlPath = tab.url.split('/');
     chrome.tabs.query({
       url: '*://'+urlPath[2]+'/*'
@@ -428,13 +434,13 @@ var Tile = React.createClass({
                     onDrag={this.handleDrag}
                     onStop={this.handleStop}>
           <div ref="tile" style={s.drag ? {position: 'fixed', left: drag.left-200, top: drag.top} : null}>
-          {p.render && s.render && p.tab.title !== 'New Tab' ? <Row fluid={true} id={"subTile-"+p.i} style={s.hover ? s.duplicate && !s.drag && !s.pinning && !s.close ? {display: 'inline', backgroundColor: 'rgb(247, 247, 247)'} : {WebkitAnimationDuration: '1s'} : s.duplicate ? {WebkitAnimationIterationCount: 'infinite', display: 'inline', backgroundColor: 'rgb(237, 237, 237)'} : null} onContextMenu={this.handleContextClick} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "animated zoomOut" : s.focus && s.pinning || s.focus && s.duplicate ? "animated pulse" : null}>
+          {p.render && s.render && p.tab.title !== 'New Tab' ? <Row fluid={true} id={"subTile-"+p.i} style={s.duplicate && s.focus && !s.hover ? {WebkitAnimationIterationCount: 'infinite'} : null} onContextMenu={this.handleContextClick} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "animated zoomOut" : s.pinning ? "animated pulse" : s.duplicate && s.focus ? "duplicate-tile animated pulse" : null}>
               { this.filterTabs(p.tab) ? <div id={'innerTile-'+p.i} className={s.hover ? "ntg-tile-hover" : "ntg-tile"} style={s.screenshot ? s.hover ? style.tileHovered(s.screenshot) : style.tile(s.screenshot) : null} key={p.key}>
                 <Row className="ntg-tile-row-top">
                   <Col size="3">
                     {chromeVersion >= 46 ? <div onMouseEnter={this.handleTabMuteHoverIn} onMouseLeave={this.handleTabMuteHoverOut} onClick={() => this.handleMuting(p.tab)}>
                                       {s.hover || p.tab.audible || p.tab.mutedInfo.muted ? 
-                                      <i className={p.tab.audible ? s.mHover ? "fa fa-volume-off ntg-mute-audible-hover" : "fa fa-volume-up ntg-mute-audible" : s.mHover ? "fa fa-volume-off ntg-mute-hover" : "fa fa-volume-off ntg-mute"} style={s.screenshot && s.hover ? style.ssIconBg : null} />
+                                      <i className={p.tab.audible ? s.mHover ? "fa fa-volume-off ntg-mute-audible-hover" : "fa fa-volume-up ntg-mute-audible" : s.mHover ? "fa fa-volume-off ntg-mute-hover" : "fa fa-volume-off ntg-mute"} style={s.screenshot && s.hover ? style.ssIconBg : s.screenshot ? style.ssIconBg : null} />
                                       : null}
                                     </div> : null}
                     <div onMouseEnter={this.handleTabCloseHoverIn} onMouseLeave={this.handleTabCloseHoverOut} onClick={() => this.handleCloseTab(p.tab.id)}>

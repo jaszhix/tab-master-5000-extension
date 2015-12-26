@@ -16,7 +16,7 @@ export var Col = React.createClass({
   render: function() {
     var p = this.props;
     return (
-      <div key={p.key} onDragEnter={p.onDragEnter} onMouseEnter={p.onMouseEnter} onMouseLeave={p.onMouseLeave} onClick={p.onClick} style={p.style} id={p.id} className={p.className+' col-xs-'+p.size}>{p.children}</div>
+      <div key={p.key} onContextMenu={p.onContextMenu} onDragEnter={p.onDragEnter} onMouseEnter={p.onMouseEnter} onMouseLeave={p.onMouseLeave} onClick={p.onClick} style={p.style} id={p.id} className={p.className ? 'col-xs-'+p.size+' '+p.className : 'col-xs-'+p.size}>{p.children}</div>
     );
   }
 });
@@ -24,16 +24,16 @@ export var Col = React.createClass({
 export var Row = React.createClass({
   getDefaultProps(){
     return {
-      fluid: false
+      fluid: false,
     };
   },
   propTypes: {
-    fluid: React.PropTypes.bool
+    fluid: React.PropTypes.bool,
   },
   render: function() {
     var p = this.props;
     return (
-      <div key={p.key} onDragEnter={p.onDragEnter} onMouseEnter={p.onMouseEnter} onMouseLeave={p.onMouseLeave} onClick={p.onClick} style={p.style} id={p.id} className={p.fluid ? 'row-fluid '+p.className : 'row '+p.className}>{p.children}</div>
+      <div key={p.key} onContextMenu={p.onContextMenu} onDragEnter={p.onDragEnter} onMouseEnter={p.onMouseEnter} onMouseLeave={p.onMouseLeave} onClick={p.onClick} style={p.style} id={p.id} className={p.fluid ? p.className ? 'row-fluid '+p.className : 'row-fluid' : p.className ? 'row '+p.className : 'row'}>{p.children}</div>
     );
   }
 });
@@ -50,7 +50,7 @@ export var Container = React.createClass({
   render: function() {
     var p = this.props;
     return (
-      <div key={p.key} onDragEnter={p.onDragEnter} onMouseEnter={p.onMouseEnter} onMouseLeave={p.onMouseLeave} onClick={p.onClick} style={p.style} id={p.id} className={p.fluid ? 'container-fluid '+p.className : 'container '+p.className}>{p.children}</div>
+      <div key={p.key} onContextMenu={p.onContextMenu} onDragEnter={p.onDragEnter} onMouseEnter={p.onMouseEnter} onMouseLeave={p.onMouseLeave} onClick={p.onClick} style={p.style} id={p.id} className={p.fluid ? p.className ? 'container-fluid '+p.className : 'container-fluid' : p.className ? 'container '+p.className : 'container'}>{p.children}</div>
     );
   }
 });

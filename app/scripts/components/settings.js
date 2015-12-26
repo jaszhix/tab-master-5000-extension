@@ -8,7 +8,7 @@ import _ from 'lodash';
 import {saveAs} from 'filesaver.js';
 import v from 'vquery';
 
-import {prefsStore, modalStore, settingsStore, utilityStore} from './store';
+import {clickStore, prefsStore, modalStore, settingsStore, utilityStore} from './store';
 import tabStore from './tabStore';
 
 import Preferences from './preferences';
@@ -202,32 +202,34 @@ var Sessions = React.createClass({
           <h4>Saved Sessions</h4>
           {s.sessions ? s.sessions.map((session, i)=>{
             return <Row onMouseEnter={()=>this.handleSessionHoverIn(i)} onMouseLeave={()=>this.handleSessionHoverOut(i)} key={i} className="ntg-session-row" style={i % 2 ? s.expandedSession === i ? {paddingBottom: '6px'} : null : s.expandedSession === i ? {backgroundColor: 'rgb(249, 249, 249)', paddingBottom: '6px'} : {backgroundColor: 'rgb(249, 249, 249)'} }>
-              <Col size="6">
+              <Col size={s.labelSession && !p.collapse ? "8" : "6"}>
                 <div onClick={(e)=>this.expandSelectedSession(i, e)} className={"ntg-session-text session-text-"+i}>
                   {s.labelSession === i ? 
                     <div>
-                      <Col size="8">
+                      <Col size="6">
                         <input children={undefined} type="text"
+                          style={!p.collapse && s.expandedSession === i ? {marginBottom: '4px'} : null}
                           value={s.sessionLabelValue}
                           className="form-control label-session-input"
                           placeholder="Label..."
                           onChange={this.setLabel} />
                       </Col>
-                      <Col size="4">
-                        <Btn onClick={()=>this.labelSession(session)} className="ntg-session-btn" fa="plus">Save</Btn>
+                      <Col size="6">
+                        <Btn style={{float: 'left'}} onClick={()=>this.labelSession(session)} className="ntg-session-btn" fa="plus"/>
+                        <Btn style={{float: 'left'}} onClick={()=>this.setState({labelSession: null})} className="ntg-session-btn" fa="times"/>
                       </Col>
                     </div>
                     : session.label ? session.label+': '+session.tabs.length+' tabs' : S(moment(session.timeStamp).fromNow()).capitalize().s+': '+session.tabs.length+' tabs'}
                 </div>
-                {s.expandedSession === i ? <Row className="ntg-session-expanded">
+                {s.expandedSession === i ? <Row style={s.labelSession && !p.collapse ? {width: '156%'} : null} className="ntg-session-expanded">
                     {session.tabs.map((t, i)=>{
                       if (i <= 20) {
                         return <Row onMouseEnter={()=>this.handleSelectedSessionTabHoverIn(i)} onMouseLeave={()=>this.handleSelectedSessionTabHoverOut(i)} key={i} style={i % 2 ? null : {backgroundColor: 'rgb(249, 249, 249)'}}>
-                            <Col size="10">
+                            <Col size="9">
                               <img className="ntg-small-favicon" src={S(t.favIconUrl).isEmpty() ? '../images/file_paper_blank_document.png' : utilityStore.filterFavicons(t.favIconUrl, t.url) } /> 
                               {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {S(t.title).truncate(50).s}
                             </Col>
-                            <Col size="2">
+                            <Col size="3">
                               {s.selectedSessionTabHover === i ? <Btn onClick={()=>removeTabFromSession(t.id, session)} className="ntg-expanded-session-tab-btn" fa="times" /> : null}
                               {s.selectedSessionTabHover === i ? <Btn onClick={()=>utilityStore.createTab(t.url)} className="ntg-expanded-session-tab-btn" fa="external-link" /> : null}
                             </Col>
@@ -236,10 +238,10 @@ var Sessions = React.createClass({
                     })}
                   </Row> : null}
               </Col>
-              <Col size="6">
+              <Col size={s.labelSession && !p.collapse ? "4" : "6"}>
                 {s.sessionHover === i ? <Btn onClick={()=>this.removeSession(session)} className="ntg-session-btn" fa="times">{p.collapse ? 'Remove' : null}</Btn> : null}
                 {s.sessionHover === i ? <Btn onClick={()=>this.restoreSession(session)} className="ntg-session-btn" fa="folder-open-o">{p.collapse ? 'Restore' : null}</Btn> : null}
-                {s.sessionHover === i ? <Btn onClick={()=>this.setState({labelSession: i})} className="ntg-session-btn" fa="pencil">{p.collapse ? 'Label' : null}</Btn> : null}
+                {!s.labelSession ? s.sessionHover === i ? <Btn onClick={()=>this.setState({labelSession: i})} className="ntg-session-btn" fa="pencil">{p.collapse ? 'Label' : null}</Btn> : null : null}
               </Col>
             </Row>;
           }) : null}
@@ -308,6 +310,10 @@ var Settings = React.createClass({
     this.setState({currentTab: tab});
     console.log(this.state.currentTab);
   },
+  handleTabClick(opt){
+    settingsStore.set_settings(opt);
+    clickStore.set_click(true, false);
+  },
   render: function() {
     var p = this.props;
     var s = this.state;
@@ -326,13 +332,13 @@ var Settings = React.createClass({
             <div role="tabpanel"> 
                 <ul className="nav nav-tabs">
                     <li className={sessions ? "active" : null}>
-                        <a href="#" onClick={()=>settingsStore.set_settings('sessions')}>Sessions</a>
+                        <a href="#" onClick={()=>this.handleTabClick('sessions')}>Sessions</a>
                     </li>
                     <li className={preferences ? "active" : null}>
-                        <a href="#" onClick={()=>settingsStore.set_settings('preferences')}>Preferences</a>
+                        <a href="#" onClick={()=>this.handleTabClick('preferences')}>Preferences</a>
                     </li>
                     <li className={about ? "active" : null}>
-                        <a href="#" onClick={()=>settingsStore.set_settings('about')}>About</a>
+                        <a href="#" onClick={()=>this.handleTabClick('about')}>About</a>
                     </li>
                 </ul>
             </div>

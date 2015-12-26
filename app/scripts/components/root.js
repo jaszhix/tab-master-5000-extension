@@ -37,6 +37,10 @@ var Search = React.createClass({
     settingsStore.set_settings('about');
     modalStore.set_modal(true);
   },
+  handleSortbar(){
+    sortStore.set_sort(!sortStore.get_sort());
+    clickStore.set_click(true, false);
+  },
   render: function() {
     var p = this.props;
     var prefs = prefsStore.get_prefs();
@@ -45,7 +49,7 @@ var Search = React.createClass({
         <Row>
           <Col size="6">
             <Col size="1">
-              <Btn onClick={()=>sortStore.set_sort(!sortStore.get_sort())} className="ntg-sort-btn" fa="reorder" />
+              <Btn onClick={this.handleSortbar} className="ntg-sort-btn" fa="reorder" />
             </Col>
             <Col size="11">
               <form 
@@ -122,25 +126,32 @@ var Root = React.createClass({
       }
     }
     // Query current Chrome window for tabs.
-    chrome.tabs.query({
-      windowId: chrome.windows.WINDOW_ID_CURRENT,
-      currentWindow: true
-    }, (Tab) => {
-      // Assign Tab to a variable to work around a console error.
-      var tab = Tab;
-      if (opt === 'init') {
-        this.setState({tabs: tab});
-      }
-      utilityStore.set_window(tab[0].windowId);
-      tabStore.set_tab(tab);
-      console.log(Tab);
-      console.log('window id: ',tab[0].windowId);
-      v('#main').css({cursor: 'default'});
+    var getTabs = new Promise((resolve, reject)=>{
+      chrome.tabs.query({
+        windowId: chrome.windows.WINDOW_ID_CURRENT,
+        currentWindow: true
+      }, (Tab) => {
+        // Assign Tab to a variable to work around a console error.
+        var tabs = Tab;
+        if (tabs) {
+          resolve(tabs);
+        }
+      });
     });
-    // Querying is complete, allow the component to render.
-    if (opt === 'create' || opt === 'init' || opt === 'drag' ) {
-      this.setState({render: true});
-    }
+    getTabs.then((tabs)=>{
+      if (opt === 'init') {
+        this.setState({tabs: tabs});
+      }
+      utilityStore.set_window(tabs[0].windowId);
+      tabStore.set_tab(tabs);
+      console.log(tabs);
+      console.log('window id: ',tabs[0].windowId);
+      v('#main').css({cursor: 'default'});
+      // Querying is complete, allow the component to render.
+      if (opt === 'create' || opt === 'init' || opt === 'drag' ) {
+        this.setState({render: true});
+      }
+    });
   },
   searchChanged() {
     // Trigger Root component re-render when a user types in the search box.

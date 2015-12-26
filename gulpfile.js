@@ -3,6 +3,7 @@ var gulp = require('gulp');
 var webpack = require('webpack');
 var path = require('path');
 var webpackStream = require('webpack-stream');
+var autoprefixer = require('autoprefixer');
 var imagemin = require('gulp-imagemin');
 var htmlclean = require('gulp-htmlclean');
 var del = require('del');
@@ -77,6 +78,11 @@ var uglify = function(){
 var scssIncludePaths = [
   path.join(__dirname, './node_modules')
 ];
+var autoprefixerOptions = {
+  browsers: [
+    'chrome >= 34'
+  ]
+};
 var config = {
   entry: '',
   module: {
@@ -98,6 +104,9 @@ var config = {
     }],
   },
   plugins: plugins,
+  postcss: function () {
+    return [autoprefixer(autoprefixerOptions)];
+  },
   output: {
     filename: '',
   }
@@ -157,7 +166,7 @@ gulp.task('package', function() {
     './dist/scripts/components/', 
     './dist/scripts/bg/', 
     './dist/scripts/content/',
-    './dist/styles/*.scss'
+/*    './dist/styles/*.scss'*/
     ]);
   return gulp.src('./dist/**/**/*')
     .pipe(zip('tm5k-dist-' + Date.now() + '.zip'))

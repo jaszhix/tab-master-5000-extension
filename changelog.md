@@ -1,5 +1,17 @@
 #### Release Notes
 
+##### v0.8 / *12-26-15*
+
+*   The option to bundle screenshot data with session data has been removed because exporting those saved sessions as JSON causes the extension to crash.
+*   In the expanded session view in the session manager, you can now open and remove individual tabs in a saved session.
+*   Added a Label button to saved sessions in the session manager. It will alow you to name your tab session, so it easy to refer to later.
+*   Miscellaneous code refactoring and new tools being used have improved performance. The file size of the extension has been reduced.
+*   Fixed two new tabs being able to stay open in the same window while tab screenshots are enabled.
+*   Fixed a bug that prevents the website blacklist from being cleared.
+*   Improved animations: duplicate tabs being pinned now have a correct pinning animation, and animations are smoother.
+*   Wrapped most of the Chrome storage API calls in Promises. More work needs to be done to stop rare async-related bugs from surfacing.
+*   Removed the blue outline around form fields when they are focused.
+
 ##### v0.7.1 / *12-20-15*
 
 *   Added a toggle button to the left of the top search field which now toggles the Sort Tabs column. The state of its display is stored in Chrome.
