@@ -1,6 +1,6 @@
 {
   "name": "tab-master-5000",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "Tab Master 5000",
   "repository": {
     "type": "git",
@@ -30,6 +30,7 @@
     "file-loader": "^0.8.4",
     "filesaver.js": "^0.2.0",
     "gulp": "^3.9.0",
+    "gulp-htmlclean": "^2.7.6",
     "gulp-imagemin": "^2.4.0",
     "gulp-zip": "^3.0.2",
     "html-loader": "^0.4.0",

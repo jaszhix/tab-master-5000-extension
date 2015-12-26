@@ -4,6 +4,7 @@ var webpack = require('webpack');
 var path = require('path');
 var webpackStream = require('webpack-stream');
 var imagemin = require('gulp-imagemin');
+var htmlclean = require('gulp-htmlclean');
 var del = require('del');
 var zip = require('gulp-zip');
 var runSequence = require('run-sequence');
@@ -38,6 +39,8 @@ var increaseVersion = function(opt){
       fs.writeFile('./package.json', data, function(err) {
         if (err) {
           console.log(err);
+        } else {
+          console.log('Updated project to version '+manifest.version);
         }
       });
     }
@@ -136,13 +139,25 @@ gulp.task('copy', function() {
   return gulp.src('./app/**/*')
     .pipe(gulp.dest('./dist/'));
 });
+gulp.task('htmlmin', function() {
+  return gulp.src('./dist/newtab.html')
+    .pipe(htmlclean())
+    .pipe(gulp.dest('./dist'));
+});
+gulp.task('imgmin', function() {
+  return gulp.src('./dist/images/*.{png,jpg,gif}')
+    .pipe(imagemin({
+      optimizationLevel: 7,
+      interlaced: true
+    }))
+    .pipe(gulp.dest('./dist/images'));
+});
 gulp.task('package', function() {
   del.sync([
     './dist/scripts/components/', 
     './dist/scripts/bg/', 
     './dist/scripts/content/',
-    './dist/styles/*.scss',
-    './dist/styles/font-awesome.css'
+    './dist/styles/*.scss'
     ]);
   return gulp.src('./dist/**/**/*')
     .pipe(zip('tm5k-dist-' + Date.now() + '.zip'))
@@ -162,21 +177,12 @@ gulp.task('major',  function () {
 });
 gulp.task('dist',  function (callback) {
   env.production = true;
-  runSequence('build', 'copy', 'package', callback);
+  runSequence('build', 'copy', 'htmlmin', 'imgmin', 'package', callback);
 });
 gulp.task('watch', function() {
   gulp.watch('./app/scripts/components/*.{js,jsx,es6}', ['build']);
   gulp.watch('./app/scripts/bg/*.{js,jsx,es6}', ['build-bg']);
   gulp.watch('./app/scripts/content/*.{js,jsx,es6}', ['build-content']);
   gulp.watch('./app/styles/*.scss', ['build']);
-});
-
-gulp.task('imgmin', function() {
-  return gulp.src('./app/images/*.{png,jpg,gif}')
-    .pipe(imagemin({
-      optimizationLevel: 3,
-      interlaced: true
-    }))
-    .pipe(gulp.dest('./app/images'));
 });
 gulp.task('default', ['watch'], function() {});
