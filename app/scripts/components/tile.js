@@ -64,11 +64,6 @@ var Tile = React.createClass({
   },
   update(){
     var p = this.props;
-    if (prefsStore.get_prefs().blacklist) {
-      _.defer(()=>{
-        this.enforceBlacklist();
-      });
-    }
     if (this.state.duplicate) {
       _.delay(()=>{
         document.getElementById('subTile-'+p.i).style.display = 'inline';
@@ -99,8 +94,8 @@ var Tile = React.createClass({
     if (chrome.extension.lastError) {
       utilityStore.restartNewTab();
     }
-    if (prefsStore.get_prefs().screenshot) {
-      var p = this.props;
+    var p = this.props;
+    if (p.stores.prefs.screenshot) {
       var screenshotIndex = screenshotStore.get_ssIndex();
       var ssData = _.result(_.find(screenshotIndex, { url: p.tab.url }), 'data');
       if (ssData) {
@@ -111,7 +106,7 @@ var Tile = React.createClass({
   checkDuplicateTabs(opt){
     var p = this.props;
     if (_.include(duplicateTabs, p.tab.url)) {
-      var t = _.where(tabStore.get_tab(), { url: p.tab.url });
+      var t = _.where(p.stores.tabs, { url: p.tab.url });
       var first = _.first(t);
       var activeTab = _.pluck(_.filter(t, { 'active': true }), 'id');
       console.log('checkDuplicateTabs: ',t, first);
@@ -119,7 +114,7 @@ var Tile = React.createClass({
         if (t[i].id !== first.id && t[i].title !== 'New Tab' && t[i].id !== activeTab) {
           if (opt === 'close') {
             this.handleCloseTab(t[i].id);
-          } else if (p.tab.id === t[i].id && prefsStore.get_prefs().duplicate) {
+          } else if (p.tab.id === t[i].id && p.stores.prefs.duplicate) {
             _.defer(()=>{
               this.handleFocus('duplicate',true);
             });
@@ -130,9 +125,9 @@ var Tile = React.createClass({
     }
   },
   closeNewTabs(){
-    if (prefsStore.get_prefs().screenshot) {
-      var p = this.props;
-      var newTabs = tabStore.getNewTabs();
+    var p = this.props;
+    if (p.stores.prefs.screenshot) {
+      var newTabs = p.stores.newTabs;
       console.log('#newtabs: ',newTabs);
       if (newTabs) {
         var lastNewTab = _.last(newTabs);
@@ -168,12 +163,12 @@ var Tile = React.createClass({
   },
   filterTabs(tab) {
     // Filter tab method that triggers re-renders through Reflux store.
-    var search = searchStore.get_search();
     if (!S(tab.title).isEmpty()) {
-      if (kmp(tab.title.toLowerCase(), search) !== -1) {
+      var p = this.props;
+      if (kmp(tab.title.toLowerCase(), p.stores.search) !== -1) {
         return true;
       } else {
-        if (search.length === 0) {
+        if (p.stores.search.length === 0) {
           return true;
         } else {
           return false;
@@ -198,9 +193,9 @@ var Tile = React.createClass({
   // Trigger hovers states that will update the inline CSS in style.js.
   handleHoverIn(e) {
     var s = this.state;
-    var prefs = prefsStore.get_prefs();
+    var p = this.props;
     this.setState({hover: true});
-    if (prefs.screenshot && prefs.screenshotBg && s.screenshot) {
+    if (p.stores.prefs.screenshot && p.stores.prefs.screenshotBg && s.screenshot) {
       document.getElementById('bgImg').style.backgroundImage = `url("${s.screenshot}")`;
     }
   },
@@ -233,7 +228,7 @@ var Tile = React.createClass({
     this.setState({dHover: false});
   },
   handleCloseTab(id) {
-    if (prefsStore.get_prefs().animations) {
+    if (this.props.stores.prefs.animations) {
       this.setState({close: true});
     }
     chrome.tabs.remove(id);
@@ -319,7 +314,7 @@ var Tile = React.createClass({
     });
   },
   handleContextClick(e){
-    if (prefsStore.get_prefs().context) {
+    if (this.props.prefs.context) {
       e.preventDefault();
       contextStore.set_context(true, this.props.tab.id);
     }
@@ -342,8 +337,8 @@ var Tile = React.createClass({
     }
   },
   handleFocus(opt, bool){
-    if (prefsStore.get_prefs().animations) {
-      var p = this.props;
+    var p = this.props;
+    if (p.stores.prefs.animations) {
       if (opt === 'duplicate') {
         this.setState({focus: bool});
         this.setState({duplicate: bool});
@@ -359,7 +354,11 @@ var Tile = React.createClass({
     }
   },
   handleStart(e, ui) {
+    var p = this.props;
     // Temporarily move tile element to the parent div, so the drag position stays in sync with the cursor.
+    var clone = document.getElementById('tileMain-'+p.i).cloneNode(true);
+    //clone.removeAttribute('data-reactid');
+    v('#grid').insertBefore(clone, this.refs.tileMain);
     v('#main').append(ReactDOM.findDOMNode(this.refs.tileMain));
     console.log('Event: ', e, ui);
     console.log('Start Position: ', ui.position);
@@ -377,7 +376,9 @@ var Tile = React.createClass({
   },
 
   handleStop(e, ui) {
+    var p = this.props;
     // Move the tile element back to #grid where it belongs.
+    v(document.getElementById('tileMain-'+p.i).cloneNode(true)).remove();
     v('#grid').append(ReactDOM.findDOMNode(this.refs.tileMain));
     console.log('Event: ', e, ui);
     console.log('Stop Position: ', ui.position);
@@ -407,8 +408,9 @@ var Tile = React.createClass({
     if (tileDrag) {
       console.log('current dragged over: ', tab.title);
       var setHoveredTab = new Promise((resolve, reject)=>{
-        if (dragStore.get_drag() && dragStore.get_dragged()) {
-          var dragged = dragStore.get_dragged();
+        var drag = dragStore.get_drag();
+        var dragged = dragStore.get_dragged();
+        if (drag && dragged) {
           console.log('dragged id: ',dragged.id);
           resolve(tab);
         }
@@ -422,9 +424,8 @@ var Tile = React.createClass({
     var s = this.state;
     var p = this.props;
     var drag = dragStore.get_drag();
-    var prefs = prefsStore.get_prefs();
     return (
-      <div ref="tileMain" onDragEnter={this.currentlyDraggedOver(p.tab)} style={prefs.screenshot && prefs.screenshotBg ? {opacity: '0.95'} : null}>
+      <div ref="tileMain" id={'tileMain-'+p.i} onDragEnter={this.currentlyDraggedOver(p.tab)} style={p.stores.prefs.screenshot && p.stores.prefs.screenshotBg ? {opacity: '0.95'} : null}>
         <Draggable  axis="both"
                     handle=".handle"
                     moveOnStartChange={true}
@@ -434,7 +435,7 @@ var Tile = React.createClass({
                     onDrag={this.handleDrag}
                     onStop={this.handleStop}>
           <div ref="tile" style={s.drag ? {position: 'fixed', left: drag.left-200, top: drag.top} : null}>
-          {p.render && s.render && p.tab.title !== 'New Tab' ? <Row fluid={true} id={"subTile-"+p.i} style={s.duplicate && s.focus && !s.hover ? {WebkitAnimationIterationCount: 'infinite'} : null} onContextMenu={this.handleContextClick} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "animated zoomOut" : s.pinning ? "animated pulse" : s.duplicate && s.focus ? "duplicate-tile animated pulse" : null}>
+          {p.render && s.render && p.tab.title !== 'New Tab' ? <Row fluid={true} id={'subTile-'+p.i} style={s.duplicate && s.focus && !s.hover ? {WebkitAnimationIterationCount: 'infinite'} : null} onContextMenu={this.handleContextClick} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "animated zoomOut" : s.pinning ? "animated pulse" : s.duplicate && s.focus ? "duplicate-tile animated pulse" : null}>
               { this.filterTabs(p.tab) ? <div id={'innerTile-'+p.i} className={s.hover ? "ntg-tile-hover" : "ntg-tile"} style={s.screenshot ? s.hover ? style.tileHovered(s.screenshot) : style.tile(s.screenshot) : null} key={p.key}>
                 <Row className="ntg-tile-row-top">
                   <Col size="3">
@@ -461,7 +462,7 @@ var Tile = React.createClass({
                     <h5 style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-title">
                       {S(p.tab.title).truncate(83).s}
                     </h5>
-                    {prefs ? prefs.drag ? <div onMouseEnter={this.handleDragHoverIn} onMouseLeave={this.handleDragHoverOut} onClick={() => this.handleCloseTab(p.tab.id)}>
+                    {p.stores.prefs ? p.stores.prefs.drag ? <div onMouseEnter={this.handleDragHoverIn} onMouseLeave={this.handleDragHoverOut} onClick={() => this.handleCloseTab(p.tab.id)}>
                       {s.hover ? 
                       <i className={s.dHover ? "fa fa-hand-grab-o ntg-move-hover handle" : "fa fa-hand-grab-o ntg-move"} style={s.screenshot && s.hover ? style.ssIconBg : null} />
                       : null}
@@ -603,7 +604,11 @@ var TileGrid = React.createClass({
   render: function() {
     var p = this.props;
     var s = this.state;
+    var tabs = tabStore.get_tab();
+    var newTabs = tabStore.getNewTabs();
     var prefs = prefsStore.get_prefs();
+    var search = searchStore.get_search();
+    var stores = {tabs: tabs, newTabs: newTabs, prefs: prefs, search: search};
     var ssBg = prefs && prefs.screenshot && prefs.screenshotBg;
     var buttonTransparent = {backgroundColor: 'rgba(237, 237, 237, 0.8)'};
     var labels = p.keys.map((key)=> {
@@ -627,7 +632,7 @@ var TileGrid = React.createClass({
                 dataIndex = [];
                 dataIndex.push(data);
                 return (
-                  <Tile render={p.render} i={i} key={data.id} tab={data} />
+                  <Tile stores={stores} render={p.render} i={i} key={data.id} tab={data} />
                 );
               })}
           </div>
