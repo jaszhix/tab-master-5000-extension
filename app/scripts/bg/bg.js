@@ -57,7 +57,7 @@ chrome.runtime.onInstalled.addListener((details)=>{
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.method === 'captureTabs') {
     var capture = new Promise((resolve, reject)=>{
-      chrome.tabs.captureVisibleTab({format: 'jpeg', quality: 25}, (image)=> {
+      chrome.tabs.captureVisibleTab({format: 'jpeg', quality: 10}, (image)=> {
         if (image) {
           resolve(image);
         } else {

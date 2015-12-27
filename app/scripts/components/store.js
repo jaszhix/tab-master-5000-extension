@@ -318,7 +318,16 @@ export var prefsStore = Reflux.createStore({
         if (prefs && prefs.preferences) {
           resolve(prefs);
         } else {
-          reject();
+          if (chrome.extension.lastError) {
+            reject(chrome.extension.lastError);
+          } else {
+            console.log('init prefs');
+            this.prefs = {drag: false, context: true, animations: true, duplicate: false, screenshot: false, screenshotBg: false, blacklist: true, sort: false};
+            chrome.storage.local.set({preferences: this.prefs}, (result)=> {
+              console.log('Init preferences saved: ',result);
+            });
+            this.trigger(this.prefs);
+          }
         }
       });
     });
@@ -335,13 +344,9 @@ export var prefsStore = Reflux.createStore({
         animations: prefs.preferences.animations,
       };
       this.trigger(this.prefs);
-    }).catch(()=>{
-      console.log('init prefs');
-      this.prefs = {drag: false, context: true, animations: true, duplicate: false, screenshot: false, screenshotBg: false, blacklist: true, sort: false};
-      chrome.storage.local.set({preferences: this.prefs}, (result)=> {
-        console.log('Init preferences saved: ',result);
-      });
-      this.trigger(this.prefs);
+    }).catch((err)=>{
+      console.log('chrome.extension.lastError: ',err);
+      utilityStore.restartNewTab();
     });
     
   },

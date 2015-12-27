@@ -45,7 +45,7 @@ var Search = React.createClass({
     var p = this.props;
     var prefs = prefsStore.get_prefs();
     return (
-      <Container fluid={true} style={prefs.screenshot && prefs.screenshotBg ? {backgroundColor: 'rgba(237, 237, 237, 0.8)'} : null} className="ntg-form">
+      <Container fluid={true} style={prefs && prefs.screenshot && prefs.screenshotBg ? {backgroundColor: 'rgba(237, 237, 237, 0.8)'} : null} className="ntg-form">
         <Row>
           <Col size="6">
             <Col size="1">

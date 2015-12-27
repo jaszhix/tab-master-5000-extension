@@ -604,7 +604,7 @@ var TileGrid = React.createClass({
     var p = this.props;
     var s = this.state;
     var prefs = prefsStore.get_prefs();
-    var ssBg = prefs.screenshot && prefs.screenshotBg;
+    var ssBg = prefs && prefs.screenshot && prefs.screenshotBg;
     var buttonTransparent = {backgroundColor: 'rgba(237, 237, 237, 0.8)'};
     var labels = p.keys.map((key)=> {
       var label = p.labels[key] || key;
