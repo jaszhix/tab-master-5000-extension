@@ -362,12 +362,12 @@ var Tile = React.createClass({
     tileDrag = true;
     this.setState({drag: tileDrag});
     dragStore.set_dragged(this.props.tab);
-    this.getPos(utilityStore.get_cursor()[0], utilityStore.get_cursor()[1]);
+    this.getPos(utilityStore.get_cursor().page.x, utilityStore.get_cursor().page.y);
   },
   handleDrag(e, ui) {
     console.log('Event: ', e, ui);
     console.log('Position: ', ui.position);
-    this.getPos(utilityStore.get_cursor()[0], utilityStore.get_cursor()[1]);
+    this.getPos(utilityStore.get_cursor().page.x, utilityStore.get_cursor().page.y);
   },
   handleStop(e, ui) {
     var p = this.props;
@@ -378,7 +378,7 @@ var Tile = React.createClass({
     console.log('Stop Position: ', ui.position);
     tileDrag = false;
     this.setState({drag: tileDrag});
-    this.getPos(utilityStore.get_cursor()[0], utilityStore.get_cursor()[1]);
+    this.getPos(utilityStore.get_cursor().page.x, utilityStore.get_cursor().page.y);
     var dragged = dragStore.get_dragged();
     var draggedOver = dragStore.get_tabIndex();
     var draggedOverIndex = null;
@@ -396,7 +396,10 @@ var Tile = React.createClass({
     });
   },
   getPos(left, top){
-    dragStore.set_drag(left, top);
+    var cursor = utilityStore.get_cursor();
+    var oLeft = left - cursor.offset.x;
+    var oRight = top - cursor.offset.y;
+    dragStore.set_drag(oLeft, oRight);
   },
   currentlyDraggedOver(tab){
     if (tileDrag) {
@@ -428,7 +431,7 @@ var Tile = React.createClass({
                     onStart={this.handleStart}
                     onDrag={this.handleDrag}
                     onStop={this.handleStop}>
-          <div ref="tile" style={s.drag ? {position: 'fixed', left: drag.left-200, top: drag.top} : null}>
+          <div ref="tile" style={s.drag ? {position: 'absolute', left: drag.left-200, top: drag.top} : null}>
           {p.render && s.render && p.tab.title !== 'New Tab' ? <Row fluid={true} id={'subTile-'+p.i} style={s.duplicate && s.focus && !s.hover ? {WebkitAnimationIterationCount: 'infinite'} : null} onContextMenu={this.handleContextClick} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "animated zoomOut" : s.pinning ? "animated pulse" : s.duplicate && s.focus ? "duplicate-tile animated pulse" : null}>
               { this.filterTabs(p.tab) ? <div id={'innerTile-'+p.i} className={s.hover ? "ntg-tile-hover" : "ntg-tile"} style={s.screenshot ? s.hover ? style.tileHovered(s.screenshot) : style.tile(s.screenshot) : null} key={p.key}>
                 <Row className="ntg-tile-row-top">

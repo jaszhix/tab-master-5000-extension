@@ -38,7 +38,7 @@ var ContextMenu = React.createClass({
     var chromeVersion = utilityStore.chromeVersion();
     return (
       <div className="ntg-context">
-        <div style={{left: cursor[0], top: cursor[1]}} className="ntg-context-menu">
+        <div style={{left: cursor.page.x, top: cursor.page.y}} className="ntg-context-menu">
           <button onClick={()=>this.handleRelay('close')} className="ntg-context-btn"><i className="fa fa-times" /> Close</button>
           <button onClick={()=>this.handleRelay('closeAll')} className="ntg-context-btn-close-all"><i className="fa fa-asterisk" /> {'Close all from ' + this.getStatus('url')}</button>
           {this.getStatus('duplicate') ? <button onClick={()=>this.handleRelay('closeDupes')} className="ntg-context-btn-close-all"><i className="fa fa-asterisk" /> Close duplicates</button> : null}
