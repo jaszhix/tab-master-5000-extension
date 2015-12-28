@@ -250,11 +250,10 @@ var Tile = React.createClass({
       pinned: !tab.pinned
     });
     this.setState({render: true});
-    var animationEnd = (e)=>{
+    v('subTile-'+p.i).on('animationend', function animationEnd(e){
       this.setState({pinning: false});
-      document.getElementById('subTile-'+p.i).removeEventListener('animationend', animationEnd);
-    };
-    document.getElementById('subTile-'+p.i).addEventListener('animationend',animationEnd);
+      v('subTile-'+p.i).off('animationend', animationEnd);
+    });
     pinned = id;
   },
   handleMuting(tab){
@@ -344,12 +343,10 @@ var Tile = React.createClass({
         this.setState({duplicate: bool});
       } else {
         this.setState({focus: true});
-        var animationEnd = (e)=>{
-          console.log('animationend: ',e);
+        v('subTile-'+p.i).on('animationend', function animationEnd(e){
           this.setState({focus: false});
-          document.getElementById('subTile-'+p.i).removeEventListener('animationend', animationEnd);
-        };
-        document.getElementById('subTile-'+p.i).addEventListener('animationend',animationEnd);
+          v('subTile-'+p.i).off('animationend', animationEnd);
+        });
       }
     }
   },
@@ -367,13 +364,11 @@ var Tile = React.createClass({
     dragStore.set_dragged(this.props.tab);
     this.getPos(utilityStore.get_cursor()[0], utilityStore.get_cursor()[1]);
   },
-
   handleDrag(e, ui) {
     console.log('Event: ', e, ui);
     console.log('Position: ', ui.position);
     this.getPos(utilityStore.get_cursor()[0], utilityStore.get_cursor()[1]);
   },
-
   handleStop(e, ui) {
     var p = this.props;
     // Move the tile element back to #grid where it belongs.

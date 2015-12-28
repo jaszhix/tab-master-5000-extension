@@ -1,5 +1,11 @@
 #### Release Notes
 
+##### v0.8.2 / *12-27-15*
+
+*   Draggable tab sorting inaccuracy has been corrected, and now moves tiles where you expect them to end up. Pinned tiles are not working correctly yet.
+*   Increased performance while screenshots are enabled.
+*   Fixed some asynchronous issues with retrieving preferences data from Chrome.
+
 ##### v0.8.1 / *12-26-15*
 
 *   Fixed flickering rendering while dragging tab tiles.
