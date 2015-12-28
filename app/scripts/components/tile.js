@@ -314,7 +314,7 @@ var Tile = React.createClass({
     });
   },
   handleContextClick(e){
-    if (this.props.prefs.context) {
+    if (this.props.stores.prefs.context) {
       e.preventDefault();
       contextStore.set_context(true, this.props.tab.id);
     }
@@ -356,8 +356,7 @@ var Tile = React.createClass({
   handleStart(e, ui) {
     var p = this.props;
     // Temporarily move tile element to the parent div, so the drag position stays in sync with the cursor.
-    var clone = document.getElementById('tileMain-'+p.i).cloneNode(true);
-    //clone.removeAttribute('data-reactid');
+    var clone = v('#tileMain-'+p.i).clone().removeAttr('data-reactid').node();
     v('#grid').insertBefore(clone, this.refs.tileMain);
     v('#main').append(ReactDOM.findDOMNode(this.refs.tileMain));
     console.log('Event: ', e, ui);
@@ -378,7 +377,7 @@ var Tile = React.createClass({
   handleStop(e, ui) {
     var p = this.props;
     // Move the tile element back to #grid where it belongs.
-    v(document.getElementById('tileMain-'+p.i).cloneNode(true)).remove();
+    v('#tileMain-'+p.i).clone().remove();
     v('#grid').append(ReactDOM.findDOMNode(this.refs.tileMain));
     console.log('Event: ', e, ui);
     console.log('Stop Position: ', ui.position);
