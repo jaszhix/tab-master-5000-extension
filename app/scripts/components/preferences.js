@@ -86,14 +86,15 @@ var Blacklist = React.createClass({
 var Preferences = React.createClass({
   mixins: [Reflux.ListenerMixin],
   getInitialState(){
+    var p = this.props;
     return {
-      drag: prefsStore.get_prefs().drag,
-      context: prefsStore.get_prefs().context,
-      duplicate: prefsStore.get_prefs().duplicate,
-      screenshot: prefsStore.get_prefs().screenshot,
-      screenshotBg: prefsStore.get_prefs().screenshotBg,
-      blacklist: prefsStore.get_prefs().blacklist,
-      animations: prefsStore.get_prefs().animations,
+      drag: p.prefs.drag,
+      context: p.prefs.context,
+      duplicate: p.prefs.duplicate,
+      screenshot: p.prefs.screenshot,
+      screenshotBg: p.prefs.screenshotBg,
+      blacklist: p.prefs.blacklist,
+      animations: p.prefs.animations,
       dragHover: false,
       contextHover: false,
       duplicateHover: false,
@@ -110,7 +111,7 @@ var Preferences = React.createClass({
     this.getBytesInUse();
   },
   prefsChange(){
-    var prefs = prefsStore.get_prefs();
+    var prefs = this.props.prefs;
     this.setState({drag: prefs.drag});
     this.setState({context: prefs.context});
     this.setState({duplicate: prefs.duplicate});

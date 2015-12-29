@@ -56,7 +56,7 @@ var Sessions = React.createClass({
       tabs = sess.tabs;
       timeStamp = sess.timeStamp;
     } else {
-      tabs = tabStore.get_tab();
+      tabs = this.props.tabs;
       timeStamp = Date.now();
     }
     var tabData = {timeStamp: timeStamp, tabs: tabs, label: sessionLabel};
@@ -184,7 +184,7 @@ var Sessions = React.createClass({
   render: function() {
     var p = this.props;
     var s = this.state;
-    var tabs = tabStore.get_tab();
+    var tabs = p.tabs;
     var tm20 = tabs.length - 20;
     var removeTabFromSession = (id, session)=>{
       var index = _.findIndex(session.tabs, { 'id': id });
@@ -317,9 +317,10 @@ var Settings = React.createClass({
   render: function() {
     var p = this.props;
     var s = this.state;
-    var sessions = settingsStore.get_settings() === 'sessions';
-    var preferences = settingsStore.get_settings() === 'preferences';
-    var about = settingsStore.get_settings() === 'about';
+    var settings = settingsStore.get_settings();
+    var sessions = settings === 'sessions';
+    var preferences = settings === 'preferences';
+    var about = settings === 'about';
     return (
       <Modal
         id="modal"
@@ -344,8 +345,8 @@ var Settings = React.createClass({
             </div>
           </Row>
           <Row className="ntg-settings-pane">
-            {sessions ? <Sessions collapse={p.collapse} /> : null}
-            {preferences ? <Preferences /> : null}
+            {sessions ? <Sessions tabs={p.tabs} collapse={p.collapse} /> : null}
+            {preferences ? <Preferences prefs={p.prefs} /> : null}
             {about ? <About /> : null}
           </Row>
         </Container>

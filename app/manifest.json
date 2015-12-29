@@ -52,6 +52,7 @@
     "unlimitedStorage",
     "idle",
     "system.memory",
-    "tabCapture"
+    "tabCapture",
+    "bookmarks"
   ]
 }

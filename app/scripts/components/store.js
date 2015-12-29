@@ -324,7 +324,7 @@ export var prefsStore = Reflux.createStore({
             reject(chrome.extension.lastError);
           } else {
             console.log('init prefs');
-            this.prefs = {drag: false, context: true, animations: true, duplicate: false, screenshot: false, screenshotBg: false, blacklist: true, sort: false};
+            this.prefs = {drag: false, context: true, animations: true, duplicate: false, screenshot: false, screenshotBg: false, blacklist: true, sidebar: false, sort: false, bookmarks: false};
             chrome.storage.local.set({preferences: this.prefs}, (result)=> {
               console.log('Init preferences saved: ',result);
             });
@@ -342,7 +342,9 @@ export var prefsStore = Reflux.createStore({
         screenshot: prefs.preferences.screenshot,
         screenshotBg: prefs.preferences.screenshotBg,
         blacklist: prefs.preferences.blacklist,
+        sidebar: prefs.preferences.sidebar,
         sort: prefs.preferences.sort,
+        bookmarks: prefs.preferences.bookmarks,
         animations: prefs.preferences.animations,
       };
       this.trigger(this.prefs);
@@ -577,26 +579,26 @@ export var blacklistStore = Reflux.createStore({
   },
 });
 
-export var sortStore = Reflux.createStore({
+export var sidebarStore = Reflux.createStore({
   init: function() {
     _.defer(()=>{
-      var sort = prefsStore.get_prefs().sort;
-      if (sort) {
-        this.sort = sort;
-        this.trigger(this.sort);
+      var sidebar = prefsStore.get_prefs().sidebar;
+      if (sidebar) {
+        this.sidebar = sidebar;
+        this.trigger(this.sidebar);
       } else {
-        this.sort = false;
+        this.sidebar = false;
       }
     });
   },
-  set_sort: function(value) {
-    prefsStore.set_prefs('sort', value);
-    this.sort = value;
-    console.log('sort: ', value);
-    this.trigger(this.sort);
+  set_sidebar: function(value) {
+    prefsStore.set_prefs('sidebar', value);
+    this.sidebar = value;
+    console.log('sidebar: ', value);
+    this.trigger(this.sidebar);
   },
-  get_sort: function() {
-    return this.sort;
+  get_sidebar: function() {
+    return this.sidebar;
   }
 });
 

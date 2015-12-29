@@ -8,7 +8,7 @@ import kmp from 'kmp';
 import Draggable from 'react-draggable';
 import utils from './utils';
 
-import {blacklistStore, screenshotStore, dupeStore, prefsStore, reRenderStore, searchStore, applyTabOrderStore, utilityStore, contextStore, relayStore, dragStore} from './store';
+import {screenshotStore, dupeStore, prefsStore, reRenderStore, searchStore, applyTabOrderStore, utilityStore, contextStore, relayStore, dragStore} from './store';
 import tabStore from './tabStore';
 
 import {Btn, Col, Row} from './bootstrap';
@@ -18,7 +18,6 @@ var dataIndex = null;
 var tabUrls = null;
 var duplicateTabs = null;
 var pinned = null;
-var chromeVersion = utilityStore.chromeVersion();
 var tileDrag = null;
 var Tile = React.createClass({
   mixins: [
@@ -47,14 +46,16 @@ var Tile = React.createClass({
     this.listenTo(applyTabOrderStore, this.applyTabOrder);
     this.listenTo(relayStore, this.handleRelays);
     this.listenTo(tabStore, this.update);
-    this.listenTo(screenshotStore, this.updateScreenshot);
+    _.defer(()=>{
+      this.listenTo(screenshotStore, this.updateScreenshot);
+    });
     this.initMethods();
   },
   shouldComponentUpdate() {
     return this.state.render;
   },
   initMethods(){
-    this.updateScreenshot();
+    this.updateScreenshot('init');
     this.checkDuplicateTabs();
     if (this.props.tab.title === 'New Tab') {
       _.defer(()=>{
@@ -65,8 +66,11 @@ var Tile = React.createClass({
   update(){
     var p = this.props;
     if (this.state.duplicate) {
+      var subTile = v('#subTile-'+p.i).node();
       _.delay(()=>{
-        document.getElementById('subTile-'+p.i).style.display = 'inline';
+        if (subTile) {
+          subTile.style.display = 'inline';
+        }
       },500);
     }
     if (pinned === p.tab.id && p.tab.pinned) {
@@ -77,29 +81,25 @@ var Tile = React.createClass({
       this.closeNewTabs();
     }
   },
-  enforceBlacklist(){
+  updateScreenshot(opt){
     var p = this.props;
-    var blacklist = blacklistStore.get_blacklist();
-    if (blacklist.length > 0) {
-      for (var i = 0; i < blacklist.length; i++) {
-        if(kmp(p.tab.url.toLowerCase(), blacklist[i]) !== -1) {
-          if (p.tab.id) {
-            chrome.tabs.remove(p.tab.id);
-          }
+    var setScreeenshot = ()=>{
+      if (chrome.extension.lastError) {
+        utilityStore.restartNewTab();
+      }
+      if (p.stores.prefs.screenshot) {
+        var screenshotIndex = screenshotStore.get_ssIndex();
+        var ssData = _.result(_.find(screenshotIndex, { url: p.tab.url }), 'data');
+        if (ssData) {
+          this.setState({screenshot: ssData});
         }
       }
-    }
-  },
-  updateScreenshot(){
-    if (chrome.extension.lastError) {
-      utilityStore.restartNewTab();
-    }
-    var p = this.props;
-    if (p.stores.prefs.screenshot) {
-      var screenshotIndex = screenshotStore.get_ssIndex();
-      var ssData = _.result(_.find(screenshotIndex, { url: p.tab.url }), 'data');
-      if (ssData) {
-        this.setState({screenshot: ssData});
+    };
+    if (opt === 'init') {
+      setScreeenshot();
+    } else {
+      if (p.tab.active) {
+        setScreeenshot();
       }
     }
   },
@@ -269,7 +269,7 @@ var Tile = React.createClass({
     }, (Tab)=> {
       console.log(Tab);
       for (var i = Tab.length - 1; i >= 0; i--) {
-        if (Tab[i].windowId === utilityStore.get_window()) {
+        if (Tab[i].windowId === this.props.stores.windowId) {
           this.handleCloseTab(Tab[i].id);
         }
       }
@@ -320,7 +320,7 @@ var Tile = React.createClass({
   },
   handleRelays(){
     var p = this.props;
-    var r = relayStore.get_relay();
+    var r = p.stores.relay;
     if (r[1] === p.tab.id) {
       if (r[0] === 'close') {
         this.handleCloseTab(r[1]);
@@ -353,7 +353,9 @@ var Tile = React.createClass({
   handleStart(e, ui) {
     var p = this.props;
     // Temporarily move tile element to the parent div, so the drag position stays in sync with the cursor.
-    var clone = v('#tileMain-'+p.i).clone().removeAttr('data-reactid').node();
+    var clone = v(ReactDOM.findDOMNode(this.refs.tileMain)).clone().node();
+    clone.removeAttribute('data-reactid');
+    console.log(clone);
     v('#grid').insertBefore(clone, this.refs.tileMain);
     v('#main').append(ReactDOM.findDOMNode(this.refs.tileMain));
     console.log('Event: ', e, ui);
@@ -362,23 +364,25 @@ var Tile = React.createClass({
     tileDrag = true;
     this.setState({drag: tileDrag});
     dragStore.set_dragged(this.props.tab);
-    this.getPos(utilityStore.get_cursor().page.x, utilityStore.get_cursor().page.y);
+    this.getPos(p.stores.cursor.page.x, p.stores.cursor.page.y);
   },
   handleDrag(e, ui) {
+    var p = this.props;
     console.log('Event: ', e, ui);
     console.log('Position: ', ui.position);
-    this.getPos(utilityStore.get_cursor().page.x, utilityStore.get_cursor().page.y);
+    this.getPos(p.stores.cursor.page.x, p.stores.cursor.page.y);
   },
   handleStop(e, ui) {
+    v(ReactDOM.findDOMNode(this.refs.tileMain)).hide();
     var p = this.props;
     // Move the tile element back to #grid where it belongs.
-    v('#tileMain-'+p.i).clone().remove();
+    v(ReactDOM.findDOMNode(this.refs.tileMain)).clone().remove();
     v('#grid').append(ReactDOM.findDOMNode(this.refs.tileMain));
     console.log('Event: ', e, ui);
     console.log('Stop Position: ', ui.position);
     tileDrag = false;
     this.setState({drag: tileDrag});
-    this.getPos(utilityStore.get_cursor().page.x, utilityStore.get_cursor().page.y);
+    this.getPos(p.stores.cursor.page.x, p.stores.cursor.page.y);
     var dragged = dragStore.get_dragged();
     var draggedOver = dragStore.get_tabIndex();
     var draggedOverIndex = null;
@@ -396,9 +400,9 @@ var Tile = React.createClass({
     });
   },
   getPos(left, top){
-    var cursor = utilityStore.get_cursor();
-    var oLeft = left - cursor.offset.x;
-    var oRight = top - cursor.offset.y;
+    var p = this.props;
+    var oLeft = left - p.stores.cursor.offset.x;
+    var oRight = top - p.stores.cursor.offset.y;
     dragStore.set_drag(oLeft, oRight);
   },
   currentlyDraggedOver(tab){
@@ -436,7 +440,7 @@ var Tile = React.createClass({
               { this.filterTabs(p.tab) ? <div id={'innerTile-'+p.i} className={s.hover ? "ntg-tile-hover" : "ntg-tile"} style={s.screenshot ? s.hover ? style.tileHovered(s.screenshot) : style.tile(s.screenshot) : null} key={p.key}>
                 <Row className="ntg-tile-row-top">
                   <Col size="3">
-                    {chromeVersion >= 46 ? <div onMouseEnter={this.handleTabMuteHoverIn} onMouseLeave={this.handleTabMuteHoverOut} onClick={() => this.handleMuting(p.tab)}>
+                    {p.stores.chromeVersion >= 46 ? <div onMouseEnter={this.handleTabMuteHoverIn} onMouseLeave={this.handleTabMuteHoverOut} onClick={() => this.handleMuting(p.tab)}>
                                       {s.hover || p.tab.audible || p.tab.mutedInfo.muted ? 
                                       <i className={p.tab.audible ? s.mHover ? "fa fa-volume-off ntg-mute-audible-hover" : "fa fa-volume-up ntg-mute-audible" : s.mHover ? "fa fa-volume-off ntg-mute-hover" : "fa fa-volume-off ntg-mute"} style={s.screenshot && s.hover ? style.ssIconBg : s.screenshot ? style.ssIconBg : null} />
                                       : null}
@@ -476,16 +480,38 @@ var Tile = React.createClass({
   }
 });
 
-var Sortbar = React.createClass({
+var Sidebar = React.createClass({
+  mixins: [Reflux.ListenerMixin],
+  getInitialState(){
+    var p = this.props;
+    return {
+      sort: p.prefs.sort,
+      bookmarks: p.prefs.bookmarks
+    };
+  },
+  componentDidMount(){
+    this.listenTo(prefsStore, this.prefsChange);
+  },
+  prefsChange(){
+    var p = this.props;
+    this.setState({sort: p.prefs.sort});
+    this.setState({bookmarks: p.prefs.bookmarks});
+  },
   render: function() {
     var p = this.props;
+    var s = this.state;
     return (
       <Col size="1" className="sort-bar">
-        <h4 style={p.ssBg ? {backgroundColor: 'rgba(255, 255, 255, 0.88)', borderRadius: '3px'} : null} className="sort-h4">
-          {p.collapse ? 'Sort Tabs' : 'Sort'}
-        </h4>
-          {p.labels}
-          <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={p.onClick} className="ntg-apply-btn" fa="sort">{p.collapse ? 'Apply' : null}</Btn>
+        <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={()=>prefsStore.set_prefs('sort', !s.sort)} className="ntg-apply-btn" fa="sort">{p.collapse ? 'Sort' : null}</Btn>
+        <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={()=>prefsStore.set_prefs('bookmarks', !s.bookmarks)} className="ntg-apply-btn" fa="sort">{p.collapse ? 'Bookmarks' : null}</Btn>
+        {s.sort ? <div>
+            <h4 style={p.ssBg ? {backgroundColor: 'rgba(255, 255, 255, 0.88)', borderRadius: '3px'} : null} className="sort-h4">
+              {p.collapse ? 'Sort Tabs' : 'Sort'}
+            </h4>
+            {p.labels}
+            <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={p.onClick} className="ntg-apply-btn" fa="sort">{p.collapse ? 'Apply' : null}</Btn>
+          </div> : null}
+        {s.bookmarks ? <div></div> : null}
       </Col>
     );
   }
@@ -530,8 +556,8 @@ var TileGrid = React.createClass({
     this.checkDuplicateTabs(this.props.data);
   },
   prefsInit(){
-    var prefs = prefsStore.get_prefs();
-    if (!prefs.screenshotBg || !prefs.screenshot) {
+    var p = this.props;
+    if (!p.stores.prefs.screenshotBg || !p.stores.prefs.screenshot) {
       v('#main').css({position: ''});
       v('#bgImg').css({
         display: 'none',
@@ -601,12 +627,7 @@ var TileGrid = React.createClass({
   render: function() {
     var p = this.props;
     var s = this.state;
-    var tabs = tabStore.get_tab();
-    var newTabs = tabStore.getNewTabs();
-    var prefs = prefsStore.get_prefs();
-    var search = searchStore.get_search();
-    var stores = {tabs: tabs, newTabs: newTabs, prefs: prefs, search: search};
-    var ssBg = prefs && prefs.screenshot && prefs.screenshotBg;
+    var ssBg = p.stores.prefs && p.stores.prefs.screenshot && p.stores.prefs.screenshotBg;
     var buttonTransparent = {backgroundColor: 'rgba(237, 237, 237, 0.8)'};
     var labels = p.keys.map((key)=> {
       var label = p.labels[key] || key;
@@ -622,14 +643,14 @@ var TileGrid = React.createClass({
     });
     return (
       <div className="tile-body">
-        {p.sort ? <Sortbar labels={labels} collapse={p.collapse} ssBg={ssBg} onClick={this.applyTabs} /> : null}
-        <Col size={p.sort ? '11' : '12'}>
+        {p.sidebar ? <Sidebar prefs={p.stores.prefs} labels={labels} collapse={p.collapse} ssBg={ssBg} onClick={this.applyTabs} /> : null}
+        <Col size={p.sidebar ? '11' : '12'}>
           <div id="grid" ref="grid">
               {s.data.map((data, i)=> {
                 dataIndex = [];
                 dataIndex.push(data);
                 return (
-                  <Tile stores={stores} render={p.render} i={i} key={data.id} tab={data} />
+                  <Tile stores={p.stores} render={p.render} i={i} key={data.id} tab={data} />
                 );
               })}
           </div>

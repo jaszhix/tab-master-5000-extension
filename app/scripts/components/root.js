@@ -6,7 +6,7 @@ import ReactUtils from 'react-utils';
 import v from 'vquery';
 import '../../styles/app.scss';
 window.v = v;
-import {sortStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore, prefsStore} from './store';
+import {relayStore, sidebarStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore, prefsStore} from './store';
 import tabStore from './tabStore';
 
 import {Btn, Col, Row, Container} from './bootstrap';
@@ -37,8 +37,8 @@ var Search = React.createClass({
     settingsStore.set_settings('about');
     modalStore.set_modal(true);
   },
-  handleSortbar(){
-    sortStore.set_sort(!sortStore.get_sort());
+  handleSidebar(){
+    sidebarStore.set_sidebar(!sidebarStore.get_sidebar());
     clickStore.set_click(true, false);
   },
   render: function() {
@@ -49,7 +49,7 @@ var Search = React.createClass({
         <Row>
           <Col size="6">
             <Col size="1">
-              <Btn onClick={this.handleSortbar} className="ntg-sort-btn" fa="reorder" />
+              <Btn onClick={this.handleSidebar} className="ntg-sort-btn" fa="reorder" />
             </Col>
             <Col size="11">
               <form 
@@ -94,7 +94,8 @@ var Root = React.createClass({
       collapse: true,
       context: false,
       event: '',
-      sort: sortStore.get_sort()
+      sidebar: sidebarStore.get_sidebar(),
+      chromeVersion: utilityStore.chromeVersion()
     };
   },
   componentWillMount(){
@@ -106,7 +107,7 @@ var Root = React.createClass({
     this.listenTo(reRenderStore, this.reRender);
     this.listenTo(settingsStore, this.settingsChange);
     this.listenTo(contextStore, this.contextTrigger);
-    this.listenTo(sortStore, this.sortTrigger);
+    this.listenTo(sidebarStore, this.sortTrigger);
     this.listenTo(tabStore, this.update);
     // Call the method that will query Chrome for tabs.
     this.captureTabs('init');
@@ -189,7 +190,7 @@ var Root = React.createClass({
       }
     });
   },
-  tileGrid(){
+  tileGrid(stores){
     var s = this.state;
     // Our keys that will be sortable.
     var keys = ['url', 'title', 'status', 'index'];
@@ -207,7 +208,8 @@ var Root = React.createClass({
         labels={labels}
         render={true}
         collapse={s.collapse}
-        sort={s.sort}
+        sidebar={s.sidebar}
+        stores={stores}
       />
       );
   },
@@ -224,18 +226,27 @@ var Root = React.createClass({
     }
   },
   sortTrigger(){
-    this.setState({sort: sortStore.get_sort()});
+    this.setState({sidebar: sidebarStore.get_sidebar()});
   },
   render: function() {
     var s = this.state;
+    var tabs = tabStore.get_tab();
+    var newTabs = tabStore.getNewTabs();
+    var prefs = prefsStore.get_prefs();
+    var search = searchStore.get_search();
+    var cursor = utilityStore.get_cursor();
+    var context = contextStore.get_context();
+    var relay = relayStore.get_relay();
+    var windowId = utilityStore.get_window();
+    var stores = {tabs: tabs, newTabs: newTabs, prefs: prefs, search: search, cursor: cursor, chromeVersion: s.chromeVersion, relay: relay, windowId: windowId};
     return (
       <div className="container-main">
-        {s.context ? <ContextMenu /> : null}
-        <Settings collapse={s.collapse} />
+        {s.context ? <ContextMenu tabs={tabs} cursor={cursor} context={context} chromeVersion={s.chromeVersion}/> : null}
+        <Settings tabs={tabs} prefs={prefs} collapse={s.collapse} />
           {s.tabs ? <div className="tile-container">
               {s.settings ? <Search event={s.event} /> : null}
               <div className="tile-child-container">
-                {s.render ? this.tileGrid() : null}
+                {s.render ? this.tileGrid(stores) : null}
             </div></div> : null}
       </div>
     );
