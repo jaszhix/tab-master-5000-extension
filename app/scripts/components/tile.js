@@ -8,7 +8,7 @@ import kmp from 'kmp';
 import Draggable from 'react-draggable';
 import utils from './utils';
 
-import {screenshotStore, dupeStore, prefsStore, reRenderStore, searchStore, applyTabOrderStore, utilityStore, contextStore, relayStore, dragStore} from './store';
+import {clickStore, screenshotStore, dupeStore, prefsStore, reRenderStore, searchStore, applyTabOrderStore, utilityStore, contextStore, relayStore, dragStore} from './store';
 import tabStore from './tabStore';
 
 import {Btn, Col, Row} from './bootstrap';
@@ -355,6 +355,7 @@ var Tile = React.createClass({
     // Temporarily move tile element to the parent div, so the drag position stays in sync with the cursor.
     var clone = v(ReactDOM.findDOMNode(this.refs.tileMain)).clone().node();
     clone.removeAttribute('data-reactid');
+    clone.classList.add('tileClone');
     console.log(clone);
     v('#grid').insertBefore(clone, this.refs.tileMain);
     v('#main').append(ReactDOM.findDOMNode(this.refs.tileMain));
@@ -373,10 +374,9 @@ var Tile = React.createClass({
     this.getPos(p.stores.cursor.page.x, p.stores.cursor.page.y);
   },
   handleStop(e, ui) {
-    v(ReactDOM.findDOMNode(this.refs.tileMain)).hide();
     var p = this.props;
     // Move the tile element back to #grid where it belongs.
-    v(ReactDOM.findDOMNode(this.refs.tileMain)).clone().remove();
+    v('.tileClone').remove();
     v('#grid').append(ReactDOM.findDOMNode(this.refs.tileMain));
     console.log('Event: ', e, ui);
     console.log('Stop Position: ', ui.position);
@@ -497,22 +497,26 @@ var Sidebar = React.createClass({
     this.setState({sort: p.prefs.sort});
     this.setState({bookmarks: p.prefs.bookmarks});
   },
+  handleBookmarks(){
+    clickStore.set_click(true, false);
+    prefsStore.set_prefs('bookmarks', !this.state.bookmarks);
+  },
   render: function() {
     var p = this.props;
     var s = this.state;
     return (
-      <Col size="1" className="sort-bar">
-        <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={()=>prefsStore.set_prefs('sort', !s.sort)} className="ntg-apply-btn" fa="sort">{p.collapse ? 'Sort' : null}</Btn>
-        <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={()=>prefsStore.set_prefs('bookmarks', !s.bookmarks)} className="ntg-apply-btn" fa="sort">{p.collapse ? 'Bookmarks' : null}</Btn>
+      <div style={{width: '12%', float: 'left', position: 'relative', paddingRight: '15px', paddingLeft: '15px'}}>
+        <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={()=>prefsStore.set_prefs('sort', !s.sort)} className="ntg-apply-btn" fa="sort">Sort</Btn>
+        <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleBookmarks} className="ntg-apply-btn" fa="sort">Bookmarks</Btn>
         {s.sort ? <div>
             <h4 style={p.ssBg ? {backgroundColor: 'rgba(255, 255, 255, 0.88)', borderRadius: '3px'} : null} className="sort-h4">
               {p.collapse ? 'Sort Tabs' : 'Sort'}
             </h4>
             {p.labels}
-            <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={p.onClick} className="ntg-apply-btn" fa="sort">{p.collapse ? 'Apply' : null}</Btn>
+            <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={p.onClick} className="ntg-apply-btn" fa="sort">Apply</Btn>
           </div> : null}
         {s.bookmarks ? <div></div> : null}
-      </Col>
+      </div>
     );
   }
 });
@@ -631,7 +635,7 @@ var TileGrid = React.createClass({
     var buttonTransparent = {backgroundColor: 'rgba(237, 237, 237, 0.8)'};
     var labels = p.keys.map((key)=> {
       var label = p.labels[key] || key;
-      var cLabel = p.collapse ? label : null;
+      var cLabel = label;
       return (
         <div key={key} onClick={this.sort(key)}>
           {label === 'Tab Order' ? <Btn style={ssBg ? buttonTransparent : null} className="ntg-btn" fa="history">{cLabel}</Btn> : null}
@@ -644,7 +648,7 @@ var TileGrid = React.createClass({
     return (
       <div className="tile-body">
         {p.sidebar ? <Sidebar prefs={p.stores.prefs} labels={labels} collapse={p.collapse} ssBg={ssBg} onClick={this.applyTabs} /> : null}
-        <Col size={p.sidebar ? '11' : '12'}>
+        <div style={{width: '88%', float: 'left', position: 'relative'}}>
           <div id="grid" ref="grid">
               {s.data.map((data, i)=> {
                 dataIndex = [];
@@ -654,7 +658,7 @@ var TileGrid = React.createClass({
                 );
               })}
           </div>
-        </Col>
+        </div>
       </div>
     );
   }

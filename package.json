@@ -19,8 +19,8 @@
   "author": "jaszhix <jaszhix@gmail.com>",
   "license": "CC-BY-4.0",
   "dependencies": {
-    "react": "^0.14.2",
-    "react-dom": "^0.14.2",
+    "react": "^0.14.3",
+    "react-dom": "^0.14.3",
     "reflux": "^0.3.0"
   },
   "devDependencies": {

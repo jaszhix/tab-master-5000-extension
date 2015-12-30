@@ -602,6 +602,71 @@ export var sidebarStore = Reflux.createStore({
   }
 });
 
+export var bookmarksStore = Reflux.createStore({
+  init: function() {
+    this.bookmarks = [];
+  },
+  set_bookmarks: function(value) {
+    return new Promise((resolve, reject)=>{
+      chrome.bookmarks.getTree((bk)=>{
+        var bookmarks = [];
+        console.log(bk);
+        for (var i = bk[0].children.length - 1; i >= 0; i--) {
+          for (var a = bk[0].children[i].children.length - 1; a >= 0; a--) {
+            bk[0].children[i].children[a].folder = bk[0].children[i].title;
+            if (bk[0].children[i].children[a].children) {
+              for (var b = bk[0].children[i].children[a].children.length - 1; b >= 0; b--) {
+                bk[0].children[i].children[a].children[b].folder = bk[0].children[i].children[a].title;
+                if (bk[0].children[i].children[a].children[b].children) {
+                  for (var c = bk[0].children[i].children[a].children[b].children.length - 1; c >= 0; c--) {
+                    bk[0].children[i].children[a].children[b].children[c].folder = bk[0].children[i].children[a].children[b].title;
+                    if (bk[0].children[i].children[a].children[b].children[c].children) {
+                      for (var d = bk[0].children[i].children[a].children[b].children[c].children.length - 1; d >= 0; d--) {
+                        bk[0].children[i].children[a].children[b].children[c].children[d].folder = bk[0].children[i].children[a].children[b].children[c].title;
+                        if (bk[0].children[i].children[a].children[b].children[c].children[d].children) {
+                          console.log('folder match');
+                        } else {
+                          bookmarks.push(bk[0].children[i].children[a].children[b].children[c].children[d]);
+                        }
+                      }
+                    } else {
+                      bookmarks.push(bk[0].children[i].children[a].children[b].children[c]);
+                    }
+                  }
+                } else {
+                  bookmarks.push(bk[0].children[i].children[a].children[b]);
+                }
+              }
+            } else {
+              bookmarks.push(bk[0].children[i].children[a]);
+            }
+          }
+        }
+        for (var z = bookmarks.length - 1; z >= 0; z--) {
+          bookmarks[z].mutedInfo = {muted: false};
+          bookmarks[z].audible = false;
+          bookmarks[z].active = false;
+          bookmarks[z].favIconUrl = '';
+          bookmarks[z].highlighted = false;
+          bookmarks[z].index = z;
+          bookmarks[z].pinned = false;
+          bookmarks[z].selected = false;
+          bookmarks[z].status = 'complete';
+          bookmarksStore.windowId = utilityStore.get_window();
+        }
+        resolve(bookmarks);
+      });
+    });
+  },
+  get_bookmarks: function() {
+    this.set_bookmarks().then((bk)=>{
+      this.bookmarks = bk;
+      console.log('bookmarks: ',this.bookmarks);
+    });
+    return this.bookmarks;
+  }
+});
+
 (function() {
     document.onmousemove = handleMouseMove;
     function handleMouseMove(event) {

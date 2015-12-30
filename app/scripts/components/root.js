@@ -6,7 +6,7 @@ import ReactUtils from 'react-utils';
 import v from 'vquery';
 import '../../styles/app.scss';
 window.v = v;
-import {relayStore, sidebarStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore, prefsStore} from './store';
+import {bookmarksStore, relayStore, sidebarStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore, prefsStore} from './store';
 import tabStore from './tabStore';
 
 import {Btn, Col, Row, Container} from './bootstrap';
@@ -43,9 +43,8 @@ var Search = React.createClass({
   },
   render: function() {
     var p = this.props;
-    var prefs = prefsStore.get_prefs();
     return (
-      <Container fluid={true} style={prefs && prefs.screenshot && prefs.screenshotBg ? {backgroundColor: 'rgba(237, 237, 237, 0.8)'} : null} className="ntg-form">
+      <Container fluid={true} style={p.prefs && p.prefs.screenshot && p.prefs.screenshotBg ? {backgroundColor: 'rgba(237, 237, 237, 0.8)'} : null} className="ntg-form">
         <Row>
           <Col size="6">
             <Col size="1">
@@ -116,9 +115,12 @@ var Root = React.createClass({
     console.log('Manifest: ', utilityStore.get_manifest());
   },
   update(){
-    this.setState({tabs: tabStore.get_tab()});
+    if (!this.state.bookmarks) {
+      this.setState({tabs: tabStore.get_tab()});
+    }
   },
   captureTabs(opt) {
+    //this.setState({bookmarks: prefsStore.get_prefs().bookmarks});
     if (opt !== 'init') {
       v('#main').css({cursor: 'wait'});
       // Render state is toggled to false on the subsequent re-renders only.
@@ -211,7 +213,7 @@ var Root = React.createClass({
         sidebar={s.sidebar}
         stores={stores}
       />
-      );
+    );
   },
   contextTrigger(t){
     var context = contextStore.get_context();
@@ -244,7 +246,7 @@ var Root = React.createClass({
         {s.context ? <ContextMenu tabs={tabs} cursor={cursor} context={context} chromeVersion={s.chromeVersion}/> : null}
         <Settings tabs={tabs} prefs={prefs} collapse={s.collapse} />
           {s.tabs ? <div className="tile-container">
-              {s.settings ? <Search event={s.event} /> : null}
+              {s.settings ? <Search event={s.event} prefs={prefs} /> : null}
               <div className="tile-child-container">
                 {s.render ? this.tileGrid(stores) : null}
             </div></div> : null}
