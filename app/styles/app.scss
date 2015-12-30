@@ -48,9 +48,18 @@
     padding-right: 1%
 }
 
-h4.sort-h4 {
-    text-align: center;
-    padding-top: 3px;
+.side-div {
+    float: left;
+    position: relative;
+    padding-right: 15px;
+    padding-left: 15px;
+    padding-top: 2px;
+}
+.tile-div {
+    float: left;
+    position: relative;
+    padding-right: 15px;
+    padding-left: 15px;
 }
 
 .session-col {

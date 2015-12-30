@@ -504,18 +504,16 @@ var Sidebar = React.createClass({
   render: function() {
     var p = this.props;
     var s = this.state;
+    var iconCollapse = p.width <= 1135;
     return (
-      <div style={{width: '12%', float: 'left', position: 'relative', paddingRight: '15px', paddingLeft: '15px'}}>
-        <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={()=>prefsStore.set_prefs('sort', !s.sort)} className="ntg-apply-btn" fa="sort">Sort</Btn>
-        <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleBookmarks} className="ntg-apply-btn" fa="sort">Bookmarks</Btn>
+      <div className="side-div" style={p.collapse ? {width: '11%'} : {width: '13%'}}>
+        <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={()=>prefsStore.set_prefs('sort', !s.sort)} className="ntg-apply-btn" fa="sort-amount-asc">{p.collapse ? 'Sort Tabs' : 'Sort'}</Btn>
         {s.sort ? <div>
-            <h4 style={p.ssBg ? {backgroundColor: 'rgba(255, 255, 255, 0.88)', borderRadius: '3px'} : null} className="sort-h4">
-              {p.collapse ? 'Sort Tabs' : 'Sort'}
-            </h4>
             {p.labels}
-            <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={p.onClick} className="ntg-apply-btn" fa="sort">Apply</Btn>
+            <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={p.onClick} className="ntg-apply-btn" fa="sort">{iconCollapse ? '' : 'Apply'}</Btn>
           </div> : null}
         {s.bookmarks ? <div></div> : null}
+        {/*<Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleBookmarks} className="ntg-apply-btn" fa="bookmark">{iconCollapse ? '' : 'Bookmarks'}</Btn>*/}
       </div>
     );
   }
@@ -635,7 +633,7 @@ var TileGrid = React.createClass({
     var buttonTransparent = {backgroundColor: 'rgba(237, 237, 237, 0.8)'};
     var labels = p.keys.map((key)=> {
       var label = p.labels[key] || key;
-      var cLabel = label;
+      var cLabel = p.width <= 1135 ? '' : label;
       return (
         <div key={key} onClick={this.sort(key)}>
           {label === 'Tab Order' ? <Btn style={ssBg ? buttonTransparent : null} className="ntg-btn" fa="history">{cLabel}</Btn> : null}
@@ -647,8 +645,8 @@ var TileGrid = React.createClass({
     });
     return (
       <div className="tile-body">
-        {p.sidebar ? <Sidebar prefs={p.stores.prefs} labels={labels} collapse={p.collapse} ssBg={ssBg} onClick={this.applyTabs} /> : null}
-        <div style={{width: '88%', float: 'left', position: 'relative'}}>
+        {p.sidebar ? <Sidebar prefs={p.stores.prefs} labels={labels} width={p.width} collapse={p.collapse} ssBg={ssBg} onClick={this.applyTabs} /> : null}
+        <div className="tile-div" style={p.collapse ? {width: '89%'} : {width: '87%'}}>
           <div id="grid" ref="grid">
               {s.data.map((data, i)=> {
                 dataIndex = [];

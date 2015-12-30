@@ -91,6 +91,7 @@ var Root = React.createClass({
       window: true,
       settings: true,
       collapse: true,
+      width: window.innerWidth,
       context: false,
       event: '',
       sidebar: sidebarStore.get_sidebar(),
@@ -170,15 +171,15 @@ var Root = React.createClass({
     }
   },
   onWindowResize: function (event, opt) {
-    var threshold = 1565;
     if (opt === 'init') {
-      if (window.innerWidth >= threshold) {
+      if (window.innerWidth >= 1565) {
         this.setState({collapse: true});
       } else {
         this.setState({collapse: false});
       }
     } else {
-      if (event.width >= threshold) {
+      this.setState({width: event.width});
+      if (event.width >= 1565) {
         this.setState({collapse: true});
       } else {
         this.setState({collapse: false});
@@ -210,6 +211,7 @@ var Root = React.createClass({
         labels={labels}
         render={true}
         collapse={s.collapse}
+        width={s.width}
         sidebar={s.sidebar}
         stores={stores}
       />

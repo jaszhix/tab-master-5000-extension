@@ -1,5 +1,11 @@
 #### Release Notes
 
+##### v0.8.3 / *12-30-15*
+
+*   More optimizations have been made to make the extension perform faster.
+*   Screenshot images are now encoded with JPEG compression at 10% quality, and resized to further shrink the disk usage foot print.
+*   Tile dragging position is now correct when the New Tab page is scrolled down.
+
 ##### v0.8.2 / *12-27-15*
 
 *   Draggable tab sorting inaccuracy has been corrected, and now moves tiles where you expect them to end up. Pinned tiles are not working correctly yet.
