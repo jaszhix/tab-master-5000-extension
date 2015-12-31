@@ -1,5 +1,9 @@
 #### Release Notes
 
+##### v0.8.4 / *12-31-15*
+
+*   Hotfix: Tile grid column width is full width again when the sidebar is disabled.
+
 ##### v0.8.3 / *12-30-15*
 
 *   More optimizations have been made to make the extension perform faster.
