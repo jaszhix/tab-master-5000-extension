@@ -26,6 +26,13 @@ var tabStore = Reflux.createStore({
   },
   getNewTabs(){
     return _.where(this.getAllTabs(), { title: 'New Tab' });
+  },
+  close(id){
+    chrome.tabs.get(id, (t)=>{
+      if (t) {
+        chrome.tabs.remove(id);
+      }
+    });
   }
 });
 

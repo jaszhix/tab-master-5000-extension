@@ -114,11 +114,16 @@ var Sessions = React.createClass({
         urls.push(t.url);
       }
     });
+    var screenshot = this.props.prefs.screenshot;
     chrome.windows.create({
-      url: urls
+      focused: true
     }, (Window)=>{
       console.log('restored session...',Window);
-      utilityStore.restartNewTab();
+      chrome.runtime.sendMessage(chrome.runtime.id, {method: 'restoreWindow', windowId: Window.id, tabs: session.tabs}, (response)=>{
+        if (response.reload && screenshot) {
+          utilityStore.restartNewTab();
+        }
+      });
     });
   },
   labelSession(session){
@@ -345,7 +350,7 @@ var Settings = React.createClass({
             </div>
           </Row>
           <Row className="ntg-settings-pane">
-            {sessions ? <Sessions tabs={p.tabs} collapse={p.collapse} /> : null}
+            {sessions ? <Sessions tabs={p.tabs} prefs={p.prefs} collapse={p.collapse} /> : null}
             {preferences ? <Preferences prefs={p.prefs} /> : null}
             {about ? <About /> : null}
           </Row>

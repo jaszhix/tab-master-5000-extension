@@ -135,9 +135,9 @@ var Tile = React.createClass({
         for (var i = 0; i < newTabs.length; i++) {
           if (newTabs[i]) {
             if (p.tab.windowId !== newTabs[i].windowId && p.tab.active) {
-              chrome.tabs.remove(newTabs[i].id);
+              tabStore.close(newTabs[i].id);
             } else if (newTabs.length > 1 && !p.tab.active && !newTabs[i].active) {
-              chrome.tabs.remove(newTabs[i].id);
+              tabStore.close(newTabs[i].id);
             }
           }
         }
@@ -231,7 +231,7 @@ var Tile = React.createClass({
     if (this.props.stores.prefs.animations) {
       this.setState({close: true});
     }
-    chrome.tabs.remove(id);
+    tabStore.close(id);
     this.keepNewTabOpen();
   },
   handlePinning(tab, opt) {
