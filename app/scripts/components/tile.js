@@ -8,7 +8,7 @@ import kmp from 'kmp';
 import Draggable from 'react-draggable';
 import utils from './utils';
 
-import {clickStore, screenshotStore, dupeStore, prefsStore, reRenderStore, searchStore, applyTabOrderStore, utilityStore, contextStore, relayStore, dragStore} from './store';
+import {bookmarksStore, screenshotStore, dupeStore, prefsStore, reRenderStore, searchStore, applyTabOrderStore, utilityStore, contextStore, relayStore, dragStore} from './store';
 import tabStore from './tabStore';
 
 import {Btn, Col, Row} from './bootstrap';
@@ -146,15 +146,27 @@ var Tile = React.createClass({
   },
   handleClick(id, e) {
     var s = this.state;
+    var p = this.props;
     this.setState({
       render: false
     });
+    var active = ()=>{
+      chrome.tabs.update(id, {
+        active: true
+      });
+    };
     // Navigate to a tab when its clicked from the grid.
     if (!s.xHover || !s.pHover) {
       if (!s.pinning && !s.close) {
-        chrome.tabs.update(id, {
-          active: true
-        });
+        if (p.stores.prefs.bookmarks) {
+          if (p.tab.openTab) {
+            active();
+          } else {
+            chrome.tabs.create({url: p.tab.url});
+          }
+        } else {
+          active();
+        }
       }
     }
     this.setState({
@@ -228,11 +240,16 @@ var Tile = React.createClass({
     this.setState({dHover: false});
   },
   handleCloseTab(id) {
-    if (this.props.stores.prefs.animations) {
+    var p = this.props;
+    if (p.stores.prefs.animations) {
       this.setState({close: true});
     }
-    tabStore.close(id);
-    this.keepNewTabOpen();
+    if (p.stores.prefs.bookmarks) {
+      chrome.bookmarks.remove(id);
+    } else {
+      tabStore.close(id);
+      this.keepNewTabOpen();
+    }
   },
   handlePinning(tab, opt) {
     var p = this.props;
@@ -248,6 +265,10 @@ var Tile = React.createClass({
     this.setState({render: false});
     chrome.tabs.update(id, {
       pinned: !tab.pinned
+    },(t)=>{
+      if (p.stores.prefs.bookmarks) {
+        reRenderStore.set_reRender(true, 'update',t.id);
+      }
     });
     this.setState({render: true});
     v('subTile-'+p.i).on('animationend', function animationEnd(e){
@@ -424,6 +445,7 @@ var Tile = React.createClass({
   render: function() {
     var s = this.state;
     var p = this.props;
+    var openBookmark = !p.stores.prefs.bookmarks || p.stores.prefs.bookmarks && p.tab.openTab;
     var drag = dragStore.get_drag();
     return (
       <div ref="tileMain" id={'tileMain-'+p.i} onDragEnter={this.currentlyDraggedOver(p.tab)} style={p.stores.prefs.screenshot && p.stores.prefs.screenshotBg ? {opacity: '0.95'} : null}>
@@ -440,7 +462,7 @@ var Tile = React.createClass({
               { this.filterTabs(p.tab) ? <div id={'innerTile-'+p.i} className={s.hover ? "ntg-tile-hover" : "ntg-tile"} style={s.screenshot ? s.hover ? style.tileHovered(s.screenshot) : style.tile(s.screenshot) : null} key={p.key}>
                 <Row className="ntg-tile-row-top">
                   <Col size="3">
-                    {p.stores.chromeVersion >= 46 ? <div onMouseEnter={this.handleTabMuteHoverIn} onMouseLeave={this.handleTabMuteHoverOut} onClick={() => this.handleMuting(p.tab)}>
+                    {p.stores.chromeVersion >= 46 && openBookmark ? <div onMouseEnter={this.handleTabMuteHoverIn} onMouseLeave={this.handleTabMuteHoverOut} onClick={() => this.handleMuting(p.tab)}>
                                       {s.hover || p.tab.audible || p.tab.mutedInfo.muted ? 
                                       <i className={p.tab.audible ? s.mHover ? "fa fa-volume-off ntg-mute-audible-hover" : "fa fa-volume-up ntg-mute-audible" : s.mHover ? "fa fa-volume-off ntg-mute-hover" : "fa fa-volume-off ntg-mute"} style={s.screenshot && s.hover ? style.ssIconBg : s.screenshot ? style.ssIconBg : null} />
                                       : null}
@@ -451,7 +473,7 @@ var Tile = React.createClass({
                       : null}
                     </div>
                     <div onMouseEnter={this.handlePinHoverIn} onMouseLeave={this.handlePinHoverOut} onClick={() => this.handlePinning(p.tab)}>
-                    {p.tab.pinned || s.hover ? 
+                    {p.tab.pinned || s.hover && openBookmark ? 
                       <i className={s.pHover ? "fa fa-map-pin ntg-pinned-hover" : "fa fa-map-pin ntg-pinned"} style={p.tab.pinned ? s.screenshot && s.hover ? style.ssPinnedIconBg : s.screenshot ? style.ssPinnedIconBg : {color: '#B67777'} : s.screenshot ? style.ssIconBg : null} />
                       : null}
                     </div>
@@ -463,7 +485,7 @@ var Tile = React.createClass({
                     <h5 style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-title">
                       {S(p.tab.title).truncate(83).s}
                     </h5>
-                    {p.stores.prefs ? p.stores.prefs.drag ? <div onMouseEnter={this.handleDragHoverIn} onMouseLeave={this.handleDragHoverOut} onClick={() => this.handleCloseTab(p.tab.id)}>
+                    {p.stores.prefs ? p.stores.prefs.drag && !p.stores.prefs.bookmarks ? <div onMouseEnter={this.handleDragHoverIn} onMouseLeave={this.handleDragHoverOut} onClick={() => this.handleCloseTab(p.tab.id)}>
                       {s.hover ? 
                       <i className={s.dHover ? "fa fa-hand-grab-o ntg-move-hover handle" : "fa fa-hand-grab-o ntg-move"} style={s.screenshot && s.hover ? style.ssIconBg : null} />
                       : null}
@@ -498,8 +520,12 @@ var Sidebar = React.createClass({
     this.setState({bookmarks: p.prefs.bookmarks});
   },
   handleBookmarks(){
-    clickStore.set_click(true, false);
-    prefsStore.set_prefs('bookmarks', !this.state.bookmarks);
+    var s = this.state;
+    //clickStore.set_click(true, false);
+    prefsStore.set_prefs('bookmarks', !s.bookmarks);
+    chrome.tabs.query({currentWindow: true}, (t)=>{
+      reRenderStore.set_reRender(true, 'create', t[0].id);
+    });
   },
   render: function() {
     var p = this.props;
@@ -513,7 +539,7 @@ var Sidebar = React.createClass({
             <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={p.onClick} className="ntg-apply-btn" fa="sort">{iconCollapse ? '' : 'Apply'}</Btn>
           </div> : null}
         {s.bookmarks ? <div></div> : null}
-        {/*<Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleBookmarks} className="ntg-apply-btn" fa="bookmark">{iconCollapse ? '' : 'Bookmarks'}</Btn>*/}
+        <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleBookmarks} className="ntg-apply-btn" fa={s.bookmarks ? 'square' : 'bookmark'}>{iconCollapse ? '' : s.bookmarks ? 'Tabs' : 'Bookmarks'}</Btn>
       </div>
     );
   }
@@ -645,7 +671,7 @@ var TileGrid = React.createClass({
     });
     return (
       <div className="tile-body">
-        {p.sidebar ? <Sidebar prefs={p.stores.prefs} labels={labels} width={p.width} collapse={p.collapse} ssBg={ssBg} onClick={this.applyTabs} /> : null}
+        {p.sidebar ? <Sidebar prefs={p.stores.prefs} tabs={p.stores.tabs} labels={labels} width={p.width} collapse={p.collapse} ssBg={ssBg} onClick={this.applyTabs} /> : null}
         <div className="tile-div" style={p.stores.prefs.sidebar ? p.collapse ? {width: '89%'} : {width: '87%'} : {width: '100%'}}>
           <div id="grid" ref="grid">
               {s.data.map((data, i)=> {

@@ -59,7 +59,7 @@ var Search = React.createClass({
                 type="text" 
                 value={searchStore.get_search()}
                 className="form-control search-tabs" 
-                placeholder="Search tabs..." 
+                placeholder={p.prefs.bookmarks ? 'Search bookmarks...' : 'Search tabs...'}
                 onChange={this.handleSearch} />
               </form>
             </Col>
@@ -85,6 +85,7 @@ var Root = React.createClass({
   ],
   getInitialState() {
     return {
+      init: true,
       tabs: null,
       render: false,
       search: '',
@@ -109,11 +110,26 @@ var Root = React.createClass({
     this.listenTo(contextStore, this.contextTrigger);
     this.listenTo(sidebarStore, this.sortTrigger);
     this.listenTo(tabStore, this.update);
+    this.listenTo(prefsStore, this.prefsChange);
     // Call the method that will query Chrome for tabs.
     this.captureTabs('init');
     this.onWindowResize(null, 'init');
     console.log('Chrome Version: ',utilityStore.chromeVersion());
     console.log('Manifest: ', utilityStore.get_manifest());
+  },
+  prefsChange(e){
+    var s = this.state;
+    this.setState({prefs: e});
+    chrome.runtime.sendMessage(chrome.runtime.id, {prefs: {bookmarks: e.bookmarks}}, (response)=>{
+    });
+    if (s.init && e.bookmarks) {
+      chrome.tabs.query({currentWindow: true}, (t)=>{
+        _.delay(()=>{
+          reRenderStore.set_reRender(true, 'create', t[0].id);
+        },500);
+      });
+      this.setState({init: false});
+    }
   },
   update(){
     if (!this.state.bookmarks) {
@@ -121,7 +137,6 @@ var Root = React.createClass({
     }
   },
   captureTabs(opt) {
-    //this.setState({bookmarks: prefsStore.get_prefs().bookmarks});
     if (opt !== 'init') {
       v('#main').css({cursor: 'wait'});
       // Render state is toggled to false on the subsequent re-renders only.
@@ -135,14 +150,18 @@ var Root = React.createClass({
       currentWindow: true
     }, (Tab) => {
       // Assign Tab to a variable to work around a console error.
-      var tab = Tab;
+      var tab = [];
+      if (this.state.prefs.bookmarks) {
+        tab = bookmarksStore.get_bookmarks();
+      } else {
+        tab = Tab;
+      }
+      utilityStore.set_window(Tab[0].windowId);
       if (opt === 'init') {
         this.setState({tabs: tab});
       }
-      utilityStore.set_window(tab[0].windowId);
       tabStore.set_tab(tab);
       console.log(Tab);
-      console.log('window id: ',tab[0].windowId);
       v('#main').css({cursor: 'default'});
     });
     // Querying is complete, allow the component to render.
@@ -236,19 +255,18 @@ var Root = React.createClass({
     var s = this.state;
     var tabs = tabStore.get_tab();
     var newTabs = tabStore.getNewTabs();
-    var prefs = prefsStore.get_prefs();
     var search = searchStore.get_search();
     var cursor = utilityStore.get_cursor();
     var context = contextStore.get_context();
     var relay = relayStore.get_relay();
     var windowId = utilityStore.get_window();
-    var stores = {tabs: tabs, newTabs: newTabs, prefs: prefs, search: search, cursor: cursor, chromeVersion: s.chromeVersion, relay: relay, windowId: windowId};
+    var stores = {tabs: tabs, newTabs: newTabs, prefs: s.prefs, search: search, cursor: cursor, chromeVersion: s.chromeVersion, relay: relay, windowId: windowId};
     return (
       <div className="container-main">
         {s.context ? <ContextMenu tabs={tabs} cursor={cursor} context={context} chromeVersion={s.chromeVersion}/> : null}
-        <Settings tabs={tabs} prefs={prefs} collapse={s.collapse} />
+        <Settings tabs={tabs} prefs={s.prefs} collapse={s.collapse} />
           {s.tabs ? <div className="tile-container">
-              {s.settings ? <Search event={s.event} prefs={prefs} /> : null}
+              {s.settings ? <Search event={s.event} prefs={s.prefs} /> : null}
               <div className="tile-child-container">
                 {s.render ? this.tileGrid(stores) : null}
             </div></div> : null}

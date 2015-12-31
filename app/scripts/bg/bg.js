@@ -35,6 +35,18 @@ chrome.tabs.onAttached.addListener((e, info) => {
 chrome.tabs.onDetached.addListener((e, info) => {
   sendMsg({e: e, type: 'detach'});
 });
+chrome.bookmarks.onCreated.addListener((e, info) => {
+  sendMsg({e: e, type: 'create'});
+});
+chrome.bookmarks.onRemoved.addListener((e, info) => {
+  sendMsg({e: e, type: 'remove'});
+});
+chrome.bookmarks.onChanged.addListener((e, info) => {
+  sendMsg({e: e, type: 'update'});
+});
+chrome.bookmarks.onMoved.addListener((e, info) => {
+  sendMsg({e: e, type: 'move'});
+});
 chrome.runtime.onUpdateAvailable.addListener((details)=>{
   console.log('onUpdateAvailable: ',details);
   setTimeout(()=>{
