@@ -646,7 +646,7 @@ var TileGrid = React.createClass({
     return (
       <div className="tile-body">
         {p.sidebar ? <Sidebar prefs={p.stores.prefs} labels={labels} width={p.width} collapse={p.collapse} ssBg={ssBg} onClick={this.applyTabs} /> : null}
-        <div className="tile-div" style={p.collapse ? {width: '89%'} : {width: '87%'}}>
+        <div className="tile-div" style={p.stores.prefs.sidebar ? p.collapse ? {width: '89%'} : {width: '87%'} : {width: '100%'}}>
           <div id="grid" ref="grid">
               {s.data.map((data, i)=> {
                 dataIndex = [];
