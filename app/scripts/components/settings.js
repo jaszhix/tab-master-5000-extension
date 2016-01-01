@@ -189,7 +189,12 @@ var Sessions = React.createClass({
   render: function() {
     var p = this.props;
     var s = this.state;
-    var tabs = p.tabs;
+    var tabs = [];
+    if (p.prefs.bookmarks) {
+      tabs = tabStore.get_altTab();
+    } else {
+      tabs = p.tabs;
+    }
     var tm20 = tabs.length - 20;
     var removeTabFromSession = (id, session)=>{
       var index = _.findIndex(session.tabs, { 'id': id });

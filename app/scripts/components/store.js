@@ -615,6 +615,7 @@ export var bookmarksStore = Reflux.createStore({
   init: function() {
     this.bookmarks = [];
     this.state = false;
+    this.folder = null;
   },
   set_state(value){
     this.state = value;
@@ -678,6 +679,7 @@ export var bookmarksStore = Reflux.createStore({
               if (bookmarks[z].url === t[y].url) {
                 bookmarks[z].openTab = ++openTab;
                 bookmarks[z].id = t[y].id;
+                bookmarks[z].mutedInfo.muted = t[y].mutedInfo.muted;
                 bookmarks[z].audible = t[y].audible;
                 bookmarks[z].favIconUrl = t[y].favIconUrl;
                 bookmarks[z].highlighted = t[y].highlighted;
@@ -699,6 +701,13 @@ export var bookmarksStore = Reflux.createStore({
       console.log('bookmarks: ',this.bookmarks);
     });
     return this.bookmarks;
+  },
+  set_folder(value){
+    this.folder = value;
+    this.trigger(this.folder);
+  },
+  get_folder(){
+    return this.folder;
   }
 });
 

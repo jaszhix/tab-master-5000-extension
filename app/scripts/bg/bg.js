@@ -39,7 +39,7 @@ chrome.bookmarks.onCreated.addListener((e, info) => {
   sendMsg({e: e, type: 'create'});
 });
 chrome.bookmarks.onRemoved.addListener((e, info) => {
-  sendMsg({e: e, type: 'remove'});
+  sendMsg({e: e, type: 'create'});
 });
 chrome.bookmarks.onChanged.addListener((e, info) => {
   sendMsg({e: e, type: 'update'});

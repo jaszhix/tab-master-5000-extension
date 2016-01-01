@@ -4,7 +4,21 @@ import _ from 'lodash';
 var tabStore = Reflux.createStore({
   init: function() {
     this.tab = [];
+    this.altTab = [];
     this.allTabs = null;
+    this.query = [];
+  },
+  promise(){
+    return new Promise((resolve, reject)=>{
+      chrome.tabs.query({
+        windowId: chrome.windows.WINDOW_ID_CURRENT,
+        currentWindow: true
+      }, (Tab) => {
+        if (Tab) {
+          resolve(Tab);
+        }
+      });
+    });
   },
   set_tab: function(value) {
     this.tab = value;
@@ -13,6 +27,13 @@ var tabStore = Reflux.createStore({
   },
   get_tab: function() {
     return this.tab;
+  },
+  set_altTab: function(value) {
+    this.altTab = value;
+    console.log('tab: ', value);
+  },
+  get_altTab: function() {
+    return this.altTab;
   },
   getAllTabs(){
     chrome.windows.getAll({populate: true}, (w)=>{

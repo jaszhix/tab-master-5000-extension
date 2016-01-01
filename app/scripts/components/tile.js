@@ -38,7 +38,8 @@ var Tile = React.createClass({
       duplicate: false,
       drag: null,
       dragged: null,
-      screenshot: null
+      screenshot: null,
+      folder: true
     };
   },
   componentDidMount() {
@@ -46,6 +47,9 @@ var Tile = React.createClass({
     this.listenTo(applyTabOrderStore, this.applyTabOrder);
     this.listenTo(relayStore, this.handleRelays);
     this.listenTo(tabStore, this.update);
+    if (this.props.stores.prefs.bookmarks) {
+      this.listenTo(bookmarksStore, this.bookmarksChange);
+    }
     _.defer(()=>{
       this.listenTo(screenshotStore, this.updateScreenshot);
     });
@@ -102,6 +106,18 @@ var Tile = React.createClass({
         setScreeenshot();
       }
     }
+  },
+  bookmarksChange(e){
+    var s = this.state;
+    this.setState({folder: !s.folder});
+    var p = this.props;
+    if (e && p.tab.folder !== e) {
+      if (s.folder) {
+        v('#tileMain-'+p.i).hide();
+      } else {
+        v('#tileMain-'+p.i).show();
+      }
+    } 
   },
   checkDuplicateTabs(opt){
     var p = this.props;
@@ -241,13 +257,24 @@ var Tile = React.createClass({
   },
   handleCloseTab(id) {
     var p = this.props;
+    var close = ()=>{
+      tabStore.close(p.tab.id);
+    };
     if (p.stores.prefs.animations) {
       this.setState({close: true});
     }
     if (p.stores.prefs.bookmarks) {
-      chrome.bookmarks.remove(id);
+      if (p.tab.openTab) {
+        close();
+      } else {
+        chrome.bookmarks.remove(p.tab.bookmarkId);
+      }
+      reRenderStore.set_reRender(true, 'remove',id);
+      _.delay(()=>{
+        reRenderStore.set_reRender(true, 'activate',id);
+      },500);
     } else {
-      tabStore.close(id);
+      close();
       this.keepNewTabOpen();
     }
   },
@@ -267,7 +294,10 @@ var Tile = React.createClass({
       pinned: !tab.pinned
     },(t)=>{
       if (p.stores.prefs.bookmarks) {
-        reRenderStore.set_reRender(true, 'update',t.id);
+        reRenderStore.set_reRender(true, 'update',id);
+        _.delay(()=>{
+          reRenderStore.set_reRender(true, 'activate',id);
+        },500);
       }
     });
     this.setState({render: true});
@@ -280,6 +310,13 @@ var Tile = React.createClass({
   handleMuting(tab){
     chrome.tabs.update(tab.id, {
       muted: !tab.mutedInfo.muted
+    },(t)=>{
+      if (this.props.stores.prefs.bookmarks) {
+        reRenderStore.set_reRender(true, 'update',t.id);
+        _.delay(()=>{
+          reRenderStore.set_reRender(true, 'activate',t.id);
+        },500);
+      }
     });
   },
   handleCloseAll(tab){
@@ -445,6 +482,7 @@ var Tile = React.createClass({
   render: function() {
     var s = this.state;
     var p = this.props;
+    var titleLimit = p.stores.prefs.bookmarks ? 70 : 83;
     var openBookmark = !p.stores.prefs.bookmarks || p.stores.prefs.bookmarks && p.tab.openTab;
     var drag = dragStore.get_drag();
     return (
@@ -467,7 +505,7 @@ var Tile = React.createClass({
                                       <i className={p.tab.audible ? s.mHover ? "fa fa-volume-off ntg-mute-audible-hover" : "fa fa-volume-up ntg-mute-audible" : s.mHover ? "fa fa-volume-off ntg-mute-hover" : "fa fa-volume-off ntg-mute"} style={s.screenshot && s.hover ? style.ssIconBg : s.screenshot ? style.ssIconBg : null} />
                                       : null}
                                     </div> : null}
-                    <div onMouseEnter={this.handleTabCloseHoverIn} onMouseLeave={this.handleTabCloseHoverOut} onClick={() => this.handleCloseTab(p.tab.id)}>
+                    <div onMouseEnter={this.handleTabCloseHoverIn} onMouseLeave={this.handleTabCloseHoverOut} onClick={()=>this.handleCloseTab(p.tab.id)}>
                       {s.hover ? 
                       <i className={s.xHover ? "fa fa-times ntg-x-hover" : "fa fa-times ntg-x"} style={s.screenshot && s.hover ? style.ssIconBg : null} />
                       : null}
@@ -481,10 +519,13 @@ var Tile = React.createClass({
                       <img className="ntg-favicon" src={S(p.tab.favIconUrl).isEmpty() ? '../images/file_paper_blank_document.png' : utilityStore.filterFavicons(p.tab.favIconUrl, p.tab.url) } />
                     </Row>
                   </Col>
-                  <Col size="9" onClick={() => this.handleClick(p.tab.id)} className="ntg-title-container">
+                  <Col size="9" onClick={!p.stores.prefs.bookmarks ? ()=>this.handleClick(p.tab.id) : null} className="ntg-title-container">
                     <h5 style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-title">
-                      {S(p.tab.title).truncate(83).s}
+                      {S(p.tab.title).truncate(titleLimit).s}
                     </h5>
+                    {p.stores.prefs.bookmarks ? <h5 onClick={()=>bookmarksStore.set_folder(p.tab.folder)} style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-folder">
+                      <i className="fa fa-folder-o" />{p.tab.folder ? p.stores.prefs.bookmarks ? ' '+p.tab.folder : null : null}
+                    </h5> : null}
                     {p.stores.prefs ? p.stores.prefs.drag && !p.stores.prefs.bookmarks ? <div onMouseEnter={this.handleDragHoverIn} onMouseLeave={this.handleDragHoverOut} onClick={() => this.handleCloseTab(p.tab.id)}>
                       {s.hover ? 
                       <i className={s.dHover ? "fa fa-hand-grab-o ntg-move-hover handle" : "fa fa-hand-grab-o ntg-move"} style={s.screenshot && s.hover ? style.ssIconBg : null} />
@@ -492,7 +533,7 @@ var Tile = React.createClass({
                     </div> : null : null}
                   </Col> 
                 </Row>
-                <Row onClick={() => this.handleClick(p.tab.id)} className="ntg-tile-row-bottom" />
+                <Row onClick={() => this.handleClick(p.tab.id)} className={p.stores.prefs.bookmarks ? "ntg-tile-row-bottom-bk" : "ntg-tile-row-bottom"} />
               </div> : null}
             </Row> : null}
           </div>
@@ -536,7 +577,7 @@ var Sidebar = React.createClass({
         <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={()=>prefsStore.set_prefs('sort', !s.sort)} className="ntg-apply-btn" fa="sort-amount-asc">{p.collapse ? 'Sort Tabs' : 'Sort'}</Btn>
         {s.sort ? <div>
             {p.labels}
-            <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={p.onClick} className="ntg-apply-btn" fa="sort">{iconCollapse ? '' : 'Apply'}</Btn>
+            {!s.bookmarks ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={p.onClick} className="ntg-apply-btn" fa="sort">{iconCollapse ? '' : 'Apply'}</Btn> : null}
           </div> : null}
         {s.bookmarks ? <div></div> : null}
         <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleBookmarks} className="ntg-apply-btn" fa={s.bookmarks ? 'square' : 'bookmark'}>{iconCollapse ? '' : s.bookmarks ? 'Tabs' : 'Bookmarks'}</Btn>
@@ -666,6 +707,9 @@ var TileGrid = React.createClass({
           {label === 'Website' ? <Btn style={ssBg ? buttonTransparent : null} className="ntg-btn" fa="external-link">{cLabel}</Btn> : null}
           {label === 'Title' ? <Btn style={ssBg ? buttonTransparent : null} onClick={this.handleTitleIcon} className="ntg-btn" fa={s.title ? 'sort-alpha-asc' : 'sort-alpha-desc'}>{cLabel}</Btn> : null}
           {label === 'Downloaded' ? <Btn style={ssBg ? buttonTransparent : null} className="ntg-btn" fa="download">{cLabel}</Btn> : null}
+          {label === 'Open' ? <Btn style={ssBg ? buttonTransparent : null} className="ntg-btn" fa="folder-open">{cLabel}</Btn> : null}
+          {label === 'Folder' ? <Btn style={ssBg ? buttonTransparent : null} className="ntg-btn" fa="folder">{cLabel}</Btn> : null}
+          {label === 'Date Added' ? <Btn style={ssBg ? buttonTransparent : null} className="ntg-btn" fa="hourglass">{cLabel}</Btn> : null}
         </div>
       );
     });

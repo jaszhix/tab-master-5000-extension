@@ -140,19 +140,17 @@ var Root = React.createClass({
     if (opt !== 'init') {
       v('#main').css({cursor: 'wait'});
       // Render state is toggled to false on the subsequent re-renders only.
-      if (opt === 'create' || opt === 'drag' ) {
+      if (opt === 'create' || opt === 'drag' || this.state.bookmarks) {
         this.setState({render: false});
       }
     }
     // Query current Chrome window for tabs.
-    chrome.tabs.query({
-      windowId: chrome.windows.WINDOW_ID_CURRENT,
-      currentWindow: true
-    }, (Tab) => {
-      // Assign Tab to a variable to work around a console error.
+    tabStore.promise().then((Tab)=>{
       var tab = [];
       if (this.state.prefs.bookmarks) {
+        var altTab = Tab;
         tab = bookmarksStore.get_bookmarks();
+        tabStore.set_altTab(altTab);
       } else {
         tab = Tab;
       }
@@ -214,15 +212,27 @@ var Root = React.createClass({
   },
   tileGrid(stores){
     var s = this.state;
-    // Our keys that will be sortable.
-    var keys = ['url', 'title', 'status', 'index'];
-    // Map keys to labels.
-    var labels = {
-      index: 'Tab Order',
-      url: 'Website',
-      title: 'Title',
-      status: 'Downloaded'
-    };
+    var keys = [];
+    var labels = {};
+    if (stores.prefs.bookmarks) {
+      keys = ['openTab', 'url', 'title', 'status', 'dateAdded', 'folder'];
+      labels = {
+        folder: 'Folder',
+        dateAdded: 'Date Added',
+        url: 'Website',
+        title: 'Title',
+        status: 'Downloaded',
+        openTab: 'Open'
+      };
+    } else {
+      keys = ['url', 'title', 'status', 'index'];
+      labels = {
+        index: 'Tab Order',
+        url: 'Website',
+        title: 'Title',
+        status: 'Downloaded'
+      };
+    }
     return (
       <TileGrid
         data={s.tabs}

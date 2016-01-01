@@ -90,6 +90,17 @@ input.label-session-input {
     margin-top: 5px;
     margin-left: 10px;
 }
+.ntg-folder {
+    font-size: 15px;
+    font-weight: 500;
+    text-shadow: 2px 2px #fff;
+    position: absolute;
+    margin-top: 5px;
+    top: 95px;
+    left: -40px;
+    width: auto;
+    z-index: 300
+}
 .ntg-title-container {
     padding: 0;
     width: 66.66666667%;
@@ -102,6 +113,11 @@ input.label-session-input {
     height: 80%;
     position: relative;
     top: -48px;
+}
+.ntg-tile-row-bottom-bk {
+    height: 68%;
+    position: relative;
+    top: -56px;
 }
 .ntg-search-google-text {
     position: absolute;
