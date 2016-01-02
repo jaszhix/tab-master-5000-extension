@@ -6,7 +6,7 @@ import ReactUtils from 'react-utils';
 import v from 'vquery';
 import '../../styles/app.scss';
 window.v = v;
-import {bookmarksStore, relayStore, sidebarStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore, prefsStore} from './store';
+import {historyStore, bookmarksStore, relayStore, sidebarStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore, prefsStore} from './store';
 import tabStore from './tabStore';
 
 import {Btn, Col, Row, Container} from './bootstrap';
@@ -38,8 +38,8 @@ var Search = React.createClass({
     modalStore.set_modal(true);
   },
   handleSidebar(){
-    sidebarStore.set_sidebar(!sidebarStore.get_sidebar());
     clickStore.set_click(true, false);
+    sidebarStore.set_sidebar(!sidebarStore.get_sidebar());
   },
   render: function() {
     var p = this.props;
@@ -59,7 +59,7 @@ var Search = React.createClass({
                 type="text" 
                 value={searchStore.get_search()}
                 className="form-control search-tabs" 
-                placeholder={p.prefs.bookmarks ? 'Search bookmarks...' : 'Search tabs...'}
+                placeholder={p.prefs.bookmarks ? 'Search bookmarks...' : p.prefs.history ? 'Search history...' : 'Search tabs...'}
                 onChange={this.handleSearch} />
               </form>
             </Col>
@@ -86,7 +86,7 @@ var Root = React.createClass({
   getInitialState() {
     return {
       init: true,
-      tabs: null,
+      tabs: [],
       render: false,
       search: '',
       window: true,
@@ -96,7 +96,8 @@ var Root = React.createClass({
       context: false,
       event: '',
       sidebar: sidebarStore.get_sidebar(),
-      chromeVersion: utilityStore.chromeVersion()
+      chromeVersion: utilityStore.chromeVersion(),
+      prefs: []
     };
   },
   componentWillMount(){
@@ -120,14 +121,17 @@ var Root = React.createClass({
   prefsChange(e){
     var s = this.state;
     this.setState({prefs: e});
-    chrome.runtime.sendMessage(chrome.runtime.id, {prefs: {bookmarks: e.bookmarks}}, (response)=>{
+    chrome.runtime.sendMessage(chrome.runtime.id, {prefs: {bookmarks: e.bookmarks, history: e.history}}, (response)=>{
     });
-    if (s.init && e.bookmarks) {
-      chrome.tabs.query({currentWindow: true}, (t)=>{
-        _.delay(()=>{
-          reRenderStore.set_reRender(true, 'create', t[0].id);
-        },500);
-      });
+    if (s.init) {
+      if (e.bookmarks || e.history) {
+        chrome.tabs.query({currentWindow: true}, (t)=>{
+          reRenderStore.set_reRender(true, 'alt', t[0].id);
+          _.delay(()=>{
+            reRenderStore.set_reRender(true, 'activate', {tabId: t[0].id});
+          },500);
+        });
+      }
       this.setState({init: false});
     }
   },
@@ -137,24 +141,30 @@ var Root = React.createClass({
     }
   },
   captureTabs(opt) {
+    var s = this.state;
     if (opt !== 'init') {
       v('#main').css({cursor: 'wait'});
       // Render state is toggled to false on the subsequent re-renders only.
-      if (opt === 'create' || opt === 'drag' || this.state.bookmarks) {
+      if (opt === 'create' || opt === 'drag' || opt === 'alt') {
         this.setState({render: false});
       }
     }
     // Query current Chrome window for tabs.
     tabStore.promise().then((Tab)=>{
       var tab = [];
-      if (this.state.prefs.bookmarks) {
-        var altTab = Tab;
+      var altTab = [];
+      if (s.prefs.bookmarks) {
+        altTab = Tab;
         tab = bookmarksStore.get_bookmarks();
+        tabStore.set_altTab(altTab);
+      } else if (s.prefs.history) {
+        altTab = Tab;
+        tab = historyStore.get_history();
         tabStore.set_altTab(altTab);
       } else {
         tab = Tab;
+        utilityStore.set_window(tab[0].windowId);
       }
-      utilityStore.set_window(Tab[0].windowId);
       if (opt === 'init') {
         this.setState({tabs: tab});
       }
@@ -163,7 +173,7 @@ var Root = React.createClass({
       v('#main').css({cursor: 'default'});
     });
     // Querying is complete, allow the component to render.
-    if (opt === 'create' || opt === 'init' || opt === 'drag' ) {
+    if (opt === 'create' || opt === 'init' || opt === 'drag' || opt === 'alt') {
       this.setState({render: true});
     }
   },

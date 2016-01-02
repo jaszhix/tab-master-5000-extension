@@ -11,6 +11,7 @@ export var tabs = ()=>{
 // Chrome event listeners set to trigger re-renders.
 var reRender = (type, id) => {
   var bookmarks = bookmarksStore.get_state();
+  var history = historyStore.get_state();
   // Detect if Chrome is idle or not, and prevent extension render updates if idle to save CPU/power.
   chrome.idle.queryState(900, (idle)=>{
     utilityStore.set_systemState(idle);
@@ -28,7 +29,7 @@ var reRender = (type, id) => {
     active = _.result(_.find(tabs(), { id: id }), 'windowId');
   }
   var isCurrentWindow = null;
-  if (bookmarks) {
+  if (bookmarks || history) {
     isCurrentWindow = true;
   } else {
     isCurrentWindow = active === utilityStore.get_window();
@@ -74,6 +75,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     contextStore.set_context(null, 'versionUpdate');
   } else if (msg.prefs.bookmarks) {
     bookmarksStore.set_state(msg.prefs.bookmarks);
+  } else if (msg.prefs.history) {
+    historyStore.set_state(msg.prefs.history);
   }
 });
 
@@ -333,7 +336,7 @@ export var prefsStore = Reflux.createStore({
             reject(chrome.extension.lastError);
           } else {
             console.log('init prefs');
-            this.prefs = {drag: false, context: true, animations: true, duplicate: false, screenshot: false, screenshotBg: false, blacklist: true, sidebar: false, sort: true, bookmarks: false};
+            this.prefs = {drag: false, context: true, animations: true, duplicate: false, screenshot: false, screenshotBg: false, blacklist: true, sidebar: false, sort: true, bookmarks: false, history: false};
             chrome.storage.local.set({preferences: this.prefs}, (result)=> {
               console.log('Init preferences saved: ',result);
             });
@@ -354,6 +357,7 @@ export var prefsStore = Reflux.createStore({
         sidebar: prefs.preferences.sidebar,
         sort: prefs.preferences.sort,
         bookmarks: prefs.preferences.bookmarks,
+        history: prefs.preferences.history,
         animations: prefs.preferences.animations,
       };
       this.trigger(this.prefs);
@@ -659,39 +663,38 @@ export var bookmarksStore = Reflux.createStore({
             }
           }
         }
-        chrome.tabs.query({currentWindow: true},(t)=>{
-          var openTab = -1;
-          for (var z = bookmarks.length - 1; z >= 0; z--) {
-            bookmarks[z].mutedInfo = {muted: false};
-            bookmarks[z].audible = false;
-            bookmarks[z].active = false;
-            bookmarks[z].favIconUrl = '';
-            bookmarks[z].highlighted = false;
-            bookmarks[z].index = z;
-            bookmarks[z].pinned = false;
-            bookmarks[z].selected = false;
-            bookmarks[z].status = 'complete';
-            bookmarksStore.windowId = utilityStore.get_focusedWindow();
-            bookmarks[z].bookmarkId = bookmarks[z].id;
-            bookmarks[z].id = S(bookmarks[z].id).toInt();
-            bookmarks[z].openTab = null;
-            for (var y = t.length - 1; y >= 0; y--) {
-              if (bookmarks[z].url === t[y].url) {
-                bookmarks[z].openTab = ++openTab;
-                bookmarks[z].id = t[y].id;
-                bookmarks[z].mutedInfo.muted = t[y].mutedInfo.muted;
-                bookmarks[z].audible = t[y].audible;
-                bookmarks[z].favIconUrl = t[y].favIconUrl;
-                bookmarks[z].highlighted = t[y].highlighted;
-                bookmarks[z].pinned = t[y].pinned;
-                bookmarks[z].selected = t[y].selected;
-                bookmarks[z].windowId = t[y].windowId;
-              }
+        var t = tabStore.get_altTab();
+        var openTab = -1;
+        for (var z = bookmarks.length - 1; z >= 0; z--) {
+          bookmarks[z].mutedInfo = {muted: false};
+          bookmarks[z].audible = false;
+          bookmarks[z].active = false;
+          bookmarks[z].favIconUrl = '';
+          bookmarks[z].highlighted = false;
+          bookmarks[z].index = z;
+          bookmarks[z].pinned = false;
+          bookmarks[z].selected = false;
+          bookmarks[z].status = 'complete';
+          bookmarksStore.windowId = utilityStore.get_focusedWindow();
+          bookmarks[z].bookmarkId = bookmarks[z].id;
+          bookmarks[z].id = S(bookmarks[z].id).toInt();
+          bookmarks[z].openTab = null;
+          for (var y = t.length - 1; y >= 0; y--) {
+            if (bookmarks[z].url === t[y].url) {
+              bookmarks[z].openTab = ++openTab;
+              bookmarks[z].id = t[y].id;
+              bookmarks[z].mutedInfo.muted = t[y].mutedInfo.muted;
+              bookmarks[z].audible = t[y].audible;
+              bookmarks[z].favIconUrl = t[y].favIconUrl;
+              bookmarks[z].highlighted = t[y].highlighted;
+              bookmarks[z].pinned = t[y].pinned;
+              bookmarks[z].selected = t[y].selected;
+              bookmarks[z].windowId = t[y].windowId;
             }
           }
-          var bookmarkOrder = _.sortByOrder(bookmarks, ['openTab'], ['asc']);
-          resolve(bookmarkOrder);
-        });
+        }
+        var bookmarkOrder = _.sortByOrder(bookmarks, ['openTab'], ['asc']);
+        resolve(bookmarkOrder);
       });
     });
   },
@@ -709,6 +712,64 @@ export var bookmarksStore = Reflux.createStore({
   get_folder(){
     return this.folder;
   }
+});
+
+export var historyStore = Reflux.createStore({
+  init: function() {
+    this.history = [];
+    this.state = false;
+  },
+  set_state(value){
+    this.state = value;
+  },
+  get_state(){
+    return this.state;
+  },
+  set_history: function(value) {
+    return new Promise((resolve, reject)=>{
+      chrome.history.search({text: ''}, (h)=>{
+        console.log(h);
+        var t = tabStore.get_altTab();
+        var openTab = -1;
+        for (var i = h.length - 1; i >= 0; i--) {
+          h[i].mutedInfo = {muted: false};
+          h[i].audible = false;
+          h[i].active = false;
+          h[i].favIconUrl = '';
+          h[i].highlighted = false;
+          h[i].index = i;
+          h[i].pinned = false;
+          h[i].selected = false;
+          h[i].status = 'complete';
+          h[i].windowId = utilityStore.get_focusedWindow();
+          h[i].bookmarkId = h[i].id;
+          h[i].id = S(h[i].id).toInt();
+          h[i].openTab = null;
+          for (var y = t.length - 1; y >= 0; y--) {
+            if (h[i].url === t[y].url) {
+              h[i].openTab = ++openTab;
+              h[i].id = t[y].id;
+              h[i].mutedInfo.muted = t[y].mutedInfo.muted;
+              h[i].audible = t[y].audible;
+              h[i].favIconUrl = t[y].favIconUrl;
+              h[i].highlighted = t[y].highlighted;
+              h[i].pinned = t[y].pinned;
+              h[i].selected = t[y].selected;
+              h[i].windowId = t[y].windowId;
+            }
+          }
+        }
+        resolve(h);
+      });
+    });
+  },
+  get_history: function() {
+    this.set_history().then((h)=>{
+      this.history = h;
+      console.log('history: ',this.history);
+    });
+    return this.history;
+  },
 });
 
 (function() {

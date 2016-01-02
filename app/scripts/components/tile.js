@@ -8,7 +8,7 @@ import kmp from 'kmp';
 import Draggable from 'react-draggable';
 import utils from './utils';
 
-import {bookmarksStore, screenshotStore, dupeStore, prefsStore, reRenderStore, searchStore, applyTabOrderStore, utilityStore, contextStore, relayStore, dragStore} from './store';
+import {clickStore, historyStore, bookmarksStore, screenshotStore, dupeStore, prefsStore, reRenderStore, searchStore, applyTabOrderStore, utilityStore, contextStore, relayStore, dragStore} from './store';
 import tabStore from './tabStore';
 
 import {Btn, Col, Row} from './bootstrap';
@@ -39,7 +39,11 @@ var Tile = React.createClass({
       drag: null,
       dragged: null,
       screenshot: null,
-      folder: true
+      folder: true,
+      openTab: false,
+      bookmarks: false,
+      history: false,
+      alt: false
     };
   },
   componentDidMount() {
@@ -48,7 +52,7 @@ var Tile = React.createClass({
     this.listenTo(relayStore, this.handleRelays);
     this.listenTo(tabStore, this.update);
     if (this.props.stores.prefs.bookmarks) {
-      this.listenTo(bookmarksStore, this.bookmarksChange);
+      this.listenTo(bookmarksStore, this.bookmarksFolderChange);
     }
     _.defer(()=>{
       this.listenTo(screenshotStore, this.updateScreenshot);
@@ -61,6 +65,7 @@ var Tile = React.createClass({
   initMethods(){
     this.updateScreenshot('init');
     this.checkDuplicateTabs();
+    this.setTabMode();
     if (this.props.tab.title === 'New Tab') {
       _.defer(()=>{
         this.closeNewTabs();
@@ -69,6 +74,7 @@ var Tile = React.createClass({
   },
   update(){
     var p = this.props;
+    this.setTabMode();
     if (this.state.duplicate) {
       var subTile = v('#subTile-'+p.i).node();
       _.delay(()=>{
@@ -107,7 +113,25 @@ var Tile = React.createClass({
       }
     }
   },
-  bookmarksChange(e){
+  setTabMode(){
+    var p = this.props;
+    if (p.stores.prefs.bookmarks) {
+      this.setState({bookmarks: true});
+    } else {
+      this.setState({bookmarks: false});
+    }
+    if (p.stores.prefs.history) {
+      this.setState({history: true});
+    } else {
+      this.setState({history: false});
+    }
+    if (p.stores.prefs.bookmarks && p.tab.openTab || p.stores.prefs.history && p.tab.openTab) {
+      this.setState({openTab: true});
+    } else {
+      this.setState({openTab: false});
+    }
+  },
+  bookmarksFolderChange(e){
     var s = this.state;
     this.setState({folder: !s.folder});
     var p = this.props;
@@ -174,8 +198,8 @@ var Tile = React.createClass({
     // Navigate to a tab when its clicked from the grid.
     if (!s.xHover || !s.pHover) {
       if (!s.pinning && !s.close) {
-        if (p.stores.prefs.bookmarks) {
-          if (p.tab.openTab) {
+        if (s.bookmarks || s.history) {
+          if (s.openTab) {
             active();
           } else {
             chrome.tabs.create({url: p.tab.url});
@@ -257,22 +281,34 @@ var Tile = React.createClass({
   },
   handleCloseTab(id) {
     var p = this.props;
+    var s = this.state;
+    var reRender = ()=>{
+      reRenderStore.set_reRender(true, 'alt',id);
+      _.delay(()=>{
+        reRenderStore.set_reRender(true, 'alt',id);
+      },500);
+    };
     var close = ()=>{
-      tabStore.close(p.tab.id);
+      tabStore.close(id, (t)=>{
+        if (s.bookmarks || s.history) {
+          reRender();
+        }
+      });
     };
     if (p.stores.prefs.animations) {
       this.setState({close: true});
     }
-    if (p.stores.prefs.bookmarks) {
-      if (p.tab.openTab) {
+    if (s.bookmarks || s.history) {
+      if (s.openTab) {
         close();
       } else {
-        chrome.bookmarks.remove(p.tab.bookmarkId);
+        if (s.bookmarks) {
+          chrome.bookmarks.remove(p.tab.bookmarkId);
+        } else {
+          chrome.history.deleteUrl({url: p.tab.url});
+        }
+        reRender();
       }
-      reRenderStore.set_reRender(true, 'remove',id);
-      _.delay(()=>{
-        reRenderStore.set_reRender(true, 'activate',id);
-      },500);
     } else {
       close();
       this.keepNewTabOpen();
@@ -280,6 +316,7 @@ var Tile = React.createClass({
   },
   handlePinning(tab, opt) {
     var p = this.props;
+    var s = this.state;
     var id = null;
     if (opt === 'context') {
       id = tab;
@@ -293,7 +330,7 @@ var Tile = React.createClass({
     chrome.tabs.update(id, {
       pinned: !tab.pinned
     },(t)=>{
-      if (p.stores.prefs.bookmarks) {
+      if (s.bookmarks || s.history) {
         reRenderStore.set_reRender(true, 'update',id);
         _.delay(()=>{
           reRenderStore.set_reRender(true, 'activate',id);
@@ -308,10 +345,11 @@ var Tile = React.createClass({
     pinned = id;
   },
   handleMuting(tab){
+    var s = this.state;
     chrome.tabs.update(tab.id, {
       muted: !tab.mutedInfo.muted
     },(t)=>{
-      if (this.props.stores.prefs.bookmarks) {
+      if (s.bookmarks || s.history) {
         reRenderStore.set_reRender(true, 'update',t.id);
         _.delay(()=>{
           reRenderStore.set_reRender(true, 'activate',t.id);
@@ -395,10 +433,12 @@ var Tile = React.createClass({
   },
   handleFocus(opt, bool){
     var p = this.props;
+    var s = this.state;
     if (p.stores.prefs.animations) {
       if (opt === 'duplicate') {
-        this.setState({focus: bool});
-        this.setState({duplicate: bool});
+        if (!s.bookmarks && !s.history) {
+          this.setState({focus: bool, duplicate: bool});
+        }
       } else {
         this.setState({focus: true});
         v('subTile-'+p.i).on('animationend', function animationEnd(e){
@@ -482,8 +522,8 @@ var Tile = React.createClass({
   render: function() {
     var s = this.state;
     var p = this.props;
-    var titleLimit = p.stores.prefs.bookmarks ? 70 : 83;
-    var openBookmark = !p.stores.prefs.bookmarks || p.stores.prefs.bookmarks && p.tab.openTab;
+    var titleLimit = s.bookmarks || s.history ? 70 : 83;
+    //var s.openTab = !p.stores.prefs.bookmarks || p.stores.prefs.bookmarks && p.tab.openTab;
     var drag = dragStore.get_drag();
     return (
       <div ref="tileMain" id={'tileMain-'+p.i} onDragEnter={this.currentlyDraggedOver(p.tab)} style={p.stores.prefs.screenshot && p.stores.prefs.screenshotBg ? {opacity: '0.95'} : null}>
@@ -500,7 +540,7 @@ var Tile = React.createClass({
               { this.filterTabs(p.tab) ? <div id={'innerTile-'+p.i} className={s.hover ? "ntg-tile-hover" : "ntg-tile"} style={s.screenshot ? s.hover ? style.tileHovered(s.screenshot) : style.tile(s.screenshot) : null} key={p.key}>
                 <Row className="ntg-tile-row-top">
                   <Col size="3">
-                    {p.stores.chromeVersion >= 46 && openBookmark ? <div onMouseEnter={this.handleTabMuteHoverIn} onMouseLeave={this.handleTabMuteHoverOut} onClick={() => this.handleMuting(p.tab)}>
+                    {p.stores.chromeVersion >= 46 && s.openTab || p.stores.chromeVersion >= 46 && !s.bookmarks && !s.history ? <div onMouseEnter={this.handleTabMuteHoverIn} onMouseLeave={this.handleTabMuteHoverOut} onClick={() => this.handleMuting(p.tab)}>
                                       {s.hover || p.tab.audible || p.tab.mutedInfo.muted ? 
                                       <i className={p.tab.audible ? s.mHover ? "fa fa-volume-off ntg-mute-audible-hover" : "fa fa-volume-up ntg-mute-audible" : s.mHover ? "fa fa-volume-off ntg-mute-hover" : "fa fa-volume-off ntg-mute"} style={s.screenshot && s.hover ? style.ssIconBg : s.screenshot ? style.ssIconBg : null} />
                                       : null}
@@ -511,7 +551,7 @@ var Tile = React.createClass({
                       : null}
                     </div>
                     <div onMouseEnter={this.handlePinHoverIn} onMouseLeave={this.handlePinHoverOut} onClick={() => this.handlePinning(p.tab)}>
-                    {p.tab.pinned || s.hover && openBookmark ? 
+                    {p.tab.pinned || s.hover && s.openTab || s.hover && !s.bookmarks && !s.history ? 
                       <i className={s.pHover ? "fa fa-map-pin ntg-pinned-hover" : "fa fa-map-pin ntg-pinned"} style={p.tab.pinned ? s.screenshot && s.hover ? style.ssPinnedIconBg : s.screenshot ? style.ssPinnedIconBg : {color: '#B67777'} : s.screenshot ? style.ssIconBg : null} />
                       : null}
                     </div>
@@ -519,21 +559,21 @@ var Tile = React.createClass({
                       <img className="ntg-favicon" src={S(p.tab.favIconUrl).isEmpty() ? '../images/file_paper_blank_document.png' : utilityStore.filterFavicons(p.tab.favIconUrl, p.tab.url) } />
                     </Row>
                   </Col>
-                  <Col size="9" onClick={!p.stores.prefs.bookmarks ? ()=>this.handleClick(p.tab.id) : null} className="ntg-title-container">
+                  <Col size="9" onClick={!s.bookmarks ? ()=>this.handleClick(p.tab.id) : null} className="ntg-title-container">
                     <h5 style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-title">
                       {S(p.tab.title).truncate(titleLimit).s}
                     </h5>
-                    {p.stores.prefs.bookmarks ? <h5 onClick={()=>bookmarksStore.set_folder(p.tab.folder)} style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-folder">
+                    {s.bookmarks ? <h5 onClick={()=>bookmarksStore.set_folder(p.tab.folder)} style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-folder">
                       <i className="fa fa-folder-o" />{p.tab.folder ? p.stores.prefs.bookmarks ? ' '+p.tab.folder : null : null}
                     </h5> : null}
-                    {p.stores.prefs ? p.stores.prefs.drag && !p.stores.prefs.bookmarks ? <div onMouseEnter={this.handleDragHoverIn} onMouseLeave={this.handleDragHoverOut} onClick={() => this.handleCloseTab(p.tab.id)}>
+                    {p.stores.prefs ? p.stores.prefs.drag && !s.bookmarks && !s.history ? <div onMouseEnter={this.handleDragHoverIn} onMouseLeave={this.handleDragHoverOut} onClick={() => this.handleCloseTab(p.tab.id)}>
                       {s.hover ? 
                       <i className={s.dHover ? "fa fa-hand-grab-o ntg-move-hover handle" : "fa fa-hand-grab-o ntg-move"} style={s.screenshot && s.hover ? style.ssIconBg : null} />
                       : null}
                     </div> : null : null}
                   </Col> 
                 </Row>
-                <Row onClick={() => this.handleClick(p.tab.id)} className={p.stores.prefs.bookmarks ? "ntg-tile-row-bottom-bk" : "ntg-tile-row-bottom"} />
+                <Row onClick={() => this.handleClick(p.tab.id)} className={s.bookmarks ? "ntg-tile-row-bottom-bk" : "ntg-tile-row-bottom"} />
               </div> : null}
             </Row> : null}
           </div>
@@ -549,7 +589,8 @@ var Sidebar = React.createClass({
     var p = this.props;
     return {
       sort: p.prefs.sort,
-      bookmarks: p.prefs.bookmarks
+      bookmarks: p.prefs.bookmarks,
+      history: p.prefs.history
     };
   },
   componentDidMount(){
@@ -559,14 +600,27 @@ var Sidebar = React.createClass({
     var p = this.props;
     this.setState({sort: p.prefs.sort});
     this.setState({bookmarks: p.prefs.bookmarks});
+    this.setState({history: p.prefs.history});
   },
   handleBookmarks(){
     var s = this.state;
-    //clickStore.set_click(true, false);
+    prefsStore.set_prefs('history', false);
     prefsStore.set_prefs('bookmarks', !s.bookmarks);
     chrome.tabs.query({currentWindow: true}, (t)=>{
-      reRenderStore.set_reRender(true, 'create', t[0].id);
+      reRenderStore.set_reRender(true, 'alt', t[0].id);
     });
+  },
+  handleHistory(){
+    var s = this.state;
+    prefsStore.set_prefs('bookmarks', false);
+    prefsStore.set_prefs('history', !s.history);
+    chrome.tabs.query({currentWindow: true}, (t)=>{
+      reRenderStore.set_reRender(true, 'alt', t[0].id);
+    });
+  },
+  handleSort(){
+    clickStore.set_click(true, false);
+    prefsStore.set_prefs('sort', !this.state.sort);
   },
   render: function() {
     var p = this.props;
@@ -574,13 +628,15 @@ var Sidebar = React.createClass({
     var iconCollapse = p.width <= 1135;
     return (
       <div className="side-div" style={p.collapse ? {width: '11%'} : {width: '13%'}}>
-        <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={()=>prefsStore.set_prefs('sort', !s.sort)} className="ntg-apply-btn" fa="sort-amount-asc">{p.collapse ? 'Sort Tabs' : 'Sort'}</Btn>
+        <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleSort} className="ntg-apply-btn" fa="sort-amount-asc">{p.collapse ? 'Sort Tabs' : 'Sort'}</Btn>
         {s.sort ? <div>
             {p.labels}
             {!s.bookmarks ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={p.onClick} className="ntg-apply-btn" fa="sort">{iconCollapse ? '' : 'Apply'}</Btn> : null}
           </div> : null}
         {s.bookmarks ? <div></div> : null}
-        <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleBookmarks} className="ntg-apply-btn" fa={s.bookmarks ? 'square' : 'bookmark'}>{iconCollapse ? '' : s.bookmarks ? 'Tabs' : 'Bookmarks'}</Btn>
+        {s.history || s.bookmarks ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={s.bookmarks ? this.handleBookmarks : s.history ? this.handleHistory : null} className="ntg-apply-btn" fa="square">{iconCollapse ? '' : 'Tabs'}</Btn> : null}
+        {!s.bookmarks ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleBookmarks} className="ntg-apply-btn" fa="bookmark">{iconCollapse ? '' : 'Bookmarks'}</Btn> : null}
+        {!s.history ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleHistory} className="ntg-apply-btn" fa="history">{iconCollapse ? '' : 'History'}</Btn> : null}
       </div>
     );
   }

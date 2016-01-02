@@ -181,7 +181,7 @@ var Preferences = React.createClass({
                       on={s.screenshotBg} child={true}>
                         Enable screenshots in the background on hover
               </Toggle>
-              {s.bytesInUse ? <p>Screenshot disk useage: {utils.formatBytes(s.bytesInUse, 2)}</p> : null}
+              {s.bytesInUse ? <p>Screenshot disk usage: {utils.formatBytes(s.bytesInUse, 2)}</p> : null}
               <Btn onClick={()=>screenshotStore.clear()} className="ntg-setting-btn" fa="trash">Clear Screenshot Cache</Btn> 
             </Col>
           : null}

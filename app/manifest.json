@@ -53,6 +53,7 @@
     "idle",
     "system.memory",
     "tabCapture",
-    "bookmarks"
+    "bookmarks",
+    "history"
   ]
 }

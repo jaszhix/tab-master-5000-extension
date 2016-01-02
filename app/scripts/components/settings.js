@@ -21,7 +21,7 @@ var Sessions = React.createClass({
   mixins: [Reflux.ListenerMixin],
   getInitialState(){
     return {
-      tabs: null,
+      tabs: [],
       sessions: null,
       sessionHover: null,
       selectedSessionTabHover: null,
@@ -41,6 +41,15 @@ var Sessions = React.createClass({
   componentDidMount(){
     this.listenTo(tabStore, this.tabChange);
     this.loadSessions();
+    this.setTabSource();
+  },
+  setTabSource(){
+    var p = this.props;
+    if (p.prefs.bookmarks) {
+      this.setState({tabs: tabStore.get_altTab()});
+    } else {
+      this.setState({tabs: p.tabs});
+    }
   },
   tabChange(tabs){
     this.setState({tabs: tabs});
@@ -56,7 +65,7 @@ var Sessions = React.createClass({
       tabs = sess.tabs;
       timeStamp = sess.timeStamp;
     } else {
-      tabs = this.props.tabs;
+      tabs = this.state.tabs;
       timeStamp = Date.now();
     }
     var tabData = {timeStamp: timeStamp, tabs: tabs, label: sessionLabel};
@@ -189,12 +198,7 @@ var Sessions = React.createClass({
   render: function() {
     var p = this.props;
     var s = this.state;
-    var tabs = [];
-    if (p.prefs.bookmarks) {
-      tabs = tabStore.get_altTab();
-    } else {
-      tabs = p.tabs;
-    }
+    var tabs = s.tabs;
     var tm20 = tabs.length - 20;
     var removeTabFromSession = (id, session)=>{
       var index = _.findIndex(session.tabs, { 'id': id });

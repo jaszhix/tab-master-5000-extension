@@ -14,38 +14,67 @@ var close = (id)=>{
     }
   });
 };
-chrome.tabs.onCreated.addListener((e, info) => {
-  sendMsg({e: e, type: 'create'});
+var getPrefs = new Promise((resolve, reject)=>{
+  chrome.storage.local.get('preferences', (prefs)=>{
+    if (prefs && prefs.preferences) {
+      resolve(prefs);
+    }
+  });
 });
-chrome.tabs.onRemoved.addListener((e, info) => {
-  sendMsg({e: e, type: 'remove'});
-});
-chrome.tabs.onActivated.addListener((e, info) => {
-  sendMsg({e: e, type: 'activate'});
-});
-chrome.tabs.onUpdated.addListener((e, info) => {
-  sendMsg({e: e, type: 'update'});
-});
-chrome.tabs.onMoved.addListener((e, info) => {
-  sendMsg({e: e, type: 'move'});
-});
-chrome.tabs.onAttached.addListener((e, info) => {
-  sendMsg({e: e, type: 'attach'});
-});
-chrome.tabs.onDetached.addListener((e, info) => {
-  sendMsg({e: e, type: 'detach'});
-});
-chrome.bookmarks.onCreated.addListener((e, info) => {
-  sendMsg({e: e, type: 'create'});
-});
-chrome.bookmarks.onRemoved.addListener((e, info) => {
-  sendMsg({e: e, type: 'create'});
-});
-chrome.bookmarks.onChanged.addListener((e, info) => {
-  sendMsg({e: e, type: 'update'});
-});
-chrome.bookmarks.onMoved.addListener((e, info) => {
-  sendMsg({e: e, type: 'move'});
+getPrefs.then((prefs)=>{
+  chrome.tabs.onCreated.addListener((e, info) => {
+    sendMsg({e: e, type: 'create'});
+  });
+  chrome.tabs.onRemoved.addListener((e, info) => {
+    sendMsg({e: e, type: 'remove'});
+  });
+  chrome.tabs.onActivated.addListener((e, info) => {
+    sendMsg({e: e, type: 'activate'});
+  });
+  chrome.tabs.onUpdated.addListener((e, info) => {
+    if (!prefs.bookmarks && !prefs.history) {
+      sendMsg({e: e, type: 'update'});
+    }
+  });
+  chrome.tabs.onMoved.addListener((e, info) => {
+    sendMsg({e: e, type: 'move'});
+  });
+  chrome.tabs.onAttached.addListener((e, info) => {
+    sendMsg({e: e, type: 'attach'});
+  });
+  chrome.tabs.onDetached.addListener((e, info) => {
+    sendMsg({e: e, type: 'detach'});
+  });
+  chrome.bookmarks.onCreated.addListener((e, info) => {
+    if (prefs.bookmarks) {
+      sendMsg({e: e, type: 'create'});
+    }
+  });
+  chrome.bookmarks.onRemoved.addListener((e, info) => {
+    if (prefs.bookmarks) {
+      sendMsg({e: e, type: 'create'});
+    }
+  });
+  chrome.bookmarks.onChanged.addListener((e, info) => {
+    if (prefs.bookmarks) {
+      sendMsg({e: e, type: 'update'});
+    }
+  });
+  chrome.bookmarks.onMoved.addListener((e, info) => {
+    if (prefs.bookmarks) {
+      sendMsg({e: e, type: 'move'});
+    }
+  });
+  chrome.history.onVisited.addListener((e, info) => {
+    if (prefs.history) {
+      sendMsg({e: e, type: 'create'});
+    }
+  });
+  chrome.history.onVisitRemoved.addListener((e, info) => {
+    if (prefs.history) {
+      sendMsg({e: e, type: 'create'});
+    }
+  });
 });
 chrome.runtime.onUpdateAvailable.addListener((details)=>{
   console.log('onUpdateAvailable: ',details);
