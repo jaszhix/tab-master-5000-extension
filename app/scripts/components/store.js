@@ -73,9 +73,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     contextStore.set_context(null, 'installed');
   } else if (msg.type === 'versionUpdate') {
     contextStore.set_context(null, 'versionUpdate');
-  } else if (msg.prefs.bookmarks) {
+  } else if (msg.prefs && msg.prefs.bookmarks) {
     bookmarksStore.set_state(msg.prefs.bookmarks);
-  } else if (msg.prefs.history) {
+  } else if (msg.prefs && msg.prefs.history) {
     historyStore.set_state(msg.prefs.history);
   }
 });
@@ -139,6 +139,9 @@ export var reRenderStore = Reflux.createStore({
     this.reRender[1] = type;
     this.reRender[2] = object;
     console.log('reRender: ', this.reRender);
+    if (type === 'full') {
+      this.trigger(this.reRender);
+    }
     this.trigger(this.reRender);
   },
   get_reRender: function() {
@@ -327,6 +330,7 @@ export var dragStore = Reflux.createStore({
 
 export var prefsStore = Reflux.createStore({
   init: function() {
+    this.ready = false;
     var getPrefs = new Promise((resolve, reject)=>{
       chrome.storage.local.get('preferences', (prefs)=>{
         if (prefs && prefs.preferences) {
@@ -338,6 +342,7 @@ export var prefsStore = Reflux.createStore({
             console.log('init prefs');
             this.prefs = {drag: false, context: true, animations: true, duplicate: false, screenshot: false, screenshotBg: false, blacklist: true, sidebar: false, sort: true, bookmarks: false, history: false};
             chrome.storage.local.set({preferences: this.prefs}, (result)=> {
+              this.ready = true;
               console.log('Init preferences saved: ',result);
             });
             this.trigger(this.prefs);
@@ -360,6 +365,7 @@ export var prefsStore = Reflux.createStore({
         history: prefs.preferences.history,
         animations: prefs.preferences.animations,
       };
+      this.ready = true;
       this.trigger(this.prefs);
     }).catch((err)=>{
       console.log('chrome.extension.lastError: ',err);
@@ -718,6 +724,7 @@ export var historyStore = Reflux.createStore({
   init: function() {
     this.history = [];
     this.state = false;
+    this.maxResults = 100;
   },
   set_state(value){
     this.state = value;
@@ -727,7 +734,7 @@ export var historyStore = Reflux.createStore({
   },
   set_history: function(value) {
     return new Promise((resolve, reject)=>{
-      chrome.history.search({text: ''}, (h)=>{
+      chrome.history.search({text: '', maxResults: 1000}, (h)=>{
         console.log(h);
         var t = tabStore.get_altTab();
         var openTab = -1;
@@ -742,7 +749,6 @@ export var historyStore = Reflux.createStore({
           h[i].selected = false;
           h[i].status = 'complete';
           h[i].windowId = utilityStore.get_focusedWindow();
-          h[i].bookmarkId = h[i].id;
           h[i].id = S(h[i].id).toInt();
           h[i].openTab = null;
           for (var y = t.length - 1; y >= 0; y--) {

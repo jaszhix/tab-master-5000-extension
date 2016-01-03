@@ -22,6 +22,7 @@ var getPrefs = new Promise((resolve, reject)=>{
   });
 });
 getPrefs.then((prefs)=>{
+  sendMsg({prefs: prefs});
   chrome.tabs.onCreated.addListener((e, info) => {
     sendMsg({e: e, type: 'create'});
   });

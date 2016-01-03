@@ -112,17 +112,13 @@ var Root = React.createClass({
     this.listenTo(sidebarStore, this.sortTrigger);
     this.listenTo(tabStore, this.update);
     this.listenTo(prefsStore, this.prefsChange);
-    // Call the method that will query Chrome for tabs.
-    this.captureTabs('init');
-    this.onWindowResize(null, 'init');
+
     console.log('Chrome Version: ',utilityStore.chromeVersion());
     console.log('Manifest: ', utilityStore.get_manifest());
   },
   prefsChange(e){
     var s = this.state;
     this.setState({prefs: e});
-    chrome.runtime.sendMessage(chrome.runtime.id, {prefs: {bookmarks: e.bookmarks, history: e.history}}, (response)=>{
-    });
     if (s.init) {
       if (e.bookmarks || e.history) {
         chrome.tabs.query({currentWindow: true}, (t)=>{
@@ -132,7 +128,10 @@ var Root = React.createClass({
           },500);
         });
       }
+      // Init methods called here after prefs are loaded from Chrome storage.
       this.setState({init: false});
+      this.captureTabs('init');
+      this.onWindowResize(null, 'init');
     }
   },
   update(){
@@ -170,11 +169,11 @@ var Root = React.createClass({
       }
       tabStore.set_tab(tab);
       console.log(Tab);
-      v('#main').css({cursor: 'default'});
     });
     // Querying is complete, allow the component to render.
     if (opt === 'create' || opt === 'init' || opt === 'drag' || opt === 'alt') {
       this.setState({render: true});
+      v('#main').css({cursor: 'default'});
     }
   },
   searchChanged() {
@@ -198,6 +197,7 @@ var Root = React.createClass({
     }
   },
   onWindowResize: function (event, opt) {
+    var s = this.state;
     if (opt === 'init') {
       if (window.innerWidth >= 1565) {
         this.setState({collapse: true});
@@ -212,35 +212,39 @@ var Root = React.createClass({
         this.setState({collapse: false});
       }
     }
-    _.defer(()=>{
-      var prefs = prefsStore.get_prefs();
-      if (prefs.screenshotBg || prefs.screenshot) {
-        document.getElementById('bgImg').style.width = window.innerWidth + 30;
-        document.getElementById('bgImg').style.height = window.innerHeight + 5;
-      }
-    });
+    if (s.prefs.screenshotBg || s.prefs.screenshot) {
+      document.getElementById('bgImg').style.width = window.innerWidth + 30;
+      document.getElementById('bgImg').style.height = window.innerHeight + 5;
+    }
   },
   tileGrid(stores){
     var s = this.state;
     var keys = [];
     var labels = {};
     if (stores.prefs.bookmarks) {
-      keys = ['openTab', 'url', 'title', 'status', 'dateAdded', 'folder'];
+      keys = ['openTab', 'url', 'title', 'dateAdded', 'folder'];
       labels = {
         folder: 'Folder',
         dateAdded: 'Date Added',
         url: 'Website',
         title: 'Title',
-        status: 'Downloaded',
+        openTab: 'Open'
+      };
+    } else if (stores.prefs.history) {
+      keys = ['openTab', 'url', 'title', 'lastVisitTime', 'visitCount'];
+      labels = {
+        visitCount: 'Most Visited',
+        lastVisitTime: 'Last Visit',
+        url: 'Website',
+        title: 'Title',
         openTab: 'Open'
       };
     } else {
-      keys = ['url', 'title', 'status', 'index'];
+      keys = ['url', 'title', 'index'];
       labels = {
         index: 'Tab Order',
         url: 'Website',
-        title: 'Title',
-        status: 'Downloaded'
+        title: 'Title'
       };
     }
     return (

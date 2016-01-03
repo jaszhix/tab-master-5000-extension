@@ -45,7 +45,7 @@ var Sessions = React.createClass({
   },
   setTabSource(){
     var p = this.props;
-    if (p.prefs.bookmarks) {
+    if (p.prefs.bookmarks || p.prefs.history) {
       this.setState({tabs: tabStore.get_altTab()});
     } else {
       this.setState({tabs: p.tabs});

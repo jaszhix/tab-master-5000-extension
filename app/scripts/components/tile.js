@@ -5,6 +5,7 @@ import _ from 'lodash';
 import S from 'string';
 import v from 'vquery';
 import kmp from 'kmp';
+import moment from 'moment';
 import Draggable from 'react-draggable';
 import utils from './utils';
 
@@ -283,22 +284,20 @@ var Tile = React.createClass({
     var p = this.props;
     var s = this.state;
     var reRender = ()=>{
-      reRenderStore.set_reRender(true, 'alt',id);
+      var t = tabStore.get_altTab();
+      reRenderStore.set_reRender(true, 'alt', t[0].id);
       _.delay(()=>{
-        reRenderStore.set_reRender(true, 'alt',id);
+        reRenderStore.set_reRender(true, 'activate', {tabId: t[0].id});
       },500);
     };
     var close = ()=>{
-      tabStore.close(id, (t)=>{
-        if (s.bookmarks || s.history) {
-          reRender();
-        }
-      });
+      tabStore.close(id);
     };
     if (p.stores.prefs.animations) {
       this.setState({close: true});
     }
     if (s.bookmarks || s.history) {
+      reRender();
       if (s.openTab) {
         close();
       } else {
@@ -307,7 +306,6 @@ var Tile = React.createClass({
         } else {
           chrome.history.deleteUrl({url: p.tab.url});
         }
-        reRender();
       }
     } else {
       close();
@@ -566,6 +564,9 @@ var Tile = React.createClass({
                     {s.bookmarks ? <h5 onClick={()=>bookmarksStore.set_folder(p.tab.folder)} style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-folder">
                       <i className="fa fa-folder-o" />{p.tab.folder ? p.stores.prefs.bookmarks ? ' '+p.tab.folder : null : null}
                     </h5> : null}
+                    {s.history ? <h5 style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-folder">
+                      <i className="fa fa-hourglass-o" />{' '+S(moment(p.tab.lastVisitTime).fromNow()).capitalize().s}
+                    </h5> : null}
                     {p.stores.prefs ? p.stores.prefs.drag && !s.bookmarks && !s.history ? <div onMouseEnter={this.handleDragHoverIn} onMouseLeave={this.handleDragHoverOut} onClick={() => this.handleCloseTab(p.tab.id)}>
                       {s.hover ? 
                       <i className={s.dHover ? "fa fa-hand-grab-o ntg-move-hover handle" : "fa fa-hand-grab-o ntg-move"} style={s.screenshot && s.hover ? style.ssIconBg : null} />
@@ -573,7 +574,7 @@ var Tile = React.createClass({
                     </div> : null : null}
                   </Col> 
                 </Row>
-                <Row onClick={() => this.handleClick(p.tab.id)} className={s.bookmarks ? "ntg-tile-row-bottom-bk" : "ntg-tile-row-bottom"} />
+                <Row onClick={() => this.handleClick(p.tab.id)} className={s.bookmarks || s.history ? "ntg-tile-row-bottom-bk" : "ntg-tile-row-bottom"} />
               </div> : null}
             </Row> : null}
           </div>
@@ -631,7 +632,7 @@ var Sidebar = React.createClass({
         <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleSort} className="ntg-apply-btn" fa="sort-amount-asc">{p.collapse ? 'Sort Tabs' : 'Sort'}</Btn>
         {s.sort ? <div>
             {p.labels}
-            {!s.bookmarks ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={p.onClick} className="ntg-apply-btn" fa="sort">{iconCollapse ? '' : 'Apply'}</Btn> : null}
+            {!s.bookmarks ? !s.history ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={p.onClick} className="ntg-apply-btn" fa="sort">{iconCollapse ? '' : 'Apply'}</Btn> : null : null}
           </div> : null}
         {s.bookmarks ? <div></div> : null}
         {s.history || s.bookmarks ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={s.bookmarks ? this.handleBookmarks : s.history ? this.handleHistory : null} className="ntg-apply-btn" fa="square">{iconCollapse ? '' : 'Tabs'}</Btn> : null}
@@ -762,10 +763,11 @@ var TileGrid = React.createClass({
           {label === 'Tab Order' ? <Btn style={ssBg ? buttonTransparent : null} className="ntg-btn" fa="history">{cLabel}</Btn> : null}
           {label === 'Website' ? <Btn style={ssBg ? buttonTransparent : null} className="ntg-btn" fa="external-link">{cLabel}</Btn> : null}
           {label === 'Title' ? <Btn style={ssBg ? buttonTransparent : null} onClick={this.handleTitleIcon} className="ntg-btn" fa={s.title ? 'sort-alpha-asc' : 'sort-alpha-desc'}>{cLabel}</Btn> : null}
-          {label === 'Downloaded' ? <Btn style={ssBg ? buttonTransparent : null} className="ntg-btn" fa="download">{cLabel}</Btn> : null}
           {label === 'Open' ? <Btn style={ssBg ? buttonTransparent : null} className="ntg-btn" fa="folder-open">{cLabel}</Btn> : null}
           {label === 'Folder' ? <Btn style={ssBg ? buttonTransparent : null} className="ntg-btn" fa="folder">{cLabel}</Btn> : null}
           {label === 'Date Added' ? <Btn style={ssBg ? buttonTransparent : null} className="ntg-btn" fa="hourglass">{cLabel}</Btn> : null}
+          {label === 'Last Visit' ? <Btn style={ssBg ? buttonTransparent : null} className="ntg-btn" fa="hourglass">{cLabel}</Btn> : null}
+          {label === 'Most Visited' ? <Btn style={ssBg ? buttonTransparent : null} className="ntg-btn" fa="line-chart">{cLabel}</Btn> : null}
         </div>
       );
     });
