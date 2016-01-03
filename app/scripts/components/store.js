@@ -373,10 +373,12 @@ export var prefsStore = Reflux.createStore({
     });
     
   },
-  set_prefs(opt, value) {
+  set_prefs(opt, value, skip) {
     this.prefs[opt] = value;
     console.log('Preferences: ',this.prefs);
-    this.trigger(this.prefs);
+    if (!skip) {
+      this.trigger(this.prefs);
+    }
     this.savePrefs(opt, value);
   },
   get_prefs() {
@@ -637,70 +639,58 @@ export var bookmarksStore = Reflux.createStore({
     return new Promise((resolve, reject)=>{
       chrome.bookmarks.getTree((bk)=>{
         var bookmarks = [];
-        console.log(bk);
-        for (var i = bk[0].children.length - 1; i >= 0; i--) {
-          for (var a = bk[0].children[i].children.length - 1; a >= 0; a--) {
-            bk[0].children[i].children[a].folder = bk[0].children[i].title;
-            if (bk[0].children[i].children[a].children) {
-              for (var b = bk[0].children[i].children[a].children.length - 1; b >= 0; b--) {
-                bk[0].children[i].children[a].children[b].folder = bk[0].children[i].children[a].title;
-                if (bk[0].children[i].children[a].children[b].children) {
-                  for (var c = bk[0].children[i].children[a].children[b].children.length - 1; c >= 0; c--) {
-                    bk[0].children[i].children[a].children[b].children[c].folder = bk[0].children[i].children[a].children[b].title;
-                    if (bk[0].children[i].children[a].children[b].children[c].children) {
-                      for (var d = bk[0].children[i].children[a].children[b].children[c].children.length - 1; d >= 0; d--) {
-                        bk[0].children[i].children[a].children[b].children[c].children[d].folder = bk[0].children[i].children[a].children[b].children[c].title;
-                        if (bk[0].children[i].children[a].children[b].children[c].children[d].children) {
-                          console.log('folder match');
-                        } else {
-                          bookmarks.push(bk[0].children[i].children[a].children[b].children[c].children[d]);
-                        }
-                      }
-                    } else {
-                      bookmarks.push(bk[0].children[i].children[a].children[b].children[c]);
-                    }
-                  }
-                } else {
-                  bookmarks.push(bk[0].children[i].children[a].children[b]);
-                }
-              }
-            } else {
-              bookmarks.push(bk[0].children[i].children[a]);
-            }
-          }
-        }
+        var folders = [];
         var t = tabStore.get_altTab();
         var openTab = -1;
-        for (var z = bookmarks.length - 1; z >= 0; z--) {
-          bookmarks[z].mutedInfo = {muted: false};
-          bookmarks[z].audible = false;
-          bookmarks[z].active = false;
-          bookmarks[z].favIconUrl = '';
-          bookmarks[z].highlighted = false;
-          bookmarks[z].index = z;
-          bookmarks[z].pinned = false;
-          bookmarks[z].selected = false;
-          bookmarks[z].status = 'complete';
-          bookmarksStore.windowId = utilityStore.get_focusedWindow();
-          bookmarks[z].bookmarkId = bookmarks[z].id;
-          bookmarks[z].id = S(bookmarks[z].id).toInt();
-          bookmarks[z].openTab = null;
-          for (var y = t.length - 1; y >= 0; y--) {
-            if (bookmarks[z].url === t[y].url) {
-              bookmarks[z].openTab = ++openTab;
-              bookmarks[z].id = t[y].id;
-              bookmarks[z].mutedInfo.muted = t[y].mutedInfo.muted;
-              bookmarks[z].audible = t[y].audible;
-              bookmarks[z].favIconUrl = t[y].favIconUrl;
-              bookmarks[z].highlighted = t[y].highlighted;
-              bookmarks[z].pinned = t[y].pinned;
-              bookmarks[z].selected = t[y].selected;
-              bookmarks[z].windowId = t[y].windowId;
+        function addbookmarkchildren (bookmarklevel, title='') {
+          bookmarklevel.folder = title;
+          if (!bookmarklevel.children) {
+            bookmarks.push(bookmarklevel);
+          } else {
+            folders.push(bookmarklevel);
+            bookmarklevel.children.forEach((child)=>{
+              addbookmarkchildren(child, title);
+            });
+          }
+        }
+        addbookmarkchildren(bk[0]);
+        for (var i = bookmarks.length - 1; i >= 0; i--) {
+          for (var x = folders.length - 1; x >= 0; x--) {
+            if (bookmarks[i].parentId === folders[x].id) {
+              bookmarks[i].folder = folders[x].title;
+              bookmarks[i].mutedInfo = {muted: false};
+              bookmarks[i].audible = false;
+              bookmarks[i].active = false;
+              bookmarks[i].favIconUrl = '';
+              bookmarks[i].highlighted = false;
+              bookmarks[i].index = i;
+              bookmarks[i].pinned = false;
+              bookmarks[i].selected = false;
+              bookmarks[i].status = 'complete';
+              bookmarksStore.windowId = utilityStore.get_focusedWindow();
+              bookmarks[i].bookmarkId = bookmarks[i].id;
+              bookmarks[i].id = S(bookmarks[i].id).toInt();
+              bookmarks[i].openTab = null;
+              for (var y = t.length - 1; y >= 0; y--) {
+                if (bookmarks[i].url === t[y].url) {
+                  bookmarks[i].openTab = ++openTab;
+                  bookmarks[i].id = t[y].id;
+                  bookmarks[i].mutedInfo.muted = t[y].mutedInfo.muted;
+                  bookmarks[i].audible = t[y].audible;
+                  bookmarks[i].favIconUrl = t[y].favIconUrl;
+                  bookmarks[i].highlighted = t[y].highlighted;
+                  bookmarks[i].pinned = t[y].pinned;
+                  bookmarks[i].selected = t[y].selected;
+                  bookmarks[i].windowId = t[y].windowId;
+                }
+              }
             }
           }
         }
         var bookmarkOrder = _.sortByOrder(bookmarks, ['openTab'], ['asc']);
-        resolve(bookmarkOrder);
+        if (bookmarkOrder) {
+          resolve(bookmarkOrder);
+        }
       });
     });
   },

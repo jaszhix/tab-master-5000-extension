@@ -33,9 +33,7 @@ getPrefs.then((prefs)=>{
     sendMsg({e: e, type: 'activate'});
   });
   chrome.tabs.onUpdated.addListener((e, info) => {
-    if (!prefs.bookmarks && !prefs.history) {
-      sendMsg({e: e, type: 'update'});
-    }
+    sendMsg({e: e, type: 'update'});
   });
   chrome.tabs.onMoved.addListener((e, info) => {
     sendMsg({e: e, type: 'move'});

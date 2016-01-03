@@ -121,6 +121,12 @@ var Root = React.createClass({
     this.setState({prefs: e});
     if (s.init) {
       if (e.bookmarks || e.history) {
+        if (e.bookmarks) {
+          prefsStore.set_prefs('history', false, 'skip');
+        }
+        if (e.history) {
+          prefsStore.set_prefs('bookmarks', false, 'skip');
+        }
         chrome.tabs.query({currentWindow: true}, (t)=>{
           reRenderStore.set_reRender(true, 'alt', t[0].id);
           _.delay(()=>{
@@ -169,11 +175,11 @@ var Root = React.createClass({
       }
       tabStore.set_tab(tab);
       console.log(Tab);
+      v('#main').css({cursor: 'default'});
     });
     // Querying is complete, allow the component to render.
     if (opt === 'create' || opt === 'init' || opt === 'drag' || opt === 'alt') {
       this.setState({render: true});
-      v('#main').css({cursor: 'default'});
     }
   },
   searchChanged() {
@@ -287,7 +293,7 @@ var Root = React.createClass({
     var stores = {tabs: tabs, newTabs: newTabs, prefs: s.prefs, search: search, cursor: cursor, chromeVersion: s.chromeVersion, relay: relay, windowId: windowId};
     return (
       <div className="container-main">
-        {s.context ? <ContextMenu tabs={tabs} cursor={cursor} context={context} chromeVersion={s.chromeVersion}/> : null}
+        {s.context ? <ContextMenu tabs={tabs} prefs={s.prefs} cursor={cursor} context={context} chromeVersion={s.chromeVersion}/> : null}
         <Settings tabs={tabs} prefs={s.prefs} collapse={s.collapse} />
           {s.tabs ? <div className="tile-container">
               {s.settings ? <Search event={s.event} prefs={s.prefs} /> : null}

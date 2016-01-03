@@ -287,7 +287,7 @@ var Tile = React.createClass({
       var t = tabStore.get_altTab();
       reRenderStore.set_reRender(true, 'alt', t[0].id);
       _.delay(()=>{
-        reRenderStore.set_reRender(true, 'activate', {tabId: t[0].id});
+        reRenderStore.set_reRender(true, 'alt', t[0].id);
       },500);
     };
     var close = ()=>{
@@ -297,15 +297,16 @@ var Tile = React.createClass({
       this.setState({close: true});
     }
     if (s.bookmarks || s.history) {
-      reRender();
       if (s.openTab) {
         close();
+        reRender();
       } else {
         if (s.bookmarks) {
           chrome.bookmarks.remove(p.tab.bookmarkId);
         } else {
           chrome.history.deleteUrl({url: p.tab.url});
         }
+        reRender();
       }
     } else {
       close();
