@@ -152,11 +152,12 @@ export var reRenderStore = Reflux.createStore({
 
 export var modalStore = Reflux.createStore({
   init: function() {
-    this.modal = false;
+    this.modal = {state: false, type: null};
   },
-  set_modal: function(value) {
-    this.modal = value;
-    console.log('modal: ', value);
+  set_modal: function(value, type) {
+    this.modal.state = value;
+    this.modal.type = type;
+    console.log('modal: ', this.modal);
     this.trigger(this.modal);
   },
   get_modal: function() {
@@ -367,6 +368,9 @@ export var prefsStore = Reflux.createStore({
         installTime: prefs.preferences.installTime,
         settingsMax: prefs.preferences.settingsMax
       };
+      if (typeof this.prefs.installTime === 'undefined') {
+        this.prefs.installTime = Date.now();
+      }
       this.ready = true;
       this.trigger(this.prefs);
     }).catch((err)=>{

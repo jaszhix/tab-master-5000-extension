@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Reflux from 'reflux';
-import Modal from 'react-modal';
 import S from 'string';
 import moment from 'moment';
 import _ from 'lodash';
@@ -293,7 +292,6 @@ var Settings = React.createClass({
   mixins: [Reflux.ListenerMixin],
   getInitialState(){
     return {
-      modalOpen: false,
       currentTab: 'sessions',
       settingsMax: this.props.prefs.settingsMax
     };
@@ -307,7 +305,6 @@ var Settings = React.createClass({
     };
   },
   componentDidMount(){
-    this.listenTo(modalStore, this.modalChange);
     this.listenTo(modalStore, this.settingsChange);
     this.listenTo(prefsStore, this.prefsChange);
   },
@@ -323,24 +320,6 @@ var Settings = React.createClass({
       style.modal.content.left = '15%';
       style.modal.content.right = '15%';
       style.modal.content.bottom = '15%';
-    }
-  },
-  modalChange(){
-    var modal = modalStore.get_modal();
-    this.setState({modalOpen: modal});
-    if (prefsStore.get_prefs().animations) {
-      style.modal.overlay.backgroundColor = 'rgba(216, 216, 216, 0.21)';
-      if (modal) {
-        v('#main').css({
-          transition: '-webkit-filter .2s ease-in',
-          WebkitFilter: 'blur(5px)'
-        });
-      } else {
-        v('#main').css({WebkitFilter: 'none'});
-      }
-    } else {
-      style.modal.overlay.backgroundColor = 'rgba(216, 216, 216, 0.59)';
-      v('#main').css({WebkitFilter: 'none'});
     }
   },
   settingsChange(tab){
@@ -368,25 +347,19 @@ var Settings = React.createClass({
     var preferences = settings === 'preferences';
     var about = settings === 'about';
     return (
-      <Modal
-        id="modal"
-        isOpen={s.modalOpen}
-        onRequestClose={()=>modalStore.set_modal(false)}
-        style={style.modal} >
-
-        <Container fluid={true}>
-          <Row className="ntg-tabs">
+      <Container fluid={true}>
+        <Row className="ntg-tabs">
             <div role="tabpanel"> 
                 <ul className="nav nav-tabs">
-                    <li className={sessions ? "active" : null}>
-                        <a href="#" onClick={()=>this.handleTabClick('sessions')}>Sessions</a>
-                    </li>
-                    <li className={preferences ? "active" : null}>
-                        <a href="#" onClick={()=>this.handleTabClick('preferences')}>Preferences</a>
-                    </li>
-                    <li className={about ? "active" : null}>
-                        <a href="#" onClick={()=>this.handleTabClick('about')}>About</a>
-                    </li>
+                  <li className={sessions ? "active" : null}>
+                      <a href="#" onClick={()=>this.handleTabClick('sessions')}>Sessions</a>
+                  </li>
+                  <li className={preferences ? "active" : null}>
+                      <a href="#" onClick={()=>this.handleTabClick('preferences')}>Preferences</a>
+                  </li>
+                  <li className={about ? "active" : null}>
+                      <a href="#" onClick={()=>this.handleTabClick('about')}>About</a>
+                  </li>
                 </ul>
             </div>
             <Btn style={s.settingsMax ? {top: '2%', right: '2%'} : {top: '17%', right: '18%'}} className="ntg-modal-btn-close" fa="close" onClick={this.handleCloseBtn} />
@@ -397,8 +370,7 @@ var Settings = React.createClass({
             {preferences ? <Preferences settingsMax={s.settingsMax} prefs={p.prefs} /> : null}
             {about ? <About settingsMax={s.settingsMax} /> : null}
           </Row>
-        </Container>
-      </Modal>
+      </Container>
     );
   }
 });

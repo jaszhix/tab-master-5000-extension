@@ -11,7 +11,7 @@ import tabStore from './tabStore';
 
 import {Btn, Col, Row, Container} from './bootstrap';
 import TileGrid from './tile';
-import Settings from './settings';
+import ModalHandler from './modal';
 import ContextMenu from './context';
 var Search = React.createClass({
   shouldComponentUpdate() {
@@ -35,7 +35,7 @@ var Search = React.createClass({
   },
   openAbout(){   
     settingsStore.set_settings('about');
-    modalStore.set_modal(true);
+    modalStore.set_modal(true, 'settings');
   },
   handleSidebar(){
     clickStore.set_click(true, false);
@@ -66,7 +66,7 @@ var Search = React.createClass({
           </Col>
           <Col size="6">
             {searchStore.get_search().length > 3 ? <span className="search-msg ntg-search-google-text">Press Enter to Search Google</span> : null}
-            <Btn style={{float: 'left'}} onClick={()=>modalStore.set_modal(true)} className="ntg-top-btn" fa="cogs">Settings</Btn>
+            <Btn style={{float: 'left'}} onClick={()=>modalStore.set_modal(true, 'settings')} className="ntg-top-btn" fa="cogs">Settings</Btn>
             {p.event === 'newVersion' ? <Btn onClick={()=>chrome.runtime.reload()} className="ntg-update-avail-btn" fa="rocket">New Version Available</Btn> : null}
             {p.event === 'versionUpdate' ? <Btn onClick={this.openAbout} className="ntg-update-btn" fa="info-circle">Updated to {utilityStore.get_manifest().version}</Btn> : null}
             {p.event === 'installed' ? <Btn onClick={this.openAbout} className="ntg-ty-btn" fa="thumbs-o-up">Thank you for installing TM5K</Btn> : null}
@@ -284,7 +284,7 @@ var Root = React.createClass({
     return (
       <div className="container-main">
         {s.context ? <ContextMenu tabs={tabs} prefs={s.prefs} cursor={cursor} context={context} chromeVersion={s.chromeVersion}/> : null}
-        <Settings tabs={tabs} prefs={s.prefs} collapse={s.collapse} />
+        <ModalHandler tabs={tabs} prefs={s.prefs} collapse={s.collapse} />
           {s.tabs ? <div className="tile-container">
               {s.settings ? <Search event={s.event} prefs={s.prefs} /> : null}
               <div className="tile-child-container">
