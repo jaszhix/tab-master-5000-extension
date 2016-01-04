@@ -95,13 +95,7 @@ var Preferences = React.createClass({
       screenshotBg: p.prefs.screenshotBg,
       blacklist: p.prefs.blacklist,
       animations: p.prefs.animations,
-      dragHover: false,
-      contextHover: false,
-      duplicateHover: false,
-      screenshotHover: false,
-      screenshotBgHover: false,
-      blacklistHover: false,
-      animationsHover: false,
+      hover: null,
       bytesInUse: null
     };
   },
@@ -129,72 +123,67 @@ var Preferences = React.createClass({
   },
   render: function() {
     var s = this.state;
+    var p = this.props;
     return (
       <div className="preferences">
         <Col size="6">
-          <Toggle onMouseEnter={()=>this.setState({contextHover: true})} 
-                  onMouseLeave={()=>this.setState({contextHover: false})} 
+          <Toggle onMouseEnter={()=>this.setState({hover: 'context'})} 
                   onClick={()=>prefsStore.set_prefs('context',!s.context)} 
                   on={s.context}>
                     Enable context menu
           </Toggle>
-          <Toggle onMouseEnter={()=>this.setState({animationsHover: true})} 
-                  onMouseLeave={()=>this.setState({animationsHover: false})} 
+          <Toggle onMouseEnter={()=>this.setState({hover: 'animations'})} 
                   onClick={()=>prefsStore.set_prefs('animations',!s.animations)} 
                   on={s.animations}>
                     Enable animations
           </Toggle>
           {s.animations ? 
             <Col size="12">
-              <Toggle onMouseEnter={()=>this.setState({duplicateHover: true})} 
-                      onMouseLeave={()=>this.setState({duplicateHover: false})} 
+              <Toggle onMouseEnter={()=>this.setState({hover: 'duplicate'})}
                       onClick={()=>prefsStore.set_prefs('duplicate',!s.duplicate)} 
                       on={s.duplicate} child={true}>
                         Enable pulsing duplicate tabs
               </Toggle>
             </Col> 
           : null}
-          <Toggle onMouseEnter={()=>this.setState({blacklistHover: true})} 
-                  onMouseLeave={()=>this.setState({blacklistHover: false})} 
+          <Toggle onMouseEnter={()=>this.setState({hover: 'blacklist'})} 
                   onClick={()=>prefsStore.set_prefs('blacklist',!s.blacklist)} 
                   on={s.blacklist}>
                     Enable website blacklist
           </Toggle>
           {s.blacklist ? <Blacklist /> : null}
-          <Toggle onMouseEnter={()=>this.setState({dragHover: true})} 
-                  onMouseLeave={()=>this.setState({dragHover: false})} 
+          <Toggle onMouseEnter={()=>this.setState({hover: 'drag'})}
                   onClick={()=>prefsStore.set_prefs('drag',!s.drag)} 
                   on={s.drag}>
                     Enable draggable tab re-ordering <strong>(Experimental)</strong>
           </Toggle>
-          <Toggle onMouseEnter={()=>this.setState({screenshotHover: true})} 
-                  onMouseLeave={()=>this.setState({screenshotHover: false})} 
+          <Toggle onMouseEnter={()=>this.setState({hover: 'screenshot'})}
                   onClick={()=>prefsStore.set_prefs('screenshot',!s.screenshot)}
                   on={s.screenshot}>
                     Enable tab screenshots <strong>(Experimental)</strong>
           </Toggle>
           {s.screenshot ? 
             <Col size="12">
-              <Toggle onMouseEnter={()=>this.setState({screenshotBgHover: true})} 
-                      onMouseLeave={()=>this.setState({screenshotBgHover: false})} 
+              <Toggle onMouseEnter={()=>this.setState({hover: 'screenshotBg'})} 
                       onClick={()=>prefsStore.set_prefs('screenshotBg',!s.screenshotBg)} 
                       on={s.screenshotBg} child={true}>
                         Enable screenshots in the background on hover
               </Toggle>
               {s.bytesInUse ? <p>Screenshot disk usage: {utils.formatBytes(s.bytesInUse, 2)}</p> : null}
-              <Btn onClick={()=>screenshotStore.clear()} className="ntg-setting-btn" fa="trash">Clear Screenshot Cache</Btn> 
+              <Btn onClick={()=>screenshotStore.clear()} style={p.settingsMax ? {top: '95%'} : null} className="ntg-setting-btn" fa="trash">Clear Screenshot Cache</Btn> 
             </Col>
           : null}
         </Col>
         <Col size="6">
           <Row className="prefs-row">
-            {s.dragHover ? <p>This features adds a hand icon to the top right corner of your tab tiles. Clicking the icon and dragging a tab will allow you to re-order your tabs from the grid.</p> : null}
-            {s.contextHover ? <p>This option toggles the right-click context menu on and off. If you disable it, some tab control features will not be accessible.</p> : null}
-            {s.duplicateHover ? <p>This option will make all duplicates tabs pulsate except the first tab. This makes it easier to see how many duplicate tabs you have open.</p> : null}
-            {s.screenshotHover ? <p>Enabling this feature adds a screen shot of a tab in the tab tile's background once its been clicked. After a screenshot is active, it is stored in Chrome until the page is active again. Due to performance issues, only one New Tab page can be open while screenshots are enabled.</p> : null}
-            {s.screenshotBgHover ? <p>This setting enables full-size tab screenshots to fill the background of the New Tab page, while you are hovering over a tab with a screenshot. Screenshots are blurred and blended into the background.</p> : null}
-            {s.blacklistHover ? <p>Enter a comma separated list of domains, and they will be automatically closed under any circumstance. This is useful for blocking websites which may inhibit productivity, or you simply don't like.</p> : null}
-            {s.animationsHover ? <p>This option toggles tab action animations as well as the blur effects. Disabling this is useful on lower end computers with limited hardware acceleration.</p> : null}
+            {!s.hover ? <p>Preferences change the way the extension behaves. Options marked as experimental may have bugs, or have performance issues on older computers.</p> : null}
+            {s.hover === 'drag' ? <p>This features adds a hand icon to the top right corner of your tab tiles. Clicking the icon and dragging a tab will allow you to re-order your tabs from the grid.</p> : null}
+            {s.hover === 'context' ? <p>This option toggles the right-click context menu on and off. If you disable it, some tab control features will not be accessible.</p> : null}
+            {s.hover === 'duplicate' ? <p>This option will make all duplicates tabs pulsate except the first tab. This makes it easier to see how many duplicate tabs you have open.</p> : null}
+            {s.hover === 'screenshot' ? <p>Enabling this feature adds a screen shot of a tab in the tab tile's background once its been clicked. After a screenshot is active, it is stored in Chrome until the page is active again. Due to performance issues, only one New Tab page can be open while screenshots are enabled.</p> : null}
+            {s.hover === 'screenshotBg' ? <p>This setting enables full-size tab screenshots to fill the background of the New Tab page, while you are hovering over a tab with a screenshot. Screenshots are blurred and blended into the background.</p> : null}
+            {s.hover === 'blacklist' ? <p>Enter a comma separated list of domains, and they will be automatically closed under any circumstance. This is useful for blocking websites which may inhibit productivity, or you simply don't like.</p> : null}
+            {s.hover === 'animations' ? <p>This option toggles tab action animations as well as the blur effects. Disabling this is useful on lower end computers with limited hardware acceleration.</p> : null}
           </Row>
         </Col>
       </div>

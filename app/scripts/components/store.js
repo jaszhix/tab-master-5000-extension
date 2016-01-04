@@ -71,6 +71,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     contextStore.set_context(null, 'newVersion');
   } else if (msg.type === 'installed') {
     contextStore.set_context(null, 'installed');
+    prefsStore.set_prefs('installTime', Date.now());
   } else if (msg.type === 'versionUpdate') {
     contextStore.set_context(null, 'versionUpdate');
   } else if (msg.prefs && msg.prefs.bookmarks) {
@@ -340,7 +341,7 @@ export var prefsStore = Reflux.createStore({
             reject(chrome.extension.lastError);
           } else {
             console.log('init prefs');
-            this.prefs = {drag: false, context: true, animations: true, duplicate: false, screenshot: false, screenshotBg: false, blacklist: true, sidebar: false, sort: true, bookmarks: false, history: false};
+            this.prefs = {settingsMax: false, drag: false, context: true, animations: true, duplicate: false, screenshot: false, screenshotBg: false, blacklist: true, sidebar: false, sort: true, mode: 'tabs', installTime: null};
             chrome.storage.local.set({preferences: this.prefs}, (result)=> {
               this.ready = true;
               console.log('Init preferences saved: ',result);
@@ -361,9 +362,10 @@ export var prefsStore = Reflux.createStore({
         blacklist: prefs.preferences.blacklist,
         sidebar: prefs.preferences.sidebar,
         sort: prefs.preferences.sort,
-        bookmarks: prefs.preferences.bookmarks,
-        history: prefs.preferences.history,
+        mode: prefs.preferences.mode,
         animations: prefs.preferences.animations,
+        installTime: prefs.preferences.installTime,
+        settingsMax: prefs.preferences.settingsMax
       };
       this.ready = true;
       this.trigger(this.prefs);
@@ -641,7 +643,7 @@ export var bookmarksStore = Reflux.createStore({
         var bookmarks = [];
         var folders = [];
         var t = tabStore.get_altTab();
-        var openTab = -1;
+        var openTab = 0;
         function addbookmarkchildren (bookmarklevel, title='') {
           bookmarklevel.folder = title;
           if (!bookmarklevel.children) {

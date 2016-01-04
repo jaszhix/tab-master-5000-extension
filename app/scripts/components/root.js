@@ -59,7 +59,7 @@ var Search = React.createClass({
                 type="text" 
                 value={searchStore.get_search()}
                 className="form-control search-tabs" 
-                placeholder={p.prefs.bookmarks ? 'Search bookmarks...' : p.prefs.history ? 'Search history...' : 'Search tabs...'}
+                placeholder={p.prefs.mode === 'bookmarks' ? 'Search bookmarks...' : p.prefs.mode === 'history' ? 'Search history...' : 'Search tabs...'}
                 onChange={this.handleSearch} />
               </form>
             </Col>
@@ -120,13 +120,12 @@ var Root = React.createClass({
     var s = this.state;
     this.setState({prefs: e});
     if (s.init) {
-      if (e.bookmarks || e.history) {
-        if (e.bookmarks) {
+      if (e.mode !== 'tabs') {
+        /*if (e.bookmarks) {
           prefsStore.set_prefs('history', false, 'skip');
-        }
-        if (e.history) {
+        } else if (e.history) {
           prefsStore.set_prefs('bookmarks', false, 'skip');
-        }
+        }*/
         chrome.tabs.query({currentWindow: true}, (t)=>{
           reRenderStore.set_reRender(true, 'alt', t[0].id);
           _.delay(()=>{
@@ -158,11 +157,11 @@ var Root = React.createClass({
     tabStore.promise().then((Tab)=>{
       var tab = [];
       var altTab = [];
-      if (s.prefs.bookmarks) {
+      if (s.prefs.mode === 'bookmarks') {
         altTab = Tab;
         tab = bookmarksStore.get_bookmarks();
         tabStore.set_altTab(altTab);
-      } else if (s.prefs.history) {
+      } else if (s.prefs.mode === 'history') {
         altTab = Tab;
         tab = historyStore.get_history();
         tabStore.set_altTab(altTab);
@@ -227,7 +226,7 @@ var Root = React.createClass({
     var s = this.state;
     var keys = [];
     var labels = {};
-    if (stores.prefs.bookmarks) {
+    if (stores.prefs.mode === 'bookmarks') {
       keys = ['openTab', 'url', 'title', 'dateAdded', 'folder'];
       labels = {
         folder: 'Folder',
@@ -236,7 +235,7 @@ var Root = React.createClass({
         title: 'Title',
         openTab: 'Open'
       };
-    } else if (stores.prefs.history) {
+    } else if (stores.prefs.mode === 'history') {
       keys = ['openTab', 'url', 'title', 'lastVisitTime', 'visitCount'];
       labels = {
         visitCount: 'Most Visited',

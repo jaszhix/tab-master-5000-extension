@@ -45,7 +45,7 @@ var Sessions = React.createClass({
   },
   setTabSource(){
     var p = this.props;
-    if (p.prefs.bookmarks || p.prefs.history) {
+    if (p.prefs.mode !== 'tabs') {
       this.setState({tabs: tabStore.get_altTab()});
     } else {
       this.setState({tabs: p.tabs});
@@ -199,7 +199,7 @@ var Sessions = React.createClass({
     var p = this.props;
     var s = this.state;
     var tabs = s.tabs;
-    var tm20 = tabs.length - 20;
+    var tm20 = tabs.length - 24;
     var removeTabFromSession = (id, session)=>{
       var index = _.findIndex(session.tabs, { 'id': id });
       var tabToRemove = _.remove(session.tabs, session.tabs[index]);
@@ -241,7 +241,7 @@ var Sessions = React.createClass({
                         return <Row onMouseEnter={()=>this.handleSelectedSessionTabHoverIn(i)} onMouseLeave={()=>this.handleSelectedSessionTabHoverOut(i)} key={i} style={i % 2 ? null : {backgroundColor: 'rgb(249, 249, 249)'}}>
                             <Col size="9">
                               <img className="ntg-small-favicon" src={S(t.favIconUrl).isEmpty() ? '../images/file_paper_blank_document.png' : utilityStore.filterFavicons(t.favIconUrl, t.url) } /> 
-                              {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {S(t.title).truncate(50).s}
+                              {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {p.settingsMax ? t.title : S(t.title).truncate(50).s}
                             </Col>
                             <Col size="3">
                               {s.selectedSessionTabHover === i ? <Btn onClick={()=>removeTabFromSession(t.id, session)} className="ntg-expanded-session-tab-btn" fa="times" /> : null}
@@ -259,23 +259,30 @@ var Sessions = React.createClass({
               </Col>
             </Row>;
           }) : null}
-          <Btn onClick={()=>this.exportSessions()} className="ntg-impexp-btn" fa="arrow-circle-o-down">Export</Btn>
+          <Btn onClick={()=>this.exportSessions()} style={p.settingsMax ? {top: '95%'} : null} className="ntg-impexp-btn" fa="arrow-circle-o-down">Export</Btn>
           <input {...this.props} children={undefined} type="file" onChange={this.importSessions} ref="fileInput" style={style.hiddenInput} />
-          <Btn onClick={this.triggerInput} className="ntg-impexp-btn" style={{marginLeft: '160px'}} fa="arrow-circle-o-up">Import</Btn>
+          <Btn onClick={this.triggerInput} style={p.settingsMax ? {top: '95%', marginLeft: '160px'} : {marginLeft: '160px'}} className="ntg-impexp-btn" fa="arrow-circle-o-up">Import</Btn>
         </Col>
         <Col size="5" className="session-col">
           <h4>Current Session</h4>
           {tabs.map((t, i)=>{
-            if (i <= 20) {
+            if (!p.settingsMax) {
+              if (i <= 24) {
+                return <Row key={i} style={i % 2 ? null : {backgroundColor: 'rgb(249, 249, 249)'}}>
+                  <img className="ntg-small-favicon" src={S(t.favIconUrl).isEmpty() ? '../images/file_paper_blank_document.png' : utilityStore.filterFavicons(t.favIconUrl, t.url) } />  
+                  {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {S(t.title).truncate(60).s}
+                </Row>;
+              }
+            } else {
               return <Row key={i} style={i % 2 ? null : {backgroundColor: 'rgb(249, 249, 249)'}}>
                 <img className="ntg-small-favicon" src={S(t.favIconUrl).isEmpty() ? '../images/file_paper_blank_document.png' : utilityStore.filterFavicons(t.favIconUrl, t.url) } />  
-                {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {S(t.title).truncate(60).s}
+                {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {p.settingsMax ? t.title : S(t.title).truncate(60).s}
               </Row>;
-            }
+            } 
           })}
-          {tabs.length >= 22 ? <Row>{tabs.length >= 20 ? '...plus ' +tm20+ ' other tabs.' : null}</Row> : null}
+          {tabs.length >= 22 && !p.settingsMax ? <Row>{tabs.length >= 24 ? '...plus ' +tm20+ ' other tabs.' : null}</Row> : null}
           <p/>
-          <Btn onClick={this.saveSession} className="ntg-setting-btn" fa="plus">Save Session</Btn>
+          <Btn onClick={this.saveSession} style={p.settingsMax ? {top: '95%'} : null} className="ntg-setting-btn" fa="plus">Save Session</Btn>
         </Col>
       </div>
     );
@@ -287,7 +294,8 @@ var Settings = React.createClass({
   getInitialState(){
     return {
       modalOpen: false,
-      currentTab: 'sessions'
+      currentTab: 'sessions',
+      settingsMax: this.props.prefs.settingsMax
     };
   },
   propTypes: {
@@ -301,6 +309,21 @@ var Settings = React.createClass({
   componentDidMount(){
     this.listenTo(modalStore, this.modalChange);
     this.listenTo(modalStore, this.settingsChange);
+    this.listenTo(prefsStore, this.prefsChange);
+  },
+  prefsChange(e){
+    this.setState({settingsMax: e.settingsMax});
+    if (e.settingsMax) {
+      style.modal.content.top = '0%';
+      style.modal.content.left = '0%';
+      style.modal.content.right = '0%';
+      style.modal.content.bottom = '0%';
+    } else {
+      style.modal.content.top = '15%';
+      style.modal.content.left = '15%';
+      style.modal.content.right = '15%';
+      style.modal.content.bottom = '15%';
+    }
   },
   modalChange(){
     var modal = modalStore.get_modal();
@@ -357,11 +380,13 @@ var Settings = React.createClass({
                     </li>
                 </ul>
             </div>
+            <Btn style={s.settingsMax ? {top: '2%', right: '2%'} : {top: '17%', right: '18%'}} className="ntg-modal-btn-close" fa="close" onClick={()=>modalStore.set_modal(false)} />
+            <Btn style={s.settingsMax ? {top: '2%', right: '4%'} : {top: '17%', right: '20%'}} className="ntg-modal-btn-close" fa={s.settingsMax ? "clone" : "square-o"} onClick={()=>prefsStore.set_prefs('settingsMax', !s.settingsMax)} />
           </Row>
           <Row className="ntg-settings-pane">
-            {sessions ? <Sessions tabs={p.tabs} prefs={p.prefs} collapse={p.collapse} /> : null}
-            {preferences ? <Preferences prefs={p.prefs} /> : null}
-            {about ? <About /> : null}
+            {sessions ? <Sessions settingsMax={s.settingsMax} tabs={p.tabs} prefs={p.prefs} collapse={p.collapse} /> : null}
+            {preferences ? <Preferences settingsMax={s.settingsMax} prefs={p.prefs} /> : null}
+            {about ? <About settingsMax={s.settingsMax} /> : null}
           </Row>
         </Container>
       </Modal>

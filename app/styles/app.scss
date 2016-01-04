@@ -668,3 +668,56 @@ button.ntg-context-btn-close-all {
     padding-left: 8px;
     padding-right: 8px;
 }
+button.ntg-modal-btn-close {
+    width: auto;
+    height: auto;
+    color: #000;
+    background-color: #EDEDED;
+    text-shadow: 2px 2px #FFF;
+    margin-bottom: 20px;
+    border: 0;
+    vertical-align: middle;
+    display: inline-block;
+    font-size: 14px;
+    line-height: 1.42857143;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    touch-action: manipulation;
+    cursor: pointer;
+    -webkit-user-select: none;
+    border-radius: 4px;
+    overflow: hidden;
+    outline: none;
+    position: fixed;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+button.ntg-modal-btn-max {
+    width: auto;
+    height: auto;
+    color: #000;
+    background-color: #EDEDED;
+    text-shadow: 2px 2px #FFF;
+    margin-bottom: 20px;
+    border: 0;
+    vertical-align: middle;
+    display: inline-block;
+    font-size: 14px;
+    line-height: 1.42857143;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    touch-action: manipulation;
+    cursor: pointer;
+    -webkit-user-select: none;
+    border-radius: 4px;
+    overflow: hidden;
+    outline: none;
+    /* position: absolute;
+    top: 17%;
+    right: 20%; */
+    margin-right: 4px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}

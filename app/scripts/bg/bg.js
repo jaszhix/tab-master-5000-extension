@@ -45,32 +45,32 @@ getPrefs.then((prefs)=>{
     sendMsg({e: e, type: 'detach'});
   });
   chrome.bookmarks.onCreated.addListener((e, info) => {
-    if (prefs.bookmarks) {
+    if (prefs.mode === 'bookmarks') {
       sendMsg({e: e, type: 'create'});
     }
   });
   chrome.bookmarks.onRemoved.addListener((e, info) => {
-    if (prefs.bookmarks) {
+    if (prefs.mode === 'bookmarks') {
       sendMsg({e: e, type: 'create'});
     }
   });
   chrome.bookmarks.onChanged.addListener((e, info) => {
-    if (prefs.bookmarks) {
+    if (prefs.mode === 'bookmarks') {
       sendMsg({e: e, type: 'update'});
     }
   });
   chrome.bookmarks.onMoved.addListener((e, info) => {
-    if (prefs.bookmarks) {
+    if (prefs.mode === 'bookmarks') {
       sendMsg({e: e, type: 'move'});
     }
   });
   chrome.history.onVisited.addListener((e, info) => {
-    if (prefs.history) {
+    if (prefs.mode === 'history') {
       sendMsg({e: e, type: 'create'});
     }
   });
   chrome.history.onVisitRemoved.addListener((e, info) => {
-    if (prefs.history) {
+    if (prefs.mode === 'history') {
       sendMsg({e: e, type: 'create'});
     }
   });

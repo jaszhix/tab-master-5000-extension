@@ -52,7 +52,7 @@ var Tile = React.createClass({
     this.listenTo(applyTabOrderStore, this.applyTabOrder);
     this.listenTo(relayStore, this.handleRelays);
     this.listenTo(tabStore, this.update);
-    if (this.props.stores.prefs.bookmarks) {
+    if (this.props.stores.prefs.mode === 'bookmarks') {
       this.listenTo(bookmarksStore, this.bookmarksFolderChange);
     }
     _.defer(()=>{
@@ -64,9 +64,9 @@ var Tile = React.createClass({
     return this.state.render;
   },
   initMethods(){
+    this.setTabMode();
     this.updateScreenshot('init');
     this.checkDuplicateTabs();
-    this.setTabMode();
     if (this.props.tab.title === 'New Tab') {
       _.defer(()=>{
         this.closeNewTabs();
@@ -74,6 +74,7 @@ var Tile = React.createClass({
     }
   },
   update(){
+    this.setTabMode();
     var p = this.props;
     this.setTabMode();
     if (this.state.duplicate) {
@@ -116,17 +117,18 @@ var Tile = React.createClass({
   },
   setTabMode(){
     var p = this.props;
-    if (p.stores.prefs.bookmarks) {
+    var s = this.state;
+    if (p.stores.prefs.mode === 'bookmarks') {
       this.setState({bookmarks: true});
     } else {
       this.setState({bookmarks: false});
     }
-    if (p.stores.prefs.history) {
+    if (p.stores.prefs.mode === 'history') {
       this.setState({history: true});
     } else {
       this.setState({history: false});
     }
-    if (p.stores.prefs.bookmarks && p.tab.openTab || p.stores.prefs.history && p.tab.openTab) {
+    if (s.bookmarks && p.tab.openTab || s.history && p.tab.openTab) {
       this.setState({openTab: true});
     } else {
       this.setState({openTab: false});
@@ -522,7 +524,6 @@ var Tile = React.createClass({
     var s = this.state;
     var p = this.props;
     var titleLimit = s.bookmarks || s.history ? 70 : 83;
-    //var s.openTab = !p.stores.prefs.bookmarks || p.stores.prefs.bookmarks && p.tab.openTab;
     var drag = dragStore.get_drag();
     return (
       <div ref="tileMain" id={'tileMain-'+p.i} onDragEnter={this.currentlyDraggedOver(p.tab)} style={p.stores.prefs.screenshot && p.stores.prefs.screenshotBg ? {opacity: '0.95'} : null}>
@@ -563,7 +564,7 @@ var Tile = React.createClass({
                       {S(p.tab.title).truncate(titleLimit).s}
                     </h5>
                     {s.bookmarks ? <h5 onClick={()=>bookmarksStore.set_folder(p.tab.folder)} style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-folder">
-                      <i className="fa fa-folder-o" />{p.tab.folder ? p.stores.prefs.bookmarks ? ' '+p.tab.folder : null : null}
+                      <i className="fa fa-folder-o" />{p.tab.folder ? s.bookmarks ? ' '+p.tab.folder : null : null}
                     </h5> : null}
                     {s.history ? <h5 style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-folder">
                       <i className="fa fa-hourglass-o" />{' '+S(moment(p.tab.lastVisitTime).fromNow()).capitalize().s}
@@ -591,8 +592,7 @@ var Sidebar = React.createClass({
     var p = this.props;
     return {
       sort: p.prefs.sort,
-      bookmarks: p.prefs.bookmarks,
-      history: p.prefs.history
+      mode: p.prefs.mode
     };
   },
   componentDidMount(){
@@ -601,21 +601,20 @@ var Sidebar = React.createClass({
   prefsChange(){
     var p = this.props;
     this.setState({sort: p.prefs.sort});
-    this.setState({bookmarks: p.prefs.bookmarks});
-    this.setState({history: p.prefs.history});
+    this.setState({mode: p.prefs.mode});
   },
   handleBookmarks(){
-    var s = this.state;
-    prefsStore.set_prefs('history', false);
-    prefsStore.set_prefs('bookmarks', !s.bookmarks);
+    //var s = this.state;
+    //prefsStore.set_prefs('history', false, 'skip');
+    prefsStore.set_prefs('mode', 'bookmarks');
     chrome.tabs.query({currentWindow: true}, (t)=>{
       reRenderStore.set_reRender(true, 'alt', t[0].id);
     });
   },
   handleHistory(){
-    var s = this.state;
-    prefsStore.set_prefs('bookmarks', false);
-    prefsStore.set_prefs('history', !s.history);
+    //var s = this.state;
+    //prefsStore.set_prefs('bookmarks', false, 'skip');
+    prefsStore.set_prefs('mode', 'history');
     chrome.tabs.query({currentWindow: true}, (t)=>{
       reRenderStore.set_reRender(true, 'alt', t[0].id);
     });
@@ -633,12 +632,11 @@ var Sidebar = React.createClass({
         <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleSort} className="ntg-apply-btn" fa="sort-amount-asc">{p.collapse ? 'Sort Tabs' : 'Sort'}</Btn>
         {s.sort ? <div>
             {p.labels}
-            {!s.bookmarks ? !s.history ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={p.onClick} className="ntg-apply-btn" fa="sort">{iconCollapse ? '' : 'Apply'}</Btn> : null : null}
+            {s.mode === 'tabs' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={p.onClick} className="ntg-apply-btn" fa="sort">{iconCollapse ? '' : 'Apply'}</Btn> : null}
           </div> : null}
-        {s.bookmarks ? <div></div> : null}
-        {s.history || s.bookmarks ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={s.bookmarks ? this.handleBookmarks : s.history ? this.handleHistory : null} className="ntg-apply-btn" fa="square">{iconCollapse ? '' : 'Tabs'}</Btn> : null}
-        {!s.bookmarks ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleBookmarks} className="ntg-apply-btn" fa="bookmark">{iconCollapse ? '' : 'Bookmarks'}</Btn> : null}
-        {!s.history ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleHistory} className="ntg-apply-btn" fa="history">{iconCollapse ? '' : 'History'}</Btn> : null}
+        {s.mode !== 'tabs' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={()=>prefsStore.set_prefs('mode', 'tabs')} className="ntg-apply-btn" fa="square">{iconCollapse ? '' : 'Tabs'}</Btn> : null}
+        {s.mode !== 'bookmarks' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleBookmarks} className="ntg-apply-btn" fa="bookmark">{iconCollapse ? '' : 'Bookmarks'}</Btn> : null}
+        {s.mode !== 'history' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleHistory} className="ntg-apply-btn" fa="history">{iconCollapse ? '' : 'History'}</Btn> : null}
       </div>
     );
   }
