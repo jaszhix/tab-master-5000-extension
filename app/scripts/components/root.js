@@ -121,13 +121,8 @@ var Root = React.createClass({
     this.setState({prefs: e});
     if (s.init) {
       if (e.mode !== 'tabs') {
-        /*if (e.bookmarks) {
-          prefsStore.set_prefs('history', false, 'skip');
-        } else if (e.history) {
-          prefsStore.set_prefs('bookmarks', false, 'skip');
-        }*/
         chrome.tabs.query({currentWindow: true}, (t)=>{
-          reRenderStore.set_reRender(true, 'alt', t[0].id);
+          //reRenderStore.set_reRender(true, 'alt', t[0].id);
           _.delay(()=>{
             reRenderStore.set_reRender(true, 'activate', {tabId: t[0].id});
           },500);
@@ -156,15 +151,10 @@ var Root = React.createClass({
     // Query current Chrome window for tabs.
     tabStore.promise().then((Tab)=>{
       var tab = [];
-      var altTab = [];
       if (s.prefs.mode === 'bookmarks') {
-        altTab = Tab;
         tab = bookmarksStore.get_bookmarks();
-        tabStore.set_altTab(altTab);
       } else if (s.prefs.mode === 'history') {
-        altTab = Tab;
         tab = historyStore.get_history();
-        tabStore.set_altTab(altTab);
       } else {
         tab = Tab;
         utilityStore.set_window(tab[0].windowId);
@@ -172,6 +162,7 @@ var Root = React.createClass({
       if (opt === 'init') {
         this.setState({tabs: tab});
       }
+      tabStore.set_altTab(Tab);
       tabStore.set_tab(tab);
       console.log(Tab);
       v('#main').css({cursor: 'default'});

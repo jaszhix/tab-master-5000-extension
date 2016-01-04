@@ -49,10 +49,19 @@ var tabStore = Reflux.createStore({
     return _.where(this.getAllTabs(), { title: 'New Tab' });
   },
   close(id){
-    chrome.tabs.get(id, (t)=>{
-      if (t) {
-        chrome.tabs.remove(id);
-      }
+    var get = new Promise((resolve, reject)=>{
+      chrome.tabs.get(id, (t)=>{
+        if (t) {
+          resolve(t);
+        } else {
+          reject();
+        }
+      });
+    });
+    get.then(()=>{
+      chrome.tabs.remove(id);
+    }).catch(()=>{
+      console.log(chrome.extension.lastError);
     });
   }
 });

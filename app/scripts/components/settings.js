@@ -351,6 +351,15 @@ var Settings = React.createClass({
     settingsStore.set_settings(opt);
     clickStore.set_click(true, false);
   },
+  handleCloseBtn(){
+    clickStore.set_click(true, false);
+    modalStore.set_modal(false);
+  },
+  handleMaxBtn(){
+    clickStore.set_click(true, false);
+    prefsStore.set_prefs('settingsMax', !this.state.settingsMax);
+
+  },
   render: function() {
     var p = this.props;
     var s = this.state;
@@ -380,8 +389,8 @@ var Settings = React.createClass({
                     </li>
                 </ul>
             </div>
-            <Btn style={s.settingsMax ? {top: '2%', right: '2%'} : {top: '17%', right: '18%'}} className="ntg-modal-btn-close" fa="close" onClick={()=>modalStore.set_modal(false)} />
-            <Btn style={s.settingsMax ? {top: '2%', right: '4%'} : {top: '17%', right: '20%'}} className="ntg-modal-btn-close" fa={s.settingsMax ? "clone" : "square-o"} onClick={()=>prefsStore.set_prefs('settingsMax', !s.settingsMax)} />
+            <Btn style={s.settingsMax ? {top: '2%', right: '2%'} : {top: '17%', right: '18%'}} className="ntg-modal-btn-close" fa="close" onClick={this.handleCloseBtn} />
+            <Btn style={s.settingsMax ? {top: '2%', right: '4%'} : {top: '17%', right: '20%'}} className="ntg-modal-btn-close" fa={s.settingsMax ? "clone" : "square-o"} onClick={this.handleMaxBtn} />
           </Row>
           <Row className="ntg-settings-pane">
             {sessions ? <Sessions settingsMax={s.settingsMax} tabs={p.tabs} prefs={p.prefs} collapse={p.collapse} /> : null}

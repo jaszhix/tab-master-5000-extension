@@ -34,7 +34,7 @@ var reRender = (type, id) => {
   } else {
     isCurrentWindow = active === utilityStore.get_window();
   }
-  console.log('window: ', active, utilityStore.get_window(), 'state: ',utilityStore.get_systemState());
+  console.log('window: ', active, utilityStore.get_window(), 'state: ',utilityStore.get_systemState(), 'isCurrentWindow: ',isCurrentWindow);
   if (isCurrentWindow && utilityStore.get_systemState() === 'active') {
     reRenderStore.set_reRender(true, type, id);
   }
@@ -729,7 +729,7 @@ export var historyStore = Reflux.createStore({
       chrome.history.search({text: '', maxResults: 1000}, (h)=>{
         console.log(h);
         var t = tabStore.get_altTab();
-        var openTab = -1;
+        var openTab = 0;
         for (var i = h.length - 1; i >= 0; i--) {
           h[i].mutedInfo = {muted: false};
           h[i].audible = false;

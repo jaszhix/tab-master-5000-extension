@@ -31,7 +31,7 @@ var style = {
       bottom: 0,
       zIndex: '9995',
       backgroundColor: 'rgba(216, 216, 216, 0.21)',
-      transition: 'background-color .2s ease-in'
+      transition: 'background-color .9s ease-in'
     },
     content: {
       position: 'absolute',

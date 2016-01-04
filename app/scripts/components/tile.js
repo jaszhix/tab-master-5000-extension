@@ -9,7 +9,7 @@ import moment from 'moment';
 import Draggable from 'react-draggable';
 import utils from './utils';
 
-import {clickStore, historyStore, bookmarksStore, screenshotStore, dupeStore, prefsStore, reRenderStore, searchStore, applyTabOrderStore, utilityStore, contextStore, relayStore, dragStore} from './store';
+import {clickStore, bookmarksStore, screenshotStore, dupeStore, prefsStore, reRenderStore, searchStore, applyTabOrderStore, utilityStore, contextStore, relayStore, dragStore} from './store';
 import tabStore from './tabStore';
 
 import {Btn, Col, Row} from './bootstrap';
@@ -117,7 +117,6 @@ var Tile = React.createClass({
   },
   setTabMode(){
     var p = this.props;
-    var s = this.state;
     if (p.stores.prefs.mode === 'bookmarks') {
       this.setState({bookmarks: true});
     } else {
@@ -128,7 +127,7 @@ var Tile = React.createClass({
     } else {
       this.setState({history: false});
     }
-    if (s.bookmarks && p.tab.openTab || s.history && p.tab.openTab) {
+    if (p.stores.prefs.mode === 'bookmarks' && p.tab.openTab || p.stores.prefs.mode === 'history' && p.tab.openTab) {
       this.setState({openTab: true});
     } else {
       this.setState({openTab: false});
@@ -604,20 +603,18 @@ var Sidebar = React.createClass({
     this.setState({mode: p.prefs.mode});
   },
   handleBookmarks(){
-    //var s = this.state;
-    //prefsStore.set_prefs('history', false, 'skip');
     prefsStore.set_prefs('mode', 'bookmarks');
-    chrome.tabs.query({currentWindow: true}, (t)=>{
+    var t = tabStore.get_altTab();
+    _.delay(()=>{
       reRenderStore.set_reRender(true, 'alt', t[0].id);
-    });
+    },500);
   },
   handleHistory(){
-    //var s = this.state;
-    //prefsStore.set_prefs('bookmarks', false, 'skip');
     prefsStore.set_prefs('mode', 'history');
-    chrome.tabs.query({currentWindow: true}, (t)=>{
+    var t = tabStore.get_altTab();
+    _.delay(()=>{
       reRenderStore.set_reRender(true, 'alt', t[0].id);
-    });
+    },500);
   },
   handleSort(){
     clickStore.set_click(true, false);
