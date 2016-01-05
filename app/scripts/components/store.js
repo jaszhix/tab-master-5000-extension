@@ -10,9 +10,6 @@ export var tabs = ()=>{
 };
 // Chrome event listeners set to trigger re-renders.
 var reRender = (type, id) => {
-  var bookmarks = bookmarksStore.get_state();
-  var history = historyStore.get_state();
-  // Detect if Chrome is idle or not, and prevent extension render updates if idle to save CPU/power.
   chrome.idle.queryState(900, (idle)=>{
     utilityStore.set_systemState(idle);
   });
@@ -28,14 +25,8 @@ var reRender = (type, id) => {
   } else {
     active = _.result(_.find(tabs(), { id: id }), 'windowId');
   }
-  var isCurrentWindow = null;
-  if (bookmarks || history) {
-    isCurrentWindow = true;
-  } else {
-    isCurrentWindow = active === utilityStore.get_window();
-  }
-  console.log('window: ', active, utilityStore.get_window(), 'state: ',utilityStore.get_systemState(), 'isCurrentWindow: ',isCurrentWindow);
-  if (isCurrentWindow && utilityStore.get_systemState() === 'active') {
+  console.log('window: ', active, utilityStore.get_window(), 'state: ',utilityStore.get_systemState());
+  if (active === utilityStore.get_window() && utilityStore.get_systemState() === 'active') {
     reRenderStore.set_reRender(true, type, id);
   }
 };
@@ -50,7 +41,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       // Inject event listener that messages the extension to recapture the image on click.
       var title = _.result(_.find(tabs(), { id: msg.e.tabId }), 'title');
       if (title !== 'New Tab') {
-        //screenshotStore.capture(msg.e.tabId, msg.e.windowId);
         _.defer(()=>{
           screenshotStore.capture(msg.e.tabId, msg.e.windowId);
         });
@@ -73,17 +63,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     contextStore.set_context(null, 'installed');
   } else if (msg.type === 'versionUpdate') {
     contextStore.set_context(null, 'versionUpdate');
-  } else if (msg.prefs) {
-    if (msg.prefs.mode === 'history') {
-      historyStore.set_state(true);
-    } else {
-      historyStore.set_state(false);
-    }
-    if (msg.prefs.mode === 'bookmarks') {
-      bookmarksStore.set_state(true);
-    } else {
-      bookmarksStore.set_state(false);
-    }
   }
 });
 
@@ -646,12 +625,6 @@ export var bookmarksStore = Reflux.createStore({
     this.state = false;
     this.folder = null;
   },
-  set_state(value){
-    this.state = value;
-  },
-  get_state(){
-    return this.state;
-  },
   set_bookmarks: function(value) {
     return new Promise((resolve, reject)=>{
       chrome.bookmarks.getTree((bk)=>{
@@ -659,35 +632,29 @@ export var bookmarksStore = Reflux.createStore({
         var folders = [];
         var t = tabStore.get_altTab();
         var openTab = 0;
-        function addbookmarkchildren (bookmarklevel, title='') {
-          bookmarklevel.folder = title;
-          if (!bookmarklevel.children) {
-            bookmarks.push(bookmarklevel);
+        var it = 0;
+        var addBookmarkChildren = (bookmarkLevel, title='')=> {
+          bookmarkLevel.folder = title;
+
+          if (!bookmarkLevel.children) {
+            it = ++it;
+            bookmarkLevel.mutedInfo = {muted: false};
+            bookmarkLevel.audible = false;
+            bookmarkLevel.active = false;
+            bookmarkLevel.favIconUrl = '';
+            bookmarkLevel.highlighted = false;
+            bookmarkLevel.index = it;
+            bookmarkLevel.pinned = false;
+            bookmarkLevel.selected = false;
+            bookmarkLevel.status = 'complete';
+            bookmarkLevel.windowId = utilityStore.get_window();
+            bookmarkLevel.bookmarkId = bookmarkLevel.id;
+            bookmarkLevel.id = parseInt(bookmarkLevel.id);
+            bookmarkLevel.openTab = null;
+            bookmarks.push(bookmarkLevel);
           } else {
-            folders.push(bookmarklevel);
-            bookmarklevel.children.forEach((child)=>{
-              addbookmarkchildren(child, title);
-            });
-          }
-        }
-        addbookmarkchildren(bk[0]);
-        for (var i = bookmarks.length - 1; i >= 0; i--) {
-          for (var x = folders.length - 1; x >= 0; x--) {
-            if (bookmarks[i].parentId === folders[x].id) {
-              bookmarks[i].folder = folders[x].title;
-              bookmarks[i].mutedInfo = {muted: false};
-              bookmarks[i].audible = false;
-              bookmarks[i].active = false;
-              bookmarks[i].favIconUrl = '';
-              bookmarks[i].highlighted = false;
-              bookmarks[i].index = i;
-              bookmarks[i].pinned = false;
-              bookmarks[i].selected = false;
-              bookmarks[i].status = 'complete';
-              bookmarksStore.windowId = utilityStore.get_focusedWindow();
-              bookmarks[i].bookmarkId = bookmarks[i].id;
-              bookmarks[i].id = S(bookmarks[i].id).toInt();
-              bookmarks[i].openTab = null;
+            folders.push(bookmarkLevel);
+            for (var i = bookmarks.length - 1; i >= 0; i--) {
               for (var y = t.length - 1; y >= 0; y--) {
                 if (bookmarks[i].url === t[y].url) {
                   bookmarks[i].openTab = ++openTab;
@@ -701,12 +668,23 @@ export var bookmarksStore = Reflux.createStore({
                   bookmarks[i].windowId = t[y].windowId;
                 }
               }
+              for (var x = folders.length - 1; x >= 0; x--) {
+                if (bookmarks[i].parentId === folders[x].id) {
+                  bookmarks[i].folder = folders[x].title;
+                }
+              }
             }
+            //bookmarks = _.sortByOrder(bookmarks, ['openTab'], ['asc']);
+            bookmarkLevel.children.forEach((child)=>{
+              addBookmarkChildren(child, title);
+            });
           }
-        }
-        var bookmarkOrder = _.sortByOrder(bookmarks, ['openTab'], ['asc']);
-        if (bookmarkOrder) {
-          resolve(bookmarkOrder);
+        };
+        addBookmarkChildren(bk[0]);
+        
+        //var bookmarkOrder = _.sortByOrder(bookmarks, ['openTab'], ['asc']);
+        if (bookmarks) {
+          resolve(bookmarks);
         }
       });
     });
@@ -733,12 +711,6 @@ export var historyStore = Reflux.createStore({
     this.state = false;
     this.maxResults = 100;
   },
-  set_state(value){
-    this.state = value;
-  },
-  get_state(){
-    return this.state;
-  },
   set_history: function(value) {
     return new Promise((resolve, reject)=>{
       chrome.history.search({text: '', maxResults: 1000}, (h)=>{
@@ -755,7 +727,7 @@ export var historyStore = Reflux.createStore({
           h[i].pinned = false;
           h[i].selected = false;
           h[i].status = 'complete';
-          h[i].windowId = utilityStore.get_focusedWindow();
+          h[i].windowId = utilityStore.get_window();
           h[i].id = S(h[i].id).toInt();
           h[i].openTab = null;
           for (var y = t.length - 1; y >= 0; y--) {

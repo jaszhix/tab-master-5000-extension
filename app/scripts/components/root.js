@@ -141,15 +141,16 @@ var Root = React.createClass({
   },
   captureTabs(opt) {
     var s = this.state;
-    if (opt !== 'init') {
-      v('#main').css({cursor: 'wait'});
-      // Render state is toggled to false on the subsequent re-renders only.
-      if (opt === 'create' || opt === 'drag' || opt === 'alt') {
-        this.setState({render: false});
-      }
-    }
     // Query current Chrome window for tabs.
     tabStore.promise().then((Tab)=>{
+      if (opt !== 'init') {
+        v('#main').css({cursor: 'wait'});
+        // Render state is toggled to false on the subsequent re-renders only.
+        if (opt === 'create' || opt === 'drag') {
+          this.setState({render: false});
+        }
+      }
+      utilityStore.set_window(Tab[0].windowId);
       var tab = [];
       if (s.prefs.mode === 'bookmarks') {
         tab = bookmarksStore.get_bookmarks();
@@ -157,7 +158,6 @@ var Root = React.createClass({
         tab = historyStore.get_history();
       } else {
         tab = Tab;
-        utilityStore.set_window(tab[0].windowId);
       }
       if (opt === 'init') {
         this.setState({tabs: tab});
@@ -166,11 +166,11 @@ var Root = React.createClass({
       tabStore.set_tab(tab);
       console.log(Tab);
       v('#main').css({cursor: 'default'});
+      // Querying is complete, allow the component to render.
+      if (opt === 'create' || opt === 'init' || opt === 'drag') {
+        this.setState({render: true});
+      }
     });
-    // Querying is complete, allow the component to render.
-    if (opt === 'create' || opt === 'init' || opt === 'drag' || opt === 'alt') {
-      this.setState({render: true});
-    }
   },
   searchChanged() {
     // Trigger Root component re-render when a user types in the search box.

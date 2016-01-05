@@ -33,7 +33,9 @@ getPrefs.then((prefs)=>{
     sendMsg({e: e, type: 'activate'});
   });
   chrome.tabs.onUpdated.addListener((e, info) => {
-    sendMsg({e: e, type: 'update'});
+    if (prefs.mode !== 'bookmarks' && prefs.mode !== 'history') {
+      sendMsg({e: e, type: 'update'});
+    }
   });
   chrome.tabs.onMoved.addListener((e, info) => {
     sendMsg({e: e, type: 'move'});
@@ -74,6 +76,47 @@ getPrefs.then((prefs)=>{
       sendMsg({e: e, type: 'create'});
     }
   });
+  chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+    if (msg.method === 'captureTabs') {
+      var capture = new Promise((resolve, reject)=>{
+        chrome.tabs.captureVisibleTab({format: 'jpeg', quality: 10}, (image)=> {
+          if (image) {
+            resolve(image);
+          } else {
+            reject();
+          }
+        });
+      });
+      capture.then((image)=>{
+        console.log(image);
+        sendResponse({'image': image});
+      }).catch(()=>{
+        sendMsg({e: null, type: 'error'});
+        reload('Screenshot capture error.');
+      });
+    } else if (msg.method === 'close') {
+      close(sender.tab.id);
+    } else if (msg.method === 'reload') {
+      reload('Screenshot reloading condition triggered from tile.js.');
+    } else if (msg.method === 'restoreWindow') {
+      for (var i = msg.tabs.length - 1; i >= 0; i--) {
+        chrome.tabs.create({
+          windowId: msg.windowId,
+          index: msg.tabs[i].index,
+          url: msg.tabs[i].url,
+          active: msg.tabs[i].active,
+          selected: msg.tabs[i].selected,
+          pinned: msg.tabs[i].pinned
+        },(t)=>{
+          console.log('restored: ',t);
+        });
+      }
+      sendResponse({'reload': true});
+    } else if (msg.method === 'prefs') {
+      sendResponse({'prefs': prefs.preferences});
+    }
+    return true;
+  });
 });
 chrome.runtime.onUpdateAvailable.addListener((details)=>{
   console.log('onUpdateAvailable: ',details);
@@ -99,44 +142,4 @@ chrome.runtime.onInstalled.addListener((details)=>{
       },500);
     });
   }
-});
-
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  if (msg.method === 'captureTabs') {
-    var capture = new Promise((resolve, reject)=>{
-      chrome.tabs.captureVisibleTab({format: 'jpeg', quality: 10}, (image)=> {
-        if (image) {
-          resolve(image);
-        } else {
-          reject();
-        }
-      });
-    });
-    capture.then((image)=>{
-      console.log(image);
-      sendResponse({'image': image});
-    }).catch(()=>{
-      sendMsg({e: null, type: 'error'});
-      reload('Screenshot capture error.');
-    });
-  } else if (msg.method === 'close') {
-    close(sender.tab.id);
-  } else if (msg.method === 'reload') {
-    reload('Screenshot reloading condition triggered from tile.js.');
-  } else if (msg.method === 'restoreWindow') {
-    for (var i = msg.tabs.length - 1; i >= 0; i--) {
-      chrome.tabs.create({
-        windowId: msg.windowId,
-        index: msg.tabs[i].index,
-        url: msg.tabs[i].url,
-        active: msg.tabs[i].active,
-        selected: msg.tabs[i].selected,
-        pinned: msg.tabs[i].pinned
-      },(t)=>{
-        console.log('restored: ',t);
-      });
-    }
-    sendResponse({'reload': true});
-  }
-  return true;
 });

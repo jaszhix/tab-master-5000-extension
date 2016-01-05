@@ -286,10 +286,10 @@ var Tile = React.createClass({
     var s = this.state;
     var reRender = ()=>{
       var t = tabStore.get_altTab();
-      reRenderStore.set_reRender(true, 'alt', t[0].id);
       _.delay(()=>{
-        reRenderStore.set_reRender(true, 'alt', t[0].id);
+        reRenderStore.set_reRender(true, 'remove', t[0].id);
       },500);
+
     };
     var close = ()=>{
       tabStore.close(id);
@@ -331,9 +331,8 @@ var Tile = React.createClass({
       pinned: !tab.pinned
     },(t)=>{
       if (s.bookmarks || s.history) {
-        //reRenderStore.set_reRender(true, 'alt',id);
         _.delay(()=>{
-          reRenderStore.set_reRender(true, 'alt',id);
+          reRenderStore.set_reRender(true, 'update',id);
         },500);
       }
     });
@@ -606,14 +605,14 @@ var Sidebar = React.createClass({
     prefsStore.set_prefs('mode', 'bookmarks');
     var t = tabStore.get_altTab();
     _.delay(()=>{
-      reRenderStore.set_reRender(true, 'alt', t[0].id);
+      reRenderStore.set_reRender(true, 'update', t[0].id);
     },500);
   },
   handleHistory(){
     prefsStore.set_prefs('mode', 'history');
     var t = tabStore.get_altTab();
     _.delay(()=>{
-      reRenderStore.set_reRender(true, 'alt', t[0].id);
+      reRenderStore.set_reRender(true, 'update', t[0].id);
     },500);
   },
   handleSort(){
@@ -704,7 +703,11 @@ var TileGrid = React.createClass({
   },
   update(){
     var self = this;
-    self.setState({data: self.props.data});
+    if (self.props.stores.prefs.mode === 'bookmarks') {
+      self.setState({data: _.sortByOrder(self.props.data, ['openTab'], ['asc'])});
+    } else {
+      self.setState({data: self.props.data});
+    }
     self.checkDuplicateTabs(self.props.data);
   },
   checkDuplicateTabs(tabs){
