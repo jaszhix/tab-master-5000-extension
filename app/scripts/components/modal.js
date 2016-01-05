@@ -32,7 +32,7 @@ var ModalHandler = React.createClass({
     this.setState({modal: modal});
     if (prefsStore.get_prefs().animations) {
       style.modal.overlay.backgroundColor = 'rgba(216, 216, 216, 0.21)';
-      if (modal) {
+      if (modal.state) {
         v('#main').css({
           transition: '-webkit-filter .2s ease-in',
           WebkitFilter: 'blur(5px)'

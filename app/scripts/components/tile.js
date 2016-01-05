@@ -331,9 +331,9 @@ var Tile = React.createClass({
       pinned: !tab.pinned
     },(t)=>{
       if (s.bookmarks || s.history) {
-        reRenderStore.set_reRender(true, 'update',id);
+        //reRenderStore.set_reRender(true, 'alt',id);
         _.delay(()=>{
-          reRenderStore.set_reRender(true, 'activate',id);
+          reRenderStore.set_reRender(true, 'alt',id);
         },500);
       }
     });
@@ -676,6 +676,13 @@ var TileGrid = React.createClass({
     this.listenTo(tabStore, this.update);
     this.prefsInit();
     this.checkDuplicateTabs(this.props.data);
+    /*_.delay(()=>{
+      v('button').on('mouseover',function(e){
+        console.log(e, this.style, this.style.backgroundColor);
+        this.style.backgroundColor = 'rgba(168,168,168,0.80)';
+        console.log(this.style.backgroundColor)
+      });
+    },500);*/
   },
   prefsInit(){
     var p = this.props;

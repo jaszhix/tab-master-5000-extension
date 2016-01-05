@@ -71,13 +71,19 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     contextStore.set_context(null, 'newVersion');
   } else if (msg.type === 'installed') {
     contextStore.set_context(null, 'installed');
-    prefsStore.set_prefs('installTime', Date.now());
   } else if (msg.type === 'versionUpdate') {
     contextStore.set_context(null, 'versionUpdate');
-  } else if (msg.prefs && msg.prefs.bookmarks) {
-    bookmarksStore.set_state(msg.prefs.bookmarks);
-  } else if (msg.prefs && msg.prefs.history) {
-    historyStore.set_state(msg.prefs.history);
+  } else if (msg.prefs) {
+    if (msg.prefs.mode === 'history') {
+      historyStore.set_state(true);
+    } else {
+      historyStore.set_state(false);
+    }
+    if (msg.prefs.mode === 'bookmarks') {
+      bookmarksStore.set_state(true);
+    } else {
+      bookmarksStore.set_state(false);
+    }
   }
 });
 
@@ -342,7 +348,7 @@ export var prefsStore = Reflux.createStore({
             reject(chrome.extension.lastError);
           } else {
             console.log('init prefs');
-            this.prefs = {settingsMax: false, drag: false, context: true, animations: true, duplicate: false, screenshot: false, screenshotBg: false, blacklist: true, sidebar: false, sort: true, mode: 'tabs', installTime: null};
+            this.prefs = {settingsMax: false, drag: false, context: true, animations: true, duplicate: false, screenshot: false, screenshotBg: false, blacklist: true, sidebar: false, sort: true, mode: 'tabs', installTime: Date.now()};
             chrome.storage.local.set({preferences: this.prefs}, (result)=> {
               this.ready = true;
               console.log('Init preferences saved: ',result);
@@ -371,6 +377,9 @@ export var prefsStore = Reflux.createStore({
       if (typeof this.prefs.installTime === 'undefined') {
         this.prefs.installTime = Date.now();
       }
+      if (typeof this.prefs.mode === 'undefined') {
+        this.prefs.mode = 'tabs';
+      }
       this.ready = true;
       this.trigger(this.prefs);
     }).catch((err)=>{
@@ -388,7 +397,9 @@ export var prefsStore = Reflux.createStore({
     this.savePrefs(opt, value);
   },
   get_prefs() {
-    return this.prefs;
+    if (this.ready) {
+      return this.prefs;
+    }
   },
   savePrefs(opt, value){
     var newPrefs = null;
