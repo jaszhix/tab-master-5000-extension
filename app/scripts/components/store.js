@@ -691,7 +691,7 @@ export var bookmarksStore = Reflux.createStore({
   },
   get_bookmarks: function() {
     this.set_bookmarks().then((bk)=>{
-      this.bookmarks = bk;
+      this.bookmarks = _.sortByOrder(bk, ['openTab'], ['asc']);
       console.log('bookmarks: ',this.bookmarks);
     });
     return this.bookmarks;

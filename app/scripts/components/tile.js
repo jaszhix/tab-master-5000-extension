@@ -286,9 +286,9 @@ var Tile = React.createClass({
     var s = this.state;
     var reRender = ()=>{
       var t = tabStore.get_altTab();
-      _.delay(()=>{
-        reRenderStore.set_reRender(true, 'remove', t[0].id);
-      },500);
+      _.defer(()=>{
+        reRenderStore.set_reRender(true, 'create', t[0].id);
+      });
 
     };
     var close = ()=>{
@@ -300,15 +300,14 @@ var Tile = React.createClass({
     if (s.bookmarks || s.history) {
       if (s.openTab) {
         close();
-        reRender();
       } else {
         if (s.bookmarks) {
           chrome.bookmarks.remove(p.tab.bookmarkId);
         } else {
           chrome.history.deleteUrl({url: p.tab.url});
-        }
-        reRender();
+        }    
       }
+      reRender();
     } else {
       close();
       this.keepNewTabOpen();
@@ -332,7 +331,7 @@ var Tile = React.createClass({
     },(t)=>{
       if (s.bookmarks || s.history) {
         _.delay(()=>{
-          reRenderStore.set_reRender(true, 'update',id);
+          reRenderStore.set_reRender(true, 'create',id);
         },500);
       }
     });
@@ -697,11 +696,7 @@ var TileGrid = React.createClass({
   },
   update(){
     var self = this;
-    if (self.props.stores.prefs.mode === 'bookmarks') {
-      self.setState({data: _.sortByOrder(self.props.data, ['openTab'], ['asc'])});
-    } else {
-      self.setState({data: self.props.data});
-    }
+    self.setState({data: self.props.data});
     self.checkDuplicateTabs(self.props.data);
   },
   checkDuplicateTabs(tabs){
