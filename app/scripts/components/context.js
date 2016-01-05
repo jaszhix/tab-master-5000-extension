@@ -36,12 +36,13 @@ var ContextMenu = React.createClass({
   },
   render: function() {
     var p = this.props;
+    var close = p.prefs.mode !== 'tabs' && !this.getStatus('openTab') ? ' Remove ' : ' Close ';
     return (
       <div className="ntg-context">
         <div style={{left: p.cursor.page.x, top: p.cursor.page.y}} className="ntg-context-menu">
-          <button onClick={()=>this.handleRelay('close')} className="ntg-context-btn"><i className="fa fa-times" /> Close</button>
-          <button onClick={()=>this.handleRelay('closeAll')} className="ntg-context-btn-close-all"><i className="fa fa-asterisk" /> {'Close all from ' + this.getStatus('url')}</button>
-          {this.getStatus('duplicate') ? <button onClick={()=>this.handleRelay('closeDupes')} className="ntg-context-btn-close-all"><i className="fa fa-asterisk" /> Close duplicates</button> : null}
+          <button onClick={()=>this.handleRelay('close')} className="ntg-context-btn"><i className={p.prefs.mode !== 'tabs' && !this.getStatus('openTab') ? "fa fa-eraser" : "fa fa-times"} />{close}</button>
+          <button onClick={()=>this.handleRelay('closeAll')} className="ntg-context-btn-close-all"><i className="fa fa-asterisk" />{close+'all from ' + this.getStatus('url')}</button>
+          {this.getStatus('duplicate') ? <button onClick={()=>this.handleRelay('closeDupes')} className="ntg-context-btn-close-all"><i className="fa fa-asterisk" /> {close+'duplicates'}</button> : null}
           {this.getStatus('openTab') || p.prefs.mode !== 'bookmarks' && p.prefs.mode !== 'history' ? <button onClick={()=>this.handleRelay('pin')} className="ntg-context-btn"><i className="fa fa-map-pin" /> {this.getStatus('pinned') ? 'Unpin' : 'Pin'}</button> : null}
           {p.chromeVersion >= 46 ? this.getStatus('openTab') || p.prefs.mode !== 'bookmarks' && p.prefs.mode !== 'history' ? <button onClick={()=>this.handleRelay('mute')} className="ntg-context-btn"><i className="fa fa-volume-off" /> {this.getStatus('muted') ? 'Unmute' : 'Mute'}</button> : null : null}
         </div>

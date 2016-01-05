@@ -523,6 +523,7 @@ var Tile = React.createClass({
     var p = this.props;
     var titleLimit = s.bookmarks || s.history ? 70 : 83;
     var drag = dragStore.get_drag();
+    var remove = p.stores.prefs.mode !== 'tabs' && !s.openTab;
     return (
       <div ref="tileMain" id={'tileMain-'+p.i} onDragEnter={this.currentlyDraggedOver(p.tab)} style={p.stores.prefs.screenshot && p.stores.prefs.screenshotBg ? {opacity: '0.95'} : null}>
         <Draggable  axis="both"
@@ -545,7 +546,7 @@ var Tile = React.createClass({
                                     </div> : null}
                     <div onMouseEnter={this.handleTabCloseHoverIn} onMouseLeave={this.handleTabCloseHoverOut} onClick={()=>this.handleCloseTab(p.tab.id)}>
                       {s.hover ? 
-                      <i className={s.xHover ? "fa fa-times ntg-x-hover" : "fa fa-times ntg-x"} style={s.screenshot && s.hover ? style.ssIconBg : null} />
+                      <i className={s.xHover ? remove ? "fa fa-eraser ntg-x-hover" : "fa fa-times ntg-x-hover" : remove ? "fa fa-eraser ntg-x" : "fa fa-times ntg-x"} style={s.screenshot && s.hover ? style.ssIconBg : null} />
                       : null}
                     </div>
                     <div onMouseEnter={this.handlePinHoverIn} onMouseLeave={this.handlePinHoverOut} onClick={() => this.handlePinning(p.tab)}>
@@ -675,13 +676,6 @@ var TileGrid = React.createClass({
     this.listenTo(tabStore, this.update);
     this.prefsInit();
     this.checkDuplicateTabs(this.props.data);
-    /*_.delay(()=>{
-      v('button').on('mouseover',function(e){
-        console.log(e, this.style, this.style.backgroundColor);
-        this.style.backgroundColor = 'rgba(168,168,168,0.80)';
-        console.log(this.style.backgroundColor)
-      });
-    },500);*/
   },
   prefsInit(){
     var p = this.props;
