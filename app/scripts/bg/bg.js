@@ -92,49 +92,11 @@ var getBookmarks = new Promise((resolve, reject)=>{
     });
   });
 });
-var getHistory = new Promise((resolve, reject)=>{
-  chrome.history.search({text: '', maxResults: 1000}, (h)=>{
-    console.log(h);
-    getTabs.then((t)=>{
-      var openTab = 0;
-      for (var i = h.length - 1; i >= 0; i--) {
-        h[i].mutedInfo = {muted: false};
-        h[i].audible = false;
-        h[i].active = false;
-        h[i].favIconUrl = '';
-        h[i].highlighted = false;
-        h[i].index = i;
-        h[i].pinned = false;
-        h[i].selected = false;
-        h[i].status = 'complete';
-        h[i].windowId = t[0].windowId;
-        h[i].id = parseInt(h[i].id);
-        h[i].openTab = null;
-        for (var y = t.length - 1; y >= 0; y--) {
-          if (h[i].url === t[y].url) {
-            h[i].openTab = ++openTab;
-            h[i].id = t[y].id;
-            h[i].mutedInfo.muted = t[y].mutedInfo.muted;
-            h[i].audible = t[y].audible;
-            h[i].favIconUrl = t[y].favIconUrl;
-            h[i].highlighted = t[y].highlighted;
-            h[i].pinned = t[y].pinned;
-            h[i].selected = t[y].selected;
-            h[i].windowId = t[y].windowId;
-          }
-        }
-      }
-      resolve(h);
-    });
-  });
-});
 getPrefs.then((prefs)=>{
   if (prefs.mode !== 'tabs') {
     chrome.tabs.onUpdated.removeListener(()=>{
       console.log('Update listener removed');
     });
-  } else {
-
   }
   window.prefs = prefs;
   window.update = true;
@@ -262,10 +224,6 @@ getPrefs.then((prefs)=>{
     } else if (msg.method === 'bookmarks') {
       getBookmarks.then((bookmarks)=>{
         sendResponse({'bookmarks': bookmarks});
-      });
-    } else if (msg.method === 'history') {
-      getHistory.then((history)=>{
-        sendResponse({'history': history});
       });
     }
     return true;

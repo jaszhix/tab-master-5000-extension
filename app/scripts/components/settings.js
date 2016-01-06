@@ -293,7 +293,7 @@ var Settings = React.createClass({
   getInitialState(){
     return {
       currentTab: 'sessions',
-      settingsMax: this.props.prefs.settingsMax
+      settingsMax: false
     };
   },
   propTypes: {
@@ -307,10 +307,11 @@ var Settings = React.createClass({
   componentDidMount(){
     this.listenTo(modalStore, this.settingsChange);
     this.listenTo(prefsStore, this.prefsChange);
+    this.prefsChange();
   },
   prefsChange(e){
-    this.setState({settingsMax: e.settingsMax});
-    if (e.settingsMax) {
+    this.setState({settingsMax: this.props.prefs.settingsMax});
+    if (this.props.prefs.settingsMax) {
       style.modal.content.top = '0%';
       style.modal.content.left = '0%';
       style.modal.content.right = '0%';
