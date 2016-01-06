@@ -627,16 +627,71 @@ export var bookmarksStore = Reflux.createStore({
   },
   set_bookmarks: function(value) {
     return new Promise((resolve, reject)=>{
-      chrome.runtime.sendMessage(chrome.runtime.id, {method: 'bookmarks'}, (response)=>{
-        if (response.bookmarks) {
-          resolve(response.bookmarks);
+      chrome.bookmarks.getTree((bk)=>{
+        var bookmarks = [];
+        var folders = [];
+        var t = tabStore.get_altTab();
+        var openTab = 0;
+        var iter = -1;
+        var addBookmarkChildren = (bookmarkLevel, title='')=> {
+          bookmarkLevel.folder = title;
+          iter = ++iter;
+          if (!bookmarkLevel.children) {
+            _.assign(bookmarkLevel, {
+              mutedInfo: {muted: false},
+              audible: false,
+              active: false,
+              favIconUrl: '',
+              highlighted: false,
+              index: iter,
+              pinned: false,
+              selected: false,
+              status: 'complete',
+              windowId: utilityStore.get_window(),
+              bookmarkId: bookmarkLevel.id,
+              id: parseInt(bookmarkLevel.id),
+              openTab: null
+            });
+            bookmarks.push(bookmarkLevel);
+          } else {
+            folders.push(bookmarkLevel);
+            for (var i = bookmarks.length - 1; i >= 0; i--) {
+              for (var y = t.length - 1; y >= 0; y--) {
+                if (bookmarks[i].url === t[y].url) {
+                  _.assign(bookmarks[i], {
+                    openTab: ++openTab,
+                    id: t[y].id,
+                    mutedInfo: {muted: t[y].mutedInfo.muted},
+                    audible: t[y].audible,
+                    favIconUrl: t[y].favIconUrl,
+                    highlighted: t[y].highlighted,
+                    pinned: t[y].pinned,
+                    selected: t[y].selected,
+                    windowId: t[y].windowId
+                  });
+                }
+              }
+              for (var x = folders.length - 1; x >= 0; x--) {
+                if (bookmarks[i].parentId === folders[x].id) {
+                  bookmarks[i].folder = folders[x].title;
+                }
+              }
+            }
+            bookmarkLevel.children.forEach((child)=>{
+              addBookmarkChildren(child, title);
+            });
+          }
+        };
+        addBookmarkChildren(bk[0]);
+        if (bookmarks) {
+          resolve(bookmarks);
         }
       });
     });
   },
   get_bookmarks: function() {
     this.set_bookmarks().then((bk)=>{
-      this.bookmarks = _.sortByOrder(bk, ['openTab'], ['asc']);
+      this.bookmarks = bk;
       console.log('bookmarks: ',this.bookmarks);
     });
     return this.bookmarks;

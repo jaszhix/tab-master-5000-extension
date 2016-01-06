@@ -135,9 +135,7 @@ var Root = React.createClass({
     }
   },
   update(){
-    if (!this.state.bookmarks) {
-      this.setState({tabs: tabStore.get_tab()});
-    }
+    this.setState({tabs: tabStore.get_tab()});
   },
   captureTabs(opt) {
     var s = this.state;

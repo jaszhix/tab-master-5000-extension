@@ -292,22 +292,32 @@ var Tile = React.createClass({
 
     };
     var close = ()=>{
+      if (p.stores.prefs.mode !== 'tabs') {
+        _.defer(()=>{
+          reRender();
+        });
+      }
       tabStore.close(id);
     };
-    if (p.stores.prefs.animations) {
+    if (p.stores.prefs.animations && !s.openTab) {
       this.setState({close: true});
     }
     if (p.stores.prefs.mode !== 'tabs') {
       if (s.openTab) {
         close();
-        reRender();
       } else {
         if (s.bookmarks) {
+          _.defer(()=>{
+            reRender();
+          });
           chrome.bookmarks.remove(p.tab.bookmarkId,(b)=>{
             console.log('Bookmark deleted: ',b);
             reRender();
           });
         } else {
+          _.defer(()=>{
+            reRender();
+          });
           chrome.history.deleteUrl({url: p.tab.url},(h)=>{
             console.log('History url deleted: ', h);
             reRender();
@@ -349,11 +359,11 @@ var Tile = React.createClass({
     pinned = id;
   },
   handleMuting(tab){
-    var s = this.state;
+    var p = this.props;
     chrome.tabs.update(tab.id, {
       muted: !tab.mutedInfo.muted
     },(t)=>{
-      if (s.bookmarks || s.history) {
+      if (p.stores.prefs.mode !== 'tabs') {
         reRenderStore.set_reRender(true, 'update',t.id);
         _.delay(()=>{
           reRenderStore.set_reRender(true, 'activate',t.id);
@@ -544,7 +554,7 @@ var Tile = React.createClass({
               { this.filterTabs(p.tab) ? <div id={'innerTile-'+p.i} className={s.hover ? "ntg-tile-hover" : "ntg-tile"} style={s.screenshot ? s.hover ? style.tileHovered(s.screenshot) : style.tile(s.screenshot) : null} key={p.key}>
                 <Row className="ntg-tile-row-top">
                   <Col size="3">
-                    {p.stores.chromeVersion >= 46 && s.openTab || p.stores.chromeVersion >= 46 && !s.bookmarks && !s.history ? <div onMouseEnter={this.handleTabMuteHoverIn} onMouseLeave={this.handleTabMuteHoverOut} onClick={() => this.handleMuting(p.tab)}>
+                    {p.stores.chromeVersion >= 46 && s.openTab || p.stores.chromeVersion >= 46 && p.stores.prefs.mode === 'tabs' ? <div onMouseEnter={this.handleTabMuteHoverIn} onMouseLeave={this.handleTabMuteHoverOut} onClick={() => this.handleMuting(p.tab)}>
                                       {s.hover || p.tab.audible || p.tab.mutedInfo.muted ? 
                                       <i className={p.tab.audible ? s.mHover ? "fa fa-volume-off ntg-mute-audible-hover" : "fa fa-volume-up ntg-mute-audible" : s.mHover ? "fa fa-volume-off ntg-mute-hover" : "fa fa-volume-off ntg-mute"} style={s.screenshot && s.hover ? style.ssIconBg : s.screenshot ? style.ssIconBg : null} />
                                       : null}
