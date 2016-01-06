@@ -21,7 +21,80 @@ var getPrefs = new Promise((resolve, reject)=>{
     }
   });
 });
+var getBookmarks = new Promise((resolve, reject)=>{
+  chrome.bookmarks.getTree((bk)=>{
+    var getTabs = new Promise((resolve, reject)=>{
+      chrome.tabs.query({
+        windowId: chrome.windows.WINDOW_ID_CURRENT,
+        currentWindow: true
+      }, (Tab) => {
+        if (Tab) {
+          resolve(Tab);
+        }
+      });
+    });
+    var bookmarks = [];
+    var folders = [];
+    getTabs.then((t)=>{
+      var openTab = 0;
+      var iter = -1;
+      var addBookmarkChildren = (bookmarkLevel, title='')=> {
+        bookmarkLevel.folder = title;
+
+        if (!bookmarkLevel.children) {
+          iter = ++iter;
+          bookmarkLevel.mutedInfo = {muted: false};
+          bookmarkLevel.audible = false;
+          bookmarkLevel.active = false;
+          bookmarkLevel.favIconUrl = '';
+          bookmarkLevel.highlighted = false;
+          bookmarkLevel.index = iter;
+          bookmarkLevel.pinned = false;
+          bookmarkLevel.selected = false;
+          bookmarkLevel.status = 'complete';
+          bookmarkLevel.windowId = t[0].windowId;
+          bookmarkLevel.bookmarkId = bookmarkLevel.id;
+          bookmarkLevel.id = parseInt(bookmarkLevel.id);
+          bookmarkLevel.openTab = null;
+          bookmarks.push(bookmarkLevel);
+        } else {
+          folders.push(bookmarkLevel);
+          for (var i = bookmarks.length - 1; i >= 0; i--) {
+            for (var y = t.length - 1; y >= 0; y--) {
+              if (bookmarks[i].url === t[y].url) {
+                bookmarks[i].openTab = ++openTab;
+                bookmarks[i].id = t[y].id;
+                bookmarks[i].mutedInfo.muted = t[y].mutedInfo.muted;
+                bookmarks[i].audible = t[y].audible;
+                bookmarks[i].favIconUrl = t[y].favIconUrl;
+                bookmarks[i].highlighted = t[y].highlighted;
+                bookmarks[i].pinned = t[y].pinned;
+                bookmarks[i].selected = t[y].selected;
+                bookmarks[i].windowId = t[y].windowId;
+              }
+            }
+            for (var x = folders.length - 1; x >= 0; x--) {
+              if (bookmarks[i].parentId === folders[x].id) {
+                bookmarks[i].folder = folders[x].title;
+              }
+            }
+          }
+          bookmarkLevel.children.forEach((child)=>{
+            addBookmarkChildren(child, title);
+          });
+        }
+      };
+      addBookmarkChildren(bk[0]);
+      if (bookmarks) {
+        resolve(bookmarks);
+      }
+
+    });
+  });
+});
 getPrefs.then((prefs)=>{
+  window.prefs = prefs;
+  window.update = true;
   sendMsg({prefs: prefs});
   chrome.tabs.onCreated.addListener((e, info) => {
     sendMsg({e: e, type: 'create'});
@@ -33,10 +106,23 @@ getPrefs.then((prefs)=>{
     sendMsg({e: e, type: 'activate'});
   });
   chrome.tabs.onUpdated.addListener((e, info) => {
-    sendMsg({e: e, type: 'update'});
+    if (prefs.mode !== 'tabs') {
+      if (window.update) {
+        window.update = false;
+        setTimeout(()=>{
+          sendMsg({e: e, type: 'update'});
+        },50);
+      } else {
+        window.update = true;
+      }
+    } else {
+      sendMsg({e: e, type: 'update'});
+    }
   });
   chrome.tabs.onMoved.addListener((e, info) => {
-    sendMsg({e: e, type: 'move'});
+    if (prefs.mode === 'tabs') {
+      sendMsg({e: e, type: 'move'});
+    }
   });
   chrome.tabs.onAttached.addListener((e, info) => {
     sendMsg({e: e, type: 'attach'});
@@ -51,7 +137,7 @@ getPrefs.then((prefs)=>{
   });
   chrome.bookmarks.onRemoved.addListener((e, info) => {
     if (prefs.mode === 'bookmarks') {
-      sendMsg({e: e, type: 'create'});
+      sendMsg({e: e, type: 'remove'});
     }
   });
   chrome.bookmarks.onChanged.addListener((e, info) => {
@@ -88,6 +174,7 @@ getPrefs.then((prefs)=>{
       capture.then((image)=>{
         console.log(image);
         sendResponse({'image': image});
+        reload('Refreshing bg...');
       }).catch(()=>{
         sendMsg({e: null, type: 'error'});
         reload('Screenshot capture error.');
@@ -95,7 +182,7 @@ getPrefs.then((prefs)=>{
     } else if (msg.method === 'close') {
       close(sender.tab.id);
     } else if (msg.method === 'reload') {
-      reload('Screenshot reloading condition triggered from tile.js.');
+      reload('Messaged by front-end script to reload...');
     } else if (msg.method === 'restoreWindow') {
       for (var i = msg.tabs.length - 1; i >= 0; i--) {
         chrome.tabs.create({
@@ -112,6 +199,10 @@ getPrefs.then((prefs)=>{
       sendResponse({'reload': true});
     } else if (msg.method === 'prefs') {
       sendResponse({'prefs': prefs.preferences});
+    } else if (msg.method === 'bookmarks') {
+      getBookmarks.then((bookmarks)=>{
+        sendResponse({'bookmarks': bookmarks});
+      });
     }
     return true;
   });
