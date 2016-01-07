@@ -122,7 +122,6 @@ var Root = React.createClass({
     if (s.init) {
       if (e.mode !== 'tabs') {
         chrome.tabs.query({currentWindow: true}, (t)=>{
-          //reRenderStore.set_reRender(true, 'alt', t[0].id);
           _.delay(()=>{
             reRenderStore.set_reRender(true, 'activate', {tabId: t[0].id});
           },500);
@@ -296,7 +295,6 @@ var Root = React.createClass({
 function run() {
   ReactDOM.render(<Root />, document.getElementById('main'));
 }
-
 if ( window.addEventListener ) {
   v().ready(run);
 } else {

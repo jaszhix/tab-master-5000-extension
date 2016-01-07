@@ -1,8 +1,13 @@
 #### Release Notes
 
+##### v0.9 / *1-7-16*
+
+*   Added Bookmarks and History view modes. The option to switch to these modes can be found in the left sidebar menu. They are still incomplete, and as with all features in this extension in version 0.x, it is considered beta.
+*   The Settings modal can now be maximized.
+
 ##### v0.8.4 / *12-31-15*
 
-*   Hotfix: Tile grid column width is full width again when the sidebar is disabled.
+*   Tile grid column width is full width again when the sidebar is disabled.
 
 ##### v0.8.3 / *12-30-15*
 
