@@ -129,8 +129,7 @@ var Root = React.createClass({
   prefsChange(e){
     var s = this.state;
     this.setState({prefs: e});
-    chrome.runtime.sendMessage({method: 'reload'}, (response)=>{
-    });
+    utilityStore.reloadBg();
     if (s.init) {
       this.checkTimeInstalled(e);
       if (e.mode !== 'tabs') {

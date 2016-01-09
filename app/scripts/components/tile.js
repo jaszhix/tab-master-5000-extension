@@ -694,8 +694,7 @@ var TileGrid = React.createClass({
     this.checkDuplicateTabs(this.props.data);
   },
   componentWillMount(){
-    chrome.runtime.sendMessage({method: 'reload'}, (response)=>{
-    });
+    utilityStore.reloadBg();
   },
   prefsInit(){
     var p = this.props;

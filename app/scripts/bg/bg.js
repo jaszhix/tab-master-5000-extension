@@ -18,6 +18,8 @@ var getPrefs = new Promise((resolve, reject)=>{
   chrome.storage.local.get('preferences', (prefs)=>{
     if (prefs && prefs.preferences) {
       resolve(prefs);
+    } else {
+      reject();
     }
   });
 });
@@ -163,6 +165,8 @@ getPrefs.then((prefs)=>{
     }
     return true;
   });
+}).catch(()=>{
+  location.reload();
 });
 chrome.runtime.onUpdateAvailable.addListener((details)=>{
   console.log('onUpdateAvailable: ',details);
