@@ -363,8 +363,8 @@ var Settings = React.createClass({
                   </li>
                 </ul>
             </div>
-            <Btn style={s.settingsMax ? {top: '2%', right: '2%'} : {top: '17%', right: '18%'}} className="ntg-modal-btn-close" fa="close" onClick={this.handleCloseBtn} />
-            <Btn style={s.settingsMax ? {top: '2%', right: '4%'} : {top: '17%', right: '20%'}} className="ntg-modal-btn-close" fa={s.settingsMax ? "clone" : "square-o"} onClick={this.handleMaxBtn} />
+            <Btn style={s.settingsMax ? {top: '1%', right: '1%'} : {top: '16%', right: '16%'}} className="ntg-modal-btn-close" fa="close" onClick={this.handleCloseBtn} />
+            <Btn style={s.settingsMax ? {top: '1%', right: '3%'} : {top: '16%', right: '18%'}} className="ntg-modal-btn-close" fa={s.settingsMax ? "clone" : "square-o"} onClick={this.handleMaxBtn} />
           </Row>
           <Row className="ntg-settings-pane">
             {sessions ? <Sessions settingsMax={s.settingsMax} tabs={p.tabs} prefs={p.prefs} collapse={p.collapse} /> : null}

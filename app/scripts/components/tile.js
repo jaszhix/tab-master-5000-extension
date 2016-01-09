@@ -6,6 +6,7 @@ import S from 'string';
 import v from 'vquery';
 import kmp from 'kmp';
 import moment from 'moment';
+window.moment = moment;
 import Draggable from 'react-draggable';
 import utils from './utils';
 

@@ -116,10 +116,23 @@ var Root = React.createClass({
     console.log('Chrome Version: ',utilityStore.chromeVersion());
     console.log('Manifest: ', utilityStore.get_manifest());
   },
+  checkTimeInstalled(prefs){
+    //3600000
+    //2592000000
+    var now = new Date(Date.now()).getTime();
+    if (typeof prefs.installTime === 'number') {
+      if (prefs.installTime + 2592000000 < now) {
+        modalStore.set_modal(true, 'contribute');
+      }
+    }
+  },
   prefsChange(e){
     var s = this.state;
     this.setState({prefs: e});
+    chrome.runtime.sendMessage({method: 'reload'}, (response)=>{
+    });
     if (s.init) {
+      this.checkTimeInstalled(e);
       if (e.mode !== 'tabs') {
         chrome.tabs.query({currentWindow: true}, (t)=>{
           _.delay(()=>{

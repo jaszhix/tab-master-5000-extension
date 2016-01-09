@@ -139,10 +139,13 @@ export var modalStore = Reflux.createStore({
   init: function() {
     this.modal = {state: false, type: null};
   },
-  set_modal: function(value, type) {
+  set_modal: function(value, type, size) {
     this.modal.state = value;
     this.modal.type = type;
     console.log('modal: ', this.modal);
+    if (!value) {
+      this.modal.type = null;
+    }
     this.trigger(this.modal);
   },
   get_modal: function() {
@@ -598,11 +601,19 @@ export var blacklistStore = Reflux.createStore({
 
 export var sidebarStore = Reflux.createStore({
   init: function() {
-    _.defer(()=>{
-      var sidebar = prefsStore.get_prefs().sidebar;
+    var getSidebar = new Promise((resolve, reject)=>{
+      chrome.runtime.sendMessage(chrome.runtime.id, {method: 'prefs'}, (response)=>{
+        if (response && response.prefs) {
+          resolve(response.prefs.sidebar);
+        }
+      });
+    });
+    getSidebar.then((sidebar)=>{
       if (sidebar) {
         this.sidebar = sidebar;
-        this.trigger(this.sidebar);
+        _.defer(()=>{
+          this.trigger(this.sidebar);
+        });
       } else {
         this.sidebar = false;
       }
