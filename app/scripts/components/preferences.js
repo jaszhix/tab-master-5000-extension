@@ -121,50 +121,53 @@ var Preferences = React.createClass({
       });
     }
   },
+  handleToggle(opt){
+    this.setState({hover: opt});
+  },
   render: function() {
     var s = this.state;
     var p = this.props;
     return (
       <div className="preferences">
         <Col size="6">
-          <Toggle onMouseEnter={()=>this.setState({hover: 'context'})} 
+          <Toggle onMouseEnter={()=>this.handleToggle('context')} 
                   onClick={()=>prefsStore.set_prefs('context',!s.context)} 
                   on={s.context}>
                     Enable context menu
           </Toggle>
-          <Toggle onMouseEnter={()=>this.setState({hover: 'animations'})} 
+          <Toggle onMouseEnter={()=>this.handleToggle('animations')} 
                   onClick={()=>prefsStore.set_prefs('animations',!s.animations)} 
                   on={s.animations}>
                     Enable animations
           </Toggle>
           {s.animations ? 
             <Col size="12">
-              <Toggle onMouseEnter={()=>this.setState({hover: 'duplicate'})}
+              <Toggle onMouseEnter={()=>this.handleToggle('duplicate')}
                       onClick={()=>prefsStore.set_prefs('duplicate',!s.duplicate)} 
                       on={s.duplicate} child={true}>
                         Enable pulsing duplicate tabs
               </Toggle>
             </Col> 
           : null}
-          <Toggle onMouseEnter={()=>this.setState({hover: 'blacklist'})} 
+          <Toggle onMouseEnter={()=>this.handleToggle('blacklist')} 
                   onClick={()=>prefsStore.set_prefs('blacklist',!s.blacklist)} 
                   on={s.blacklist}>
                     Enable website blacklist
           </Toggle>
           {s.blacklist ? <Blacklist /> : null}
-          <Toggle onMouseEnter={()=>this.setState({hover: 'drag'})}
+          <Toggle onMouseEnter={()=>this.handleToggle('drag')}
                   onClick={()=>prefsStore.set_prefs('drag',!s.drag)} 
                   on={s.drag}>
                     Enable draggable tab re-ordering <strong>(Experimental)</strong>
           </Toggle>
-          <Toggle onMouseEnter={()=>this.setState({hover: 'screenshot'})}
+          <Toggle onMouseEnter={()=>this.handleToggle('screenshot')}
                   onClick={()=>prefsStore.set_prefs('screenshot',!s.screenshot)}
                   on={s.screenshot}>
                     Enable tab screenshots <strong>(Experimental)</strong>
           </Toggle>
           {s.screenshot ? 
             <Col size="12">
-              <Toggle onMouseEnter={()=>this.setState({hover: 'screenshotBg'})} 
+              <Toggle onMouseEnter={()=>this.handleToggle('screenshotBg')} 
                       onClick={()=>prefsStore.set_prefs('screenshotBg',!s.screenshotBg)} 
                       on={s.screenshotBg} child={true}>
                         Enable screenshots in the background on hover

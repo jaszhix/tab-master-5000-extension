@@ -40,8 +40,9 @@ var Contribute = React.createClass({
     modalStore.set_modal(false);
   },
   render: function() {
+    var p = this.props;
     return (
-      <Col size="12" className="about">
+      <Col size="12" style={{marginLeft: '2px'}} className="about">
         <Btn style={{top: '26%', right: '26%'}} className="ntg-modal-btn-close" fa="close" onClick={this.handleCloseBtn} />
         <form  action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank">
           <input type="hidden" name="cmd" value="_s-xclick" />
@@ -53,7 +54,9 @@ var Contribute = React.createClass({
         <Btn onClick={()=>this.handleContribution('contributed')} className="ntg-setting-btn" style={{top: '60%', marginLeft: '266px'}}>I Already Contributed</Btn>
         <img src="../../images/icon-128-54.png" className="ntg-about"/>
         <div className="ntg-about">
+          {p.collapse ? <br /> : null}
           <h3 className="ntg-about">Thank you for using Tab Master 5000.</h3>
+          {p.collapse ? <br /> : null}
           <div>
             <p>Hi, my name is Jason Hicks and I am the author of TM5K. I build and maintain TM5K during my free hours. If you like using this extension, a contribution would help me continue fixing bugs, and adding new features.</p>
             <p>You can also contribute to this project by submitting <a href="https://github.com/jaszhix/tab-master-5000-chrome-extension/issues" target="_blank">issues</a> on Github if you come across a bug, or have a suggestion.</p>
@@ -111,7 +114,7 @@ var ModalHandler = React.createClass({
         onRequestClose={()=>modalStore.set_modal(false)}
         style={style.modal}>
           {s.modal.type === 'settings' ? <Settings tabs={p.tabs} prefs={p.prefs} collapse={p.collapse} /> : null}
-          {s.modal.type === 'contribute' ? <Contribute /> : null}
+          {s.modal.type === 'contribute' ? <Contribute collapse={p.collapse} /> : null}
       </Modal>
     );
   }

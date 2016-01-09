@@ -15,11 +15,19 @@ var close = (id)=>{
   });
 };
 var getPrefs = new Promise((resolve, reject)=>{
-  chrome.storage.local.get('preferences', (prefs)=>{
+  chrome.storage.sync.get('preferences', (prefs)=>{
     if (prefs && prefs.preferences) {
       resolve(prefs);
     } else {
-      reject();
+      // Temporary local storage import for users upgrading from previous versions.
+      chrome.storage.local.get('preferences', (prefs)=>{
+        if (prefs && prefs.preferences) {
+          resolve(prefs);
+        } else {
+          reject();
+        }
+      });
+      /*reject();*/
     }
   });
 });

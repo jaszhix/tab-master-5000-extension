@@ -1,5 +1,12 @@
 #### Release Notes
 
+##### v0.9.1 / *1-9-16*
+
+*   Preference and blacklist data have been moved to Chrome sync storage, so the extension's settings are synced across all of your Chrome instalations. Your existing settings are imported automatically.
+*   Fixed a bug causing the extension to not update on the first initialization.
+*   Changed CSS of modal control buttons.
+*   A modal will trigger after 30 days from the initial install date asking for a contribution. This can be delayed another 30 days or disabled.
+
 ##### v0.9 / *1-7-16*
 
 *   Added Bookmarks and History view modes. The option to switch to these modes can be found in the left sidebar menu. They are still incomplete, and as with all features in this extension in version 0.x, it is considered beta.
