@@ -301,7 +301,7 @@ var Tile = React.createClass({
       chrome.tabs.remove(id, ()=>{
         if (p.stores.prefs.mode !== 'tabs') {
           _.defer(()=>{
-            reRender(false);
+            reRender(true);
           });
         }
         
