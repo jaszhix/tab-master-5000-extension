@@ -6,7 +6,6 @@ import S from 'string';
 import v from 'vquery';
 import kmp from 'kmp';
 import moment from 'moment';
-window.moment = moment;
 import Draggable from 'react-draggable';
 import utils from './utils';
 
@@ -22,9 +21,7 @@ var duplicateTabs = null;
 var pinned = null;
 var tileDrag = null;
 var Tile = React.createClass({
-  mixins: [
-    Reflux.ListenerMixin
-  ],
+  mixins: [Reflux.ListenerMixin],
   getInitialState() {
     return {
       hover: false,
@@ -285,20 +282,30 @@ var Tile = React.createClass({
   handleCloseTab(id) {
     var p = this.props;
     var s = this.state;
-    var reRender = ()=>{
+    var reRender = (delay)=>{
       var t = tabStore.get_altTab();
-      _.delay(()=>{
+      if (delay) {
+        _.defer(()=>{
+          this.setState({render: false});
+          _.delay(()=>{
+            reRenderStore.set_reRender(true, 'create', t[0].id);
+          },500);
+        });
+      } else {
         reRenderStore.set_reRender(true, 'create', t[0].id);
-      },500);
+      }
 
     };
     var close = ()=>{
-      if (p.stores.prefs.mode !== 'tabs') {
-        _.defer(()=>{
-          reRender();
-        });
-      }
-      tabStore.close(id);
+      //tabStore.close(id);
+      chrome.tabs.remove(id, ()=>{
+        if (p.stores.prefs.mode !== 'tabs') {
+          _.defer(()=>{
+            reRender(false);
+          });
+        }
+        
+      });
     };
     if (p.stores.prefs.animations && !s.openTab) {
       this.setState({close: true});
@@ -307,21 +314,20 @@ var Tile = React.createClass({
       if (s.openTab) {
         close();
       } else {
-        if (s.bookmarks) {
-          _.defer(()=>{
-            reRender();
-          });
+        if (s.bookmarks) {          
+          reRender(true);
           chrome.bookmarks.remove(p.tab.bookmarkId,(b)=>{
             console.log('Bookmark deleted: ',b);
             reRender();
+            //this.setState({render: false});
           });
         } else {
-          _.defer(()=>{
-            reRender();
-          });
+          //this.setState({render: false});
+          reRender(true);
           chrome.history.deleteUrl({url: p.tab.url},(h)=>{
             console.log('History url deleted: ', h);
             reRender();
+            //this.setState({render: false});
           });
         }    
       }
@@ -347,9 +353,7 @@ var Tile = React.createClass({
       pinned: !tab.pinned
     },(t)=>{
       if (s.bookmarks || s.history) {
-        _.delay(()=>{
-          reRenderStore.set_reRender(true, 'create',id);
-        },500);
+        reRenderStore.set_reRender(true, 'create',id);
       }
     });
     this.setState({render: true});
@@ -716,7 +720,12 @@ var TileGrid = React.createClass({
   },
   update(){
     var self = this;
-    self.setState({data: self.props.data});
+    var p = self.props;
+    if (p.stores.prefs.mode !== 'tabs') {
+      self.setState({data: _.sortByOrder(self.props.data, ['openTab'], ['asc'])});
+    } else {
+      self.setState({data: self.props.data});
+    }
     self.checkDuplicateTabs(self.props.data);
   },
   checkDuplicateTabs(tabs){
@@ -750,9 +759,9 @@ var TileGrid = React.createClass({
       });
     };
   },
-  shouldComponentUpdate() {
+  /*shouldComponentUpdate() {
     return this.props.render;
-  },
+  },*/
   applyTabs() {
     // Set Reflux store value which will call the chrome.tabs.move function in Tile component.
     //this.setState({sort: true});

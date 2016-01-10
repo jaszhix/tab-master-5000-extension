@@ -22,7 +22,7 @@ var getPrefs = new Promise((resolve, reject)=>{
       // Temporary local storage import for users upgrading from previous versions.
       chrome.storage.local.get('preferences', (prefs)=>{
         if (prefs && prefs.preferences) {
-          resolve(prefs);
+          resolve(prefs.preferences);
         } else {
           reject();
         }
@@ -58,6 +58,11 @@ getPrefs.then((prefs)=>{
   });
   chrome.tabs.onActivated.addListener((e, info) => {
     sendMsg({e: e, type: 'activate'});
+    if (prefs.screenshot && prefs.mode === 'tabs') {
+      setTimeout(()=>{
+        reload();
+      },0);
+    }
   });
   if (prefs.mode !== 'tabs') {
     chrome.tabs.onUpdated.addListener((e, info) => {

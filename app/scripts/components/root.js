@@ -121,8 +121,10 @@ var Root = React.createClass({
     //2592000000
     var now = new Date(Date.now()).getTime();
     if (typeof prefs.installTime === 'number') {
-      if (prefs.installTime + 3600000 < now) {
-        modalStore.set_modal(true, 'contribute');
+      if (prefs.installTime + 2592000000 < now) {
+        _.defer(()=>{
+          modalStore.set_modal(true, 'contribute');
+        });
       }
     }
   },
@@ -155,15 +157,17 @@ var Root = React.createClass({
       if (opt !== 'init') {
         v('#main').css({cursor: 'wait'});
         // Render state is toggled to false on the subsequent re-renders only.
-        if (opt === 'create' || opt === 'drag') {
+        if (opt === 'drag') {
           this.setState({render: false});
         }
       }
       utilityStore.set_window(Tab[0].windowId);
       var tab = [];
       if (s.prefs.mode === 'bookmarks') {
+        this.setState({render: false});
         tab = bookmarksStore.get_bookmarks();
       } else if (s.prefs.mode === 'history') {
+        this.setState({render: false});
         tab = historyStore.get_history();
       } else {
         tab = Tab;
@@ -173,10 +177,15 @@ var Root = React.createClass({
       }
       tabStore.set_altTab(Tab);
       tabStore.set_tab(tab);
+      if (s.prefs.mode === 'bookmarks') {
+        this.setState({render: true});
+      } else if (s.prefs.mode === 'history') {
+        this.setState({render: true});
+      }
       console.log(Tab);
       v('#main').css({cursor: 'default'});
       // Querying is complete, allow the component to render.
-      if (opt === 'create' || opt === 'init' || opt === 'drag') {
+      if (opt === 'init' || opt === 'drag') {
         this.setState({render: true});
       }
     });
