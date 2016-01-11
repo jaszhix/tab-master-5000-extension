@@ -697,21 +697,6 @@ export var bookmarksStore = Reflux.createStore({
           } else {
             folders.push(bookmarkLevel);
             for (var i = bookmarks.length - 1; i >= 0; i--) {
-              for (var y = t.length - 1; y >= 0; y--) {
-                if (bookmarks[i].url === t[y].url) {
-                  _.assign(bookmarks[i], {
-                    openTab: ++openTab,
-                    id: t[y].id,
-                    mutedInfo: {muted: t[y].mutedInfo.muted},
-                    audible: t[y].audible,
-                    favIconUrl: t[y].favIconUrl,
-                    highlighted: t[y].highlighted,
-                    pinned: t[y].pinned,
-                    selected: t[y].selected,
-                    windowId: t[y].windowId
-                  });
-                }
-              }
               for (var x = folders.length - 1; x >= 0; x--) {
                 if (bookmarks[i].parentId === folders[x].id) {
                   bookmarks[i].folder = folders[x].title;
@@ -724,6 +709,23 @@ export var bookmarksStore = Reflux.createStore({
           }
         };
         addBookmarkChildren(bk[0]);
+        for (var i = bookmarks.length - 1; i >= 0; i--) {
+          for (var y = t.length - 1; y >= 0; y--) {
+            if (bookmarks[i].url === t[y].url) {
+              _.assign(bookmarks[i], {
+                openTab: ++openTab,
+                id: t[y].id,
+                mutedInfo: {muted: t[y].mutedInfo.muted},
+                audible: t[y].audible,
+                favIconUrl: t[y].favIconUrl,
+                highlighted: t[y].highlighted,
+                pinned: t[y].pinned,
+                selected: t[y].selected,
+                windowId: t[y].windowId
+              });
+            }
+          }
+        }
         if (bookmarks) {
           resolve(bookmarks);
         }

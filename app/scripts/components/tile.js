@@ -49,7 +49,7 @@ var Tile = React.createClass({
     this.listenTo(searchStore, this.filterTabs);
     this.listenTo(applyTabOrderStore, this.applyTabOrder);
     this.listenTo(relayStore, this.handleRelays);
-    this.listenTo(tabStore, this.update);
+    //this.listenTo(tabStore, this.update);
     if (this.props.stores.prefs.mode === 'bookmarks') {
       this.listenTo(bookmarksStore, this.bookmarksFolderChange);
     }
@@ -61,17 +61,42 @@ var Tile = React.createClass({
   shouldComponentUpdate() {
     return this.state.render;
   },
+  componentWillReceiveProps(nextProps){
+    //this.setTabMode();
+    var p = nextProps;
+    this.setTabMode();
+    if (this.state.duplicate) {
+      var subTile = v('#subTile-'+p.i).node();
+      _.delay(()=>{
+        if (subTile) {
+          subTile.style.display = 'inline';
+        }
+      },500);
+    }
+    if (pinned === p.tab.id && p.tab.pinned) {
+      this.handleFocus();
+    }
+    if (p.stores.prefs.mode === 'tabs') {
+      this.checkDuplicateTabs();
+    }
+    if (this.props.tab.title === 'New Tab') {
+      this.closeNewTabs();
+    }
+  },
   initMethods(){
+    var p = this.props;
     this.setTabMode();
     this.updateScreenshot('init');
-    this.checkDuplicateTabs();
+    if (p.stores.prefs.mode === 'tabs') {
+      this.checkDuplicateTabs();
+    }
     if (this.props.tab.title === 'New Tab') {
       _.defer(()=>{
         this.closeNewTabs();
       });
     }
   },
-  update(){
+  /*update(){
     this.setTabMode();
     var p = this.props;
     this.setTabMode();
@@ -90,7 +115,7 @@ var Tile = React.createClass({
     if (this.props.tab.title === 'New Tab') {
       this.closeNewTabs();
     }
-  },
+  },*/
   updateScreenshot(opt){
     var p = this.props;
     var setScreeenshot = ()=>{
@@ -626,14 +651,14 @@ var Sidebar = React.createClass({
     prefsStore.set_prefs('mode', 'bookmarks');
     var t = tabStore.get_altTab();
     _.delay(()=>{
-      reRenderStore.set_reRender(true, 'update', t[0].id);
+      reRenderStore.set_reRender(true, 'create', t[0].id);
     },500);
   },
   handleHistory(){
     prefsStore.set_prefs('mode', 'history');
     var t = tabStore.get_altTab();
     _.delay(()=>{
-      reRenderStore.set_reRender(true, 'update', t[0].id);
+      reRenderStore.set_reRender(true, 'create', t[0].id);
     },500);
   },
   handleSort(){
@@ -693,12 +718,12 @@ var TileGrid = React.createClass({
     };
   },
   componentDidMount(){
-    this.listenTo(tabStore, this.update);
+    //this.listenTo(tabStore, this.update);
     this.prefsInit();
     this.checkDuplicateTabs(this.props.data);
   },
   componentWillMount(){
-    utilityStore.reloadBg();
+    //utilityStore.reloadBg();
   },
   prefsInit(){
     var p = this.props;
@@ -718,13 +743,23 @@ var TileGrid = React.createClass({
       });
     }
   },
-  update(){
+  /*update(){
     var self = this;
     var p = self.props;
     if (p.stores.prefs.mode !== 'tabs') {
       self.setState({data: _.sortByOrder(self.props.data, ['openTab'], ['asc'])});
     } else {
       self.setState({data: self.props.data});
+    }
+    self.checkDuplicateTabs(self.props.data);
+  },*/
+  componentWillReceiveProps(nextProps){
+    var self = this;
+    var p = self.props;
+    if (p.stores.prefs.mode !== 'tabs') {
+      self.setState({data: _.sortByOrder(nextProps.data, ['openTab'], ['asc'])});
+    } else {
+      self.setState({data: nextProps.data});
     }
     self.checkDuplicateTabs(self.props.data);
   },

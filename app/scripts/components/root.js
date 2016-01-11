@@ -129,9 +129,9 @@ var Root = React.createClass({
     }
   },
   prefsChange(e){
+    utilityStore.reloadBg();
     var s = this.state;
     this.setState({prefs: e});
-    utilityStore.reloadBg();
     if (s.init) {
       this.checkTimeInstalled(e);
       if (e.mode !== 'tabs') {

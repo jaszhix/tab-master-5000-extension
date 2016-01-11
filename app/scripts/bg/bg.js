@@ -5,7 +5,9 @@ var sendMsg = (msg) => {
 var reload = (reason)=>{
   // console log messages before error triggered location.reload() calls. Preserve console logging in the browser to see them.
   console.log('Reload background script. Reason: ',reason);
-  location.reload();
+  setTimeout(()=>{
+    location.reload();
+  },0);
 };
 var close = (id)=>{
   chrome.tabs.get(id, (t)=>{
@@ -59,9 +61,7 @@ getPrefs.then((prefs)=>{
   chrome.tabs.onActivated.addListener((e, info) => {
     sendMsg({e: e, type: 'activate'});
     if (prefs.screenshot && prefs.mode === 'tabs') {
-      setTimeout(()=>{
-        reload();
-      },0);
+      reload();
     }
   });
   if (prefs.mode !== 'tabs') {
@@ -179,7 +179,7 @@ getPrefs.then((prefs)=>{
     return true;
   });
 }).catch(()=>{
-  location.reload();
+  reload();
 });
 chrome.runtime.onUpdateAvailable.addListener((details)=>{
   console.log('onUpdateAvailable: ',details);
