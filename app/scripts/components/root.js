@@ -110,7 +110,6 @@ var Root = React.createClass({
     this.listenTo(settingsStore, this.settingsChange);
     this.listenTo(contextStore, this.contextTrigger);
     this.listenTo(sidebarStore, this.sortTrigger);
-    this.listenTo(tabStore, this.update);
     this.listenTo(prefsStore, this.prefsChange);
 
     console.log('Chrome Version: ',utilityStore.chromeVersion());
@@ -147,9 +146,6 @@ var Root = React.createClass({
       this.onWindowResize(null, 'init');
     }
   },
-  update(){
-    this.setState({tabs: tabStore.get_tab()});
-  },
   captureTabs(opt) {
     var s = this.state;
     // Query current Chrome window for tabs.
@@ -172,9 +168,10 @@ var Root = React.createClass({
       } else {
         tab = Tab;
       }
-      if (opt === 'init') {
+      /*if (opt === 'init') {
         this.setState({tabs: tab});
-      }
+      }*/
+      this.setState({tabs: tab});
       tabStore.set_altTab(Tab);
       tabStore.set_tab(tab);
       if (s.prefs.mode === 'bookmarks') {
