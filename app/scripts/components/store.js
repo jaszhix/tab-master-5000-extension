@@ -125,8 +125,12 @@ export var reRenderStore = Reflux.createStore({
     this.reRender[1] = type;
     this.reRender[2] = object;
     console.log('reRender: ', this.reRender);
-    if (type === 'full') {
-      this.trigger(this.reRender);
+    if (type === 'defer') {
+      _.defer(()=>{
+        _.delay(()=>{
+          this.trigger(this.reRender);
+        },500);
+      });
     }
     this.trigger(this.reRender);
   },

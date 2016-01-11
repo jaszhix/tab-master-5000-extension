@@ -64,9 +64,22 @@ getPrefs.then((prefs)=>{
       reload();
     }
   });
-  chrome.tabs.onUpdated.addListener((e, info) => {
-    sendMsg({e: e, type: 'update'});
-  });
+  if (prefs.mode !== 'tabs') {
+    chrome.tabs.onUpdated.addListener((e, info) => {
+      if (window.update) {
+        window.update = false;
+        setTimeout(()=>{
+          sendMsg({e: e, type: 'update'});
+        },50);
+      } else {
+        window.update = true;
+      }
+    });
+  } else {
+    chrome.tabs.onUpdated.addListener((e, info) => {
+      sendMsg({e: e, type: 'update'});
+    });
+  }
   chrome.tabs.onUpdated.addListener((e, info) => {
     if (prefs.mode !== 'tabs') {
       if (window.update) {

@@ -628,16 +628,12 @@ var Sidebar = React.createClass({
   handleBookmarks(){
     prefsStore.set_prefs('mode', 'bookmarks');
     var t = tabStore.get_altTab();
-    _.delay(()=>{
-      reRenderStore.set_reRender(true, 'create', t[0].id);
-    },500);
+    reRenderStore.set_reRender(true, 'defer', t[0].id);
   },
   handleHistory(){
     prefsStore.set_prefs('mode', 'history');
     var t = tabStore.get_altTab();
-    _.delay(()=>{
-      reRenderStore.set_reRender(true, 'create', t[0].id);
-    },500);
+    reRenderStore.set_reRender(true, 'defer', t[0].id);
   },
   handleSort(){
     clickStore.set_click(true, false);
@@ -723,7 +719,7 @@ var TileGrid = React.createClass({
   },
   componentWillReceiveProps(nextProps){
     var self = this;
-    if (nextProps.stores.prefs.mode !== 'tabs') {
+    if (this.props.stores.prefs.mode === 'bookmarks') {
       self.setState({data: _.sortByOrder(nextProps.data, ['openTab'], ['asc'])});
     } else {
       self.setState({data: nextProps.data});
