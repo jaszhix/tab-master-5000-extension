@@ -760,6 +760,7 @@ export var bookmarksStore = Reflux.createStore({
             }
           }
         }
+        bookmarks = _.sortByOrder(bookmarks, ['openTab'], ['asc']);
         if (bookmarks) {
           resolve(bookmarks);
         }

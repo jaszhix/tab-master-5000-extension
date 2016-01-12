@@ -61,24 +61,26 @@ var Tile = React.createClass({
     return this.state.render;
   },
   componentWillReceiveProps(nextProps){
-    var p = nextProps;
-    this.setTabMode();
-    if (this.state.duplicate) {
-      var subTile = v('#subTile-'+p.i).node();
-      _.delay(()=>{
-        if (subTile) {
-          subTile.style.display = 'inline';
-        }
-      },500);
-    }
-    if (pinned === p.tab.id && p.tab.pinned) {
-      this.handleFocus();
-    }
-    if (p.stores.prefs.mode === 'tabs') {
-      this.checkDuplicateTabs();
-    }
-    if (this.props.tab.title === 'New Tab') {
-      this.closeNewTabs();
+    if (nextProps !== this.props) {
+      var p = nextProps;
+      this.setTabMode();
+      if (this.state.duplicate) {
+        var subTile = v('#subTile-'+p.i).node();
+        _.delay(()=>{
+          if (subTile) {
+            subTile.style.display = 'inline';
+          }
+        },500);
+      }
+      if (pinned === p.tab.id && p.tab.pinned) {
+        this.handleFocus();
+      }
+      if (p.stores.prefs.mode === 'tabs') {
+        this.checkDuplicateTabs();
+      }
+      if (this.props.tab.title === 'New Tab') {
+        this.closeNewTabs();
+      }
     }
   },
   initMethods(){
@@ -693,8 +695,8 @@ var TileGrid = React.createClass({
     this.prefsInit();
     this.checkDuplicateTabs(this.props.data);
   },
-  componentWillMount(){
-    //utilityStore.reloadBg();
+  componentWillUnmount(){
+    utilityStore.reloadBg();
   },
   prefsInit(){
     var p = this.props;
@@ -715,13 +717,11 @@ var TileGrid = React.createClass({
     }
   },
   componentWillReceiveProps(nextProps){
-    var self = this;
-    if (this.props.stores.prefs.mode === 'bookmarks') {
-      self.setState({data: _.sortByOrder(nextProps.data, ['openTab'], ['asc'])});
-    } else {
+    if (nextProps !== this.props) {
+      var self = this;
       self.setState({data: nextProps.data});
+      self.checkDuplicateTabs(self.props.data);
     }
-    self.checkDuplicateTabs(self.props.data);
   },
   checkDuplicateTabs(tabs){
     tabUrls = [];
