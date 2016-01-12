@@ -153,7 +153,7 @@ var Root = React.createClass({
       if (opt !== 'init') {
         v('#main').css({cursor: 'wait'});
         // Render state is toggled to false on the subsequent re-renders only.
-        if (opt === 'drag') {
+        if (opt === 'drag' || opt === 'prefs') {
           this.setState({render: false});
         }
       }
@@ -182,7 +182,7 @@ var Root = React.createClass({
       console.log(Tab);
       v('#main').css({cursor: 'default'});
       // Querying is complete, allow the component to render.
-      if (opt === 'init' || opt === 'drag') {
+      if (opt === 'init' || opt === 'drag' || opt === 'prefs') {
         this.setState({render: true});
       }
     });

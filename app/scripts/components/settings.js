@@ -368,7 +368,7 @@ var Settings = React.createClass({
           </Row>
           <Row className="ntg-settings-pane">
             {sessions ? <Sessions settingsMax={s.settingsMax} tabs={p.tabs} prefs={p.prefs} collapse={p.collapse} /> : null}
-            {preferences ? <Preferences settingsMax={s.settingsMax} prefs={p.prefs} /> : null}
+            {preferences ? <Preferences settingsMax={s.settingsMax} prefs={p.prefs} tabs={p.tabs} /> : null}
             {about ? <About settingsMax={s.settingsMax} /> : null}
           </Row>
       </Container>

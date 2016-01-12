@@ -692,14 +692,14 @@ var TileGrid = React.createClass({
     };
   },
   componentDidMount(){
-    this.prefsInit();
+    this.prefsInit(this.props);
     this.checkDuplicateTabs(this.props.data);
   },
   componentWillUnmount(){
     utilityStore.reloadBg();
   },
-  prefsInit(){
-    var p = this.props;
+  prefsInit(type){
+    var p = type;
     if (!p.stores.prefs.screenshotBg || !p.stores.prefs.screenshot) {
       v('#main').css({position: ''});
       v('#bgImg').css({
@@ -717,10 +717,13 @@ var TileGrid = React.createClass({
     }
   },
   componentWillReceiveProps(nextProps){
-    if (nextProps !== this.props) {
+    if (nextProps.data !== this.props.data) {
       var self = this;
       self.setState({data: nextProps.data});
       self.checkDuplicateTabs(self.props.data);
+    }
+    if (nextProps.stores.prefs !== this.props.stores.prefs) {
+      this.prefsInit(nextProps);
     }
   },
   checkDuplicateTabs(tabs){

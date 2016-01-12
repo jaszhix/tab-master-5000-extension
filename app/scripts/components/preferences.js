@@ -5,7 +5,7 @@ import S from 'string';
 
 import utils from './utils';
 
-import {prefsStore, utilityStore, screenshotStore, blacklistStore} from './store';
+import {reRenderStore, prefsStore, utilityStore, screenshotStore, blacklistStore} from './store';
 
 import {Btn, Col, Row} from './bootstrap';
 
@@ -100,19 +100,19 @@ var Preferences = React.createClass({
     };
   },
   componentDidMount(){
-    this.listenTo(prefsStore, this.prefsChange);
+    //this.listenTo(prefsStore, this.prefsChange);
     this.listenTo(screenshotStore, this.getBytesInUse);
     this.getBytesInUse();
   },
-  prefsChange(){
-    var prefs = this.props.prefs;
-    this.setState({drag: prefs.drag});
-    this.setState({context: prefs.context});
-    this.setState({duplicate: prefs.duplicate});
-    this.setState({screenshot: prefs.screenshot});
-    this.setState({screenshotBg: prefs.screenshotBg});
-    this.setState({blacklist: prefs.blacklist});
-    this.setState({animations: prefs.animations});
+  componentWillReceiveProps(nextProps){
+    var p = nextProps;
+    this.setState({drag: p.prefs.drag});
+    this.setState({context: p.prefs.context});
+    this.setState({duplicate: p.prefs.duplicate});
+    this.setState({screenshot: p.prefs.screenshot});
+    this.setState({screenshotBg: p.prefs.screenshotBg});
+    this.setState({blacklist: p.prefs.blacklist});
+    this.setState({animations: p.prefs.animations});
   },
   getBytesInUse(){
     if (this.state.screenshot) {
@@ -124,6 +124,10 @@ var Preferences = React.createClass({
   handleToggle(opt){
     this.setState({hover: opt});
   },
+  handleClick(opt){
+    prefsStore.set_prefs(opt,!this.state[opt]);
+    reRenderStore.set_reRender(true, 'prefs', this.props.tabs[0].id);
+  },
   render: function() {
     var s = this.state;
     var p = this.props;
@@ -131,44 +135,44 @@ var Preferences = React.createClass({
       <div className="preferences">
         <Col size="6">
           <Toggle onMouseEnter={()=>this.handleToggle('context')} 
-                  onClick={()=>prefsStore.set_prefs('context',!s.context)} 
+                  onClick={()=>this.handleClick('context')} 
                   on={s.context}>
                     Enable context menu
           </Toggle>
           <Toggle onMouseEnter={()=>this.handleToggle('animations')} 
-                  onClick={()=>prefsStore.set_prefs('animations',!s.animations)} 
+                  onClick={()=>this.handleClick('animations')} 
                   on={s.animations}>
                     Enable animations
           </Toggle>
           {s.animations ? 
             <Col size="12">
               <Toggle onMouseEnter={()=>this.handleToggle('duplicate')}
-                      onClick={()=>prefsStore.set_prefs('duplicate',!s.duplicate)} 
+                      onClick={()=>this.handleClick('duplicate')} 
                       on={s.duplicate} child={true}>
                         Enable pulsing duplicate tabs
               </Toggle>
             </Col> 
           : null}
           <Toggle onMouseEnter={()=>this.handleToggle('blacklist')} 
-                  onClick={()=>prefsStore.set_prefs('blacklist',!s.blacklist)} 
+                  onClick={()=>this.handleClick('blacklist')} 
                   on={s.blacklist}>
                     Enable website blacklist
           </Toggle>
           {s.blacklist ? <Blacklist /> : null}
           <Toggle onMouseEnter={()=>this.handleToggle('drag')}
-                  onClick={()=>prefsStore.set_prefs('drag',!s.drag)} 
+                  onClick={()=>this.handleClick('drag')} 
                   on={s.drag}>
                     Enable draggable tab re-ordering <strong>(Experimental)</strong>
           </Toggle>
           <Toggle onMouseEnter={()=>this.handleToggle('screenshot')}
-                  onClick={()=>prefsStore.set_prefs('screenshot',!s.screenshot)}
+                  onClick={()=>this.handleClick('screenshot')}
                   on={s.screenshot}>
                     Enable tab screenshots <strong>(Experimental)</strong>
           </Toggle>
           {s.screenshot ? 
             <Col size="12">
               <Toggle onMouseEnter={()=>this.handleToggle('screenshotBg')} 
-                      onClick={()=>prefsStore.set_prefs('screenshotBg',!s.screenshotBg)} 
+                      onClick={()=>this.handleClick('screenshotBg')} 
                       on={s.screenshotBg} child={true}>
                         Enable screenshots in the background on hover
               </Toggle>

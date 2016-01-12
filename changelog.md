@@ -2,6 +2,7 @@
 
 ##### v0.9.2 / *1-11-16*
 
+*   Fixed tab switching not working when clicking tiles that were recently unpinned from the grid.
 *   Open tabs are now displayed first in Bookmarks view.
 *   Fixed the session manager sometimes displaying history/bookmarks as current session data.
 *   Fixed Apply button in the sidebar not applying the correct tab order.

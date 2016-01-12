@@ -22,7 +22,7 @@ var reRender = (type, id) => {
   var active = null;
   if (type === 'create' || type === 'activate') {
     active = id.windowId;
-  } else if (type === 'bookmarks' || type === 'history') {
+  } else if (type === 'bookmarks' || type === 'history' || type === 'prefs') {
     active = utilityStore.get_window();
   } else {
     active = _.result(_.find(tabs(), { id: id }), 'windowId');
