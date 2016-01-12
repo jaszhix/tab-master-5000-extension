@@ -202,7 +202,7 @@ var Tile = React.createClass({
     };
     // Navigate to a tab when its clicked from the grid.
     if (!s.xHover || !s.pHover) {
-      if (!s.pinning && !s.close) {
+      if (!s.close) {
         if (s.bookmarks || s.history) {
           if (s.openTab) {
             active();
