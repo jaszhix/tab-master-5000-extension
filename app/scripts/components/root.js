@@ -168,9 +168,6 @@ var Root = React.createClass({
       } else {
         tab = Tab;
       }
-      /*if (opt === 'init') {
-        this.setState({tabs: tab});
-      }*/
       this.setState({tabs: tab});
       tabStore.set_altTab(Tab);
       tabStore.set_tab(tab);

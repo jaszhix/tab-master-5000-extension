@@ -609,7 +609,6 @@ var Tile = React.createClass({
 });
 
 var Sidebar = React.createClass({
-  mixins: [Reflux.ListenerMixin],
   getInitialState(){
     var p = this.props;
     return {
@@ -617,11 +616,8 @@ var Sidebar = React.createClass({
       mode: p.prefs.mode
     };
   },
-  componentDidMount(){
-    this.listenTo(prefsStore, this.prefsChange);
-  },
-  prefsChange(){
-    var p = this.props;
+  componentWillReceiveProps(nextProps){
+    var p = nextProps;
     this.setState({sort: p.prefs.sort});
     this.setState({mode: p.prefs.mode});
   },

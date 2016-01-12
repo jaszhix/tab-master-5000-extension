@@ -100,7 +100,6 @@ var Preferences = React.createClass({
     };
   },
   componentDidMount(){
-    //this.listenTo(prefsStore, this.prefsChange);
     this.listenTo(screenshotStore, this.getBytesInUse);
     this.getBytesInUse();
   },
