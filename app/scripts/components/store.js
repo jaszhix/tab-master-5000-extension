@@ -151,7 +151,6 @@ export var reRenderStore = Reflux.createStore({
           });
         });
         getMode.then((mode)=>{
-          console.log('mode....', mode);
           if (type === 'bookmarks' && mode === 'bookmarks') {
             defer('alt');
           } else if (type === 'history' && mode === 'history') {

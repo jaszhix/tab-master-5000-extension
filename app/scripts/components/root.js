@@ -298,8 +298,8 @@ var Root = React.createClass({
     var stores = {tabs: tabs, newTabs: newTabs, prefs: s.prefs, search: search, cursor: cursor, chromeVersion: s.chromeVersion, relay: relay, windowId: windowId};
     return (
       <div className="container-main">
-        {s.context ? <ContextMenu tabs={tabs} prefs={s.prefs} cursor={cursor} context={context} chromeVersion={s.chromeVersion}/> : null}
-        <ModalHandler tabs={tabs} prefs={s.prefs} collapse={s.collapse} />
+        {s.context ? <ContextMenu tabs={s.tabs} prefs={s.prefs} cursor={cursor} context={context} chromeVersion={s.chromeVersion}/> : null}
+        <ModalHandler tabs={s.prefs.mode === 'tabs' ? s.tabs : tabStore.get_altTab()} prefs={s.prefs} collapse={s.collapse} />
           {s.tabs ? <div className="tile-container">
               {s.settings ? <Search event={s.event} prefs={s.prefs} /> : null}
               <div className="tile-child-container">

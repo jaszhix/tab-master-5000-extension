@@ -38,7 +38,7 @@ var Sessions = React.createClass({
     };
   },
   componentDidMount(){
-    this.listenTo(tabStore, this.tabChange);
+    //this.listenTo(tabStore, this.tabChange);
     this.loadSessions();
     this.setTabSource();
   },
@@ -50,9 +50,12 @@ var Sessions = React.createClass({
       this.setState({tabs: p.tabs});
     }
   },
-  tabChange(tabs){
-    this.setState({tabs: tabs});
+  componentWillReceiveProps(nextProps){
+    this.setState({tabs: nextProps.tabs});
   },
+  /*tabChange(tabs){
+    this.setState({tabs: tabs});
+  },*/
   saveSession(opt, sess, label){
     v('div.ReactModalPortal > div').css({cursor: 'wait'});
     // Check if array exists, and push a new tabs object if not. Otherwise, create it.
