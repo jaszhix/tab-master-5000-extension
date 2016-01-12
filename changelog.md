@@ -1,5 +1,12 @@
 #### Release Notes
 
+##### v0.9.2 / *1-11-16*
+
+*   Open tabs are now displayed first in Bookmarks view.
+*   Fixed the session manager sometimes displaying history/bookmarks as current session data.
+*   Fixed Apply button in the sidebar not applying the correct tab order.
+*   Fixed Bookmarks and History views not updating when bookmarks and history change.
+
 ##### v0.9.1 / *1-10-16*
 
 *   Preference and blacklist data have been moved to Chrome sync storage, so the extension's settings are synced across all of your Chrome installations. Your existing settings are imported automatically.
