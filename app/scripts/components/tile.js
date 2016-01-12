@@ -422,7 +422,7 @@ var Tile = React.createClass({
           });
         } else {
           chrome.tabs.move(p.tab.id, {
-            index: tabIndex
+            index: p.i
           });
         }
       }
@@ -646,7 +646,7 @@ var Sidebar = React.createClass({
         <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleSort} className="ntg-apply-btn" fa="sort-amount-asc">{p.collapse ? 'Sort Tabs' : 'Sort'}</Btn>
         {s.sort ? <div>
             {p.labels}
-            {s.mode === 'tabs' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={p.onClick} className="ntg-apply-btn" fa="sort">{iconCollapse ? '' : 'Apply'}</Btn> : null}
+            {s.mode === 'tabs' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={()=>applyTabOrderStore.set_saveTab(true)} className="ntg-apply-btn" fa="sort">{iconCollapse ? '' : 'Apply'}</Btn> : null}
           </div> : null}
         {s.mode !== 'tabs' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={()=>prefsStore.set_prefs('mode', 'tabs')} className="ntg-apply-btn" fa="square">{iconCollapse ? '' : 'Tabs'}</Btn> : null}
         {s.mode !== 'bookmarks' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleBookmarks} className="ntg-apply-btn" fa="bookmark">{iconCollapse ? '' : 'Bookmarks'}</Btn> : null}
@@ -690,7 +690,6 @@ var TileGrid = React.createClass({
     };
   },
   componentDidMount(){
-    //this.listenTo(tabStore, this.update);
     this.prefsInit();
     this.checkDuplicateTabs(this.props.data);
   },
@@ -755,13 +754,6 @@ var TileGrid = React.createClass({
       });
     };
   },
-  applyTabs() {
-    // Set Reflux store value which will call the chrome.tabs.move function in Tile component.
-    applyTabOrderStore.set_saveTab(true);
-    _.delay(()=>{
-      this.setState({sort: false});
-    },500);
-  },
   handleTitleIcon(){
     this.setState({title: !this.state.title});
   },
@@ -788,7 +780,7 @@ var TileGrid = React.createClass({
     });
     return (
       <div className="tile-body">
-        {p.sidebar ? <Sidebar prefs={p.stores.prefs} tabs={p.stores.tabs} labels={labels} width={p.width} collapse={p.collapse} ssBg={ssBg} onClick={this.applyTabs} /> : null}
+        {p.sidebar ? <Sidebar prefs={p.stores.prefs} tabs={p.stores.tabs} labels={labels} width={p.width} collapse={p.collapse} ssBg={ssBg} /> : null}
         <div className="tile-div" style={p.stores.prefs.sidebar ? p.collapse ? {width: '89%'} : {width: '87%'} : {width: '100%'}}>
           <div id="grid" ref="grid">
               {s.data.map((data, i)=> {
