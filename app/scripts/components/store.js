@@ -22,6 +22,8 @@ var reRender = (type, id) => {
   var active = null;
   if (type === 'create' || type === 'activate') {
     active = id.windowId;
+  } else if (type === 'bookmarks' || type === 'history') {
+    active = utilityStore.get_window();
   } else {
     active = _.result(_.find(tabs(), { id: id }), 'windowId');
   }
@@ -54,6 +56,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   } else if (msg.type === 'attach') {
     reRender(msg.type, msg.e);
   } else if (msg.type === 'detach') {
+    reRender(msg.type, msg.e);
+  } else if (msg.type === 'bookmarks') {
+    reRender(msg.type, msg.e);
+  } else if (msg.type === 'history') {
     reRender(msg.type, msg.e);
   } else if (msg.type === 'error') {
     utilityStore.restartNewTab();
@@ -125,14 +131,39 @@ export var reRenderStore = Reflux.createStore({
     this.reRender[1] = type;
     this.reRender[2] = object;
     console.log('reRender: ', this.reRender);
-    if (type === 'defer') {
+    var defer = (opt)=>{
       _.defer(()=>{
+        if (opt === 'alt') {
+          this.trigger(this.reRender);
+        }
         _.delay(()=>{
           this.trigger(this.reRender);
         },500);
       });
+    };
+    if (type === 'defer' || type === 'bookmarks' || type === 'history') {
+      if (type !== 'defer') {
+        var getMode = new Promise((resolve, reject)=>{
+          chrome.runtime.sendMessage(chrome.runtime.id, {method: 'prefs'}, (response)=>{
+            if (response && response.prefs) {
+              resolve(response.prefs.mode);
+            }
+          });
+        });
+        getMode.then((mode)=>{
+          console.log('mode....', mode);
+          if (type === 'bookmarks' && mode === 'bookmarks') {
+            defer('alt');
+          } else if (type === 'history' && mode === 'history') {
+            defer('alt');
+          }
+        });
+      } else {
+        defer();
+      }
+    } else {
+      this.trigger(this.reRender);
     }
-    this.trigger(this.reRender);
   },
   get_reRender: function() {
     return this.reRender;

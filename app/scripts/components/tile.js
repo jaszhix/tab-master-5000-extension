@@ -285,15 +285,13 @@ var Tile = React.createClass({
   handleCloseTab(id) {
     var p = this.props;
     var s = this.state;
-    var reRender = (delay)=>{
+    var reRender = (defer)=>{
       var t = tabStore.get_altTab();
-      if (delay) {
+      if (defer) {
         _.defer(()=>{
           this.setState({render: false});
-          _.delay(()=>{
-            reRenderStore.set_reRender(true, 'create', t[0].id);
-          },500);
         });
+        reRenderStore.set_reRender(true, 'defer', t[0].id);
       } else {
         reRenderStore.set_reRender(true, 'create', t[0].id);
       }
@@ -318,18 +316,18 @@ var Tile = React.createClass({
         close();
       } else {
         if (s.bookmarks) {          
-          reRender(true);
+          //reRender(true);
           chrome.bookmarks.remove(p.tab.bookmarkId,(b)=>{
             console.log('Bookmark deleted: ',b);
-            reRender();
+            //reRender();
             //this.setState({render: false});
           });
         } else {
           //this.setState({render: false});
-          reRender(true);
+          //reRender(true);
           chrome.history.deleteUrl({url: p.tab.url},(h)=>{
             console.log('History url deleted: ', h);
-            reRender();
+            //reRender();
             //this.setState({render: false});
           });
         }    

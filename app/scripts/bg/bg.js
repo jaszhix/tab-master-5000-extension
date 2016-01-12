@@ -106,34 +106,22 @@ getPrefs.then((prefs)=>{
     sendMsg({e: e, type: 'detach'});
   });
   chrome.bookmarks.onCreated.addListener((e, info) => {
-    if (prefs.mode === 'bookmarks') {
-      sendMsg({e: e, type: 'create'});
-    }
+    sendMsg({e: e, type: 'bookmarks'});
   });
   chrome.bookmarks.onRemoved.addListener((e, info) => {
-    if (prefs.mode === 'bookmarks') {
-      sendMsg({e: e, type: 'remove'});
-    }
+    sendMsg({e: e, type: 'bookmarks'});
   });
   chrome.bookmarks.onChanged.addListener((e, info) => {
-    if (prefs.mode === 'bookmarks') {
-      sendMsg({e: e, type: 'update'});
-    }
+    sendMsg({e: e, type: 'bookmarks'});
   });
   chrome.bookmarks.onMoved.addListener((e, info) => {
-    if (prefs.mode === 'bookmarks') {
-      sendMsg({e: e, type: 'move'});
-    }
+    sendMsg({e: e, type: 'bookmarks'});
   });
   chrome.history.onVisited.addListener((e, info) => {
-    if (prefs.mode === 'history') {
-      sendMsg({e: e, type: 'create'});
-    }
+    sendMsg({e: e, type: 'history'});
   });
   chrome.history.onVisitRemoved.addListener((e, info) => {
-    if (prefs.mode === 'history') {
-      sendMsg({e: e, type: 'create'});
-    }
+    sendMsg({e: e, type: 'history'});
   });
   chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     // requests from front-end javascripts
