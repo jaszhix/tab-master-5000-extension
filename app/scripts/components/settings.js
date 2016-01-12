@@ -65,6 +65,7 @@ var Sessions = React.createClass({
       tabs = this.state.tabs;
       timeStamp = Date.now();
     }
+    tabs = _.without(tabs, _.find(tabs, { title: 'New Tab' }));
     var tabData = {timeStamp: timeStamp, tabs: tabs, label: sessionLabel};
     var session = null;
     chrome.storage.local.get('sessionData',(item)=>{
@@ -196,6 +197,7 @@ var Sessions = React.createClass({
     var p = this.props;
     var s = this.state;
     var tabs = s.tabs;
+    tabs = _.without(tabs, _.find(tabs, { title: 'New Tab' }));
     var tm20 = tabs.length - 24;
     var removeTabFromSession = (id, session)=>{
       var index = _.findIndex(session.tabs, { 'id': id });
