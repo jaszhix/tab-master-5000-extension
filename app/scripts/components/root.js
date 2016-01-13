@@ -13,6 +13,25 @@ import {Btn, Col, Row, Container} from './bootstrap';
 import TileGrid from './tile';
 import ModalHandler from './modal';
 import ContextMenu from './context';
+
+var Loading = React.createClass({
+  render: function() {
+    return (
+      <div className="sk-cube-grid">
+        <div className="sk-cube sk-cube1"></div>
+        <div className="sk-cube sk-cube2"></div>
+        <div className="sk-cube sk-cube3"></div>
+        <div className="sk-cube sk-cube4"></div>
+        <div className="sk-cube sk-cube5"></div>
+        <div className="sk-cube sk-cube6"></div>
+        <div className="sk-cube sk-cube7"></div>
+        <div className="sk-cube sk-cube8"></div>
+        <div className="sk-cube sk-cube9"></div>
+      </div>
+    );
+  }
+});
+
 var Search = React.createClass({
   shouldComponentUpdate() {
     return searchStore.get_search().length > -1;
@@ -97,7 +116,8 @@ var Root = React.createClass({
       event: '',
       sidebar: sidebarStore.get_sidebar(),
       chromeVersion: utilityStore.chromeVersion(),
-      prefs: []
+      prefs: [],
+      load: null
     };
   },
   componentWillMount(){
@@ -148,6 +168,7 @@ var Root = React.createClass({
   },
   captureTabs(opt) {
     var s = this.state;
+    this.setState({load: true});
     // Query current Chrome window for tabs.
     tabStore.promise().then((Tab)=>{
       if (opt !== 'init') {
@@ -178,6 +199,7 @@ var Root = React.createClass({
       }
       console.log(Tab);
       v('#main').css({cursor: 'default'});
+      this.setState({load: false});
       // Querying is complete, allow the component to render.
       if (opt === 'init' || opt === 'drag' || opt === 'prefs') {
         this.setState({render: true});
@@ -300,7 +322,7 @@ var Root = React.createClass({
           {s.tabs ? <div className="tile-container">
               {s.settings ? <Search event={s.event} prefs={s.prefs} /> : null}
               <div className="tile-child-container">
-                {s.render ? this.tileGrid(stores) : null}
+                {s.render ? s.load ? <Loading /> : this.tileGrid(stores) : null}
             </div></div> : null}
       </div>
     );
