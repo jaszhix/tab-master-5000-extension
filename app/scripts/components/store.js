@@ -871,25 +871,13 @@ export var actionStore = Reflux.createStore({
     });
   },
   set_action: function(type, object) {
-    var push = ()=>{
+    if (this.ready && !this.undoActionState && object.title !== 'New Tab') {
       this.actions.push({type: type, item: object});
       chrome.storage.local.set({actions: this.actions}, (result)=> {
         console.log('actions saved: ',this.actions);
       });
       console.log('action: ', {type: type, item: object});
       this.trigger(this.actions);
-    };
-    if (this.ready && !this.undoActionState && object.title !== 'New Tab') {
-      var tab = _.find(tabs(), { id: object.id });
-      if (tab && type === 'update') {
-        if (tab.pinned !== object.pinned) {
-          push();
-        }
-      } else {
-        if (type !== 'update') {
-          push();
-        }
-      }
     }
   },
   get_lastAction: function() {
@@ -904,13 +892,13 @@ export var actionStore = Reflux.createStore({
     this.undoActionState = true;
     var lastAction = _.last(this.actions);
     var tab = _.find(tabs(), { id: lastAction.item.id });
-    console.log(lastAction);
+    console.log(lastAction)
     if (lastAction.type === 'remove') {
       tabStore.create(lastAction.item.url);
     } else if (lastAction.type === 'update') {
-      console.log(lastAction.item);
+      console.log(lastAction.item)
       if (tab.pinned !== lastAction.item.pinned) {
-        console.log('pin', tab);
+        console.log('pin', tab)
         tabStore.pin(tab);
       }
     } else if (lastAction.type === 'create') {
