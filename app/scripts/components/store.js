@@ -22,10 +22,13 @@ var reRender = (type, id) => {
   var active = null;
   if (type === 'create' || type === 'activate') {
     active = id.windowId;
+    actionStore.set_action(type, id);
   } else if (type === 'bookmarks' || type === 'history' || type === 'prefs') {
     active = utilityStore.get_window();
   } else {
-    active = _.result(_.find(tabs(), { id: id }), 'windowId');
+    var item = _.find(tabs(), { id: id });
+    actionStore.set_action(type, item);
+    active = _.result(item, 'windowId');
   }
   console.log('window: ', active, utilityStore.get_window(), 'state: ',utilityStore.get_systemState());
   if (active === utilityStore.get_window() && utilityStore.get_systemState() === 'active') {
@@ -69,6 +72,12 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     contextStore.set_context(null, 'installed');
   } else if (msg.type === 'versionUpdate') {
     contextStore.set_context(null, 'versionUpdate');
+  }
+});
+
+chrome.commands.onCommand.addListener((command) => {
+  if (command === 'undo') {
+    actionStore.undoAction();
   }
 });
 
@@ -628,7 +637,6 @@ export var blacklistStore = Reflux.createStore({
               reject();
             }
           });
-          /*reject();*/
         }
       });
     });
@@ -833,6 +841,95 @@ export var historyStore = Reflux.createStore({
     });
     return this.history;
   },
+});
+
+export var actionStore = Reflux.createStore({
+  init: function() {
+    this.ready = false;
+    var getActions = new Promise((resolve, reject)=>{
+      chrome.storage.local.get('actions', (act)=>{
+        if (act && act.actions) {
+          resolve(act);
+        } else {
+          reject();
+        }
+      });
+    });
+    getActions.then((act)=>{
+      console.log('load actions');
+      this.actions = act.actions;
+      this.trigger(this.actions);
+      this.ready = true;
+    }).catch(()=>{
+      console.log('init actions');
+      this.actions = [];
+      this.ready = true;
+      chrome.storage.local.set({actions: this.actions}, (result)=> {
+        console.log('Init actions saved: ',result);
+      });
+      this.trigger(this.actions);
+    });
+  },
+  set_action: function(type, object) {
+    var push = ()=>{
+      this.actions.push({type: type, item: object});
+      chrome.storage.local.set({actions: this.actions}, (result)=> {
+        console.log('actions saved: ',this.actions);
+      });
+      console.log('action: ', {type: type, item: object});
+      this.trigger(this.actions);
+    };
+    if (this.ready && !this.undoActionState && object.title !== 'New Tab') {
+      var tab = _.find(tabs(), { id: object.id });
+      if (tab && type === 'update') {
+        if (tab.pinned !== object.pinned) {
+          push();
+        }
+      } else {
+        if (type !== 'update') {
+          push();
+        }
+      }
+    }
+  },
+  get_lastAction: function() {
+    if (this.ready) {
+      return _.last(this.actions);
+    }
+  },
+  set_state(value){
+    this.undoActionState = value;
+  },
+  undoAction(){
+    this.undoActionState = true;
+    var lastAction = _.last(this.actions);
+    var tab = _.find(tabs(), { id: lastAction.item.id });
+    console.log(lastAction);
+    if (lastAction.type === 'remove') {
+      tabStore.create(lastAction.item.url);
+    } else if (lastAction.type === 'update') {
+      console.log(lastAction.item);
+      if (tab.pinned !== lastAction.item.pinned) {
+        console.log('pin', tab);
+        tabStore.pin(tab);
+      }
+    } else if (lastAction.type === 'create') {
+      tabStore.close(lastAction.item.id);
+    }
+    this.actions = _.without(this.actions, _.last(this.actions));
+    chrome.storage.local.set({actions: this.actions}, (result)=> {
+      console.log('actions saved: ',this.actions);
+    });
+    this.trigger(this.actions);
+    _.delay(()=>{
+      this.undoActionState = false;
+    },500);
+  },
+  clear(){
+    this.actions = [];
+    chrome.storage.local.remove('actions');
+    this.trigger(this.actions);
+  }
 });
 
 (function() {

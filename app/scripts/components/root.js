@@ -6,7 +6,7 @@ import ReactUtils from 'react-utils';
 import v from 'vquery';
 import '../../styles/app.scss';
 window.v = v;
-import {historyStore, bookmarksStore, relayStore, sidebarStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore, prefsStore} from './store';
+import {actionStore, historyStore, bookmarksStore, relayStore, sidebarStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore, prefsStore} from './store';
 import tabStore from './tabStore';
 
 import {Btn, Col, Row, Container} from './bootstrap';
@@ -117,7 +117,7 @@ var Root = React.createClass({
       sidebar: sidebarStore.get_sidebar(),
       chromeVersion: utilityStore.chromeVersion(),
       prefs: [],
-      load: null
+      load: true
     };
   },
   componentWillMount(){
@@ -125,12 +125,14 @@ var Root = React.createClass({
   },
   componentDidMount() {
     // Initialize Reflux listeners.
+    actionStore.clear();
     this.listenTo(searchStore, this.searchChanged);
     this.listenTo(reRenderStore, this.reRender);
     this.listenTo(settingsStore, this.settingsChange);
     this.listenTo(contextStore, this.contextTrigger);
     this.listenTo(sidebarStore, this.sortTrigger);
     this.listenTo(prefsStore, this.prefsChange);
+    this.listenTo(actionStore, this.actionsChange);
 
     console.log('Chrome Version: ',utilityStore.chromeVersion());
     console.log('Manifest: ', utilityStore.get_manifest());
@@ -166,9 +168,11 @@ var Root = React.createClass({
       this.onWindowResize(null, 'init');
     }
   },
+  actionsChange(e){
+    this.setState({actions: e});
+  },
   captureTabs(opt) {
     var s = this.state;
-    this.setState({load: true});
     // Query current Chrome window for tabs.
     tabStore.promise().then((Tab)=>{
       if (opt !== 'init') {
@@ -199,9 +203,12 @@ var Root = React.createClass({
       }
       console.log(Tab);
       v('#main').css({cursor: 'default'});
-      this.setState({load: false});
       // Querying is complete, allow the component to render.
       if (opt === 'init' || opt === 'drag' || opt === 'prefs') {
+        if (opt === 'init') {
+          this.setState({load: false});
+          actionStore.set_state(false);
+        }
         this.setState({render: true});
       }
     });
@@ -317,18 +324,19 @@ var Root = React.createClass({
     var stores = {tabs: tabs, newTabs: newTabs, prefs: s.prefs, search: search, cursor: cursor, chromeVersion: s.chromeVersion, relay: relay, windowId: windowId};
     return (
       <div className="container-main">
-        {s.context ? <ContextMenu tabs={s.tabs} prefs={s.prefs} cursor={cursor} context={context} chromeVersion={s.chromeVersion}/> : null}
-        <ModalHandler tabs={s.prefs.mode === 'tabs' ? s.tabs : tabStore.get_altTab()} prefs={s.prefs} collapse={s.collapse} />
-          {s.tabs ? <div className="tile-container">
-              {s.settings ? <Search event={s.event} prefs={s.prefs} /> : null}
-              <div className="tile-child-container">
-                {s.render ? s.load ? <Loading /> : this.tileGrid(stores) : null}
-            </div></div> : null}
+        {s.load ? <Loading /> : <div>
+          {s.context ? <ContextMenu actions={s.actions} tabs={s.tabs} prefs={s.prefs} cursor={cursor} context={context} chromeVersion={s.chromeVersion}/> : null}
+          <ModalHandler tabs={s.prefs.mode === 'tabs' ? s.tabs : tabStore.get_altTab()} prefs={s.prefs} collapse={s.collapse} />
+            {s.tabs ? <div className="tile-container">
+                {s.settings ? <Search event={s.event} prefs={s.prefs} /> : null}
+                <div className="tile-child-container">
+                  {s.render ? this.tileGrid(stores) : <Loading />}
+              </div></div> : null}
+          </div>}
       </div>
     );
   }
 });
-
 function run() {
   ReactDOM.render(<Root />, document.getElementById('main'));
 }

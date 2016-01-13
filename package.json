@@ -26,6 +26,7 @@
   "devDependencies": {
     "autoprefixer": "^6.2.1",
     "babel-loader": "^5.3.2",
+    "clear": "0.0.1",
     "css-loader": "^0.17.0",
     "del": "^2.2.0",
     "file-loader": "^0.8.4",

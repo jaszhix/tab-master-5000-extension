@@ -55,5 +55,13 @@
     "tabCapture",
     "bookmarks",
     "history"
-  ]
+  ],
+  "commands": {
+    "undo": {
+      "suggested_key": {
+        "default": "Ctrl+Z"
+      },
+      "description": "Undo action"
+    }
+  }
 }

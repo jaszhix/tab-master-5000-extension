@@ -63,6 +63,14 @@ var tabStore = Reflux.createStore({
     }).catch(()=>{
       console.log(chrome.extension.lastError);
     });
+  },
+  create(href){
+    chrome.tabs.create({url: href}, (t)=>{
+      console.log('Tab created from utilityStore.createTab: ',t);
+    });
+  },
+  pin(item){
+    chrome.tabs.update(item.id, {pinned: !item.pinned});
   }
 });
 

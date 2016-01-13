@@ -9,6 +9,7 @@ var htmlclean = require('gulp-htmlclean');
 var del = require('del');
 var zip = require('gulp-zip');
 var runSequence = require('run-sequence');
+var clear = require('clear');
 //var exec = require('child_process').exec;
 
 var manifest = JSON.parse(fs.readFileSync('./app/manifest.json', 'utf8'));
@@ -194,4 +195,16 @@ gulp.task('watch', function() {
   gulp.watch('./app/scripts/content/*.{js,jsx,es6}', ['build-content']);
   gulp.watch('./app/styles/*.scss', ['build']);
 });
-gulp.task('default', ['watch'], function() {});
+gulp.task('clear-terminal', function() {
+  clear();
+});
+gulp.task('spawn-watch', ['clear-terminal'], function() {
+ var spawnWatch = function() {
+    var proc = require('child_process').spawn('gulp', ['watch'], {stdio: 'inherit'});
+    proc.on('close', function (code) {
+      spawnWatch();
+    });
+  };
+  spawnWatch();
+});
+gulp.task('default', ['spawn-watch'], function() {});
