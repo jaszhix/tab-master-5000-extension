@@ -20,19 +20,15 @@ var reRender = (type, id) => {
     }
   });
   var active = null;
-  var prefs = prefsStore.get_prefs();
+  //var prefs = prefsStore.get_prefs();
   if (type === 'create' || type === 'activate') {
     active = id.windowId;
-    if (prefs.actions) {
-      actionStore.set_action(type, id);
-    }
+    actionStore.set_action(type, id);
   } else if (type === 'bookmarks' || type === 'history' || type === 'prefs') {
     active = utilityStore.get_window();
   } else {
     var item = _.find(tabs(), { id: id });
-    if (prefs.actions) {
-      actionStore.set_action(type, item);
-    }
+    actionStore.set_action(type, item);
     active = _.result(item, 'windowId');
   }
   console.log('window: ', active, utilityStore.get_window(), 'state: ',utilityStore.get_systemState());
