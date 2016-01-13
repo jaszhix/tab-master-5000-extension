@@ -95,6 +95,7 @@ var Preferences = React.createClass({
       screenshotBg: p.prefs.screenshotBg,
       blacklist: p.prefs.blacklist,
       animations: p.prefs.animations,
+      actions: p.prefs.actions,
       hover: null,
       bytesInUse: null
     };
@@ -112,6 +113,7 @@ var Preferences = React.createClass({
     this.setState({screenshotBg: p.prefs.screenshotBg});
     this.setState({blacklist: p.prefs.blacklist});
     this.setState({animations: p.prefs.animations});
+    this.setState({actions: p.prefs.actions})
   },
   getBytesInUse(){
     if (this.state.screenshot) {
@@ -179,6 +181,11 @@ var Preferences = React.createClass({
               <Btn onClick={()=>screenshotStore.clear()} style={p.settingsMax ? {top: '95%'} : null} className="ntg-setting-btn" fa="trash">Clear Screenshot Cache</Btn> 
             </Col>
           : null}
+          <Toggle onMouseEnter={()=>this.handleToggle('actions')}
+                  onClick={()=>this.handleClick('actions')}
+                  on={s.actions}>
+                    Enable undoing of tab actions <strong>(Experimental)</strong>
+          </Toggle>
         </Col>
         <Col size="6">
           <Row className="prefs-row">

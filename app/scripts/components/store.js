@@ -20,14 +20,19 @@ var reRender = (type, id) => {
     }
   });
   var active = null;
+  var prefs = prefsStore.get_prefs();
   if (type === 'create' || type === 'activate') {
     active = id.windowId;
-    actionStore.set_action(type, id);
+    if (prefs.actions) {
+      actionStore.set_action(type, id);
+    }
   } else if (type === 'bookmarks' || type === 'history' || type === 'prefs') {
     active = utilityStore.get_window();
   } else {
     var item = _.find(tabs(), { id: id });
-    actionStore.set_action(type, item);
+    if (prefs.actions) {
+      actionStore.set_action(type, item);
+    }
     active = _.result(item, 'windowId');
   }
   console.log('window: ', active, utilityStore.get_window(), 'state: ',utilityStore.get_systemState());
@@ -35,7 +40,7 @@ var reRender = (type, id) => {
     reRenderStore.set_reRender(true, type, id);
   }
 };
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {      
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   console.log('msg: ',msg);
   if (msg.type === 'create') {
     reRender(msg.type, msg.e);
@@ -77,7 +82,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
 chrome.commands.onCommand.addListener((command) => {
   if (command === 'undo') {
-    actionStore.undoAction();
+    if (prefsStore.get_prefs().actions) {
+      actionStore.undoAction();
+    }
   }
 });
 
@@ -383,7 +390,7 @@ export var prefsStore = Reflux.createStore({
                 if (chrome.extension.lastError) {
                   reject(chrome.extension.lastError);
                 } else {
-                  this.prefs = {settingsMax: false, drag: false, context: true, animations: true, duplicate: false, screenshot: false, screenshotBg: false, blacklist: true, sidebar: false, sort: true, mode: 'tabs', installTime: Date.now()};
+                  this.prefs = {settingsMax: false, drag: false, context: true, animations: true, duplicate: false, screenshot: false, screenshotBg: false, blacklist: true, sidebar: false, sort: true, mode: 'tabs', installTime: Date.now(), actions: false};
                   chrome.storage.sync.set({preferences: this.prefs}, (result)=> {
                     this.ready = true;
                     console.log('Init preferences saved');
@@ -418,7 +425,8 @@ export var prefsStore = Reflux.createStore({
         mode: prefs.preferences.mode,
         animations: prefs.preferences.animations,
         installTime: prefs.preferences.installTime,
-        settingsMax: prefs.preferences.settingsMax
+        settingsMax: prefs.preferences.settingsMax,
+        actions: prefs.preferences.actions
       };
       if (typeof this.prefs.installTime === 'undefined') {
         this.prefs.installTime = Date.now();
@@ -871,7 +879,7 @@ export var actionStore = Reflux.createStore({
     });
   },
   set_action: function(type, object) {
-    if (this.ready && !this.undoActionState && object.title !== 'New Tab') {
+    if (object && this.ready && !this.undoActionState && object.title !== 'New Tab') {
       this.actions.push({type: type, item: object});
       chrome.storage.local.set({actions: this.actions}, (result)=> {
         console.log('actions saved: ',this.actions);

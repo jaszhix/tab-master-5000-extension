@@ -45,6 +45,8 @@ var ContextMenu = React.createClass({
       console.log('lastAction: ',lastAction);
       if (lastAction) {
         var tab = _.find(p.tabs, { id: lastAction.item.id });
+      } else {
+        return false;
       }
       if (lastAction && lastAction.type === 'remove') {
         return ' removal of '+lastAction.item.title;
@@ -55,8 +57,6 @@ var ContextMenu = React.createClass({
           var pinning = tab.pinned ? 'pinning' : 'unpinning';
           return ' '+pinning+' of '+lastAction.item.title+' ';
         }
-      } else {
-        return false;
       }
     } else {
       return p.tabs[index].pinned;
@@ -73,7 +73,7 @@ var ContextMenu = React.createClass({
           {this.getStatus('duplicate') ? <button onClick={()=>this.handleRelay('closeDupes')} className="ntg-context-btn-close-all"><i className="fa fa-asterisk" /> {close+'duplicates'}</button> : null}
           {this.getStatus('openTab') || p.prefs.mode !== 'bookmarks' && p.prefs.mode !== 'history' ? <button onClick={()=>this.handleRelay('pin')} className="ntg-context-btn"><i className="fa fa-map-pin" /> {this.getStatus('pinned') ? 'Unpin' : 'Pin'}</button> : null}
           {p.chromeVersion >= 46 ? this.getStatus('openTab') || p.prefs.mode !== 'bookmarks' && p.prefs.mode !== 'history' ? <button onClick={()=>this.handleRelay('mute')} className="ntg-context-btn"><i className="fa fa-volume-off" /> {this.getStatus('muted') ? 'Unmute' : 'Mute'}</button> : null : null}
-          {this.getStatus('actions') ? <button onClick={()=>this.handleRelay('actions')} className="ntg-context-btn"><i className={p.prefs.mode !== 'tabs' && !this.getStatus('openTab') ? "fa fa-eraser" : "fa fa-times"} />{' Undo'+this.getStatus('actions')}</button> : null}
+          {p.prefs.actions && this.getStatus('actions') ? <button onClick={()=>this.handleRelay('actions')} className="ntg-context-btn"><i className={p.prefs.mode !== 'tabs' && !this.getStatus('openTab') ? "fa fa-eraser" : "fa fa-times"} />{' Undo'+this.getStatus('actions')}</button> : null}
         </div>
       </div>
     );
