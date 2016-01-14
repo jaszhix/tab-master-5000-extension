@@ -197,7 +197,7 @@ var Preferences = React.createClass({
             {s.hover === 'screenshotBg' ? <p>This setting enables full-size tab screenshots to fill the background of the New Tab page, while you are hovering over a tab with a screenshot. Screenshots are blurred and blended into the background.</p> : null}
             {s.hover === 'blacklist' ? <p>Enter a comma separated list of domains, and they will be automatically closed under any circumstance. This is useful for blocking websites which may inhibit productivity, or you simply don't like.</p> : null}
             {s.hover === 'animations' ? <p>This option toggles tab action animations as well as the blur effects. Disabling this is useful on lower end computers with limited hardware acceleration.</p> : null}
-            {s.hover === 'actions' ? <p>This option allows you to undo a tab action by pressing CTRL+Z, or using the right-click context menu on a tab tile.</p> : null}
+            {s.hover === 'actions' ? <p>This option allows you to undo a tab action by pressing CTRL+Z, or using the right-click context menu on a tab tile while in the tabs view.</p> : null}
           </Row>
         </Col>
       </div>
