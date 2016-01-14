@@ -5,8 +5,12 @@ import S from 'string';
 
 import tabStore from './tabStore';
 
-export var tabs = ()=>{
-  return tabStore.get_tab();
+export var tabs = (opt)=>{
+  if (opt === 'alt') {
+    return tabStore.get_altTab();
+  } else {
+    return tabStore.get_tab();
+  }
 };
 // Chrome event listeners set to trigger re-renders.
 var reRender = (type, id) => {
@@ -45,14 +49,31 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   } else if (msg.type === 'remove') {
     reRender(msg.type, msg.e);
   } else if (msg.type === 'activate') {
-    if (prefsStore.get_prefs().screenshot) {
+    var prefs = prefsStore.get_prefs();
+    if (prefs.screenshot) {
       // Inject event listener that messages the extension to recapture the image on click.
-      var title = _.result(_.find(tabs(), { id: msg.e.tabId }), 'title');
-      if (title !== 'New Tab') {
-        _.defer(()=>{
-          screenshotStore.capture(msg.e.tabId, msg.e.windowId);
-        });
-        reRender('activate', msg.e);
+      var title = null;
+      if (prefs.mode === 'tabs') {
+        title = _.result(_.find(tabs(), { id: msg.e.tabId }), 'title');
+        if (title !== 'New Tab') {
+          _.defer(()=>{
+            screenshotStore.capture(msg.e.tabId, msg.e.windowId);
+          });
+          reRender('activate', msg.e);
+        }
+      } else {
+        title = _.result(_.find(tabs('alt'), { id: msg.e.tabId }), 'title');
+        if (title !== 'New Tab') {
+          if (prefs.mode === 'history') {
+            screenshotStore.capture(msg.e.tabId, msg.e.windowId);
+            _.defer(()=>{
+              reRenderStore.set_reRender(true, 'activate', msg.e.tabId);
+            });
+          } else {
+            screenshotStore.capture(msg.e.tabId, msg.e.windowId);
+            reRender('bookmarks', msg.e);
+          }
+        }
       }
     }
   } else if (msg.type === 'update') {
