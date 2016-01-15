@@ -7,7 +7,7 @@ import style from './style';
 
 import Settings from './settings';
 
-import {clickStore, modalStore, prefsStore} from './store';
+import {settingsStore, clickStore, modalStore, prefsStore} from './store';
 import {Btn, Col} from './bootstrap';
 
 var Contribute = React.createClass({
@@ -39,6 +39,10 @@ var Contribute = React.createClass({
     clickStore.set_click(true, false);
     modalStore.set_modal(false);
   },
+  openPrefs(){   
+    settingsStore.set_settings('preferences');
+    modalStore.set_modal(true, 'settings');
+  },
   render: function() {
     var p = this.props;
     return (
@@ -59,7 +63,7 @@ var Contribute = React.createClass({
           {p.collapse ? <br /> : null}
           <div>
             <p>Hi, my name is Jason Hicks and I am the author of TM5K. I build and maintain TM5K during my free hours. If you like using this extension, a contribution would help me continue fixing bugs, and adding new features.</p>
-            <p>You can also contribute to this project by submitting <a href="https://github.com/jaszhix/tab-master-5000-chrome-extension/issues" target="_blank">issues</a> on Github if you come across a bug, or have a suggestion.</p>
+            <p>You can also contribute to this project by submitting <a href="https://github.com/jaszhix/tab-master-5000-chrome-extension/issues" target="_blank">issues</a> on Github if you come across a bug, or have a suggestion. Alternatively, you can enable anonymous error reporting in your <a onClick={this.openPrefs} href="#">Preferences</a>, so I can review errors you might come across.</p>
             <p>Thank you very much!</p>
           </div>
         </div>
@@ -115,7 +119,6 @@ var ModalHandler = React.createClass({
         style={style.modal}>
           {s.modal.type === 'settings' ? <Settings tabs={p.tabs} prefs={p.prefs} collapse={p.collapse} /> : null}
           {s.modal.type === 'contribute' ? <Contribute collapse={p.collapse} /> : null}
-          {s.modal.type === 'install' ? <Init collapse={p.collapse} /> : null}
       </Modal>
     );
   }
