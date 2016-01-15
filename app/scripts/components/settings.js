@@ -333,12 +333,20 @@ var Settings = React.createClass({
   },
   handleCloseBtn(){
     clickStore.set_click(true, false);
-    modalStore.set_modal(false);
+    var p = this.props;
+    if (p.modal.opt) {
+      var opt = p.modal.opt;
+      _.defer(()=>{
+        modalStore.set_modal(true, opt);
+      });
+      modalStore.set_modal(false);
+    } else {
+      modalStore.set_modal(false);
+    }
   },
   handleMaxBtn(){
     clickStore.set_click(true, false);
     prefsStore.set_prefs('settingsMax', !this.state.settingsMax);
-
   },
   render: function() {
     var p = this.props;

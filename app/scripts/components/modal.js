@@ -1,5 +1,6 @@
 import React from 'react';
 import Reflux from 'reflux';
+import _ from 'lodash';
 import v from 'vquery';
 import Modal from 'react-modal';
 
@@ -9,6 +10,8 @@ import Settings from './settings';
 
 import {settingsStore, clickStore, modalStore, prefsStore} from './store';
 import {Btn, Col} from './bootstrap';
+
+var keepContributeModalOpen = false;
 
 var Contribute = React.createClass({
   getInitialState(){
@@ -39,9 +42,13 @@ var Contribute = React.createClass({
     clickStore.set_click(true, false);
     modalStore.set_modal(false);
   },
-  openPrefs(){   
-    settingsStore.set_settings('preferences');
-    modalStore.set_modal(true, 'settings');
+  openPrefs(){
+    keepContributeModalOpen = true;
+    modalStore.set_modal(false);
+    _.defer(()=>{
+      settingsStore.set_settings('preferences');
+      modalStore.set_modal(true, 'settings', 'contribute');
+    });
   },
   render: function() {
     var p = this.props;
@@ -108,6 +115,18 @@ var ModalHandler = React.createClass({
       v('#main').css({WebkitFilter: 'none'});
     }
   },
+  handleClosing(){
+    var s = this.state;
+    if (s.modal.opt) {
+      var opt = s.modal.opt;
+      _.defer(()=>{
+        modalStore.set_modal(true, opt);
+      });
+      modalStore.set_modal(false);
+    } else {
+      modalStore.set_modal(false);
+    }
+  },
   render: function() {
     var s = this.state;
     var p = this.props;
@@ -115,9 +134,9 @@ var ModalHandler = React.createClass({
       <Modal
         id="modal"
         isOpen={s.modal.state}
-        onRequestClose={()=>modalStore.set_modal(false)}
+        onRequestClose={this.handleClosing}
         style={style.modal}>
-          {s.modal.type === 'settings' ? <Settings tabs={p.tabs} prefs={p.prefs} collapse={p.collapse} /> : null}
+          {s.modal.type === 'settings' ? <Settings modal={s.modal} tabs={p.tabs} prefs={p.prefs} collapse={p.collapse} /> : null}
           {s.modal.type === 'contribute' ? <Contribute collapse={p.collapse} /> : null}
       </Modal>
     );

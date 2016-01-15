@@ -206,11 +206,12 @@ export var reRenderStore = Reflux.createStore({
 
 export var modalStore = Reflux.createStore({
   init: function() {
-    this.modal = {state: false, type: null};
+    this.modal = {state: false, type: null, opt: null};
   },
-  set_modal: function(value, type, size) {
+  set_modal: function(value, type, opt) {
     this.modal.state = value;
     this.modal.type = type;
+    this.modal.opt = opt;
     console.log('modal: ', this.modal);
     if (!value) {
       this.modal.type = null;
