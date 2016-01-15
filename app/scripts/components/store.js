@@ -304,7 +304,9 @@ export var utilityStore = Reflux.createStore({
     return this.cursor;
   },
   restartNewTab(){
-    location.reload();  
+    _.defer(()=>{
+      location.reload(); 
+    }); 
   },
   createTab(href){
     chrome.tabs.create({url: href}, (t)=>{

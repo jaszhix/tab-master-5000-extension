@@ -138,7 +138,7 @@ getPrefs.then((prefs)=>{
         sendResponse({'image': image});
         reload('Refreshing bg...');
       }).catch(()=>{
-        sendMsg({e: null, type: 'error'});
+        sendMsg({e: sender.id, type: 'error'});
         reload('Screenshot capture error.');
       });
     } else if (msg.method === 'close') {
