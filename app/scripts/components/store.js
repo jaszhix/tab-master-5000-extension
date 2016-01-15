@@ -411,7 +411,22 @@ export var prefsStore = Reflux.createStore({
                 if (chrome.extension.lastError) {
                   reject(chrome.extension.lastError);
                 } else {
-                  this.prefs = {settingsMax: false, drag: false, context: true, animations: true, duplicate: false, screenshot: false, screenshotBg: false, blacklist: true, sidebar: false, sort: true, mode: 'tabs', installTime: Date.now(), actions: false};
+                  this.prefs = {
+                    reporting: false, 
+                    settingsMax: false, 
+                    drag: false, 
+                    context: true, 
+                    animations: true, 
+                    duplicate: false, 
+                    screenshot: false, 
+                    screenshotBg: false, 
+                    blacklist: true, 
+                    sidebar: false, 
+                    sort: true, 
+                    mode: 'tabs', 
+                    installTime: Date.now(), 
+                    actions: false
+                  };
                   chrome.storage.sync.set({preferences: this.prefs}, (result)=> {
                     this.ready = true;
                     console.log('Init preferences saved');
@@ -447,7 +462,8 @@ export var prefsStore = Reflux.createStore({
         animations: prefs.preferences.animations,
         installTime: prefs.preferences.installTime,
         settingsMax: prefs.preferences.settingsMax,
-        actions: prefs.preferences.actions
+        actions: prefs.preferences.actions,
+        reporting: prefs.preferences.reporting
       };
       if (typeof this.prefs.installTime === 'undefined') {
         this.prefs.installTime = Date.now();

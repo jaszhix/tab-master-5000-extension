@@ -115,6 +115,7 @@ var ModalHandler = React.createClass({
         style={style.modal}>
           {s.modal.type === 'settings' ? <Settings tabs={p.tabs} prefs={p.prefs} collapse={p.collapse} /> : null}
           {s.modal.type === 'contribute' ? <Contribute collapse={p.collapse} /> : null}
+          {s.modal.type === 'install' ? <Init collapse={p.collapse} /> : null}
       </Modal>
     );
   }

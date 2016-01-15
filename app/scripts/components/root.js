@@ -13,6 +13,7 @@ import {Btn, Col, Row, Container} from './bootstrap';
 import TileGrid from './tile';
 import ModalHandler from './modal';
 import ContextMenu from './context';
+import priv from './priv';
 
 var Loading = React.createClass({
   render: function() {
@@ -166,7 +167,24 @@ var Root = React.createClass({
       this.setState({init: false});
       this.captureTabs('init');
       this.onWindowResize(null, 'init');
+      if (e.reporting) {
+        this.handleErrorReporting(e, s.chromeVersion);
+      }
     }
+  },
+  handleErrorReporting(e, version){
+    var Parse = require('parse');
+    Parse.initialize(priv.id, priv.key);
+    //Parse.initialize("q1UHCpzG7U2aAL2vl3hOmOhGctpJYW5iOAEH8tsh", "A1PTqa5Zvi5dWz7BpCP4vD9CO8uP698QgRePhdtq");
+    window.onerror = (errorMessage, url, line)=>{
+      var Errors = Parse.Object.extend('Errors');
+      var errors = new Errors();
+      errors.save({
+        resolution: window.outerWidth+'x'+window.outerHeight, browser: version, error: errorMessage, prefs: e
+      }).then((object)=>{
+        console.log('Error reported: ',object);
+      });
+    };
   },
   actionsChange(e){
     this.setState({actions: e});

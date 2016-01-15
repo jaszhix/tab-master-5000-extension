@@ -96,6 +96,7 @@ var Preferences = React.createClass({
       blacklist: p.prefs.blacklist,
       animations: p.prefs.animations,
       actions: p.prefs.actions,
+      reporting: p.prefs.reporting,
       hover: null,
       bytesInUse: null
     };
@@ -106,14 +107,17 @@ var Preferences = React.createClass({
   },
   componentWillReceiveProps(nextProps){
     var p = nextProps;
-    this.setState({drag: p.prefs.drag});
-    this.setState({context: p.prefs.context});
-    this.setState({duplicate: p.prefs.duplicate});
-    this.setState({screenshot: p.prefs.screenshot});
-    this.setState({screenshotBg: p.prefs.screenshotBg});
-    this.setState({blacklist: p.prefs.blacklist});
-    this.setState({animations: p.prefs.animations});
-    this.setState({actions: p.prefs.actions});
+    this.setState({
+      drag: p.prefs.drag,
+      context: p.prefs.context,
+      duplicate: p.prefs.duplicate,
+      screenshot: p.prefs.screenshot,
+      screenshotBg: p.prefs.screenshotBg,
+      blacklist: p.prefs.blacklist,
+      animations: p.prefs.animations,
+      actions: p.prefs.actions,
+      reporting: p.prefs.reporting
+    });
   },
   getBytesInUse(){
     if (this.state.screenshot) {
@@ -185,6 +189,11 @@ var Preferences = React.createClass({
                   onClick={()=>this.handleClick('actions')}
                   on={s.actions}>
                     Enable undoing of tab actions <strong>(Experimental)</strong>
+          </Toggle>
+          <Toggle onMouseEnter={()=>this.handleToggle('reporting')}
+                  onClick={()=>this.handleClick('reporting')}
+                  on={s.reporting}>
+                    Enable anonymous error reporting
           </Toggle>
         </Col>
         <Col size="6">
