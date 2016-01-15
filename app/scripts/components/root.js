@@ -175,7 +175,6 @@ var Root = React.createClass({
   handleErrorReporting(e, version){
     var Parse = require('parse');
     Parse.initialize(priv.id, priv.key);
-    //Parse.initialize("q1UHCpzG7U2aAL2vl3hOmOhGctpJYW5iOAEH8tsh", "A1PTqa5Zvi5dWz7BpCP4vD9CO8uP698QgRePhdtq");
     window.onerror = (errorMessage, url, line)=>{
       var Errors = Parse.Object.extend('Errors');
       var errors = new Errors();
