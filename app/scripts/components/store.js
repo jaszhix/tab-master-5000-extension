@@ -24,7 +24,6 @@ var reRender = (type, id) => {
     }
   });
   var active = null;
-  //var prefs = prefsStore.get_prefs();
   if (type === 'create' || type === 'activate') {
     active = id.windowId;
     actionStore.set_action(type, id);
@@ -42,15 +41,31 @@ var reRender = (type, id) => {
     reRenderStore.set_reRender(true, type, id);
   }
 };
-var throttledRender = _.throttle(reRender, 350);
+//var throttledRender = _.throttle(reRender, 350);
+var throttled = {};
+_.defer(()=>{
+  throttled = {
+    screenshot: _.throttle(screenshotStore.capture, 1500, {leading: true}),
+    update: _.throttle(reRender, 350),
+    history: _.throttle(reRender, 4000, {leading: true})
+  };
+});
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   console.log('msg: ',msg);
+  var prefs = prefsStore.get_prefs();
   if (msg.type === 'create') {
-    reRender(msg.type, msg.e);
+    if (prefs.actions) {
+      reRender(msg.type, msg.e);
+    } else {
+      throttled.update(msg.type, msg.e);
+    }
   } else if (msg.type === 'remove') {
-    reRender(msg.type, msg.e);
+    if (prefs.actions) {
+      reRender(msg.type, msg.e);
+    } else {
+      throttled.update(msg.type, msg.e);
+    }
   } else if (msg.type === 'activate') {
-    var prefs = prefsStore.get_prefs();
     if (prefs.screenshot) {
       // Inject event listener that messages the extension to recapture the image on click.
       var title = null;
@@ -58,7 +73,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         title = _.result(_.find(tabs(), { id: msg.e.tabId }), 'title');
         if (title !== 'New Tab') {
           _.defer(()=>{
-            screenshotStore.capture(msg.e.tabId, msg.e.windowId);
+            throttled.screenshot(msg.e.tabId, msg.e.windowId);
+            //screenshotStore.capture(msg.e.tabId, msg.e.windowId);
           });
           reRender('activate', msg.e);
         }
@@ -66,21 +82,21 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         title = _.result(_.find(tabs('alt'), { id: msg.e.tabId }), 'title');
         if (title !== 'New Tab') {
           if (prefs.mode === 'history') {
-            screenshotStore.capture(msg.e.tabId, msg.e.windowId);
+            throttled.screenshot(msg.e.tabId, msg.e.windowId);
             _.defer(()=>{
               reRenderStore.set_reRender(true, 'activate', msg.e.tabId);
             });
           } else {
-            screenshotStore.capture(msg.e.tabId, msg.e.windowId);
+            throttled.screenshot(msg.e.tabId, msg.e.windowId);
             reRender('bookmarks', msg.e);
           }
         }
       }
     }
   } else if (msg.type === 'update') {
-    reRender(msg.type, msg.e);
+    throttled.update(msg.type, msg.e);
   } else if (msg.type === 'move') {
-    throttledRender(msg.type, msg.e);
+    throttled.update(msg.type, msg.e);
   } else if (msg.type === 'attach') {
     reRender(msg.type, msg.e);
   } else if (msg.type === 'detach') {
@@ -88,7 +104,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   } else if (msg.type === 'bookmarks') {
     reRender(msg.type, msg.e);
   } else if (msg.type === 'history') {
-    reRender(msg.type, msg.e);
+    throttled.history(msg.type, msg.e);
   } else if (msg.type === 'error') {
     utilityStore.restartNewTab();
   } else if (msg.type === 'newVersion') {
@@ -701,7 +717,12 @@ export var blacklistStore = Reflux.createStore({
     });
   },
   set_blacklist: function(value) {
-    var valueArr = value.split(',');
+    var valueArr = [];
+    if (value.length > 1) {
+      valueArr = value.split(',');
+    } else {
+      valueArr = [value];
+    }
     for (var i = 0; i < valueArr.length; i++) {
       valueArr[i] = _.trim(valueArr[i]);
       this.blacklist.push(valueArr[i]);

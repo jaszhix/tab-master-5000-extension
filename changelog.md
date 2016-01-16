@@ -6,6 +6,7 @@
 *   Added opt-in anonymous error reporting. The error triggering the report, screen resolution, Chrome version, and preferences data are the only pieces of information collected.
 *   Fixed some preferences options not updating the rendered view when you toggle them.
 *   Fixed screenshot capturing not working in history/bookmarks view.
+*   Fixed updates not rendering when moving tabs, or applying tab sort order in the sidebar.
 *   Added a CSS loading indicator during New Tab initialization.
 
 ##### v0.9.2 / *1-11-16*

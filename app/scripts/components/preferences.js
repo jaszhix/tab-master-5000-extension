@@ -50,7 +50,12 @@ var Blacklist = React.createClass({
   },
   blacklistSubmit(){
     var s = this.state;
-    var list = s.blacklistValue.split(',');
+    var list = [];
+    if (s.blacklistValue.includes(',')) {
+      list = s.blacklistValue.split(',');
+    } else {
+      list = [s.blacklistValue];
+    }
     var formatError = [];
     for (var i = 0; i < list.length; i++) {
       if (!S(list[i]).include('.') || list[i] === '.') {
