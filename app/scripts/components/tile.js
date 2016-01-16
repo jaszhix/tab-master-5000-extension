@@ -619,19 +619,14 @@ var Sidebar = React.createClass({
   },
   handleBookmarks(){
     prefsStore.set_prefs('mode', 'bookmarks');
-    //var t = tabStore.get_altTab();
     reRenderStore.set_reRender(true, 'defer', null);
   },
   handleHistory(){
     prefsStore.set_prefs('mode', 'history');
-    //var t = tabStore.get_altTab();
     reRenderStore.set_reRender(true, 'defer', null);
   },
   handleSort(){
-    //clickStore.set_click(true, false);
     prefsStore.set_prefs('sort', !this.state.sort);
-    //var t = tabStore.get_altTab();
-    //reRenderStore.set_reRender(true, 'prefs', null);
   },
   render: function() {
     var p = this.props;

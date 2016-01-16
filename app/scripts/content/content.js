@@ -1,7 +1,7 @@
 import kmp from 'kmp';
 
 var getBlacklist = new Promise((resolve, reject)=>{
-  chrome.storage.local.get('blacklist', (bl)=>{
+  chrome.storage.sync.get('blacklist', (bl)=>{
     if (bl && bl.blacklist) {
       resolve(bl);
     }
@@ -9,7 +9,7 @@ var getBlacklist = new Promise((resolve, reject)=>{
 });
 getBlacklist.then((bl)=>{
   var getPrefs = new Promise((resolve, reject)=>{
-    chrome.storage.local.get('preferences', (prefs)=>{
+    chrome.storage.sync.get('preferences', (prefs)=>{
       if (prefs && prefs.preferences) {
         resolve(prefs);
       }
