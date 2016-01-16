@@ -46,7 +46,7 @@ var tabStore = Reflux.createStore({
     return this.allTabs;
   },
   getNewTabs(){
-    return _.where(this.getAllTabs(), { title: 'New Tab' });
+    return _.filter(this.getAllTabs(), { title: 'New Tab' });
   },
   close(id){
     var get = new Promise((resolve, reject)=>{

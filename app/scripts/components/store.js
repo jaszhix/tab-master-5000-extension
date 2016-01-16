@@ -607,8 +607,8 @@ export var screenshotStore = Reflux.createStore({
             var urlInIndex = _.result(_.find(this.index, { url: ssUrl }), 'url');
             console.log('urlInIndex: ',urlInIndex);
             if (urlInIndex) {
-              var dataInIndex = _.pluck(_.where(this.index, { url: ssUrl }), 'data');
-              var timeInIndex = _.pluck(_.where(this.index, { url: ssUrl }), 'timeStamp');
+              var dataInIndex = _.map(_.filter(this.index, { url: ssUrl }), 'data');
+              var timeInIndex = _.map(_.filter(this.index, { url: ssUrl }), 'timeStamp');
               var index = _.findIndex(this.index, { 'url': ssUrl, 'data': _.last(dataInIndex), timeStamp: _.last(timeInIndex) });
               var newIndex = _.remove(this.index, this.index[index]);
               this.index = _.without(this.index, newIndex);
@@ -835,7 +835,7 @@ export var bookmarksStore = Reflux.createStore({
             }
           }
         }
-        bookmarks = _.sortByOrder(bookmarks, ['openTab'], ['asc']);
+        bookmarks = _.orderBy(bookmarks, ['openTab'], ['asc']);
         if (bookmarks) {
           resolve(bookmarks);
         }

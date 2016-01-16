@@ -148,10 +148,10 @@ var Tile = React.createClass({
   },
   checkDuplicateTabs(opt){
     var p = this.props;
-    if (_.include(duplicateTabs, p.tab.url)) {
-      var t = _.where(p.stores.tabs, { url: p.tab.url });
+    if (_.includes(duplicateTabs, p.tab.url)) {
+      var t = _.filter(p.stores.tabs, { url: p.tab.url });
       var first = _.first(t);
-      var activeTab = _.pluck(_.filter(t, { 'active': true }), 'id');
+      var activeTab = _.map(_.filter(t, { 'active': true }), 'id');
       console.log('checkDuplicateTabs: ',t, first);
       for (var i = t.length - 1; i >= 0; i--) {
         if (t[i].id !== first.id && t[i].title !== 'New Tab' && t[i].id !== activeTab) {
@@ -402,7 +402,7 @@ var Tile = React.createClass({
   applyTabOrder() {
     // Apply the sorted tab grid state to the Chrome window.
     var p = this.props;
-    var tabs = _.sortByOrder(p.stores.tabs, ['index'], ['desc']);
+    var tabs = _.orderBy(p.stores.tabs, ['index'], ['desc']);
       if (tabs.length > 0) {
         /*var lastTab = _.last(tabs);
         var tabIndex = lastTab.index + 1;
@@ -578,7 +578,7 @@ var Tile = React.createClass({
                   </Col>
                   <Col size="9" onClick={!s.bookmarks ? ()=>this.handleClick(p.tab.id) : null} className="ntg-title-container">
                     <h5 style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-title">
-                      {_.trunc(p.tab.title, {length: titleLimit})}
+                      {_.truncate(p.tab.title, {length: titleLimit})}
                     </h5>
                     {s.bookmarks ? <h5 onClick={()=>bookmarksStore.set_folder(p.tab.folder)} style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-folder">
                       <i className="fa fa-folder-o" />{p.tab.folder ? s.bookmarks ? ' '+p.tab.folder : null : null}
@@ -736,7 +736,7 @@ var TileGrid = React.createClass({
         return (_key === key) ? !flags[_key] : flags[_key];
       });
       self.setState({
-        data: _.sortByOrder(self.props.data, priority, order),
+        data: _.orderBy(self.props.data, priority, order),
         sortFlags: _.zipObject(priority, order),
         sortPriority: priority
       });

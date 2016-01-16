@@ -77,7 +77,7 @@ var Sessions = React.createClass({
         session.sessionData.push(tabData);
       }
       if (opt === 'update') {
-        var replacedSession = _.where(session.sessionData, { timeStamp: timeStamp });
+        var replacedSession = _.filter(session.sessionData, { timeStamp: timeStamp });
         console.log('replacedSession: ',replacedSession);
         session.sessionData = _.without(session.sessionData, _.first(replacedSession));
       }
@@ -95,7 +95,7 @@ var Sessions = React.createClass({
     chrome.storage.local.get('sessionData',(item)=>{
       console.log('item retrieved: ',item);
       // Sort sessionData array to show the newest sessions at the top of the list.
-      var reverse = _.sortByOrder(item.sessionData, ['timeStamp'], ['desc']);
+      var reverse = _.orderBy(item.sessionData, ['timeStamp'], ['desc']);
       this.setState({sessions: reverse});
       v('div.ReactModalPortal > div').css({cursor: 'default'});
     });
@@ -239,7 +239,7 @@ var Sessions = React.createClass({
                         return <Row onMouseEnter={()=>this.handleSelectedSessionTabHoverIn(i)} onMouseLeave={()=>this.handleSelectedSessionTabHoverOut(i)} key={i} style={i % 2 ? null : {backgroundColor: 'rgb(249, 249, 249)'}}>
                             <Col size="9">
                               <img className="ntg-small-favicon" src={t.favIconUrl ? utilityStore.filterFavicons(t.favIconUrl, t.url) : '../images/file_paper_blank_document.png' } /> 
-                              {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {p.settingsMax ? t.title : _.trunc(t.title, {length: 40})}
+                              {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {p.settingsMax ? t.title : _.truncate(t.title, {length: 40})}
                             </Col>
                             <Col size="3">
                               {s.selectedSessionTabHover === i ? <Btn onClick={()=>removeTabFromSession(t.id, session)} className="ntg-expanded-session-tab-btn" fa="times" /> : null}
@@ -268,13 +268,13 @@ var Sessions = React.createClass({
               if (i <= 24) {
                 return <Row key={i} style={i % 2 ? null : {backgroundColor: 'rgb(249, 249, 249)'}}>
                   <img className="ntg-small-favicon" src={t.favIconUrl ? utilityStore.filterFavicons(t.favIconUrl, t.url) : '../images/file_paper_blank_document.png' } />  
-                  {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {_.trunc(t.title, {length: 50})}
+                  {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {_.truncate(t.title, {length: 50})}
                 </Row>;
               }
             } else {
               return <Row key={i} style={i % 2 ? null : {backgroundColor: 'rgb(249, 249, 249)'}}>
                 <img className="ntg-small-favicon" src={t.favIconUrl ? utilityStore.filterFavicons(t.favIconUrl, t.url) : '../images/file_paper_blank_document.png' } />  
-                {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {p.settingsMax ? t.title : _.trunc(t.title, {length: 50})}
+                {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {p.settingsMax ? t.title : _.truncate(t.title, {length: 50})}
               </Row>;
             } 
           })}
