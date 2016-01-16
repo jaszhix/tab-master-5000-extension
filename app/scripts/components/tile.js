@@ -2,14 +2,13 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Reflux from 'reflux';
 import _ from 'lodash';
-import S from 'string';
 import v from 'vquery';
 import kmp from 'kmp';
 import moment from 'moment';
 import Draggable from 'react-draggable';
 import utils from './utils';
 
-import {clickStore, bookmarksStore, screenshotStore, dupeStore, prefsStore, reRenderStore, searchStore, applyTabOrderStore, utilityStore, contextStore, relayStore, dragStore} from './store';
+import {bookmarksStore, screenshotStore, dupeStore, prefsStore, reRenderStore, searchStore, applyTabOrderStore, utilityStore, contextStore, relayStore, dragStore} from './store';
 import tabStore from './tabStore';
 
 import {Btn, Col, Row} from './bootstrap';
@@ -219,7 +218,7 @@ var Tile = React.createClass({
   },
   filterTabs(tab) {
     // Filter tab method that triggers re-renders through Reflux store.
-    if (!S(tab.title).isEmpty()) {
+    if (tab && tab.title) {
       var p = this.props;
       if (kmp(tab.title.toLowerCase(), p.stores.search) !== -1) {
         return true;
@@ -574,18 +573,18 @@ var Tile = React.createClass({
                       : null}
                     </div>
                     <Row>
-                      <img className="ntg-favicon" src={S(p.tab.favIconUrl).isEmpty() ? '../images/file_paper_blank_document.png' : utilityStore.filterFavicons(p.tab.favIconUrl, p.tab.url) } />
+                      <img className="ntg-favicon" src={p.tab.favIconUrl ? utilityStore.filterFavicons(p.tab.favIconUrl, p.tab.url) : '../images/file_paper_blank_document.png' } />
                     </Row>
                   </Col>
                   <Col size="9" onClick={!s.bookmarks ? ()=>this.handleClick(p.tab.id) : null} className="ntg-title-container">
                     <h5 style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-title">
-                      {S(p.tab.title).truncate(titleLimit).s}
+                      {_.trunc(p.tab.title, {length: titleLimit})}
                     </h5>
                     {s.bookmarks ? <h5 onClick={()=>bookmarksStore.set_folder(p.tab.folder)} style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-folder">
                       <i className="fa fa-folder-o" />{p.tab.folder ? s.bookmarks ? ' '+p.tab.folder : null : null}
                     </h5> : null}
                     {s.history ? <h5 style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-folder">
-                      <i className="fa fa-hourglass-o" />{' '+S(moment(p.tab.lastVisitTime).fromNow()).capitalize().s}
+                      <i className="fa fa-hourglass-o" />{' '+_.capitalize(moment(p.tab.lastVisitTime).fromNow())}
                     </h5> : null}
                     {p.stores.prefs ? p.stores.prefs.drag && !s.bookmarks && !s.history ? <div onMouseEnter={this.handleDragHoverIn} onMouseLeave={this.handleDragHoverOut} onClick={() => this.handleCloseTab(p.tab.id)}>
                       {s.hover ? 

@@ -1,7 +1,6 @@
 import React from 'react';
 import Reflux from 'reflux';
 import _ from 'lodash';
-import S from 'string';
 
 import utils from './utils';
 
@@ -58,7 +57,7 @@ var Blacklist = React.createClass({
     }
     var formatError = [];
     for (var i = 0; i < list.length; i++) {
-      if (!S(list[i]).include('.') || list[i] === '.') {
+      if (!list[i].includes('.') || list[i] === '.') {
         formatError.push(list[i]);
       }
     }

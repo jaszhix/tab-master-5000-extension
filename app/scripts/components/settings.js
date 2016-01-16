@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Reflux from 'reflux';
-import S from 'string';
 import moment from 'moment';
 import _ from 'lodash';
 import {saveAs} from 'filesaver.js';
@@ -232,15 +231,15 @@ var Sessions = React.createClass({
                         <Btn style={{float: 'left'}} onClick={()=>this.setState({labelSession: null})} className="ntg-session-btn" fa="times"/>
                       </Col>
                     </div>
-                    : session.label ? session.label+': '+session.tabs.length+' tabs' : S(moment(session.timeStamp).fromNow()).capitalize().s+': '+session.tabs.length+' tabs'}
+                    : session.label ? session.label+': '+session.tabs.length+' tabs' : _.capitalize(moment(session.timeStamp).fromNow())+': '+session.tabs.length+' tabs'}
                 </div>
                 {s.expandedSession === i ? <Row style={s.labelSession && !p.collapse ? {width: '156%'} : null} className="ntg-session-expanded">
                     {session.tabs.map((t, i)=>{
                       if (i <= 20) {
                         return <Row onMouseEnter={()=>this.handleSelectedSessionTabHoverIn(i)} onMouseLeave={()=>this.handleSelectedSessionTabHoverOut(i)} key={i} style={i % 2 ? null : {backgroundColor: 'rgb(249, 249, 249)'}}>
                             <Col size="9">
-                              <img className="ntg-small-favicon" src={S(t.favIconUrl).isEmpty() ? '../images/file_paper_blank_document.png' : utilityStore.filterFavicons(t.favIconUrl, t.url) } /> 
-                              {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {p.settingsMax ? t.title : S(t.title).truncate(50).s}
+                              <img className="ntg-small-favicon" src={t.favIconUrl ? utilityStore.filterFavicons(t.favIconUrl, t.url) : '../images/file_paper_blank_document.png' } /> 
+                              {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {p.settingsMax ? t.title : _.trunc(t.title, {length: 40})}
                             </Col>
                             <Col size="3">
                               {s.selectedSessionTabHover === i ? <Btn onClick={()=>removeTabFromSession(t.id, session)} className="ntg-expanded-session-tab-btn" fa="times" /> : null}
@@ -268,14 +267,14 @@ var Sessions = React.createClass({
             if (!p.settingsMax) {
               if (i <= 24) {
                 return <Row key={i} style={i % 2 ? null : {backgroundColor: 'rgb(249, 249, 249)'}}>
-                  <img className="ntg-small-favicon" src={S(t.favIconUrl).isEmpty() ? '../images/file_paper_blank_document.png' : utilityStore.filterFavicons(t.favIconUrl, t.url) } />  
-                  {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {S(t.title).truncate(60).s}
+                  <img className="ntg-small-favicon" src={t.favIconUrl ? utilityStore.filterFavicons(t.favIconUrl, t.url) : '../images/file_paper_blank_document.png' } />  
+                  {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {_.trunc(t.title, {length: 50})}
                 </Row>;
               }
             } else {
               return <Row key={i} style={i % 2 ? null : {backgroundColor: 'rgb(249, 249, 249)'}}>
-                <img className="ntg-small-favicon" src={S(t.favIconUrl).isEmpty() ? '../images/file_paper_blank_document.png' : utilityStore.filterFavicons(t.favIconUrl, t.url) } />  
-                {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {p.settingsMax ? t.title : S(t.title).truncate(60).s}
+                <img className="ntg-small-favicon" src={t.favIconUrl ? utilityStore.filterFavicons(t.favIconUrl, t.url) : '../images/file_paper_blank_document.png' } />  
+                {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {p.settingsMax ? t.title : _.trunc(t.title, {length: 50})}
               </Row>;
             } 
           })}

@@ -7,6 +7,8 @@
 *   Fixed some preferences options not updating the rendered view when you toggle them.
 *   Fixed screenshot capturing not working in history/bookmarks view.
 *   Fixed updates not rendering when moving tabs, or applying tab sort order in the sidebar.
+*   Tab event updates are now throttled, allowing the extension to update with fewer redundant updates.
+*   Fixed blacklist not updating if only one item is in the blacklist, and not updating.
 *   Added a CSS loading indicator during New Tab initialization.
 
 ##### v0.9.2 / *1-11-16*

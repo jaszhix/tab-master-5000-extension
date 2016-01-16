@@ -1,7 +1,6 @@
 import Reflux from 'reflux';
 import kmp from 'kmp';
 import _ from 'lodash';
-import S from 'string';
 
 import tabStore from './tabStore';
 
@@ -291,7 +290,7 @@ export var utilityStore = Reflux.createStore({
     return this.focusedWindow;
   },
   chromeVersion(){
-    return S(/Chrome\/([0-9.]+)/.exec(navigator.userAgent)[1].split('.')).toInt();
+    return parseInt(/Chrome\/([0-9.]+)/.exec(navigator.userAgent)[1].split('.'));
   },
   set_systemState(value){
     this.systemState = value;
@@ -882,7 +881,7 @@ export var historyStore = Reflux.createStore({
           h[i].selected = false;
           h[i].status = 'complete';
           h[i].windowId = utilityStore.get_window();
-          h[i].id = S(h[i].id).toInt();
+          h[i].id = parseInt(h[i].id);
           h[i].openTab = null;
           for (var y = t.length - 1; y >= 0; y--) {
             if (h[i].url === t[y].url) {
