@@ -93,9 +93,7 @@ getPrefs.then((prefs)=>{
     }
   });
   chrome.tabs.onMoved.addListener((e, info) => {
-    if (prefs.mode === 'tabs') {
-      sendMsg({e: e, type: 'move'});
-    }
+    sendMsg({e: e, type: 'move'});
   });
   chrome.tabs.onAttached.addListener((e, info) => {
     sendMsg({e: e, type: 'attach'});

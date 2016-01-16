@@ -42,6 +42,7 @@ var reRender = (type, id) => {
     reRenderStore.set_reRender(true, type, id);
   }
 };
+var throttledRender = _.throttle(reRender, 350);
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   console.log('msg: ',msg);
   if (msg.type === 'create') {
@@ -79,7 +80,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   } else if (msg.type === 'update') {
     reRender(msg.type, msg.e);
   } else if (msg.type === 'move') {
-    reRender(msg.type, msg.e);
+    throttledRender(msg.type, msg.e);
   } else if (msg.type === 'attach') {
     reRender(msg.type, msg.e);
   } else if (msg.type === 'detach') {

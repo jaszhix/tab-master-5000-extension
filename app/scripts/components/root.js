@@ -222,11 +222,11 @@ var Root = React.createClass({
       v('#main').css({cursor: 'default'});
       // Querying is complete, allow the component to render.
       if (opt === 'init' || opt === 'drag' || opt === 'prefs') {
+        this.setState({render: true});
         if (opt === 'init') {
           this.setState({load: false});
           actionStore.set_state(false);
         }
-        this.setState({render: true});
       }
     });
   },

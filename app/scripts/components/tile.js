@@ -15,7 +15,6 @@ import tabStore from './tabStore';
 import {Btn, Col, Row} from './bootstrap';
 import style from './style';
 
-var dataIndex = null;
 var tabUrls = null;
 var duplicateTabs = null;
 var pinned = null;
@@ -404,20 +403,18 @@ var Tile = React.createClass({
   applyTabOrder() {
     // Apply the sorted tab grid state to the Chrome window.
     var p = this.props;
-    chrome.tabs.query({
-      currentWindow: true
-    }, (Tabs)=> {
-      var tabs = _.sortByOrder(dataIndex, ['index'], ['desc']);
+    var tabs = _.sortByOrder(p.stores.tabs, ['index'], ['desc']);
       if (tabs.length > 0) {
-        var lastTab = tabs[tabs.length - 1];
+        /*var lastTab = _.last(tabs);
         var tabIndex = lastTab.index + 1;
         for (var i = 0; i < tabs.length; ++i) {
           if (tabs[i].id === p.tab.id) {
             // Current tab is pinned, so decrement the tabIndex by one.
+            lastTab.index
             --tabIndex;
             break;
           }
-        }
+        }*/
         if (p.tab.title === 'New Tab') {
           chrome.tabs.move(p.tab.id, {
             index: -1
@@ -428,7 +425,6 @@ var Tile = React.createClass({
           });
         }
       }
-    });
   },
   handleContextClick(e){
     if (this.props.stores.prefs.context) {
@@ -623,17 +619,19 @@ var Sidebar = React.createClass({
   },
   handleBookmarks(){
     prefsStore.set_prefs('mode', 'bookmarks');
-    var t = tabStore.get_altTab();
-    reRenderStore.set_reRender(true, 'defer', t[0].id);
+    //var t = tabStore.get_altTab();
+    reRenderStore.set_reRender(true, 'defer', null);
   },
   handleHistory(){
     prefsStore.set_prefs('mode', 'history');
-    var t = tabStore.get_altTab();
-    reRenderStore.set_reRender(true, 'defer', t[0].id);
+    //var t = tabStore.get_altTab();
+    reRenderStore.set_reRender(true, 'defer', null);
   },
   handleSort(){
-    clickStore.set_click(true, false);
+    //clickStore.set_click(true, false);
     prefsStore.set_prefs('sort', !this.state.sort);
+    //var t = tabStore.get_altTab();
+    //reRenderStore.set_reRender(true, 'prefs', null);
   },
   render: function() {
     var p = this.props;
@@ -713,11 +711,8 @@ var TileGrid = React.createClass({
     }
   },
   componentWillReceiveProps(nextProps){
-    if (nextProps.data !== this.props.data) {
-      var self = this;
-      self.setState({data: nextProps.data});
-      self.checkDuplicateTabs(self.props.data);
-    }
+    this.setState({data: nextProps.data});
+    this.checkDuplicateTabs(this.props.data);
     if (nextProps.stores.prefs !== this.props.stores.prefs) {
       this.prefsInit(nextProps);
     }
@@ -783,8 +778,6 @@ var TileGrid = React.createClass({
         <div className="tile-div" style={p.stores.prefs.sidebar ? p.collapse ? {width: '89%'} : {width: '87%'} : {width: '100%'}}>
           <div id="grid" ref="grid">
               {s.data.map((data, i)=> {
-                dataIndex = [];
-                dataIndex.push(data);
                 return (
                   <Tile stores={p.stores} render={p.render} i={i} key={data.id} tab={data} />
                 );
