@@ -1,5 +1,13 @@
 #### Release Notes
 
+##### v0.10 / *1-16-16*
+
+*   Added an undo tab action feature. You can undo tab opening, closing, and pinning through the right-click context menu or by pressing CTRL+Z while a New Tab is open. More tab actions will be supported in the future, such as muting and movement.
+*   Added opt-in anonymous error reporting. The error triggering the report, screen resolution, Chrome version, and preferences data are the only pieces of information collected.
+*   Fixed some preferences options not updating the rendered view when you toggle them.
+*   Fixed screenshot capturing not working in history/bookmarks view.
+*   Added a CSS loading indicator during New Tab initialization.
+
 ##### v0.9.2 / *1-11-16*
 
 *   Fixed tab switching not working when clicking tiles that were recently unpinned from the grid.
