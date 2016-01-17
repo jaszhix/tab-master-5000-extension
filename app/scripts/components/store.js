@@ -941,9 +941,13 @@ export var actionStore = Reflux.createStore({
         tabStore.create(lastAction.item.url);
       } else if (lastAction.type === 'update') {
         console.log('lastAction.item: ', lastAction.item);
-        if (tab && tab.pinned !== lastAction.item.pinned) {
-          console.log('pinned. ref tab: ', tab);
-          tabStore.pin(tab);
+        if (tab) {
+          if (tab.pinned !== lastAction.item.pinned) {
+            console.log('pinned. ref tab: ', tab);
+            tabStore.pin(tab);
+          } else if (utilityStore.chromeVersion() >= 46 && tab.mutedInfo.muted !== lastAction.item.mutedInfo.muted ) {
+            tabStore.mute(tab);
+          }
         }
       } else if (lastAction.type === 'create') {
         tabStore.close(lastAction.item.id);

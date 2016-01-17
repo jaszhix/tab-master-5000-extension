@@ -50,9 +50,14 @@ var ContextMenu = React.createClass({
         } else if (lastAction.type === 'create') {
           return ' creation of '+tab.title;
         } else if (lastAction.type === 'update') {
-          if (tab && tab.pinned !== lastAction.item.pinned) {
-            var pinning = tab.pinned ? 'pinning' : 'unpinning';
-            return ' '+pinning+' of '+lastAction.item.title+' ';
+          if (tab) {
+            if (tab.pinned !== lastAction.item.pinned) {
+              var pinning = tab.pinned ? 'pinning' : 'unpinning';
+              return ' '+pinning+' of '+lastAction.item.title+' ';
+            } else if (p.chromeVersion >= 46 && tab.mutedInfo.muted !== lastAction.item.mutedInfo.muted) {
+              var muting = tab.pinned ? 'muting' : 'unmuting';
+              return ' '+muting+' of '+lastAction.item.title+' ';
+            }
           }
         }
       } else {

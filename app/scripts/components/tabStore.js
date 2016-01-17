@@ -71,6 +71,9 @@ var tabStore = Reflux.createStore({
   },
   pin(item){
     chrome.tabs.update(item.id, {pinned: !item.pinned});
+  },
+  mute(item){
+    chrome.tabs.update(item.id, {muted: !item.mutedInfo.muted});
   }
 });
 
