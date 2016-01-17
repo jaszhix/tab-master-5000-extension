@@ -59,6 +59,8 @@ var ContextMenu = React.createClass({
               return ' '+muting+' of '+lastAction.item.title+' ';
             }
           }
+        } else if (lastAction.type === 'move') {
+          return ' moving of '+lastAction.item.title;
         }
       } else {
         return false;

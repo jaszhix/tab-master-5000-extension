@@ -79,6 +79,7 @@ var Tile = React.createClass({
       if (this.props.tab.title === 'New Tab') {
         this.closeNewTabs();
       }
+      this.handleTileLimit(p);
     }
   },
   initMethods(){
@@ -93,6 +94,7 @@ var Tile = React.createClass({
         this.closeNewTabs();
       });
     }
+    this.handleTileLimit(p);
   },
   updateScreenshot(opt){
     var p = this.props;
@@ -145,6 +147,14 @@ var Tile = React.createClass({
         v('#tileMain-'+p.i).show();
       }
     } 
+  },
+  handleTileLimit(props){
+    var p = props;
+    if (p.i > p.tileLimit) {
+      v('#tileMain-'+p.i).hide();
+    } else {
+      v('#tileMain-'+p.i).show();
+    }
   },
   checkDuplicateTabs(opt){
     var p = this.props;
@@ -221,8 +231,12 @@ var Tile = React.createClass({
     if (tab && tab.title) {
       var p = this.props;
       if (kmp(tab.title.toLowerCase(), p.stores.search) !== -1) {
+        v('#tileMain-'+p.i).show();
         return true;
       } else {
+        if (p.i > p.tileLimit) {
+          v('#tileMain-'+p.i).hide();
+        }
         if (p.stores.search.length === 0) {
           return true;
         } else {
@@ -646,6 +660,7 @@ var Sidebar = React.createClass({
   }
 });
 
+var tileLimit = NaN;
 // TileGrid is modified from react-sort-table for this extension - https://github.com/happy-charlie-777/react-sort-table 
 var TileGrid = React.createClass({
   mixins: [Reflux.ListenerMixin],
@@ -773,7 +788,7 @@ var TileGrid = React.createClass({
           <div id="grid" ref="grid">
               {s.data.map((data, i)=> {
                 return (
-                  <Tile stores={p.stores} render={p.render} i={i} key={data.id} tab={data} />
+                  <Tile stores={p.stores} render={p.render} i={i} key={data.id} tab={data} tileLimit={p.tileLimit} />
                 );
               })}
           </div>
@@ -784,3 +799,4 @@ var TileGrid = React.createClass({
 });
 
 module.exports = TileGrid;
+

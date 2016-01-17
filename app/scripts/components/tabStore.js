@@ -74,6 +74,9 @@ var tabStore = Reflux.createStore({
   },
   mute(item){
     chrome.tabs.update(item.id, {muted: !item.mutedInfo.muted});
+  },
+  move(id, index){
+    chrome.tabs.move(id, {index: index});
   }
 });
 

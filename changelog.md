@@ -9,6 +9,7 @@
 *   Fixed updates not rendering when moving tabs, or applying tab sort order in the sidebar.
 *   Tab event updates are now throttled, allowing the extension to update with fewer redundant updates.
 *   Fixed the blacklist not updating.
+*   Added a limit of 100 to how many tiles will be displayed initially. When you scroll to the bottom of the page, 100 more will display. This was added to help speed up history/bookmark views when there are hundreds of items being queried.
 *   Added a CSS loading indicator during New Tab initialization.
 
 ##### v0.9.2 / *1-11-16*

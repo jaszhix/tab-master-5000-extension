@@ -101,7 +101,8 @@ var Search = React.createClass({
 var Root = React.createClass({
   mixins: [
     Reflux.ListenerMixin,
-    ReactUtils.Mixins.WindowSizeWatch
+    ReactUtils.Mixins.WindowSizeWatch,
+    ReactUtils.Mixins.ViewportWatch
   ],
   getInitialState() {
     return {
@@ -118,7 +119,8 @@ var Root = React.createClass({
       sidebar: sidebarStore.get_sidebar(),
       chromeVersion: utilityStore.chromeVersion(),
       prefs: [],
-      load: true
+      load: true,
+      tileLimit: 100
     };
   },
   componentWillMount(){
@@ -202,10 +204,10 @@ var Root = React.createClass({
       utilityStore.set_window(Tab[0].windowId);
       var tab = [];
       if (s.prefs.mode === 'bookmarks') {
-        this.setState({render: false});
+        //this.setState({render: false});
         tab = bookmarksStore.get_bookmarks();
       } else if (s.prefs.mode === 'history') {
-        this.setState({render: false});
+        //this.setState({render: false});
         tab = historyStore.get_history();
       } else {
         tab = Tab;
@@ -214,9 +216,9 @@ var Root = React.createClass({
       tabStore.set_altTab(Tab);
       tabStore.set_tab(tab);
       if (s.prefs.mode === 'bookmarks') {
-        this.setState({render: true});
+        //this.setState({render: true});
       } else if (s.prefs.mode === 'history') {
-        this.setState({render: true});
+        //this.setState({render: true});
       }
       console.log(Tab);
       v('#main').css({cursor: 'default'});
@@ -271,6 +273,16 @@ var Root = React.createClass({
       document.getElementById('bgImg').style.height = window.innerHeight + 5;
     }
   },
+  onViewportChange: function (viewport) {
+    var wrapper = document.body;
+
+    if (wrapper.scrollTop + window.innerHeight >= wrapper.scrollHeight) {
+      this.setState({tileLimit: this.state.tileLimit + 100});
+    }
+    console.log(viewport.scrollLeft, viewport.scrollTop);
+    console.log(viewport.innerWidth, viewport.innerHeight);
+    console.log(viewport.outerWidth, viewport.outerHeight);
+  },
   tileGrid(stores){
     var s = this.state;
     var keys = [];
@@ -311,6 +323,7 @@ var Root = React.createClass({
         width={s.width}
         sidebar={s.sidebar}
         stores={stores}
+        tileLimit={s.tileLimit}
       />
     );
   },

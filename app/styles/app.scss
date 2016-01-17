@@ -722,3 +722,31 @@ button.ntg-modal-btn-max {
     padding-top: 4px;
     padding-bottom: 4px;
 }
+button.more-btn {
+    position: relative;
+    width: auto;
+    color: #FFF;
+    background-color: #A8A8A8;
+    text-shadow: 1px 1px #000;
+    margin-top: 20px;
+    margin-right: auto;
+    margin-left: auto;
+    border: 0;
+    padding-right: 0;
+    padding-left: 0;
+    vertical-align: middle;
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.42857143;
+    text-align: center;
+    white-space: wrap;
+    vertical-align: middle;
+    touch-action: manipulation;
+    cursor: pointer;
+    -webkit-user-select: none;
+    border-radius: 4px;
+    top: 1px;
+    outline: none;
+}

@@ -11,6 +11,13 @@ export var tabs = (opt)=>{
     return tabStore.get_tab();
   }
 };
+var el = document.body;
+    el.onscroll = (e)=>{
+      if (el.scrollTop + window.innerHeight >= el.scrollHeight) {
+        console.log('btm');
+        scrollStore.set_scroll(true);
+      }
+    };
 // Chrome event listeners set to trigger re-renders.
 var reRender = (type, id) => {
   chrome.idle.queryState(900, (idle)=>{
@@ -25,7 +32,7 @@ var reRender = (type, id) => {
   var active = null;
   if (type === 'create' || type === 'activate') {
     active = id.windowId;
-    actionStore.set_action(type, id);
+    actionStore.set_action(type, {id: id.tabId});
   } else if (type === 'bookmarks' || type === 'history' || type === 'prefs') {
     active = utilityStore.get_window();
   } else {
@@ -933,28 +940,37 @@ export var actionStore = Reflux.createStore({
   undoAction(){
     console.log('this.actions: ',this.actions);
     this.undoActionState = true;
-    var lastAction = _.last(this.actions);
-    console.log('lastAction: ',lastAction);
-    if (lastAction) {
-      var tab = _.find(tabs(), { id: lastAction.item.id });
-      if (lastAction.type === 'remove') {
-        tabStore.create(lastAction.item.url);
-      } else if (lastAction.type === 'update') {
-        console.log('lastAction.item: ', lastAction.item);
+    var undo = (opt)=>{
+      var lastAction = _.last(this.actions);
+      console.log('lastAction: ',lastAction);
+      if (lastAction) {
+        var tab = _.find(tabs(), { id: lastAction.item.id });
         if (tab) {
-          if (tab.pinned !== lastAction.item.pinned) {
-            console.log('pinned. ref tab: ', tab);
-            tabStore.pin(tab);
-          } else if (utilityStore.chromeVersion() >= 46 && tab.mutedInfo.muted !== lastAction.item.mutedInfo.muted ) {
-            tabStore.mute(tab);
+          if (lastAction.type === 'remove') {
+            tabStore.create(lastAction.item.url);
+          } else if (lastAction.type === 'update') {
+            if (tab.pinned !== lastAction.item.pinned) {
+              tabStore.pin(tab);
+            } else if (utilityStore.chromeVersion() >= 46 && tab.mutedInfo.muted !== lastAction.item.mutedInfo.muted ) {
+              tabStore.mute(tab);
+            } else {
+              this.actions = _.without(this.actions, _.last(this.actions));
+              undo();
+            }
+          } else if (lastAction.type === 'create') {
+            tabStore.close(lastAction.item.id);
+          } else if (lastAction.type === 'move') {
+            tabStore.move(lastAction.item.id, lastAction.item.index);
+          } else {
+            this.actions = _.without(this.actions, _.last(this.actions));
+            undo();
           }
         }
-      } else if (lastAction.type === 'create') {
-        tabStore.close(lastAction.item.id);
       }
-    }
-    this.actions = _.without(this.actions, _.last(this.actions));
-    this.trigger(this.actions);
+      this.actions = _.without(this.actions, _.last(this.actions));
+      this.trigger(this.actions);
+    };
+    undo();
     _.delay(()=>{
       this.undoActionState = false;
     },500);
