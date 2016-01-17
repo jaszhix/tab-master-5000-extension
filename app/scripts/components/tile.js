@@ -638,6 +638,10 @@ var Sidebar = React.createClass({
     prefsStore.set_prefs('mode', 'history');
     reRenderStore.set_reRender(true, 'defer', null);
   },
+  handleTabs(){
+    prefsStore.set_prefs('mode', 'tabs');
+    reRenderStore.set_reRender(true, 'defer', null);
+  },
   handleSort(){
     prefsStore.set_prefs('sort', !this.state.sort);
   },
@@ -652,7 +656,7 @@ var Sidebar = React.createClass({
             {p.labels}
             {s.mode === 'tabs' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={()=>applyTabOrderStore.set_saveTab(true)} className="ntg-apply-btn" fa="sort">{iconCollapse ? '' : 'Apply'}</Btn> : null}
           </div> : null}
-        {s.mode !== 'tabs' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={()=>prefsStore.set_prefs('mode', 'tabs')} className="ntg-apply-btn" fa="square">{iconCollapse ? '' : 'Tabs'}</Btn> : null}
+        {s.mode !== 'tabs' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleTabs} className="ntg-apply-btn" fa="square">{iconCollapse ? '' : 'Tabs'}</Btn> : null}
         {s.mode !== 'bookmarks' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleBookmarks} className="ntg-apply-btn" fa="bookmark">{iconCollapse ? '' : 'Bookmarks'}</Btn> : null}
         {s.mode !== 'history' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleHistory} className="ntg-apply-btn" fa="history">{iconCollapse ? '' : 'History'}</Btn> : null}
       </div>

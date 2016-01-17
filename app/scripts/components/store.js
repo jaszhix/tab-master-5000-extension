@@ -11,13 +11,6 @@ export var tabs = (opt)=>{
     return tabStore.get_tab();
   }
 };
-var el = document.body;
-    el.onscroll = (e)=>{
-      if (el.scrollTop + window.innerHeight >= el.scrollHeight) {
-        console.log('btm');
-        scrollStore.set_scroll(true);
-      }
-    };
 // Chrome event listeners set to trigger re-renders.
 var reRender = (type, id) => {
   chrome.idle.queryState(900, (idle)=>{
@@ -30,13 +23,14 @@ var reRender = (type, id) => {
     }
   });
   var active = null;
+  var item = null;
   if (type === 'create' || type === 'activate') {
+    actionStore.set_action(type, id);
     active = id.windowId;
-    actionStore.set_action(type, {id: id.tabId});
   } else if (type === 'bookmarks' || type === 'history' || type === 'prefs') {
     active = utilityStore.get_window();
   } else {
-    var item = _.find(tabs(), { id: id });
+    item = _.find(tabs(), { id: id });
     if (item) {
       actionStore.set_action(type, item);
     }
@@ -945,26 +939,24 @@ export var actionStore = Reflux.createStore({
       console.log('lastAction: ',lastAction);
       if (lastAction) {
         var tab = _.find(tabs(), { id: lastAction.item.id });
-        if (tab) {
-          if (lastAction.type === 'remove') {
-            tabStore.create(lastAction.item.url);
-          } else if (lastAction.type === 'update') {
-            if (tab.pinned !== lastAction.item.pinned) {
-              tabStore.pin(tab);
-            } else if (utilityStore.chromeVersion() >= 46 && tab.mutedInfo.muted !== lastAction.item.mutedInfo.muted ) {
-              tabStore.mute(tab);
-            } else {
-              this.actions = _.without(this.actions, _.last(this.actions));
-              undo();
-            }
-          } else if (lastAction.type === 'create') {
-            tabStore.close(lastAction.item.id);
-          } else if (lastAction.type === 'move') {
-            tabStore.move(lastAction.item.id, lastAction.item.index);
+        if (lastAction.type === 'remove') {
+          tabStore.create(lastAction.item.url);
+        } else if (lastAction.type === 'update') {
+          if (tab.pinned !== lastAction.item.pinned) {
+            tabStore.pin(tab);
+          } else if (utilityStore.chromeVersion() >= 46 && tab.mutedInfo.muted !== lastAction.item.mutedInfo.muted ) {
+            tabStore.mute(tab);
           } else {
             this.actions = _.without(this.actions, _.last(this.actions));
             undo();
           }
+        } else if (lastAction.type === 'create') {
+          tabStore.close(lastAction.item.id);
+        } else if (lastAction.type === 'move') {
+          tabStore.move(lastAction.item.id, lastAction.item.index);
+        } else {
+          this.actions = _.without(this.actions, _.last(this.actions));
+          undo();
         }
       }
       this.actions = _.without(this.actions, _.last(this.actions));

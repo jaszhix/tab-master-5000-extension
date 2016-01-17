@@ -155,7 +155,7 @@ var Root = React.createClass({
   prefsChange(e){
     utilityStore.reloadBg();
     var s = this.state;
-    this.setState({prefs: e});
+    this.setState({prefs: e, tileLimit: 100});
     if (s.init) {
       this.checkTimeInstalled(e);
       if (e.mode !== 'tabs') {
@@ -204,10 +204,10 @@ var Root = React.createClass({
       utilityStore.set_window(Tab[0].windowId);
       var tab = [];
       if (s.prefs.mode === 'bookmarks') {
-        //this.setState({render: false});
+        this.setState({render: false});
         tab = bookmarksStore.get_bookmarks();
       } else if (s.prefs.mode === 'history') {
-        //this.setState({render: false});
+        this.setState({render: false});
         tab = historyStore.get_history();
       } else {
         tab = Tab;
@@ -216,9 +216,9 @@ var Root = React.createClass({
       tabStore.set_altTab(Tab);
       tabStore.set_tab(tab);
       if (s.prefs.mode === 'bookmarks') {
-        //this.setState({render: true});
+        this.setState({render: true});
       } else if (s.prefs.mode === 'history') {
-        //this.setState({render: true});
+        this.setState({render: true});
       }
       console.log(Tab);
       v('#main').css({cursor: 'default'});
