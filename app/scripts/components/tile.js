@@ -498,8 +498,8 @@ var Tile = React.createClass({
   },
   handleDrag(e, ui) {
     var p = this.props;
-    console.log('Event: ', e, ui);
-    console.log('Position: ', ui.position);
+    //console.log('Event: ', e, ui);
+    //console.log('Position: ', ui.position);
     this.getPos(p.stores.cursor.page.x, p.stores.cursor.page.y);
   },
   handleStop(e, ui) {
@@ -515,17 +515,9 @@ var Tile = React.createClass({
     var dragged = dragStore.get_dragged();
     var draggedOver = dragStore.get_tabIndex();
     var draggedOverIndex = null;
-    chrome.tabs.query({pinned: true}, (t)=>{
-      if (draggedOver.pinned) {
-        var lastPinned = _.last(t);
-        draggedOverIndex = ++lastPinned.index;
-      } else {
-        draggedOverIndex = draggedOver.index;
-      }
-      chrome.tabs.move(dragged.id, {index: draggedOverIndex}, (t)=>{
-        console.log('moved: ',t);
-        reRenderStore.set_reRender(true, 'drag', dragged.id);
-      });
+    chrome.tabs.move(dragged.id, {index: draggedOver.index}, (t)=>{
+      console.log('moved: ',t);
+      reRenderStore.set_reRender(true, 'drag', dragged.id);
     });
   },
   getPos(left, top){
