@@ -367,6 +367,20 @@ export var relayStore = Reflux.createStore({
   }
 });
 
+export var draggedStore = Reflux.createStore({
+  init(){
+    this.dragged = null;
+  },
+  set_dragged(value){
+    this.dragged = value;
+    this.trigger(this.dragged);
+    console.log('dragged: ',this.dragged);
+  },
+  get_dragged(){
+    return this.dragged;
+  },
+});
+
 export var dragStore = Reflux.createStore({
   init: function() {
     this.drag = {left: null, top: null};
@@ -390,13 +404,6 @@ export var dragStore = Reflux.createStore({
   },
   get_draggedOver(){
     return this.draggedOver;
-  },
-  set_dragged(value){
-    this.dragged = value;
-    console.log('dragged: ',this.dragged);
-  },
-  get_dragged(){
-    return this.dragged;
   },
   set_tabIndex(value){
     this.tabIndex = value;

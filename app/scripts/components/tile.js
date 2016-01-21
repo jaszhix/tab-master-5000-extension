@@ -8,7 +8,7 @@ import moment from 'moment';
 import Draggable from 'react-draggable';
 import utils from './utils';
 
-import {bookmarksStore, screenshotStore, dupeStore, prefsStore, reRenderStore, searchStore, applyTabOrderStore, utilityStore, contextStore, relayStore, dragStore} from './store';
+import {bookmarksStore, screenshotStore, dupeStore, prefsStore, reRenderStore, searchStore, applyTabOrderStore, utilityStore, contextStore, relayStore, dragStore, draggedStore} from './store';
 import tabStore from './tabStore';
 
 import {Btn, Col, Row} from './bootstrap';
@@ -483,41 +483,53 @@ var Tile = React.createClass({
     var p = this.props;
     // Temporarily move tile element to the parent div, so the drag position stays in sync with the cursor.
     var clone = v(ReactDOM.findDOMNode(this.refs.tileMain)).clone().node();
-    clone.removeAttribute('data-reactid');
+    function removeDataReactIds(el) {
+      el.removeAttribute('data-reactid');
+      if (el.childNodes.length > 0) {
+        for (var child in el.childNodes) {
+          /* filter element nodes only */
+          if (el.childNodes[child].nodeType == 1)
+            removeDataReactIds(el.childNodes[child]);
+        }
+      }
+    }
+    removeDataReactIds(clone);
+    clone.removeAttribute('id');
+    console.log('drag clone',clone.attributes)
     clone.classList.add('tileClone');
-    console.log(clone);
-    v('#grid').insertBefore(clone, this.refs.tileMain);
-    v('#main').append(ReactDOM.findDOMNode(this.refs.tileMain));
+    console.log('clone: ',clone);
+    var original = v('#tileMain-'+p.i).node();
+    v('#grid').insertBefore(clone, original);
+    v('#main').append(original);
     console.log('Event: ', e, ui);
     console.log('Start Position: ', ui.position);
     // tileDrag will store the state outside of the component's lifecycle.
     tileDrag = true;
     this.setState({drag: tileDrag});
-    dragStore.set_dragged(this.props.tab);
+    draggedStore.set_dragged(this.props.tab);
     this.getPos(p.stores.cursor.page.x, p.stores.cursor.page.y);
   },
   handleDrag(e, ui) {
     var p = this.props;
-    //console.log('Event: ', e, ui);
-    //console.log('Position: ', ui.position);
     this.getPos(p.stores.cursor.page.x, p.stores.cursor.page.y);
   },
   handleStop(e, ui) {
     var p = this.props;
+    v('#tileMain-'+p.i).hide()
     // Move the tile element back to #grid where it belongs.
-    v('.tileClone').remove();
-    v('#grid').append(ReactDOM.findDOMNode(this.refs.tileMain));
+    v('#grid').append(v('#tileMain-'+p.i).node());
     console.log('Event: ', e, ui);
     console.log('Stop Position: ', ui.position);
     tileDrag = false;
     this.setState({drag: tileDrag});
     this.getPos(p.stores.cursor.page.x, p.stores.cursor.page.y);
-    var dragged = dragStore.get_dragged();
+    var dragged = draggedStore.get_dragged();
     var draggedOver = dragStore.get_tabIndex();
     var draggedOverIndex = null;
     chrome.tabs.move(dragged.id, {index: draggedOver.index}, (t)=>{
       console.log('moved: ',t);
       reRenderStore.set_reRender(true, 'drag', dragged.id);
+      v('.tileClone').remove();
     });
   },
   getPos(left, top){
@@ -531,7 +543,7 @@ var Tile = React.createClass({
       console.log('current dragged over: ', tab.title);
       var setHoveredTab = new Promise((resolve, reject)=>{
         var drag = dragStore.get_drag();
-        var dragged = dragStore.get_dragged();
+        var dragged = draggedStore.get_dragged();
         if (drag && dragged) {
           console.log('dragged id: ',dragged.id);
           resolve(tab);
