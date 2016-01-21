@@ -150,6 +150,11 @@ var Preferences = React.createClass({
                   on={s.context}>
                     Enable context menu
           </Toggle>
+          <Toggle onMouseEnter={()=>this.handleToggle('drag')}
+                  onClick={()=>this.handleClick('drag')} 
+                  on={s.drag}>
+                    Enable draggable tab re-ordering
+          </Toggle>
           <Toggle onMouseEnter={()=>this.handleToggle('animations')} 
                   onClick={()=>this.handleClick('animations')} 
                   on={s.animations}>
@@ -174,11 +179,6 @@ var Preferences = React.createClass({
                   onClick={()=>this.handleClick('sessionsSync')} 
                   on={s.sessionsSync}>
                     Enable session synchronization <strong>(Experimental)</strong>
-          </Toggle>
-          <Toggle onMouseEnter={()=>this.handleToggle('drag')}
-                  onClick={()=>this.handleClick('drag')} 
-                  on={s.drag}>
-                    Enable draggable tab re-ordering <strong>(Experimental)</strong>
           </Toggle>
           <Toggle onMouseEnter={()=>this.handleToggle('screenshot')}
                   onClick={()=>this.handleClick('screenshot')}

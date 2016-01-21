@@ -441,7 +441,7 @@ export var prefsStore = Reflux.createStore({
                   this.prefs = {
                     reporting: false, 
                     settingsMax: false, 
-                    drag: false, 
+                    drag: true, 
                     context: true, 
                     animations: true, 
                     duplicate: false, 
@@ -1015,8 +1015,6 @@ export var sessionsStore = Reflux.createStore({
       sessionLabel = label;
       if (syncOpt) {
         sync = syncOpt;
-      } else {
-        sync = sess.sync;
       }
       tabs = sess.tabs;
       timeStamp = sess.timeStamp;
@@ -1037,15 +1035,7 @@ export var sessionsStore = Reflux.createStore({
         if (opt === 'sync') {
           var syncedSession = _.filter(session.sessionData, { id: utilityStore.get_window()});
           if (syncedSession) {
-            /*if (syncedSession.length > 1) {
-              syncedSession
-            }*/
-            console.log('syncedSession00',syncedSession)
             tabData.sync = _.first(syncedSession).sync;
-            console.log('syncedSession01',syncedSession)
-            if (tabData.sync) {
-
-            }
           }
         }
         session.sessionData.push(tabData);

@@ -111,6 +111,7 @@ var Sessions = React.createClass({
             return <Row onMouseEnter={()=>this.handleSessionHoverIn(i)} onMouseLeave={()=>this.handleSessionHoverOut(i)} key={i} className="ntg-session-row" style={i % 2 ? s.expandedSession === i ? {paddingBottom: '6px'} : null : s.expandedSession === i ? {backgroundColor: 'rgb(249, 249, 249)', paddingBottom: '6px'} : {backgroundColor: 'rgb(249, 249, 249)'} }>
               <Col size={s.labelSession && !p.collapse ? "8" : "6"}>
                 <div onClick={(e)=>this.expandSelectedSession(i, e)} className={"ntg-session-text session-text-"+i}>
+                  {session.sync && s.labelSession !== i ? '(Synced) ' : null}
                   {s.labelSession === i ? 
                     <div>
                       <Col size="6">
@@ -149,7 +150,7 @@ var Sessions = React.createClass({
                 {s.sessionHover === i ? <Btn onClick={()=>sessionsStore.remove(session, p.sessions)} className="ntg-session-btn" fa="times">{p.collapse ? 'Remove' : null}</Btn> : null}
                 {s.sessionHover === i ? <Btn onClick={()=>sessionsStore.restore(session, p.prefs.screenshot)} className="ntg-session-btn" fa="folder-open-o">{p.collapse ? 'Restore' : null}</Btn> : null}
                 {s.sessionHover === i ? <Btn onClick={()=>sessionsStore.save('update', session, session.label, s.tabs, null, !session.sync)} className="ntg-session-btn" fa={session.sync ? 'circle-o' : 'circle-o-notch'}>{p.collapse ? 'Sync' : null}</Btn> : null}
-                {!s.labelSession ? s.sessionHover === i ? <Btn onClick={()=>this.setState({labelSession: i})} className="ntg-session-btn" fa="pencil">{p.collapse ? 'Label' : null}</Btn> : null : null}
+                {!s.labelSession ? s.sessionHover === i && s.labelSession !== i ? <Btn onClick={()=>this.setState({labelSession: i})} className="ntg-session-btn" fa="pencil">{p.collapse ? 'Label' : null}</Btn> : null : null}
               </Col>
             </Row>;
           }) : null}
@@ -213,8 +214,8 @@ var Settings = React.createClass({
       style.modal.content.bottom = '0%';
     } else {
       style.modal.content.top = '15%';
-      style.modal.content.left = '15%';
-      style.modal.content.right = '15%';
+      style.modal.content.left = '9%';
+      style.modal.content.right = '9%';
       style.modal.content.bottom = '15%';
     }
   },
@@ -266,8 +267,8 @@ var Settings = React.createClass({
                   </li>
                 </ul>
             </div>
-            <Btn style={s.settingsMax ? {top: '1%', right: '1%'} : {top: '16%', right: '16%'}} className="ntg-modal-btn-close" fa="close" onClick={this.handleCloseBtn} />
-            <Btn style={s.settingsMax ? {top: '1%', right: '3%'} : {top: '16%', right: '18%'}} className="ntg-modal-btn-close" fa={s.settingsMax ? "clone" : "square-o"} onClick={this.handleMaxBtn} />
+            <Btn style={s.settingsMax ? {top: '1%', right: '1%'} : {top: '16%', right: '10%'}} className="ntg-modal-btn-close" fa="close" onClick={this.handleCloseBtn} />
+            <Btn style={s.settingsMax ? {top: '1%', right: '3%'} : {top: '16%', right: '12%'}} className="ntg-modal-btn-close" fa={s.settingsMax ? "clone" : "square-o"} onClick={this.handleMaxBtn} />
           </Row>
           <Row className="ntg-settings-pane">
             {sessions ? <Sessions settingsMax={s.settingsMax} sessions={p.sessions} tabs={p.tabs} prefs={p.prefs} collapse={p.collapse} /> : null}

@@ -226,8 +226,8 @@ var Root = React.createClass({
         this.setState({render: true});
       }
       if (s.prefs.sessionsSync) {
-          sessionsStore.save('sync', null, null, Tab)
-        }
+        sessionsStore.save('sync', null, null, Tab)
+      }
       console.log(Tab);
       v('#main').css({cursor: 'default'});
       // Querying is complete, allow the component to render.
