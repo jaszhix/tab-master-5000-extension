@@ -136,7 +136,7 @@ var ModalHandler = React.createClass({
         isOpen={s.modal.state}
         onRequestClose={this.handleClosing}
         style={style.modal}>
-          {s.modal.type === 'settings' ? <Settings modal={s.modal} tabs={p.tabs} prefs={p.prefs} collapse={p.collapse} /> : null}
+          {s.modal.type === 'settings' ? <Settings sessions={p.sessions} modal={s.modal} tabs={p.tabs} prefs={p.prefs} collapse={p.collapse} /> : null}
           {s.modal.type === 'contribute' ? <Contribute collapse={p.collapse} /> : null}
       </Modal>
     );

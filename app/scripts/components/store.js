@@ -1,6 +1,8 @@
 import Reflux from 'reflux';
 import kmp from 'kmp';
 import _ from 'lodash';
+import v from 'vquery';
+import {saveAs} from 'filesaver.js';
 
 import tabStore from './tabStore';
 
@@ -450,7 +452,8 @@ export var prefsStore = Reflux.createStore({
                     sort: true, 
                     mode: 'tabs', 
                     installTime: Date.now(), 
-                    actions: false
+                    actions: false,
+                    sessionsSync: false
                   };
                   chrome.storage.sync.set({preferences: this.prefs}, (result)=> {
                     this.ready = true;
@@ -488,7 +491,8 @@ export var prefsStore = Reflux.createStore({
         installTime: prefs.preferences.installTime,
         settingsMax: prefs.preferences.settingsMax,
         actions: prefs.preferences.actions,
-        reporting: prefs.preferences.reporting
+        reporting: prefs.preferences.reporting,
+        sessionsSync: prefs.preferences.sessionsSync
       };
       if (typeof this.prefs.installTime === 'undefined') {
         this.prefs.installTime = Date.now();
@@ -978,6 +982,151 @@ export var actionStore = Reflux.createStore({
     this.actions = [];
     this.trigger(this.actions);
   }
+});
+
+export var sessionsStore = Reflux.createStore({
+  init: function() {
+    this.load();
+  },
+  load(){
+    v('div.ReactModalPortal > div').css({cursor: 'wait'});
+    chrome.storage.local.get('sessionData',(item)=>{
+      console.log('item retrieved: ',item);
+      if (item) {
+        // Sort sessionData array to show the newest sessions at the top of the list.
+        var reverse = _.orderBy(item.sessionData, ['timeStamp'], ['desc']);
+        this.sessions = reverse;
+      } else {
+        this.sessions = [];
+      }
+      this.trigger(this.sessions);
+      v('div.ReactModalPortal > div').css({cursor: 'default'});
+    });
+  },
+  save(opt, sess, label, tabsState, setLabel, syncOpt){
+    v('div.ReactModalPortal > div').css({cursor: 'wait'});
+    // Check if array exists, and push a new tabs object if not. Otherwise, create it.
+    var sessionLabel = null;
+    var tabs = null;
+    var timeStamp = null;
+    var id = utilityStore.get_window();
+    var sync = false;
+    if (opt === 'update') {
+      sessionLabel = label;
+      if (syncOpt) {
+        sync = syncOpt;
+      } else {
+        sync = sess.sync;
+      }
+      tabs = sess.tabs;
+      timeStamp = sess.timeStamp;
+    } else {
+      tabs = tabsState;
+      timeStamp = Date.now();
+    }
+    tabs = _.without(tabs, _.find(tabs, { title: 'New Tab' }));
+    var tabData = {timeStamp: timeStamp, tabs: tabs, label: sessionLabel, id: id, sync: sync};
+    var session = null;
+    chrome.storage.local.get('sessionData',(item)=>{
+      if (!item.sessionData) {
+        session = {sessionData: []};
+        session.sessionData.push(tabData);
+      } else {
+        console.log('item: ',item);
+        session = item;
+        if (opt === 'sync') {
+          var syncedSession = _.filter(session.sessionData, { id: utilityStore.get_window()});
+          if (syncedSession) {
+            /*if (syncedSession.length > 1) {
+              syncedSession
+            }*/
+            console.log('syncedSession00',syncedSession)
+            tabData.sync = _.first(syncedSession).sync;
+            console.log('syncedSession01',syncedSession)
+            if (tabData.sync) {
+
+            }
+          }
+        }
+        session.sessionData.push(tabData);
+      }
+      if (opt === 'update') {
+        var replacedSession = _.filter(session.sessionData, { timeStamp: timeStamp });
+        console.log('replacedSession: ',replacedSession);
+        session.sessionData = _.without(session.sessionData, _.first(replacedSession));
+      } else if (opt === 'sync') {
+        console.log('synced Session: ',syncedSession);
+        session.sessionData = _.without(session.sessionData, _.last(syncedSession));
+      }
+      if (opt === 'sync' && tabData.sync || opt !== 'sync') {
+        chrome.storage.local.set(session, (result)=> {
+          // Notify that we saved.
+          if (opt === 'update' && !syncOpt) {
+            setLabel;
+          }
+          this.load();
+          console.log('session saved...',result);
+        }); 
+      }  
+    });  
+  },
+  remove(session, sessionsState){
+    var index = sessionsState;
+    var newIndex = _.without(index, session);
+    console.log(newIndex);
+    var sessions = {sessionData: newIndex};
+    chrome.storage.local.set(sessions, (result)=> {
+      console.log('session removed...',result);
+      this.sessions = newIndex;
+      this.trigger(this.sessions);
+      console.log('sessions...',this.sessions);
+    });
+  },
+  restore(session, ssPref){
+    // Opens a new chrome window with the selected tabs object.
+    var urls = [];
+    session.tabs.map((t)=>{
+      if (t.title !== 'New Tab') {
+        urls.push(t.url);
+      }
+    });
+    var screenshot = ssPref;
+    chrome.windows.create({
+      focused: true
+    }, (Window)=>{
+      console.log('restored session...',Window);
+      chrome.runtime.sendMessage(chrome.runtime.id, {method: 'restoreWindow', windowId: Window.id, tabs: session.tabs}, (response)=>{
+        if (response.reload && screenshot) {
+          utilityStore.restartNewTab();
+        }
+      });
+    });
+  },
+  exportSessions(){
+    // Stringify sessionData and export as JSON.
+    var json = JSON.stringify(this.sessions);
+    var filename = 'TM5K-Session-'+Date.now();
+    console.log(json);
+    var blob = new Blob([json], {type: "application/json;charset=utf-8"});
+    saveAs(blob, filename+'.json');
+  },
+  importSessions(e){
+    // Load the JSON file, parse it, and set it to state.
+    var reader = new FileReader();
+    reader.onload = (e)=> {
+      var json = JSON.parse(reader.result);
+      var sessions = {sessionData: json};
+      console.log(sessions);
+      chrome.storage.local.remove('sessionData');
+      chrome.storage.local.set(sessions, (result)=> {
+        console.log('sessions imported...',result);
+        this.sessions = json;
+        this.trigger(this.sessions);
+        console.log('sessions...',this.sessions);
+      });
+    };
+    reader.readAsText(e.target.files[0], "UTF-8");
+  },
 });
 
 (function() {

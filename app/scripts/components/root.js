@@ -6,7 +6,7 @@ import ReactUtils from 'react-utils';
 import v from 'vquery';
 import '../../styles/app.scss';
 window.v = v;
-import {actionStore, historyStore, bookmarksStore, relayStore, sidebarStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore, prefsStore} from './store';
+import {sessionsStore, actionStore, historyStore, bookmarksStore, relayStore, sidebarStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore, prefsStore} from './store';
 import tabStore from './tabStore';
 
 import {Btn, Col, Row, Container} from './bootstrap';
@@ -120,7 +120,8 @@ var Root = React.createClass({
       chromeVersion: utilityStore.chromeVersion(),
       prefs: [],
       load: true,
-      tileLimit: 100
+      tileLimit: 100,
+      sessions: []
     };
   },
   componentWillMount(){
@@ -136,6 +137,7 @@ var Root = React.createClass({
     this.listenTo(sidebarStore, this.sortTrigger);
     this.listenTo(prefsStore, this.prefsChange);
     this.listenTo(actionStore, this.actionsChange);
+    this.listenTo(sessionsStore, this.sessionsChange)
 
     console.log('Chrome Version: ',utilityStore.chromeVersion());
     console.log('Manifest: ', utilityStore.get_manifest());
@@ -151,6 +153,9 @@ var Root = React.createClass({
         });
       }
     }
+  },
+  sessionsChange(e){
+    this.setState({sessions: e});
   },
   prefsChange(e){
     utilityStore.reloadBg();
@@ -220,6 +225,9 @@ var Root = React.createClass({
       } else if (s.prefs.mode === 'history') {
         this.setState({render: true});
       }
+      if (s.prefs.sessionsSync) {
+          sessionsStore.save('sync', null, null, Tab)
+        }
       console.log(Tab);
       v('#main').css({cursor: 'default'});
       // Querying is complete, allow the component to render.
@@ -356,7 +364,7 @@ var Root = React.createClass({
       <div className="container-main">
         {s.load ? <Loading /> : <div>
           {s.context ? <ContextMenu actions={s.actions} tabs={s.tabs} prefs={s.prefs} cursor={cursor} context={context} chromeVersion={s.chromeVersion}/> : null}
-          <ModalHandler tabs={s.prefs.mode === 'tabs' ? s.tabs : tabStore.get_altTab()} prefs={s.prefs} collapse={s.collapse} />
+          <ModalHandler tabs={s.prefs.mode === 'tabs' ? s.tabs : tabStore.get_altTab()} sessions={s.sessions} prefs={s.prefs} collapse={s.collapse} />
             {s.tabs ? <div className="tile-container">
                 {s.settings ? <Search event={s.event} prefs={s.prefs} /> : null}
                 <div className="tile-child-container">

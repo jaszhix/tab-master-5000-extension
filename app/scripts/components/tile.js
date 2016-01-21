@@ -473,7 +473,7 @@ var Tile = React.createClass({
       } else {
         this.setState({focus: true});
         v('subTile-'+p.i).on('animationend', function animationEnd(e){
-          this.setState({focus: false});
+          _.defer(()=>this.setState({focus: false}));
           v('subTile-'+p.i).off('animationend', animationEnd);
         });
       }

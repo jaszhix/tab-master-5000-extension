@@ -101,6 +101,7 @@ var Preferences = React.createClass({
       animations: p.prefs.animations,
       actions: p.prefs.actions,
       reporting: p.prefs.reporting,
+      sessionsSync: p.prefs.sessionsSync,
       hover: null,
       bytesInUse: null
     };
@@ -120,7 +121,8 @@ var Preferences = React.createClass({
       blacklist: p.prefs.blacklist,
       animations: p.prefs.animations,
       actions: p.prefs.actions,
-      reporting: p.prefs.reporting
+      reporting: p.prefs.reporting,
+      sessionsSync: p.prefs.sessionsSync
     });
   },
   getBytesInUse(){
@@ -168,6 +170,11 @@ var Preferences = React.createClass({
                     Enable website blacklist
           </Toggle>
           {s.blacklist ? <Blacklist /> : null}
+          <Toggle onMouseEnter={()=>this.handleToggle('sessionsSync')}
+                  onClick={()=>this.handleClick('sessionsSync')} 
+                  on={s.sessionsSync}>
+                    Enable session synchronization <strong>(Experimental)</strong>
+          </Toggle>
           <Toggle onMouseEnter={()=>this.handleToggle('drag')}
                   onClick={()=>this.handleClick('drag')} 
                   on={s.drag}>

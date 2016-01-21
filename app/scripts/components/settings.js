@@ -3,10 +3,9 @@ import ReactDOM from 'react-dom';
 import Reflux from 'reflux';
 import moment from 'moment';
 import _ from 'lodash';
-import {saveAs} from 'filesaver.js';
 import v from 'vquery';
 
-import {clickStore, prefsStore, modalStore, settingsStore, utilityStore} from './store';
+import {sessionsStore, clickStore, prefsStore, modalStore, settingsStore, utilityStore} from './store';
 import tabStore from './tabStore';
 
 import Preferences from './preferences';
@@ -36,7 +35,8 @@ var Sessions = React.createClass({
     };
   },
   componentDidMount(){
-    this.loadSessions();
+    console.log('sessions mounted')
+    //this.loadSessions();
     this.setTabSource();
   },
   setTabSource(){
@@ -50,119 +50,14 @@ var Sessions = React.createClass({
   componentWillReceiveProps(nextProps){
     this.setState({tabs: nextProps.tabs});
   },
-  saveSession(opt, sess, label){
-    v('div.ReactModalPortal > div').css({cursor: 'wait'});
-    // Check if array exists, and push a new tabs object if not. Otherwise, create it.
-    var sessionLabel = null;
-    var tabs = null;
-    var timeStamp = null;
-    if (opt === 'update') {
-      sessionLabel = label;
-      tabs = sess.tabs;
-      timeStamp = sess.timeStamp;
-    } else {
-      tabs = this.state.tabs;
-      timeStamp = Date.now();
-    }
-    tabs = _.without(tabs, _.find(tabs, { title: 'New Tab' }));
-    var tabData = {timeStamp: timeStamp, tabs: tabs, label: sessionLabel};
-    var session = null;
-    chrome.storage.local.get('sessionData',(item)=>{
-      if (!item.sessionData) {
-        session = {sessionData: []};
-        session.sessionData.push(tabData);
-      } else {
-        console.log('item: ',item);
-        session = item;
-        session.sessionData.push(tabData);
-      }
-      if (opt === 'update') {
-        var replacedSession = _.filter(session.sessionData, { timeStamp: timeStamp });
-        console.log('replacedSession: ',replacedSession);
-        session.sessionData = _.without(session.sessionData, _.first(replacedSession));
-      }
-      chrome.storage.local.set(session, (result)=> {
-        // Notify that we saved.
-        if (opt === 'update') {
-          this.setState({sessionLabelValue: null});
-        }
-        this.loadSessions();
-        console.log('session saved...',result);
-      });   
-    });  
-  },
-  loadSessions(){
-    chrome.storage.local.get('sessionData',(item)=>{
-      console.log('item retrieved: ',item);
-      // Sort sessionData array to show the newest sessions at the top of the list.
-      var reverse = _.orderBy(item.sessionData, ['timeStamp'], ['desc']);
-      this.setState({sessions: reverse});
-      v('div.ReactModalPortal > div').css({cursor: 'default'});
-    });
-  },
-  removeSession(session){
-    // Remove the selected session object from the array, and replace the current sessionData in chrome.storage.local.
-    var index = this.state.sessions;
-    var newIndex = _.without(index, session);
-    console.log(newIndex);
-    var sessions = {sessionData: newIndex};
-    chrome.storage.local.set(sessions, (result)=> {
-      console.log('session removed...',result);
-      this.setState({sessions: newIndex});
-      console.log('s.sessions...',this.state.sessions);
-    });
-  },
-  restoreSession(session){
-    // Opens a new chrome window with the selected tabs object.
-    var urls = [];
-    session.tabs.map((t)=>{
-      if (t.title !== 'New Tab') {
-        urls.push(t.url);
-      }
-    });
-    var screenshot = this.props.prefs.screenshot;
-    chrome.windows.create({
-      focused: true
-    }, (Window)=>{
-      console.log('restored session...',Window);
-      chrome.runtime.sendMessage(chrome.runtime.id, {method: 'restoreWindow', windowId: Window.id, tabs: session.tabs}, (response)=>{
-        if (response.reload && screenshot) {
-          utilityStore.restartNewTab();
-        }
-      });
-    });
-  },
   labelSession(session){
     console.log(session);
-    this.saveSession('update', session, this.state.sessionLabelValue);
+    sessionsStore.save('update', session, this.state.sessionLabelValue, this.setState({sessionLabelValue: null}));
+    //this.saveSession('update', session, this.state.sessionLabelValue);
     this.setState({labelSession: null});
   },
   setLabel(e){
     this.setState({sessionLabelValue: e.target.value});
-  },
-  exportSessions(){
-    // Stringify sessionData and export as JSON.
-    var json = JSON.stringify(this.state.sessions);
-    var filename = 'TM5K-Session-'+Date.now();
-    console.log(json);
-    var blob = new Blob([json], {type: "application/json;charset=utf-8"});
-    saveAs(blob, filename+'.json');
-  },
-  importSessions(e){
-    // Load the JSON file, parse it, and set it to state.
-    var reader = new FileReader();
-    reader.onload = (e)=> {
-      var json = JSON.parse(reader.result);
-      var sessions = {sessionData: json};
-      console.log(sessions);
-      chrome.storage.local.remove('sessionData');
-      chrome.storage.local.set(sessions, (result)=> {
-        console.log('sessions imported...',result);
-        this.setState({sessions: json});
-        console.log('s.sessions...',this.state.sessions);
-      });
-    };
-    reader.readAsText(e.target.files[0], "UTF-8");
   },
   triggerInput(){
     // Remotely trigger file input button with our own prettier button.
@@ -206,13 +101,13 @@ var Sessions = React.createClass({
       if (session.label) {
         label = session.label;
       }
-      this.saveSession('update', session, label);
+      sessionsStore.save('update', session, label, this.setState({sessionLabelValue: null}));
     };
     return (
       <div className="sessions">
         <Col size="7" className="session-col">
-          <h4>Saved Sessions</h4>
-          {s.sessions ? s.sessions.map((session, i)=>{
+          <h4>Saved Sessions {p.sessions.length > 0 ? `(${p.sessions.length})` : null}</h4>
+          {p.sessions ? p.sessions.map((session, i)=>{
             return <Row onMouseEnter={()=>this.handleSessionHoverIn(i)} onMouseLeave={()=>this.handleSessionHoverOut(i)} key={i} className="ntg-session-row" style={i % 2 ? s.expandedSession === i ? {paddingBottom: '6px'} : null : s.expandedSession === i ? {backgroundColor: 'rgb(249, 249, 249)', paddingBottom: '6px'} : {backgroundColor: 'rgb(249, 249, 249)'} }>
               <Col size={s.labelSession && !p.collapse ? "8" : "6"}>
                 <div onClick={(e)=>this.expandSelectedSession(i, e)} className={"ntg-session-text session-text-"+i}>
@@ -251,14 +146,15 @@ var Sessions = React.createClass({
                   </Row> : null}
               </Col>
               <Col size={s.labelSession && !p.collapse ? "4" : "6"}>
-                {s.sessionHover === i ? <Btn onClick={()=>this.removeSession(session)} className="ntg-session-btn" fa="times">{p.collapse ? 'Remove' : null}</Btn> : null}
-                {s.sessionHover === i ? <Btn onClick={()=>this.restoreSession(session)} className="ntg-session-btn" fa="folder-open-o">{p.collapse ? 'Restore' : null}</Btn> : null}
+                {s.sessionHover === i ? <Btn onClick={()=>sessionsStore.remove(session, p.sessions)} className="ntg-session-btn" fa="times">{p.collapse ? 'Remove' : null}</Btn> : null}
+                {s.sessionHover === i ? <Btn onClick={()=>sessionsStore.restore(session, p.prefs.screenshot)} className="ntg-session-btn" fa="folder-open-o">{p.collapse ? 'Restore' : null}</Btn> : null}
+                {s.sessionHover === i ? <Btn onClick={()=>sessionsStore.save('update', session, session.label, s.tabs, null, !session.sync)} className="ntg-session-btn" fa={session.sync ? 'circle-o' : 'circle-o-notch'}>{p.collapse ? 'Sync' : null}</Btn> : null}
                 {!s.labelSession ? s.sessionHover === i ? <Btn onClick={()=>this.setState({labelSession: i})} className="ntg-session-btn" fa="pencil">{p.collapse ? 'Label' : null}</Btn> : null : null}
               </Col>
             </Row>;
           }) : null}
-          <Btn onClick={()=>this.exportSessions()} style={p.settingsMax ? {top: '95%'} : null} className="ntg-impexp-btn" fa="arrow-circle-o-down">Export</Btn>
-          <input {...this.props} children={undefined} type="file" onChange={this.importSessions} ref="fileInput" style={style.hiddenInput} />
+          <Btn onClick={()=>sessionsStore.exportSessions()} style={p.settingsMax ? {top: '95%'} : null} className="ntg-impexp-btn" fa="arrow-circle-o-down">Export</Btn>
+          <input {...this.props} children={undefined} type="file" onChange={(e)=>sessionsStore.importSessions(e)} ref="fileInput" style={style.hiddenInput} />
           <Btn onClick={this.triggerInput} style={p.settingsMax ? {top: '95%', marginLeft: '160px'} : {marginLeft: '160px'}} className="ntg-impexp-btn" fa="arrow-circle-o-up">Import</Btn>
         </Col>
         <Col size="5" className="session-col">
@@ -280,7 +176,7 @@ var Sessions = React.createClass({
           })}
           {tabs.length >= 22 && !p.settingsMax ? <Row>{tabs.length >= 24 ? '...plus ' +tm20+ ' other tabs.' : null}</Row> : null}
           <p/>
-          <Btn onClick={this.saveSession} style={p.settingsMax ? {top: '95%'} : null} className="ntg-setting-btn" fa="plus">Save Session</Btn>
+          <Btn onClick={()=>sessionsStore.save(null, null, null, s.tabs)} style={p.settingsMax ? {top: '95%'} : null} className="ntg-setting-btn" fa="plus">Save Session</Btn>
         </Col>
       </div>
     );
@@ -374,7 +270,7 @@ var Settings = React.createClass({
             <Btn style={s.settingsMax ? {top: '1%', right: '3%'} : {top: '16%', right: '18%'}} className="ntg-modal-btn-close" fa={s.settingsMax ? "clone" : "square-o"} onClick={this.handleMaxBtn} />
           </Row>
           <Row className="ntg-settings-pane">
-            {sessions ? <Sessions settingsMax={s.settingsMax} tabs={p.tabs} prefs={p.prefs} collapse={p.collapse} /> : null}
+            {sessions ? <Sessions settingsMax={s.settingsMax} sessions={p.sessions} tabs={p.tabs} prefs={p.prefs} collapse={p.collapse} /> : null}
             {preferences ? <Preferences settingsMax={s.settingsMax} prefs={p.prefs} tabs={p.tabs} /> : null}
             {about ? <About settingsMax={s.settingsMax} /> : null}
           </Row>
