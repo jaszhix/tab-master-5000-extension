@@ -97,7 +97,7 @@ var Search = React.createClass({
   }
 });
 
-
+var synchronizeSession = _.throttle(sessionsStore.save, 1500, {leading: true})
 var Root = React.createClass({
   mixins: [
     Reflux.ListenerMixin,
@@ -226,7 +226,7 @@ var Root = React.createClass({
         this.setState({render: true});
       }
       if (s.prefs.sessionsSync) {
-        sessionsStore.save('sync', null, null, Tab)
+        synchronizeSession('sync', null, null, Tab);
       }
       console.log(Tab);
       v('#main').css({cursor: 'default'});

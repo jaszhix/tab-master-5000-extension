@@ -1,8 +1,22 @@
 #### Release Notes
 
+##### v0.11 / *1-21-16*
+
+*   Added a session synchronization feature. Enabling this allows you to keep a saved session persistently up to date with the current Chrome window. After enabling the option in Preferences, click the circle icon on a saved session to sync it to the current session. Be advised, enabling synchronization on old sessions will overwrite them, so be sure to back up your saved sessions first.
+*   Draggable tab tile re-ordering has been overhauled, and now moves tiles more quickly, and doesn't trigger React's invariant violation errors. Pinned tiles can now be dragged from the grid as well. It is no longer an experimental feature, and is now enabled by default.
+*   Known issues
+  * When closing a duplicate tab, closing the first duplicate will not update the rendered view of the tile grid, but closing duplicate tabs on subsequent duplicate tiles will.
+  * The background color of pulsing duplicate tiles will sometimes switch to a white background until they are hovered over.
+  * Activating tabs in a Chrome window while a New Tab page is in another window will initially cause flickering rendering in the New Tab page.
+  * History and Bookmarks views still have a noticeable lag when updates occur when hundreds of items are being queried from Chrome.
+  * Tab tiles will sometimes stop capturing screenshots in a Chrome window containing a New Tab page when tabs are being activated in another Chrome window.
+  * Switching between tabs quickly will cause tab tiles to capture an image of the New Tab page.
+  * Tab tile screenshots occassionaly do not render on initialization.
+  * The undo tab action functionality can lose track of tab action history occassionally.
+
 ##### v0.10 / *1-16-16*
 
-*   Added an undo tab action feature. You can undo tab opening, closing, and pinning through the right-click context menu or by pressing CTRL+Z while a New Tab is open.
+*   Added an undo tab action feature. You can undo tab opening, closing, muting, pinning, and moving through the right-click context menu or by pressing CTRL+Z while a New Tab is open.
 *   Added opt-in anonymous error reporting. The error triggering the report, screen resolution, Chrome version, and preferences data are the only pieces of information collected.
 *   Fixed some preferences options not updating the rendered view when you toggle them.
 *   Fixed screenshot capturing not working in history/bookmarks view.
