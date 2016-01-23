@@ -226,7 +226,16 @@ var Root = React.createClass({
         this.setState({render: true});
       }
       if (s.prefs.sessionsSync) {
-        synchronizeSession('sync', null, null, Tab);
+        var sessions = sessionsStore.get_sessions();
+        for (var i = sessions.length - 1; i >= 0; i--) {
+          if (sessions[i].id === Tab[0].windowId) {
+            synchronizeSession('sync', sessions[i], null, Tab, null, sessions[i].sync); 
+          } else {
+            if (typeof sessions[i].sync !== 'undefined' && sessions[i].sync && opt === 'init') {
+              sessionsStore.save('update', sessions[i], null, Tab, null, sessions[i].sync);
+            }
+          }
+        }   
       }
       console.log(Tab);
       v('#main').css({cursor: 'default'});

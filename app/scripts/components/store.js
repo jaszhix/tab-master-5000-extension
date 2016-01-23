@@ -1033,7 +1033,8 @@ export var sessionsStore = Reflux.createStore({
         console.log('item: ',item);
         session = item;
         if (opt === 'sync') {
-          var syncedSession = _.filter(session.sessionData, { id: utilityStore.get_window()});
+          var syncedSession = _.filter(session.sessionData, { id: id});
+          console.log('syncedSession: ',syncedSession);
           if (syncedSession) {
             tabData.sync = _.first(syncedSession).sync;
           }
@@ -1117,6 +1118,9 @@ export var sessionsStore = Reflux.createStore({
     };
     reader.readAsText(e.target.files[0], "UTF-8");
   },
+  get_sessions(){
+    return this.sessions;
+  }
 });
 
 (function() {

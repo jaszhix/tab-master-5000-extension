@@ -7,6 +7,7 @@ var tabStore = Reflux.createStore({
     this.altTab = [];
     this.allTabs = null;
     this.query = [];
+    this.windowIds = [];
   },
   promise(){
     return new Promise((resolve, reject)=>{
@@ -44,6 +45,19 @@ var tabStore = Reflux.createStore({
       this.allTabs = _.flatten(allTabs);
     });
     return this.allTabs;
+  },
+  getAllWindowIds(){
+    return new Promise((resolve, reject)=>{
+      chrome.windows.getAll({populate: true}, (w)=>{
+        var ids = [];
+        for (var i = w.length - 1; i >= 0; i--) {
+          ids.push(w[i].id);
+        }
+        if (ids) {
+          resolve(ids);
+        }
+      });
+    });
   },
   getNewTabs(){
     return _.filter(this.getAllTabs(), { title: 'New Tab' });

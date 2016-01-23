@@ -27,7 +27,6 @@ var getPrefs = new Promise((resolve, reject)=>{
           reject();
         }
       });
-      /*reject();*/
     }
   });
 });

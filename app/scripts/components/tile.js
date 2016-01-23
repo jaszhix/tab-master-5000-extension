@@ -418,16 +418,6 @@ var Tile = React.createClass({
     var p = this.props;
     var tabs = _.orderBy(p.stores.tabs, ['index'], ['desc']);
       if (tabs.length > 0) {
-        /*var lastTab = _.last(tabs);
-        var tabIndex = lastTab.index + 1;
-        for (var i = 0; i < tabs.length; ++i) {
-          if (tabs[i].id === p.tab.id) {
-            // Current tab is pinned, so decrement the tabIndex by one.
-            lastTab.index
-            --tabIndex;
-            break;
-          }
-        }*/
         if (p.tab.title === 'New Tab') {
           chrome.tabs.move(p.tab.id, {
             index: -1
@@ -473,7 +463,7 @@ var Tile = React.createClass({
       } else {
         this.setState({focus: true});
         v('subTile-'+p.i).on('animationend', function animationEnd(e){
-          this.setState({focus: false})
+          this.setState({focus: false});
           v('subTile-'+p.i).off('animationend', animationEnd);
         });
       }
@@ -483,19 +473,18 @@ var Tile = React.createClass({
     var p = this.props;
     // Temporarily move tile element to the parent div, so the drag position stays in sync with the cursor.
     var clone = v(ReactDOM.findDOMNode(this.refs.tileMain)).clone().node();
-    function removeDataReactIds(el) {
+    var removeDataReactIds = (el)=> {
       el.removeAttribute('data-reactid');
       if (el.childNodes.length > 0) {
         for (var child in el.childNodes) {
-          /* filter element nodes only */
           if (el.childNodes[child].nodeType == 1)
             removeDataReactIds(el.childNodes[child]);
         }
       }
-    }
+    };
     removeDataReactIds(clone);
     clone.removeAttribute('id');
-    console.log('drag clone',clone.attributes)
+    console.log('drag clone',clone.attributes);
     clone.classList.add('tileClone');
     console.log('clone: ',clone);
     var original = v('#tileMain-'+p.i).node();
@@ -515,7 +504,7 @@ var Tile = React.createClass({
   },
   handleStop(e, ui) {
     var p = this.props;
-    v('#tileMain-'+p.i).hide()
+    v('#tileMain-'+p.i).hide();
     // Move the tile element back to #grid where it belongs.
     v('#grid').append(v('#tileMain-'+p.i).node());
     console.log('Event: ', e, ui);
