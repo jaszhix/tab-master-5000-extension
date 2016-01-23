@@ -229,23 +229,22 @@ var Root = React.createClass({
         var sessions = sessionsStore.get_sessions();
         if (sessions) {
           for (var i = sessions.length - 1; i >= 0; i--) {
-          if (sessions[i].id === Tab[0].windowId) {
-            synchronizeSession('sync', sessions[i], null, Tab, null, sessions[i].sync); 
-          } else {
-            if (typeof sessions[i].sync !== 'undefined' && sessions[i].sync && opt === 'init') {
-              var truthySession = [];
-              for (var y = sessions[i].tabs.length - 1; y >= 0; y--) {
-                if (typeof Tab[y] !== 'undefined' && sessions[i].tabs[y].url === Tab[y].url) {
-                  truthySession.push(sessions[i].tabs[y].url);
+            if (sessions[i].id === Tab[0].windowId) {
+              synchronizeSession('sync', sessions[i], sessions[i].label, Tab, null, sessions[i].sync); 
+            } else {
+              if (typeof sessions[i].sync !== 'undefined' && sessions[i].sync && opt === 'init') {
+                var truthySession = [];
+                for (var y = sessions[i].tabs.length - 1; y >= 0; y--) {
+                  if (typeof Tab[y] !== 'undefined' && sessions[i].tabs[y].url === Tab[y].url) {
+                    truthySession.push(sessions[i].tabs[y].url);
+                  }
+                }
+                if (truthySession.length > 0) {
+                  sessionsStore.save('update', sessions[i], null, Tab, null, sessions[i].sync);
                 }
               }
-              if (truthySession.length > 0) {
-                sessionsStore.save('update', sessions[i], null, Tab, null, sessions[i].sync);
-
-              }
             }
-          }
-        } 
+          } 
         }
    
       }
