@@ -62,14 +62,14 @@ var Tile = React.createClass({
     if (nextProps !== this.props) {
       var p = nextProps;
       this.setTabMode();
-      if (this.state.duplicate) {
+      /*if (this.state.duplicate) {
         var subTile = v('#subTile-'+p.i).node();
         _.delay(()=>{
           if (subTile) {
             subTile.style.display = 'inline';
           }
         },500);
-      }
+      }*/
       if (pinned === p.tab.id && p.tab.pinned) {
         this.handleFocus();
       }
@@ -161,7 +161,7 @@ var Tile = React.createClass({
     if (_.includes(duplicateTabs, p.tab.url)) {
       var t = _.filter(p.stores.tabs, { url: p.tab.url });
       var first = _.first(t);
-      var activeTab = _.map(_.filter(t, { 'active': true }), 'id');
+      var activeTab = _.map(_.find(t, { 'active': true }), 'id');
       console.log('checkDuplicateTabs: ',t, first);
       for (var i = t.length - 1; i >= 0; i--) {
         if (t[i].id !== first.id && t[i].title !== 'New Tab' && t[i].id !== activeTab) {
@@ -463,6 +463,7 @@ var Tile = React.createClass({
       } else {
         this.setState({focus: true});
         v('subTile-'+p.i).on('animationend', function animationEnd(e){
+          console.log('animation handleFocus',e)
           this.setState({focus: false});
           v('subTile-'+p.i).off('animationend', animationEnd);
         });
@@ -560,7 +561,7 @@ var Tile = React.createClass({
                     onDrag={this.handleDrag}
                     onStop={this.handleStop}>
           <div ref="tile" style={s.drag ? {position: 'absolute', left: drag.left-200, top: drag.top} : null}>
-          {p.render && s.render && p.tab.title !== 'New Tab' ? <Row fluid={true} id={'subTile-'+p.i} style={s.duplicate && s.focus && !s.hover ? {WebkitAnimationIterationCount: 'infinite'} : null} onContextMenu={this.handleContextClick} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "animated zoomOut" : s.pinning ? "animated pulse" : s.duplicate && s.focus ? "duplicate-tile animated pulse" : null}>
+          {p.render && s.render && p.tab.title !== 'New Tab' ? <Row fluid={true} id={'subTile-'+p.i} style={s.duplicate && s.focus && !s.hover ? {WebkitAnimationIterationCount: 'infinite', WebkitAnimationDuration: '5s'} : null} onContextMenu={this.handleContextClick} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "animated zoomOut" : s.pinning ? "animated pulse" : s.duplicate && s.focus ? "animated flash" : null}>
               { this.filterTabs(p.tab) ? <div id={'innerTile-'+p.i} className={s.hover ? "ntg-tile-hover" : "ntg-tile"} style={s.screenshot ? s.hover ? style.tileHovered(s.screenshot) : style.tile(s.screenshot) : null} key={p.key}>
                 <Row className="ntg-tile-row-top">
                   <Col size="3">

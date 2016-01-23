@@ -37,7 +37,8 @@ var ContextMenu = React.createClass({
       var urlPath = p.tabs[index].url.split('/');
       return urlPath[2];
     } else if (opt === 'duplicate') {
-      return _.includes(dupeStore.get_duplicateTabs(), p.tabs[index].url);
+      var duplicateTabs = _.filter(p.tabs, {url: p.tabs[index].url});
+      return _.includes(dupeStore.get_duplicateTabs(), p.tabs[index].url) && p.tabs[index].id !== _.first(duplicateTabs).id;
     } else if (opt === 'openTab') {
       return p.tabs[index].openTab;
     } else if (opt === 'actions') {
