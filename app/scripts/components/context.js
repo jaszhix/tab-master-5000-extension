@@ -1,7 +1,7 @@
 import React from 'react';
 import _ from 'lodash';
 
-import {actionStore, dupeStore, contextStore, relayStore} from './store';
+import {dupeStore, contextStore, relayStore} from './store';
 
 var ContextMenu = React.createClass({
   mixins: [require('react-onclickoutside')],
@@ -18,13 +18,9 @@ var ContextMenu = React.createClass({
     contextStore.set_context(false, null);
   },
   handleRelay(opt){
-    if (opt === 'actions') {
-      actionStore.undoAction();
-    } else {
-      var id = this.props.context[1];
-      console.log('relay '+opt+': ',id);
-      relayStore.set_relay(opt, id);
-    }
+    var id = this.props.context[1];
+    console.log('relay '+opt+': ',id);
+    relayStore.set_relay(opt, id);
     this.handleClickOutside();
   },
   getStatus(opt){
@@ -81,7 +77,7 @@ var ContextMenu = React.createClass({
           {this.getStatus('duplicate') ? <button onClick={()=>this.handleRelay('closeDupes')} className="ntg-context-btn-close-all"><i className="fa fa-asterisk" /> {close+'duplicates'}</button> : null}
           {this.getStatus('openTab') || p.prefs.mode !== 'bookmarks' && p.prefs.mode !== 'history' ? <button onClick={()=>this.handleRelay('pin')} className="ntg-context-btn"><i className="fa fa-map-pin" /> {this.getStatus('pinned') ? 'Unpin' : 'Pin'}</button> : null}
           {p.chromeVersion >= 46 ? this.getStatus('openTab') || p.prefs.mode !== 'bookmarks' && p.prefs.mode !== 'history' ? <button onClick={()=>this.handleRelay('mute')} className="ntg-context-btn"><i className="fa fa-volume-off" /> {this.getStatus('muted') ? 'Unmute' : 'Mute'}</button> : null : null}
-          {p.prefs.actions && this.getStatus('actions') ? <button onClick={()=>this.handleRelay('actions')} className="ntg-context-btn"><i className={p.prefs.mode !== 'tabs' && !this.getStatus('openTab') ? "fa fa-eraser" : "fa fa-times"} />{' Undo'+this.getStatus('actions')}</button> : null}
+          {p.prefs.actions && this.getStatus('actions') ? <button onClick={()=>this.handleRelay('actions')} className="ntg-context-btn"><i className="fa fa-history" />{' Undo'+this.getStatus('actions')} </button> : null}
         </div>
       </div>
     );

@@ -91,6 +91,20 @@ var tabStore = Reflux.createStore({
   },
   move(id, index){
     chrome.tabs.move(id, {index: index});
+  },
+  keepNewTabOpen() {
+    // Work around to prevent losing focus of New Tab page when a tab is closed or pinned from the grid.
+    chrome.tabs.query({
+      active: true
+    }, function(Tab) {
+      for (var i = Tab.length - 1; i >= 0; i--) {
+        if (Tab[i].title === 'New Tab') {
+          chrome.tabs.update(Tab[i].id, {
+            active: true
+          });
+        }
+      }
+    });
   }
 });
 

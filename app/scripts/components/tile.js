@@ -8,7 +8,7 @@ import moment from 'moment';
 import Draggable from 'react-draggable';
 import utils from './utils';
 
-import {bookmarksStore, screenshotStore, dupeStore, prefsStore, reRenderStore, searchStore, applyTabOrderStore, utilityStore, contextStore, relayStore, dragStore, draggedStore} from './store';
+import {actionStore, bookmarksStore, screenshotStore, dupeStore, prefsStore, reRenderStore, searchStore, applyTabOrderStore, utilityStore, contextStore, relayStore, dragStore, draggedStore} from './store';
 import tabStore from './tabStore';
 
 import {Btn, Col, Row} from './bootstrap';
@@ -245,20 +245,6 @@ var Tile = React.createClass({
       }
     }
   },
-  keepNewTabOpen() {
-    // Work around to prevent losing focus of New Tab page when a tab is closed or pinned from the grid.
-    chrome.tabs.query({
-      active: true
-    }, function(Tab) {
-      for (var i = Tab.length - 1; i >= 0; i--) {
-        if (Tab[i].title === 'New Tab') {
-          chrome.tabs.update(Tab[i].id, {
-            active: true
-          });
-        }
-      }
-    });
-  },
   // Trigger hovers states that will update the inline CSS in style.js.
   handleHoverIn(e) {
     var s = this.state;
@@ -348,7 +334,7 @@ var Tile = React.createClass({
       }
     } else {
       close();
-      this.keepNewTabOpen();
+      tabStore.keepNewTabOpen();
     }
   },
   handlePinning(tab, opt) {
@@ -361,7 +347,7 @@ var Tile = React.createClass({
       id = tab.id;
     }
     this.setState({pinning: true});
-    this.keepNewTabOpen();
+    tabStore.keepNewTabOpen();
     // Toggle pinned state.
     this.setState({render: false});
     chrome.tabs.update(id, {
@@ -449,6 +435,8 @@ var Tile = React.createClass({
         this.handleMuting(p.tab);
       } else if (r[0] === 'closeDupes') {
         this.checkDuplicateTabs('close');
+      } else if (r[0] === 'actions') {
+        actionStore.undoAction();
       }
     }
   },

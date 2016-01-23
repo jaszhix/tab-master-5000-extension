@@ -951,6 +951,7 @@ export var actionStore = Reflux.createStore({
       if (lastAction) {
         var tab = _.find(tabs(), { id: lastAction.item.id });
         if (lastAction.type === 'remove') {
+          tabStore.keepNewTabOpen();
           tabStore.create(lastAction.item.url);
         } else if (lastAction.type === 'update') {
           if (tab.pinned !== lastAction.item.pinned) {
