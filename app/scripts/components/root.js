@@ -227,15 +227,27 @@ var Root = React.createClass({
       }
       if (s.prefs.sessionsSync) {
         var sessions = sessionsStore.get_sessions();
-        for (var i = sessions.length - 1; i >= 0; i--) {
+        if (sessions) {
+          for (var i = sessions.length - 1; i >= 0; i--) {
           if (sessions[i].id === Tab[0].windowId) {
             synchronizeSession('sync', sessions[i], null, Tab, null, sessions[i].sync); 
           } else {
             if (typeof sessions[i].sync !== 'undefined' && sessions[i].sync && opt === 'init') {
-              sessionsStore.save('update', sessions[i], null, Tab, null, sessions[i].sync);
+              var truthySession = [];
+              for (var y = sessions[i].tabs.length - 1; y >= 0; y--) {
+                if (typeof Tab[y] !== 'undefined' && sessions[i].tabs[y].url === Tab[y].url) {
+                  truthySession.push(sessions[i].tabs[y].url);
+                }
+              }
+              if (truthySession.length > 0) {
+                sessionsStore.save('update', sessions[i], null, Tab, null, sessions[i].sync);
+
+              }
             }
           }
-        }   
+        } 
+        }
+   
       }
       console.log(Tab);
       v('#main').css({cursor: 'default'});

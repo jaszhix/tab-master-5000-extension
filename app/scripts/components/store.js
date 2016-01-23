@@ -1075,12 +1075,6 @@ export var sessionsStore = Reflux.createStore({
   },
   restore(session, ssPref){
     // Opens a new chrome window with the selected tabs object.
-    var urls = [];
-    session.tabs.map((t)=>{
-      if (t.title !== 'New Tab') {
-        urls.push(t.url);
-      }
-    });
     var screenshot = ssPref;
     chrome.windows.create({
       focused: true
