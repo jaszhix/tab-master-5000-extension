@@ -115,12 +115,17 @@ var Sessions = React.createClass({
                   {s.labelSession === i ? 
                     <div>
                       <Col size="6">
-                        <input children={undefined} type="text"
-                          style={!p.collapse && s.expandedSession === i ? {marginBottom: '4px'} : null}
-                          value={s.sessionLabelValue}
-                          className="form-control label-session-input"
-                          placeholder="Label..."
-                          onChange={this.setLabel} />
+                        <form onSubmit={(e)=>{
+                          e.preventDefault();
+                          this.labelSession(session);
+                        }}>
+                          <input children={undefined} type="text"
+                            style={!p.collapse && s.expandedSession === i ? {marginBottom: '4px'} : null}
+                            value={s.sessionLabelValue}
+                            className="form-control label-session-input"
+                            placeholder="Label..."
+                            onChange={this.setLabel} />
+                        </form>
                       </Col>
                       <Col size="6">
                         <Btn style={{float: 'left'}} onClick={()=>this.labelSession(session)} className="ntg-session-btn" fa="plus"/>
