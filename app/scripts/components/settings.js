@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import Reflux from 'reflux';
 import moment from 'moment';
 import _ from 'lodash';
-import v from 'vquery';
+import kmp from 'kmp';
 
 import {sessionsStore, clickStore, prefsStore, modalStore, settingsStore, utilityStore} from './store';
 import tabStore from './tabStore';
@@ -23,7 +23,9 @@ var Sessions = React.createClass({
       selectedSessionTabHover: null,
       expandedSession: null,
       labelSession: null,
-      sessionLabelValue: null
+      sessionLabelValue: null,
+      searchField: null,
+      search: ''
     };
   },
   propTypes: {
@@ -35,8 +37,6 @@ var Sessions = React.createClass({
     };
   },
   componentDidMount(){
-    console.log('sessions mounted')
-    //this.loadSessions();
     this.setTabSource();
   },
   setTabSource(){
@@ -108,9 +108,9 @@ var Sessions = React.createClass({
         <Col size="7" className="session-col">
           <h4>Saved Sessions {p.sessions.length > 0 ? `(${p.sessions.length})` : null}</h4>
           {p.sessions ? p.sessions.map((session, i)=>{
-            return <Row onMouseEnter={()=>this.handleSessionHoverIn(i)} onMouseLeave={()=>this.handleSessionHoverOut(i)} key={i} className="ntg-session-row" style={i % 2 ? s.expandedSession === i ? {paddingBottom: '6px'} : null : s.expandedSession === i ? {backgroundColor: 'rgb(249, 249, 249)', paddingBottom: '6px'} : {backgroundColor: 'rgb(249, 249, 249)'} }>
-              <Col size={s.labelSession && !p.collapse ? "8" : "6"}>
-                <div onClick={(e)=>this.expandSelectedSession(i, e)} className={"ntg-session-text session-text-"+i}>
+            return <Row onMouseEnter={()=>this.handleSessionHoverIn(i)} onMouseLeave={()=>this.handleSessionHoverOut(i)} key={i} className="ntg-session-row" style={i % 2 ? null : {backgroundColor: 'rgb(249, 249, 249)'} }>
+              <div style={{width: 'auto', float: 'left', display: 'inline'}}>
+                <div onClick={(e)=>this.expandSelectedSession(i, e)} className={"ntg-session-text session-text-"+i} style={s.expandedSession === i ? {paddingBottom: '4px'} : null}>
                   {session.sync && s.labelSession !== i ? '(Synced) ' : null}
                   {s.labelSession === i ? 
                     <div>
@@ -120,10 +120,10 @@ var Sessions = React.createClass({
                           this.labelSession(session);
                         }}>
                           <input children={undefined} type="text"
-                            style={!p.collapse && s.expandedSession === i ? {marginBottom: '4px'} : null}
                             value={s.sessionLabelValue}
+                            style={s.expandedSession !== i ? {marginBottom: '-14px'} : null}
                             className="form-control label-session-input"
-                            placeholder="Label..."
+                            placeholder={session.label ? session.label : 'Label...'}
                             onChange={this.setLabel} />
                         </form>
                       </Col>
@@ -134,29 +134,39 @@ var Sessions = React.createClass({
                     </div>
                     : session.label ? session.label+': '+session.tabs.length+' tabs' : _.capitalize(moment(session.timeStamp).fromNow())+': '+session.tabs.length+' tabs'}
                 </div>
-                {s.expandedSession === i ? <Row style={s.labelSession && !p.collapse ? {width: '156%'} : null} className="ntg-session-expanded">
+              </div>
+              <div style={{width: 'auto', float: 'right', display: 'inline'}}>
+                {s.sessionHover === i ? <Btn onClick={()=>sessionsStore.remove(session, p.sessions)} className="ntg-session-btn" fa="times">{p.collapse ? 'Remove' : null}</Btn> : null}
+                {s.sessionHover === i ? <Btn onClick={()=>sessionsStore.restore(session, p.prefs.screenshot)} className="ntg-session-btn" fa="folder-open-o">{p.collapse ? 'Restore' : null}</Btn> : null}
+                {s.sessionHover === i && p.prefs.sessionsSync ? <Btn onClick={()=>sessionsStore.save('update', session, session.label, s.tabs, null, !session.sync)} className="ntg-session-btn" fa={session.sync ? 'circle-o' : 'circle-o-notch'}>{p.collapse ? 'Sync' : null}</Btn> : null}
+                {s.sessionHover === i ? <Btn onClick={()=>this.setState({searchField: i, expandedSession: i})} className="ntg-session-btn" fa="search">{p.collapse ? 'Search' : null}</Btn> : null}
+                {!s.labelSession ? s.sessionHover === i && s.labelSession !== i ? <Btn onClick={()=>this.setState({labelSession: i})} className="ntg-session-btn" fa="pencil">{p.collapse ? 'Label' : null}</Btn> : null : null}
+              </div>
+              <Row>
+                {s.expandedSession === i ? <Row className="ntg-session-expanded">
+                    {s.searchField === i ? 
+                      <input 
+                        type="text" 
+                        value={s.search}
+                        className="form-control search-session" 
+                        placeholder="Search session..."
+                        onChange={(e)=>this.setState({search: e.target.value})} /> : null}
                     {session.tabs.map((t, i)=>{
-                      if (i <= 20) {
+                      if (s.search.length === 0 || kmp(t.title.toLowerCase(), s.search) !== -1) {
                         return <Row onMouseEnter={()=>this.handleSelectedSessionTabHoverIn(i)} onMouseLeave={()=>this.handleSelectedSessionTabHoverOut(i)} key={i} style={i % 2 ? null : {backgroundColor: 'rgb(249, 249, 249)'}}>
                             <Col size="9">
                               <img className="ntg-small-favicon" src={t.favIconUrl ? utilityStore.filterFavicons(t.favIconUrl, t.url) : '../images/file_paper_blank_document.png' } /> 
                               {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {p.settingsMax ? t.title : _.truncate(t.title, {length: 40})}
                             </Col>
                             <Col size="3">
-                              {s.selectedSessionTabHover === i ? <Btn onClick={()=>removeTabFromSession(t.id, session)} className="ntg-expanded-session-tab-btn" fa="times" /> : null}
+                              {s.selectedSessionTabHover === i ? <Btn onClick={()=>sessionsStore.removeTabFromSession(t.id, session, s.tabs, this.setState({sessionLabelValue: null}))} className="ntg-expanded-session-tab-btn" fa="times" /> : null}
                               {s.selectedSessionTabHover === i ? <Btn onClick={()=>utilityStore.createTab(t.url)} className="ntg-expanded-session-tab-btn" fa="external-link" /> : null}
                             </Col>
                         </Row>;
                       }
                     })}
                   </Row> : null}
-              </Col>
-              <Col size={s.labelSession && !p.collapse ? "4" : "6"}>
-                {s.sessionHover === i ? <Btn onClick={()=>sessionsStore.remove(session, p.sessions)} className="ntg-session-btn" fa="times">{p.collapse ? 'Remove' : null}</Btn> : null}
-                {s.sessionHover === i ? <Btn onClick={()=>sessionsStore.restore(session, p.prefs.screenshot)} className="ntg-session-btn" fa="folder-open-o">{p.collapse ? 'Restore' : null}</Btn> : null}
-                {s.sessionHover === i && p.prefs.sessionsSync ? <Btn onClick={()=>sessionsStore.save('update', session, session.label, s.tabs, null, !session.sync)} className="ntg-session-btn" fa={session.sync ? 'circle-o' : 'circle-o-notch'}>{p.collapse ? 'Sync' : null}</Btn> : null}
-                {!s.labelSession ? s.sessionHover === i && s.labelSession !== i ? <Btn onClick={()=>this.setState({labelSession: i})} className="ntg-session-btn" fa="pencil">{p.collapse ? 'Label' : null}</Btn> : null : null}
-              </Col>
+              </Row>
             </Row>;
           }) : null}
           <Btn onClick={()=>sessionsStore.exportSessions()} style={p.settingsMax ? {top: '95%'} : null} className="ntg-impexp-btn" fa="arrow-circle-o-down">Export</Btn>

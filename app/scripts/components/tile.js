@@ -8,7 +8,7 @@ import moment from 'moment';
 import Draggable from 'react-draggable';
 import utils from './utils';
 
-import {actionStore, bookmarksStore, screenshotStore, dupeStore, prefsStore, reRenderStore, searchStore, applyTabOrderStore, utilityStore, contextStore, relayStore, dragStore, draggedStore} from './store';
+import {sessionsStore, actionStore, bookmarksStore, screenshotStore, dupeStore, prefsStore, reRenderStore, searchStore, applyTabOrderStore, utilityStore, contextStore, relayStore, dragStore, draggedStore} from './store';
 import tabStore from './tabStore';
 
 import {Btn, Col, Row} from './bootstrap';
@@ -40,6 +40,7 @@ var Tile = React.createClass({
       openTab: false,
       bookmarks: false,
       history: false,
+      sessions: false,
       alt: false
     };
   },
@@ -62,14 +63,6 @@ var Tile = React.createClass({
     if (nextProps !== this.props) {
       var p = nextProps;
       this.setTabMode();
-      /*if (this.state.duplicate) {
-        var subTile = v('#subTile-'+p.i).node();
-        _.delay(()=>{
-          if (subTile) {
-            subTile.style.display = 'inline';
-          }
-        },500);
-      }*/
       if (pinned === p.tab.id && p.tab.pinned) {
         this.handleFocus();
       }
@@ -130,7 +123,12 @@ var Tile = React.createClass({
     } else {
       this.setState({history: false});
     }
-    if (p.stores.prefs.mode === 'bookmarks' && p.tab.openTab || p.stores.prefs.mode === 'history' && p.tab.openTab) {
+    if (p.stores.prefs.mode === 'sessions') {
+      this.setState({sessions: true});
+    } else {
+      this.setState({sessions: false});
+    }
+    if (p.stores.prefs.mode === 'sessions' && p.tab.openTab|| p.stores.prefs.mode === 'bookmarks' && p.tab.openTab || p.stores.prefs.mode === 'history' && p.tab.openTab) {
       this.setState({openTab: true});
     } else {
       this.setState({openTab: false});
@@ -211,7 +209,7 @@ var Tile = React.createClass({
     // Navigate to a tab when its clicked from the grid.
     if (!s.xHover || !s.pHover) {
       if (!s.close) {
-        if (s.bookmarks || s.history) {
+        if (s.bookmarks || s.history || s.sessions) {
           if (s.openTab) {
             active();
           } else {
@@ -322,7 +320,7 @@ var Tile = React.createClass({
             //reRender();
             //this.setState({render: false});
           });
-        } else {
+        } else if (s.history) {
           //this.setState({render: false});
           //reRender(true);
           chrome.history.deleteUrl({url: p.tab.url},(h)=>{
@@ -330,7 +328,12 @@ var Tile = React.createClass({
             //reRender();
             //this.setState({render: false});
           });
-        }    
+        } else if (s.sessions) {
+          var session = _.find(p.sessions, {timeStamp: p.tab.sTimeStamp});
+          var tab = _.find(session.tabs, {url: p.tab.url});
+          sessionsStore.removeTabFromSession(tab.id, session, tabStore.get_altTab());
+          reRender();
+        }  
       }
     } else {
       close();
@@ -451,7 +454,6 @@ var Tile = React.createClass({
       } else {
         this.setState({focus: true});
         v('subTile-'+p.i).on('animationend', function animationEnd(e){
-          console.log('animation handleFocus',e)
           this.setState({focus: false});
           v('subTile-'+p.i).off('animationend', animationEnd);
         });
@@ -564,7 +566,7 @@ var Tile = React.createClass({
                       : null}
                     </div>
                     <div onMouseEnter={this.handlePinHoverIn} onMouseLeave={this.handlePinHoverOut} onClick={() => this.handlePinning(p.tab)}>
-                    {p.tab.pinned || s.hover && s.openTab || s.hover && !s.bookmarks && !s.history ? 
+                    {p.tab.pinned && p.stores.prefs.mode === 'tabs' || s.hover && s.openTab || s.hover && !s.bookmarks && !s.history && !s.sessions ? 
                       <i className={s.pHover ? "fa fa-map-pin ntg-pinned-hover" : "fa fa-map-pin ntg-pinned"} style={p.tab.pinned ? s.screenshot && s.hover ? style.ssPinnedIconBg : s.screenshot ? style.ssPinnedIconBg : {color: '#B67777'} : s.screenshot ? style.ssIconBg : null} />
                       : null}
                     </div>
@@ -582,14 +584,17 @@ var Tile = React.createClass({
                     {s.history ? <h5 style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-folder">
                       <i className="fa fa-hourglass-o" />{' '+_.capitalize(moment(p.tab.lastVisitTime).fromNow())}
                     </h5> : null}
-                    {p.stores.prefs ? p.stores.prefs.drag && !s.bookmarks && !s.history ? <div onMouseEnter={this.handleDragHoverIn} onMouseLeave={this.handleDragHoverOut} onClick={() => this.handleCloseTab(p.tab.id)}>
+                    {s.sessions ? <h5 style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-folder">
+                      <i className={p.tab.label ? 'fa fa-folder-o' : 'fa fa-hourglass-o'} />{p.tab.label ? ' '+p.tab.label : ' '+_.capitalize(moment(p.tab.sTimeStamp).fromNow())}
+                    </h5> : null}
+                    {p.stores.prefs ? p.stores.prefs.drag && !s.bookmarks && !s.history && !s.sessions ? <div onMouseEnter={this.handleDragHoverIn} onMouseLeave={this.handleDragHoverOut} onClick={() => this.handleCloseTab(p.tab.id)}>
                       {s.hover ? 
                       <i className={s.dHover ? "fa fa-hand-grab-o ntg-move-hover handle" : "fa fa-hand-grab-o ntg-move"} style={s.screenshot && s.hover ? style.ssIconBg : null} />
                       : null}
                     </div> : null : null}
                   </Col> 
                 </Row>
-                <Row onClick={() => this.handleClick(p.tab.id)} className={s.bookmarks || s.history ? "ntg-tile-row-bottom-bk" : "ntg-tile-row-bottom"} />
+                <Row onClick={() => this.handleClick(p.tab.id)} className={s.bookmarks || s.history || s.sessions ? "ntg-tile-row-bottom-bk" : "ntg-tile-row-bottom"} />
               </div> : null}
             </Row> : null}
           </div>
@@ -620,6 +625,10 @@ var Sidebar = React.createClass({
     prefsStore.set_prefs('mode', 'history');
     reRenderStore.set_reRender(true, 'defer', null);
   },
+  handleSessions(){
+    prefsStore.set_prefs('mode', 'sessions');
+    reRenderStore.set_reRender(true, 'defer', null);
+  },
   handleTabs(){
     prefsStore.set_prefs('mode', 'tabs');
     reRenderStore.set_reRender(true, 'defer', null);
@@ -641,12 +650,12 @@ var Sidebar = React.createClass({
         {s.mode !== 'tabs' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleTabs} className="ntg-apply-btn" fa="square">{iconCollapse ? '' : 'Tabs'}</Btn> : null}
         {s.mode !== 'bookmarks' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleBookmarks} className="ntg-apply-btn" fa="bookmark">{iconCollapse ? '' : 'Bookmarks'}</Btn> : null}
         {s.mode !== 'history' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleHistory} className="ntg-apply-btn" fa="history">{iconCollapse ? '' : 'History'}</Btn> : null}
+        {s.mode !== 'sessions' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleSessions} className="ntg-apply-btn" fa="history">{iconCollapse ? '' : 'Sessions'}</Btn> : null}
       </div>
     );
   }
 });
 
-var tileLimit = NaN;
 // TileGrid is modified from react-sort-table for this extension - https://github.com/happy-charlie-777/react-sort-table 
 var TileGrid = React.createClass({
   mixins: [Reflux.ListenerMixin],
@@ -761,6 +770,7 @@ var TileGrid = React.createClass({
           {label === 'Title' ? <Btn style={ssBg ? buttonTransparent : null} onClick={this.handleTitleIcon} className="ntg-btn" fa={s.title ? 'sort-alpha-asc' : 'sort-alpha-desc'}>{cLabel}</Btn> : null}
           {label === 'Open' ? <Btn style={ssBg ? buttonTransparent : null} className="ntg-btn" fa="folder-open">{cLabel}</Btn> : null}
           {label === 'Folder' ? <Btn style={ssBg ? buttonTransparent : null} className="ntg-btn" fa="folder">{cLabel}</Btn> : null}
+          {label === 'Label' ? <Btn style={ssBg ? buttonTransparent : null} className="ntg-btn" fa="folder">{cLabel}</Btn> : null}
           {label === 'Date Added' ? <Btn style={ssBg ? buttonTransparent : null} className="ntg-btn" fa="hourglass">{cLabel}</Btn> : null}
           {label === 'Last Visit' ? <Btn style={ssBg ? buttonTransparent : null} className="ntg-btn" fa="hourglass">{cLabel}</Btn> : null}
           {label === 'Most Visited' ? <Btn style={ssBg ? buttonTransparent : null} className="ntg-btn" fa="line-chart">{cLabel}</Btn> : null}
@@ -774,7 +784,7 @@ var TileGrid = React.createClass({
           <div id="grid" ref="grid">
               {s.data.map((data, i)=> {
                 return (
-                  <Tile stores={p.stores} render={p.render} i={i} key={data.id} tab={data} tileLimit={p.tileLimit} />
+                  <Tile sessions={p.sessions} stores={p.stores} render={p.render} i={i} key={data.id} tab={data} tileLimit={p.tileLimit} />
                 );
               })}
           </div>

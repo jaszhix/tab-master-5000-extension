@@ -24,6 +24,10 @@
     position: relative;
     left: 20px;
 }
+.search-session {
+    position: relative;
+    height: 24px;
+}
 .tile-container {
     margin-right: auto;
     margin-left: auto;
@@ -66,6 +70,7 @@
 input.label-session-input {
     height: 20px;
     width: 120%;
+    margin-bottom: -10px;
 }
 
 .prefs-row {
@@ -275,14 +280,14 @@ input.label-session-input {
 .ntg-session-text {
     font-size:14px;
     cursor: pointer;
+    padding-left: 8px;
 }
 .ntg-session-expanded {
     overflow-y: scroll;
     height: 200px;
-    width: 212%;
+    width: 100%;
     background-color: #ffffff;
     border-radius: 3px;
-    margin-left:-2%;
     margin-top: 4px;
 }
 .ntg-settings-pane {
@@ -590,6 +595,7 @@ button.ntg-session-btn {
     float: right;
     outline: none;
 }
+
 
 button.ntg-expanded-session-tab-btn {
     width: auto;

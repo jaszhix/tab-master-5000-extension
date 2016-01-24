@@ -74,10 +74,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       if (prefs.mode === 'tabs') {
         title = _.result(_.find(tabs(), { id: msg.e.tabId }), 'title');
         if (title !== 'New Tab') {
-          _.defer(()=>{
-            throttled.screenshot(msg.e.tabId, msg.e.windowId);
-            //screenshotStore.capture(msg.e.tabId, msg.e.windowId);
-          });
+          throttled.screenshot(msg.e.tabId, msg.e.windowId);
           reRender('activate', msg.e);
         }
       } else {
@@ -1011,7 +1008,7 @@ export var sessionsStore = Reflux.createStore({
     var tabs = null;
     var timeStamp = null;
     var id = utilityStore.get_window();
-    var sync = false;
+    var sync = null;
     if (opt === 'update' || opt === 'sync') {
       if (label && label.length > 0) {
         sessionLabel = label;
@@ -1042,7 +1039,7 @@ export var sessionsStore = Reflux.createStore({
         console.log('item: ',item);
         session = item;
         if (opt === 'sync') {
-          var syncedSession = _.filter(session.sessionData, { id: id});
+          var syncedSession = _.filter(session.sessionData, { id: id, sync: true});
           console.log('syncedSession: ',syncedSession);
           if (syncedSession) {
             tabData.sync = _.first(syncedSession).sync;
@@ -1069,6 +1066,7 @@ export var sessionsStore = Reflux.createStore({
         }); 
       }  
     });  
+    v('div.ReactModalPortal > div').css({cursor: 'default'});
   },
   remove(session, sessionsState){
     var index = sessionsState;
@@ -1081,6 +1079,12 @@ export var sessionsStore = Reflux.createStore({
       this.trigger(this.sessions);
       console.log('sessions...',this.sessions);
     });
+  },
+  removeTabFromSession(id, session){
+    var index = _.findIndex(session.tabs, { 'id': id });
+    var tabToRemove = _.remove(session.tabs, session.tabs[index]);
+    session.tabs = _.without(session.tabs, tabToRemove);
+    this.save('update', session, session.label);
   },
   restore(session, ssPref){
     // Opens a new chrome window with the selected tabs object.
@@ -1130,6 +1134,35 @@ export var sessionsStore = Reflux.createStore({
   },
   get_sessions(){
     return this.sessions;
+  },
+  flatten(){
+    var allTabs = [];
+    var t = tabStore.get_altTab();
+    var openTab = 0;
+    for (var i = this.sessions.length - 1; i >= 0; i--) {
+      for (var y = this.sessions[i].tabs.length - 1; y >= 0; y--) {
+        _.assign(this.sessions[i].tabs[y], {
+          windowId: utilityStore.get_window(),
+          id: parseInt(_.uniqueId()),
+          tabId: this.sessions[i].tabs[y].id,
+          label: this.sessions[i].label,
+          sTimeStamp: this.sessions[i].timeStamp
+        });
+        for (var x = t.length - 1; x >= 0; x--) {
+          if (t[x].url === this.sessions[i].tabs[y].url) {
+            _.assign(this.sessions[i].tabs[y], {
+              openTab: ++openTab,
+              id: t[x].id
+            });
+          }
+        }
+      }
+      allTabs.push(this.sessions[i].tabs);
+    }
+    allTabs = _.flatten(allTabs);
+    allTabs = _.uniqBy(allTabs, 'url');
+    allTabs = _.orderBy(allTabs, ['openTab'], ['asc']);
+    return allTabs;
   }
 });
 

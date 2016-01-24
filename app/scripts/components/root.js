@@ -79,7 +79,7 @@ var Search = React.createClass({
                 type="text" 
                 value={searchStore.get_search()}
                 className="form-control search-tabs" 
-                placeholder={p.prefs.mode === 'bookmarks' ? 'Search bookmarks...' : p.prefs.mode === 'history' ? 'Search history...' : 'Search tabs...'}
+                placeholder={p.prefs.mode === 'bookmarks' ? 'Search bookmarks...' : p.prefs.mode === 'history' ? 'Search history...' : p.prefs.mode === 'sessions' ? 'Search sessions...' : 'Search tabs...'}
                 onChange={this.handleSearch} />
               </form>
             </Col>
@@ -214,6 +214,9 @@ var Root = React.createClass({
       } else if (s.prefs.mode === 'history') {
         this.setState({render: false});
         tab = historyStore.get_history();
+      } else if (s.prefs.mode === 'sessions') {
+        this.setState({render: false});
+        tab = sessionsStore.flatten();
       } else {
         tab = Tab;
       }
@@ -224,13 +227,15 @@ var Root = React.createClass({
         this.setState({render: true});
       } else if (s.prefs.mode === 'history') {
         this.setState({render: true});
+      } else if (s.prefs.mode === 'sessions') {
+        this.setState({render: true});
       }
       if (s.prefs.sessionsSync) {
         var sessions = sessionsStore.get_sessions();
         if (sessions) {
           for (var i = sessions.length - 1; i >= 0; i--) {
             if (sessions[i].id === Tab[0].windowId) {
-              synchronizeSession('sync', sessions[i], sessions[i].label, Tab, null, sessions[i].sync); 
+              synchronizeSession('sync', sessions[i], sessions[i].label, Tab); 
             } else {
               if (typeof sessions[i].sync !== 'undefined' && sessions[i].sync && opt === 'init') {
                 var truthySession = [];
@@ -240,7 +245,7 @@ var Root = React.createClass({
                   }
                 }
                 if (truthySession.length > 0) {
-                  sessionsStore.save('update', sessions[i], null, Tab, null, sessions[i].sync);
+                  sessionsStore.save('update', sessions[i], null, Tab);
                 }
               }
             }
@@ -333,6 +338,15 @@ var Root = React.createClass({
         title: 'Title',
         openTab: 'Open'
       };
+    } else if (stores.prefs.mode === 'sessions') {
+      keys = ['openTab', 'url', 'title', 'sTimeStamp', 'label'];
+      labels = {
+        label: 'Label',
+        sTimeStamp: 'Date Added',
+        url: 'Website',
+        title: 'Title',
+        openTab: 'Open'
+      };
     } else {
       keys = ['url', 'title', 'index'];
       labels = {
@@ -352,6 +366,7 @@ var Root = React.createClass({
         sidebar={s.sidebar}
         stores={stores}
         tileLimit={s.tileLimit}
+        sessions={s.sessions}
       />
     );
   },
