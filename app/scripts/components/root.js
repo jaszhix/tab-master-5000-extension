@@ -215,7 +215,6 @@ var Root = React.createClass({
         this.setState({render: false});
         tab = historyStore.get_history();
       } else if (s.prefs.mode === 'sessions') {
-        this.setState({render: false});
         tab = sessionsStore.flatten();
       } else {
         tab = Tab;
@@ -226,8 +225,6 @@ var Root = React.createClass({
       if (s.prefs.mode === 'bookmarks') {
         this.setState({render: true});
       } else if (s.prefs.mode === 'history') {
-        this.setState({render: true});
-      } else if (s.prefs.mode === 'sessions') {
         this.setState({render: true});
       }
       if (s.prefs.sessionsSync) {
