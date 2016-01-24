@@ -5,7 +5,9 @@ var sendMsg = (msg) => {
 var reload = (reason)=>{
   // console log messages before error triggered location.reload() calls. Preserve console logging in the browser to see them.
   console.log('Reload background script. Reason: ',reason);
-  location.reload();
+  setTimeout(()=>{
+    location.reload();
+  },0);
 };
 var close = (id)=>{
   chrome.tabs.get(id, (t)=>{

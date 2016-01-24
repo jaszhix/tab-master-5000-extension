@@ -137,7 +137,7 @@ var Root = React.createClass({
     this.listenTo(sidebarStore, this.sortTrigger);
     this.listenTo(prefsStore, this.prefsChange);
     this.listenTo(actionStore, this.actionsChange);
-    this.listenTo(sessionsStore, this.sessionsChange)
+    this.listenTo(sessionsStore, this.sessionsChange);
 
     console.log('Chrome Version: ',utilityStore.chromeVersion());
     console.log('Manifest: ', utilityStore.get_manifest());
@@ -172,7 +172,7 @@ var Root = React.createClass({
       }
       // Init methods called here after prefs are loaded from Chrome storage.
       this.setState({init: false});
-      this.captureTabs('init');
+      _.defer(()=>this.captureTabs('init'));
       this.onWindowResize(null, 'init');
       if (e.reporting) {
         this.handleErrorReporting(e, s.chromeVersion);

@@ -624,8 +624,8 @@ export var screenshotStore = Reflux.createStore({
               console.log('newIndex',newIndex, this.index);
             }
             this.index.push(screenshot);
-            this.index = _.uniq(this.index, 'url');
-            this.index = _.uniq(this.index, 'data');
+            this.index = _.uniqBy(this.index, 'url');
+            this.index = _.uniqBy(this.index, 'data');
             chrome.storage.local.set({screenshots: this.index}, ()=>{
               _.defer(()=>{
                 this.invoked = false;
@@ -1017,7 +1017,7 @@ export var sessionsStore = Reflux.createStore({
       }
     }
     if (opt === 'update') {
-      if (syncOpt) {
+      if (typeof syncOpt !== 'undefined' || syncOpt !== null) {
         sync = syncOpt;
       } else if (typeof sess.sync !== 'undefined') {
         sync = sess.sync;
@@ -1089,19 +1089,13 @@ export var sessionsStore = Reflux.createStore({
   },
   restore(session, ssPref){
     // Opens a new chrome window with the selected tabs object.
-    var tabs = [];
-    session.tabs.map((t)=>{
-      if (t.url !== 'chrome://newtab') {
-        tabs.push(t);
-      }
-    });
     console.log('session.tabs: ',session.tabs);
     var screenshot = ssPref;
     chrome.windows.create({
       focused: true
     }, (Window)=>{
       console.log('restored session...',Window);
-      chrome.runtime.sendMessage(chrome.runtime.id, {method: 'restoreWindow', windowId: Window.id, tabs: tabs}, (response)=>{
+      chrome.runtime.sendMessage(chrome.runtime.id, {method: 'restoreWindow', windowId: Window.id, tabs: session.tabs}, (response)=>{
         if (response.reload && screenshot) {
           utilityStore.restartNewTab();
         }

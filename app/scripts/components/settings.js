@@ -93,16 +93,6 @@ var Sessions = React.createClass({
     var tabs = s.tabs;
     tabs = _.without(tabs, _.find(tabs, { title: 'New Tab' }));
     var tm20 = tabs.length - 24;
-    var removeTabFromSession = (id, session)=>{
-      var index = _.findIndex(session.tabs, { 'id': id });
-      var tabToRemove = _.remove(session.tabs, session.tabs[index]);
-      session.tabs = _.without(session.tabs, tabToRemove);
-      var label = null;
-      if (session.label) {
-        label = session.label;
-      }
-      sessionsStore.save('update', session, label, this.setState({sessionLabelValue: null}));
-    };
     return (
       <div className="sessions">
         <Col size="7" className="session-col">
@@ -272,13 +262,13 @@ var Settings = React.createClass({
             <div role="tabpanel"> 
                 <ul className="nav nav-tabs">
                   <li className={sessions ? "active" : null}>
-                      <a href="#" onClick={()=>this.handleTabClick('sessions')}>Sessions</a>
+                      <a href="#" onClick={()=>this.handleTabClick('sessions')}><i className="settings-fa fa fa-book"/>  Sessions</a>
                   </li>
                   <li className={preferences ? "active" : null}>
-                      <a href="#" onClick={()=>this.handleTabClick('preferences')}>Preferences</a>
+                      <a href="#" onClick={()=>this.handleTabClick('preferences')}><i className="settings-fa fa fa-dashboard"/>  Preferences</a>
                   </li>
                   <li className={about ? "active" : null}>
-                      <a href="#" onClick={()=>this.handleTabClick('about')}>About</a>
+                      <a href="#" onClick={()=>this.handleTabClick('about')}><i className="settings-fa fa fa-info-circle"/>  About</a>
                   </li>
                 </ul>
             </div>
