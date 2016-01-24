@@ -235,7 +235,7 @@ var Root = React.createClass({
         if (sessions) {
           for (var i = sessions.length - 1; i >= 0; i--) {
             if (sessions[i].id === Tab[0].windowId) {
-              synchronizeSession('sync', sessions[i], sessions[i].label, Tab); 
+              synchronizeSession('sync', sessions[i], null, Tab); 
             } else {
               if (typeof sessions[i].sync !== 'undefined' && sessions[i].sync && opt === 'init') {
                 var truthySession = [];

@@ -314,19 +314,12 @@ var Tile = React.createClass({
         close();
       } else {
         if (s.bookmarks) {          
-          //reRender(true);
           chrome.bookmarks.remove(p.tab.bookmarkId,(b)=>{
             console.log('Bookmark deleted: ',b);
-            //reRender();
-            //this.setState({render: false});
           });
         } else if (s.history) {
-          //this.setState({render: false});
-          //reRender(true);
           chrome.history.deleteUrl({url: p.tab.url},(h)=>{
             console.log('History url deleted: ', h);
-            //reRender();
-            //this.setState({render: false});
           });
         } else if (s.sessions) {
           var session = _.find(p.sessions, {timeStamp: p.tab.sTimeStamp});
@@ -356,7 +349,7 @@ var Tile = React.createClass({
     chrome.tabs.update(id, {
       pinned: !tab.pinned
     },(t)=>{
-      if (s.bookmarks || s.history) {
+      if (s.bookmarks || s.history || s.sessions) {
         reRenderStore.set_reRender(true, 'create',id);
       }
     });

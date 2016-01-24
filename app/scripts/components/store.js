@@ -1009,7 +1009,7 @@ export var sessionsStore = Reflux.createStore({
     var timeStamp = null;
     var id = utilityStore.get_window();
     var sync = null;
-    if (opt === 'update' || opt === 'sync') {
+    if (opt === 'update') {
       if (label && label.length > 0) {
         sessionLabel = label;
       } else if (sess.label && sess.label.length > 0) {
@@ -1043,6 +1043,7 @@ export var sessionsStore = Reflux.createStore({
           console.log('syncedSession: ',syncedSession);
           if (syncedSession) {
             tabData.sync = _.first(syncedSession).sync;
+            tabData.label = _.first(syncedSession).label;
           }
         }
         session.sessionData.push(tabData);
@@ -1143,7 +1144,7 @@ export var sessionsStore = Reflux.createStore({
       for (var y = this.sessions[i].tabs.length - 1; y >= 0; y--) {
         _.assign(this.sessions[i].tabs[y], {
           windowId: utilityStore.get_window(),
-          id: parseInt(_.uniqueId()),
+          id: parseInt(_.uniqueId()) + 9999,
           tabId: this.sessions[i].tabs[y].id,
           label: this.sessions[i].label,
           sTimeStamp: this.sessions[i].timeStamp
@@ -1152,13 +1153,16 @@ export var sessionsStore = Reflux.createStore({
           if (t[x].url === this.sessions[i].tabs[y].url) {
             _.assign(this.sessions[i].tabs[y], {
               openTab: ++openTab,
-              id: t[x].id
+              id: t[x].id,
+              pinned: t[x].pinned,
+              mutedInfo: {muted: t[x].mutedInfo.muted}
             });
           }
         }
       }
       allTabs.push(this.sessions[i].tabs);
     }
+    allTabs = _.orderBy(allTabs, ['sTimeStamp'], ['asc']);
     allTabs = _.flatten(allTabs);
     allTabs = _.uniqBy(allTabs, 'url');
     allTabs = _.orderBy(allTabs, ['openTab'], ['asc']);
