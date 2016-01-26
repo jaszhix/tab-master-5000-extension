@@ -1,7 +1,8 @@
 import React from 'react';
 import _ from 'lodash';
 
-import {dupeStore, contextStore, relayStore} from './store';
+import {Btn} from './bootstrap';
+import {dupeStore, contextStore, relayStore} from './stores/main';
 
 var ContextMenu = React.createClass({
   mixins: [require('react-onclickoutside')],
@@ -72,12 +73,12 @@ var ContextMenu = React.createClass({
     return (
       <div className="ntg-context">
         <div style={{left: p.cursor.page.x, top: p.cursor.page.y}} className="ntg-context-menu">
-          <button onClick={()=>this.handleRelay('close')} className="ntg-context-btn"><i className={p.prefs.mode !== 'tabs' && !this.getStatus('openTab') ? "fa fa-eraser" : "fa fa-times"} />{close}</button>
-          <button onClick={()=>this.handleRelay('closeAll')} className="ntg-context-btn-close-all"><i className="fa fa-asterisk" />{close+'all from ' + this.getStatus('url')}</button>
-          {this.getStatus('duplicate') ? <button onClick={()=>this.handleRelay('closeDupes')} className="ntg-context-btn-close-all"><i className="fa fa-asterisk" /> {close+'duplicates'}</button> : null}
-          {this.getStatus('openTab') || p.prefs.mode !== 'bookmarks' && p.prefs.mode !== 'history' ? <button onClick={()=>this.handleRelay('pin')} className="ntg-context-btn"><i className="fa fa-map-pin" /> {this.getStatus('pinned') ? 'Unpin' : 'Pin'}</button> : null}
-          {p.chromeVersion >= 46 ? this.getStatus('openTab') || p.prefs.mode !== 'bookmarks' && p.prefs.mode !== 'history' ? <button onClick={()=>this.handleRelay('mute')} className="ntg-context-btn"><i className="fa fa-volume-off" /> {this.getStatus('muted') ? 'Unmute' : 'Mute'}</button> : null : null}
-          {p.prefs.actions && this.getStatus('actions') ? <button onClick={()=>this.handleRelay('actions')} className="ntg-context-btn"><i className="fa fa-history" />{' Undo'+this.getStatus('actions')} </button> : null}
+          <Btn onClick={()=>this.handleRelay('close')} className="ntg-context-btn"><i className={p.prefs.mode !== 'tabs' && !this.getStatus('openTab') ? "fa fa-eraser" : "fa fa-times"} />{close}</Btn>
+          <Btn onClick={()=>this.handleRelay('closeAll')} className="ntg-context-btn-close-all"><i className="fa fa-asterisk" />{close+'all from ' + this.getStatus('url')}</Btn>
+          {this.getStatus('duplicate') ? <Btn onClick={()=>this.handleRelay('closeDupes')} className="ntg-context-btn-close-all"><i className="fa fa-asterisk" /> {close+'duplicates'}</Btn> : null}
+          {this.getStatus('openTab') || p.prefs.mode !== 'bookmarks' && p.prefs.mode !== 'history' ? <Btn onClick={()=>this.handleRelay('pin')} className="ntg-context-btn"><i className="fa fa-map-pin" /> {this.getStatus('pinned') ? 'Unpin' : 'Pin'}</Btn> : null}
+          {p.chromeVersion >= 46 ? this.getStatus('openTab') || p.prefs.mode !== 'bookmarks' && p.prefs.mode !== 'history' ? <Btn onClick={()=>this.handleRelay('mute')} className="ntg-context-btn"><i className="fa fa-volume-off" /> {this.getStatus('muted') ? 'Unmute' : 'Mute'}</Btn> : null : null}
+          {p.prefs.actions && this.getStatus('actions') ? <Btn onClick={()=>this.handleRelay('actions')} className="ntg-context-btn"><i className="fa fa-history" />{' Undo'+this.getStatus('actions')} </Btn> : null}
         </div>
       </div>
     );

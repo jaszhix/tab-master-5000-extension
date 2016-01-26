@@ -8,8 +8,9 @@ import moment from 'moment';
 import Draggable from 'react-draggable';
 import utils from './utils';
 
-import {sessionsStore, actionStore, bookmarksStore, screenshotStore, dupeStore, prefsStore, reRenderStore, searchStore, applyTabOrderStore, utilityStore, contextStore, relayStore, dragStore, draggedStore} from './store';
-import tabStore from './tabStore';
+import {sessionsStore, actionStore, bookmarksStore, dupeStore, prefsStore, reRenderStore, searchStore, applyTabOrderStore, utilityStore, contextStore, relayStore, dragStore, draggedStore} from './stores/main';
+import screenshotStore from './stores/screenshot';
+import tabStore from './stores/tab';
 
 import {Btn, Col, Row} from './bootstrap';
 import style from './style';

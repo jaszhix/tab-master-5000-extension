@@ -1,6 +1,6 @@
 import React from 'react';
 
-import {utilityStore} from './store';
+import {utilityStore} from './stores/main';
 
 import {Btn, Col} from './bootstrap';
 
