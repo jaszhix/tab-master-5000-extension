@@ -5,7 +5,8 @@ import moment from 'moment';
 import _ from 'lodash';
 import kmp from 'kmp';
 
-import {sessionsStore, clickStore, prefsStore, modalStore, settingsStore, utilityStore} from './stores/main';
+import {sessionsStore, clickStore, modalStore, settingsStore, utilityStore} from './stores/main';
+import prefsStore from './stores/prefs';
 import tabStore from './stores/tab';
 
 import Preferences from './preferences';

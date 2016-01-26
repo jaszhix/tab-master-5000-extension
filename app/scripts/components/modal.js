@@ -8,7 +8,8 @@ import style from './style';
 
 import Settings from './settings';
 
-import {settingsStore, clickStore, modalStore, prefsStore} from './stores/main';
+import {settingsStore, clickStore, modalStore} from './stores/main';
+import prefsStore from './stores/prefs';
 import {Btn, Col} from './bootstrap';
 
 var keepContributeModalOpen = false;

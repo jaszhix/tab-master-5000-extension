@@ -8,7 +8,8 @@ import moment from 'moment';
 import Draggable from 'react-draggable';
 import utils from './utils';
 
-import {sessionsStore, actionStore, bookmarksStore, dupeStore, prefsStore, reRenderStore, searchStore, applyTabOrderStore, utilityStore, contextStore, relayStore, dragStore, draggedStore} from './stores/main';
+import {sessionsStore, actionStore, bookmarksStore, dupeStore, reRenderStore, searchStore, applyTabOrderStore, utilityStore, contextStore, relayStore, dragStore, draggedStore} from './stores/main';
+import prefsStore from './stores/prefs';
 import screenshotStore from './stores/screenshot';
 import tabStore from './stores/tab';
 

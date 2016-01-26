@@ -4,7 +4,8 @@ import _ from 'lodash';
 
 import utils from './utils';
 
-import {reRenderStore, prefsStore, utilityStore, blacklistStore} from './stores/main';
+import {reRenderStore, utilityStore, blacklistStore} from './stores/main';
+import prefsStore from './stores/prefs';
 import screenshotStore from './stores/screenshot';
 
 import {Btn, Col, Row} from './bootstrap';

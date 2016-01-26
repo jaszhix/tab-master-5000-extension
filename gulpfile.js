@@ -190,7 +190,7 @@ gulp.task('dist',  function (callback) {
   runSequence('build', 'copy', 'htmlmin', 'imgmin', 'package', callback);
 });
 gulp.task('watch', function() {
-  gulp.watch('./app/scripts/components/*.{js,jsx,es6}', ['build']);
+  gulp.watch('./app/scripts/components/**/*.{js,jsx,es6}', ['build']);
   gulp.watch('./app/scripts/bg/*.{js,jsx,es6}', ['build-bg']);
   gulp.watch('./app/scripts/content/*.{js,jsx,es6}', ['build-content']);
   gulp.watch('./app/styles/*.scss', ['build']);

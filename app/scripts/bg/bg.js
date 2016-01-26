@@ -138,7 +138,7 @@ getPrefs.then((prefs)=>{
         reload('Refreshing bg...');
       }).catch(()=>{
         sendMsg({e: sender.id, type: 'error'});
-        reload('Screenshot capture error.');
+        //reload('Screenshot capture error.');
       });
     } else if (msg.method === 'close') {
       close(sender.tab.id);

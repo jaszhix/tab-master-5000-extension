@@ -2,7 +2,8 @@ import Reflux from 'reflux';
 import _ from 'lodash';
 
 
-import {prefsStore, utilityStore, reRenderStore, tabs} from './main';
+import prefsStore from './prefs';
+import {utilityStore, reRenderStore, tabs} from './main';
 
 var screenshotStore = Reflux.createStore({
   init: function() {
@@ -89,7 +90,7 @@ var screenshotStore = Reflux.createStore({
         }).catch(()=>{
           this.invoked = false;
           this.capture(id);
-          utilityStore.restartNewTab();
+          _.defer(()=>utilityStore.restartNewTab());
         });
       }
     }
