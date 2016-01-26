@@ -166,6 +166,7 @@ var Tile = React.createClass({
       for (var i = t.length - 1; i >= 0; i--) {
         if (t[i].id !== first.id && t[i].title !== 'New Tab' && t[i].id !== activeTab) {
           if (opt === 'close') {
+            this.setState({duplicate: false});
             this.handleCloseTab(t[i].id);
           } else if (p.tab.id === t[i].id && p.stores.prefs.duplicate) {
             _.defer(()=>{

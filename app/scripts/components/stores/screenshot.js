@@ -81,9 +81,10 @@ var screenshotStore = Reflux.createStore({
             this.index = _.uniqBy(this.index, 'url');
             this.index = _.uniqBy(this.index, 'data');
             chrome.storage.local.set({screenshots: this.index}, ()=>{
-              _.defer(()=>{
+              /*_.defer(()=>{
                 this.invoked = false;
-              });
+              });*/
+              this.invoked = false;
               this.trigger(this.index);
             });
           });
