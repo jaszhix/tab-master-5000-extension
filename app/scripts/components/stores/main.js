@@ -746,7 +746,7 @@ export var faviconStore = Reflux.createStore({
       this.trigger(this.favicons);
     });
   },
-  set_favicon: function(tab) {
+  set_favicon: function(tab, queryLength, i) {
     var domain = tab.url.split('/')[2];
     if (tab && tab.favIconUrl && !_.find(this.favicons, {domain: domain})) {
       var resize = new Promise((resolve, reject)=>{
@@ -776,12 +776,14 @@ export var faviconStore = Reflux.createStore({
           tab.domain = domain;
           this.favicons.push(tab);
           this.favIcons = _.uniqBy(this.favicons, 'domain');
-          _.defer(()=>{
-            chrome.storage.local.set({favicons: this.favicons}, (result)=> {
-              console.log('favicons saved: ',result);
-              this.trigger(this.favicons);
+          if (queryLength === i) {
+            _.defer(()=>{
+              chrome.storage.local.set({favicons: this.favicons}, (result)=> {
+                console.log('favicons saved: ',result);
+                this.trigger(this.favicons);
+              });
             });
-          });
+          }
         }
       }).catch(()=>{
         tab.favIconUrl = null;
@@ -874,7 +876,7 @@ export var sessionsStore = Reflux.createStore({
         if (opt === 'sync') {
           var syncedSession = _.filter(session.sessionData, { id: id, sync: true});
           console.log('syncedSession: ',syncedSession);
-          if (syncedSession) {
+          if (syncedSession && syncedSession.length > 0) {
             tabData.sync = _.first(syncedSession).sync;
             tabData.label = _.first(syncedSession).label;
           }

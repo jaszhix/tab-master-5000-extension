@@ -148,7 +148,7 @@ var Sessions = React.createClass({
                     {session.tabs.map((t, i)=>{
                       if (s.search.length === 0 || kmp(t.title.toLowerCase(), s.search) !== -1) {
                         if (!_.find(p.favicons, {domain: t.url.split('/')[2]})) {
-                          faviconStore.set_favicon(t);
+                          faviconStore.set_favicon(t, session.tabs.length, i);
                         }
                         var fvData = _.result(_.find(p.favicons, { domain: t.url.split('/')[2] }), 'favIconUrl');
                         return <Row onMouseEnter={()=>this.handleSelectedSessionTabHoverIn(i)} onMouseLeave={()=>this.handleSelectedSessionTabHoverOut(i)} key={i} style={i % 2 ? null : {backgroundColor: 'rgb(249, 249, 249)'}}>
@@ -175,7 +175,7 @@ var Sessions = React.createClass({
           <h4>Current Session</h4>
           {tabs.map((t, i)=>{
             if (!_.find(p.favicons, {domain: t.url.split('/')[2]})) {
-              faviconStore.set_favicon(t);
+              faviconStore.set_favicon(t, tabs.length, i);
             }
             var fvData = _.result(_.find(p.favicons, { domain: t.url.split('/')[2] }), 'favIconUrl');
             if (!p.settingsMax) {

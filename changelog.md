@@ -1,5 +1,40 @@
 #### Release Notes
 
+##### v0.13 / *1-26-16*
+
+*   Added favicon caching for tabs and sessions. Before, everytime you loaded a New Tab page, it would send an HTTP request to every website for the URL to its favicon file. Now, TM5K will only download the favicons once for each domain, and cache it in Chrome storage. 
+*   Added a loading indicator to the top bar for queries and favicon caching.
+*   Changed the top bar and side bar to a fixed position, so when you scroll down, all of the extension options are readily available.
+*   Changed the tile limit behavior from hiding tiles, to preventing their rendering. This increases the performance of TM5K when hundreds of tiles are being loaded in history, bookmarks, and session grid views. There is still a tile limit of 100, and scrolling to the bottom of the page loads 100 more tiles. When you search a view, all tiles will be searched still.
+*   Fixed the animation slowness when closing a duplicate tile.
+*   Fixed the right click context menu buttons not having a hover effect.
+*   Known issues
+  * Favicons take two render cycles in history and bookmarks grid views to render.
+  * Activating tabs in a Chrome window while a New Tab page is in another window will initially cause flickering rendering in the New Tab page.
+  * History, Bookmarks, and Session grid views have a noticeable lag when updates occur when hundreds of items are being queried from Chrome.
+  * Tab tiles will sometimes stop capturing screenshots in a Chrome window containing a New Tab page when tabs are being activated in another Chrome window.
+  * Switching between tabs quickly can cause tab tiles to capture an image of the New Tab page.
+  * Tab tile screenshots occassionaly do not render on initialization.
+  * The undo tab action functionality can lose track of tab action history occassionally.
+
+##### v0.12 / *1-24-16*
+
+*   Added a Session view mode. It will display all of the tabs in all of your saved sessions, and filter duplicates.
+*   Added a search feature to the Session manager.
+*   Fixed session synchronization losing sync of its target window when a session is restored.
+*   Fixed labeling not working on synchronized sessions.
+*   Fixed pulsing duplicate tiles switching to a transparent background, and changed the attention animation to a slow flash.
+*   Undoing the removal of a tab now keeps the New Tab page active when the tab is recreated.
+*   The New Tab page now gets captured less often in screenshot mode.
+*   Minor CSS improvements to the Session manager.
+*   Known issues
+  * Activating tabs in a Chrome window while a New Tab page is in another window will initially cause flickering rendering in the New Tab page.
+  * History, Bookmarks, and Session grid views have a noticeable lag when updates occur when hundreds of items are being queried from Chrome.
+  * Tab tiles will sometimes stop capturing screenshots in a Chrome window containing a New Tab page when tabs are being activated in another Chrome window.
+  * Switching between tabs quickly can cause tab tiles to capture an image of the New Tab page.
+  * Tab tile screenshots occassionaly do not render on initialization.
+  * The undo tab action functionality can lose track of tab action history occassionally.
+
 ##### v0.12 / *1-24-16*
 
 *   Added a Session view mode. It will display all of the tabs in all of your saved sessions, and filter duplicates.
