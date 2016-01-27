@@ -751,7 +751,10 @@ export var faviconStore = Reflux.createStore({
     if (tab && tab.favIconUrl && !_.find(this.favicons, {domain: domain})) {
       var resize = new Promise((resolve, reject)=>{
         var sourceImage = new Image();
-        sourceImage.onload = function() {
+        sourceImage.onerror = ()=>{
+          reject();
+        };
+        sourceImage.onload = ()=>{
           var imgWidth = sourceImage.width;
           var imgHeight = sourceImage.height;
           var canvas = document.createElement("canvas");
@@ -761,6 +764,8 @@ export var faviconStore = Reflux.createStore({
           var newDataUri = canvas.toDataURL('image/png');
           if (newDataUri) {
             resolve(newDataUri);
+          } else {
+            reject();
           }
         };
         sourceImage.src = utilityStore.filterFavicons(tab.favIconUrl, tab.url);
@@ -778,6 +783,17 @@ export var faviconStore = Reflux.createStore({
             });
           });
         }
+      }).catch(()=>{
+        tab.favIconUrl = null;
+        tab.domain = domain;
+        this.favicons.push(tab);
+        this.favIcons = _.uniqBy(this.favicons, 'domain');
+        _.defer(()=>{
+          chrome.storage.local.set({favicons: this.favicons}, (result)=> {
+            console.log('favicons saved: ',result);
+            this.trigger(this.favicons);
+          });
+        });
       });
     }
   },

@@ -75,7 +75,7 @@ var Tile = React.createClass({
       if (this.props.tab.title === 'New Tab') {
         this.closeNewTabs();
       }
-      this.handleTileLimit(p);
+      //this.handleTileLimit(p);
       var fvData = _.result(_.find(p.stores.favicons, { domain: p.tab.url.split('/')[2] }), 'favIconUrl');
       if (fvData) {
         this.setState({favicon: fvData});
@@ -94,7 +94,7 @@ var Tile = React.createClass({
         this.closeNewTabs();
       });
     }
-    this.handleTileLimit(p);
+    //this.handleTileLimit(p);
   },
   updateScreenshot(opt){
     var p = this.props;
@@ -161,14 +161,14 @@ var Tile = React.createClass({
       }
     } 
   },
-  handleTileLimit(props){
+  /*handleTileLimit(props){
     var p = props;
     if (p.i > p.tileLimit) {
       v('#tileMain-'+p.i).hide();
     } else {
       v('#tileMain-'+p.i).show();
     }
-  },
+  },*/
   checkDuplicateTabs(opt){
     var p = this.props;
     if (_.includes(duplicateTabs, p.tab.url)) {
@@ -695,7 +695,8 @@ var TileGrid = React.createClass({
       sortPriority: this.props.keys,
       title: true,
       sort: false,
-      render: true
+      render: true,
+      tileLimit: this.props.tileLimit
     };
   },
   componentDidMount(){
@@ -725,6 +726,10 @@ var TileGrid = React.createClass({
     }
   },
   componentWillReceiveProps(nextProps){
+    if (nextProps.tileLimit !== this.props.tileLimit) {
+      this.setState({render: false});
+      this.setState({tileLimit: nextProps.tileLimit, render: true});
+    }
     this.setState({data: nextProps.data});
     this.checkDuplicateTabs(this.props.data);
     if (nextProps.stores.prefs !== this.props.stores.prefs) {
@@ -793,14 +798,16 @@ var TileGrid = React.createClass({
         {p.sidebar ? <Sidebar prefs={p.stores.prefs} tabs={p.stores.tabs} labels={labels} width={p.width} collapse={p.collapse} ssBg={ssBg} /> : null}
         <div className="tile-div" style={p.sidebar ? p.collapse ? {marginLeft: '11%', width: '89%'} : {marginLeft: '13%', width: '87%'} : {width: '100%'}}>
           <div id="grid" ref="grid">
-              {s.data.map((data, i)=> {
-                if (!_.find(favicons, {domain: data.url.split('/')[2]})) {
-                  faviconStore.set_favicon(data);
+              {s.render ? s.data.map((data, i)=> {
+                if (i <= s.tileLimit) {
+                  if (!_.find(favicons, {domain: data.url.split('/')[2]})) {
+                    faviconStore.set_favicon(data);
+                  }
+                  return (
+                    <Tile sessions={p.sessions} stores={p.stores} render={p.render} i={i} key={data.id} tab={data} tileLimit={p.tileLimit} />
+                  );
                 }
-                return (
-                  <Tile sessions={p.sessions} stores={p.stores} render={p.render} i={i} key={data.id} tab={data} tileLimit={p.tileLimit} />
-                );
-              })}
+              }) : null}
           </div>
         </div>
       </div>

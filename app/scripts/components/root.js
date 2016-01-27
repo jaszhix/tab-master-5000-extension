@@ -89,9 +89,9 @@ var Search = React.createClass({
           <Col size="6">
             {searchStore.get_search().length > 3 ? <span className="search-msg ntg-search-google-text">Press Enter to Search Google</span> : null}
             <Btn style={{float: 'left'}} onClick={()=>modalStore.set_modal(true, 'settings')} className="ntg-top-btn" fa="cogs">Settings</Btn>
-            {p.event === 'newVersion' ? <Btn onClick={()=>chrome.runtime.reload()} className="ntg-update-avail-btn" fa="rocket">New Version Available</Btn> : null}
-            {p.event === 'versionUpdate' ? <Btn onClick={this.openAbout} className="ntg-update-btn" fa="info-circle">Updated to {utilityStore.get_manifest().version}</Btn> : null}
-            {p.event === 'installed' ? <Btn onClick={this.openAbout} className="ntg-ty-btn" fa="thumbs-o-up">Thank you for installing TM5K</Btn> : null}
+            {p.event === 'newVersion' ? <Btn onClick={()=>chrome.runtime.reload()} style={{float: 'left'}} className="ntg-update-avail-btn" fa="rocket">New Version Available</Btn> : null}
+            {p.event === 'versionUpdate' ? <Btn onClick={this.openAbout} style={{float: 'left'}} className="ntg-update-btn" fa="info-circle">Updated to {utilityStore.get_manifest().version}</Btn> : null}
+            {p.event === 'installed' ? <Btn onClick={this.openAbout} style={{float: 'left'}} className="ntg-ty-btn" fa="thumbs-o-up">Thank you for installing TM5K</Btn> : null}
             {p.topLoad ? <Loading top={true} /> : null}
             {p.event === 'dlFavicons' && p.topLoad ? <div><p className="tm5k-info"> Downloading and caching favicons...</p></div> : null}
           </Col>  
@@ -126,6 +126,7 @@ var Root = React.createClass({
       load: true,
       topLoad: false,
       tileLimit: 100,
+      oldTileLimit: 100,
       sessions: [],
       favicons: faviconStore.get_favicon()
     };
@@ -275,12 +276,15 @@ var Root = React.createClass({
       }
     });
   },
-  searchChanged() {
+  searchChanged(e) {
     // Trigger Root component re-render when a user types in the search box.
     clickStore.set_click(true);
-    this.setState({
-      search: searchStore.get_search()
-    });
+    this.setState({search: e});
+    if (e.length > 0 ) {
+      this.setState({oldTileLimit: this.state.tileLimit,tileLimit: 99999});
+    } else {
+      this.setState({tileLimit: this.state.oldTileLimit});
+    }
   },
   settingsChange(){
     this.setState({settings: true});
