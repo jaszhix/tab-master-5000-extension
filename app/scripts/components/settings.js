@@ -5,7 +5,7 @@ import moment from 'moment';
 import _ from 'lodash';
 import kmp from 'kmp';
 
-import {sessionsStore, clickStore, modalStore, settingsStore, utilityStore} from './stores/main';
+import {faviconStore, sessionsStore, clickStore, modalStore, settingsStore, utilityStore} from './stores/main';
 import prefsStore from './stores/prefs';
 import tabStore from './stores/tab';
 
@@ -50,6 +50,9 @@ var Sessions = React.createClass({
   },
   componentWillReceiveProps(nextProps){
     this.setState({tabs: nextProps.tabs});
+  },
+  componentWillUnmount(){
+    faviconStore.clean();
   },
   labelSession(session){
     console.log(session);
@@ -144,9 +147,13 @@ var Sessions = React.createClass({
                         onChange={(e)=>this.setState({search: e.target.value})} /> : null}
                     {session.tabs.map((t, i)=>{
                       if (s.search.length === 0 || kmp(t.title.toLowerCase(), s.search) !== -1) {
+                        if (!_.find(p.favicons, {domain: t.url.split('/')[2]})) {
+                          faviconStore.set_favicon(t);
+                        }
+                        var fvData = _.result(_.find(p.favicons, { domain: t.url.split('/')[2] }), 'favIconUrl');
                         return <Row onMouseEnter={()=>this.handleSelectedSessionTabHoverIn(i)} onMouseLeave={()=>this.handleSelectedSessionTabHoverOut(i)} key={i} style={i % 2 ? null : {backgroundColor: 'rgb(249, 249, 249)'}}>
                             <Col size="9">
-                              <img className="ntg-small-favicon" src={t.favIconUrl ? utilityStore.filterFavicons(t.favIconUrl, t.url) : '../images/file_paper_blank_document.png' } /> 
+                              <img className="ntg-small-favicon" src={fvData ? fvData : '../images/file_paper_blank_document.png' } /> 
                               {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {p.settingsMax ? t.title : _.truncate(t.title, {length: 40})}
                             </Col>
                             <Col size="3">
@@ -167,16 +174,20 @@ var Sessions = React.createClass({
         <Col size="5" className="session-col">
           <h4>Current Session</h4>
           {tabs.map((t, i)=>{
+            if (!_.find(p.favicons, {domain: t.url.split('/')[2]})) {
+              faviconStore.set_favicon(t);
+            }
+            var fvData = _.result(_.find(p.favicons, { domain: t.url.split('/')[2] }), 'favIconUrl');
             if (!p.settingsMax) {
               if (i <= 24) {
                 return <Row key={i} style={i % 2 ? null : {backgroundColor: 'rgb(249, 249, 249)'}}>
-                  <img className="ntg-small-favicon" src={t.favIconUrl ? utilityStore.filterFavicons(t.favIconUrl, t.url) : '../images/file_paper_blank_document.png' } />  
+                  <img className="ntg-small-favicon" src={fvData ? fvData : '../images/file_paper_blank_document.png' } />  
                   {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {_.truncate(t.title, {length: 50})}
                 </Row>;
               }
             } else {
               return <Row key={i} style={i % 2 ? null : {backgroundColor: 'rgb(249, 249, 249)'}}>
-                <img className="ntg-small-favicon" src={t.favIconUrl ? utilityStore.filterFavicons(t.favIconUrl, t.url) : '../images/file_paper_blank_document.png' } />  
+                <img className="ntg-small-favicon" src={fvData ? fvData : '../images/file_paper_blank_document.png' } />  
                 {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {p.settingsMax ? t.title : _.truncate(t.title, {length: 50})}
               </Row>;
             } 
@@ -277,7 +288,7 @@ var Settings = React.createClass({
             <Btn style={s.settingsMax ? {top: '1%', right: '3%'} : {top: '16%', right: '12%'}} className="ntg-modal-btn-close" fa={s.settingsMax ? "clone" : "square-o"} onClick={this.handleMaxBtn} />
           </Row>
           <Row className="ntg-settings-pane">
-            {sessions ? <Sessions settingsMax={s.settingsMax} sessions={p.sessions} tabs={p.tabs} prefs={p.prefs} collapse={p.collapse} /> : null}
+            {sessions ? <Sessions settingsMax={s.settingsMax} sessions={p.sessions} tabs={p.tabs} prefs={p.prefs} favicons={p.favicons} collapse={p.collapse} /> : null}
             {preferences ? <Preferences settingsMax={s.settingsMax} prefs={p.prefs} tabs={p.tabs} /> : null}
             {about ? <About settingsMax={s.settingsMax} /> : null}
           </Row>

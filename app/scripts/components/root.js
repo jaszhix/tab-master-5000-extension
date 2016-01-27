@@ -6,7 +6,7 @@ import ReactUtils from 'react-utils';
 import v from 'vquery';
 import '../../styles/app.scss';
 window.v = v;
-import {sessionsStore, actionStore, historyStore, bookmarksStore, relayStore, sidebarStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore} from './stores/main';
+import {faviconStore, sessionsStore, actionStore, historyStore, bookmarksStore, relayStore, sidebarStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore} from './stores/main';
 import prefsStore from './stores/prefs';
 import tabStore from './stores/tab';
 
@@ -122,7 +122,8 @@ var Root = React.createClass({
       prefs: [],
       load: true,
       tileLimit: 100,
-      sessions: []
+      sessions: [],
+      favicons: faviconStore.get_favicon()
     };
   },
   componentWillMount(){
@@ -139,6 +140,7 @@ var Root = React.createClass({
     this.listenTo(prefsStore, this.prefsChange);
     this.listenTo(actionStore, this.actionsChange);
     this.listenTo(sessionsStore, this.sessionsChange);
+    this.listenTo(faviconStore, this.faviconsChange);
 
     console.log('Chrome Version: ',utilityStore.chromeVersion());
     console.log('Manifest: ', utilityStore.get_manifest());
@@ -179,6 +181,9 @@ var Root = React.createClass({
         this.handleErrorReporting(e, s.chromeVersion);
       }
     }
+  },
+  faviconsChange(e){
+    this.setState({favicons: e});
   },
   handleErrorReporting(e, version){
     var Parse = require('parse');
@@ -392,12 +397,12 @@ var Root = React.createClass({
     var context = contextStore.get_context();
     var relay = relayStore.get_relay();
     var windowId = utilityStore.get_window();
-    var stores = {tabs: tabs, newTabs: newTabs, prefs: s.prefs, search: search, cursor: cursor, chromeVersion: s.chromeVersion, relay: relay, windowId: windowId};
+    var stores = {tabs: tabs, favicons: s.favicons, newTabs: newTabs, prefs: s.prefs, search: search, cursor: cursor, chromeVersion: s.chromeVersion, relay: relay, windowId: windowId};
     return (
       <div className="container-main">
         {s.load ? <Loading /> : <div>
           {s.context ? <ContextMenu actions={s.actions} tabs={s.tabs} prefs={s.prefs} cursor={cursor} context={context} chromeVersion={s.chromeVersion}/> : null}
-          <ModalHandler tabs={s.prefs.mode === 'tabs' ? s.tabs : tabStore.get_altTab()} sessions={s.sessions} prefs={s.prefs} collapse={s.collapse} />
+          <ModalHandler tabs={s.prefs.mode === 'tabs' ? s.tabs : tabStore.get_altTab()} sessions={s.sessions} prefs={s.prefs} favicons={s.favicons} collapse={s.collapse} />
             {s.tabs ? <div className="tile-container">
                 {s.settings ? <Search event={s.event} prefs={s.prefs} /> : null}
                 <div className="tile-child-container">

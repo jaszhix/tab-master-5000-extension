@@ -8,7 +8,7 @@ import moment from 'moment';
 import Draggable from 'react-draggable';
 import utils from './utils';
 
-import {sessionsStore, actionStore, bookmarksStore, dupeStore, reRenderStore, searchStore, applyTabOrderStore, utilityStore, contextStore, relayStore, dragStore, draggedStore} from './stores/main';
+import {faviconStore, sessionsStore, actionStore, bookmarksStore, dupeStore, reRenderStore, searchStore, applyTabOrderStore, utilityStore, contextStore, relayStore, dragStore, draggedStore} from './stores/main';
 import prefsStore from './stores/prefs';
 import screenshotStore from './stores/screenshot';
 import tabStore from './stores/tab';
@@ -38,6 +38,7 @@ var Tile = React.createClass({
       drag: null,
       dragged: null,
       screenshot: null,
+      favicon: null,
       folder: true,
       openTab: false,
       bookmarks: false,
@@ -75,6 +76,10 @@ var Tile = React.createClass({
         this.closeNewTabs();
       }
       this.handleTileLimit(p);
+      var fvData = _.result(_.find(p.stores.favicons, { domain: p.tab.url.split('/')[2] }), 'favIconUrl');
+      if (fvData) {
+        this.setState({favicon: fvData});
+      }
     }
   },
   initMethods(){
@@ -111,6 +116,14 @@ var Tile = React.createClass({
       if (p.tab.active) {
         setScreeenshot();
       }
+    }
+  },
+  updateFavicon(e){
+    var p = this.props;
+    var fvIndex = faviconStore.get_favicon();
+    var fvData = _.result(_.find(fvIndex, { domain: p.tab.url.split('/')[2] }), 'favIconUrl');
+    if (fvData) {
+      this.setState({favicon: fvData});
     }
   },
   setTabMode(){
@@ -567,7 +580,7 @@ var Tile = React.createClass({
                       : null}
                     </div>
                     <Row>
-                      <img className="ntg-favicon" src={p.tab.favIconUrl ? utilityStore.filterFavicons(p.tab.favIconUrl, p.tab.url) : '../images/file_paper_blank_document.png' } />
+                      <img className="ntg-favicon" src={s.favicon ? s.favicon : '../images/file_paper_blank_document.png' } />
                     </Row>
                   </Col>
                   <Col size="9" onClick={!s.bookmarks ? ()=>this.handleClick(p.tab.id) : null} className="ntg-title-container">
@@ -688,6 +701,7 @@ var TileGrid = React.createClass({
   componentDidMount(){
     this.prefsInit(this.props);
     this.checkDuplicateTabs(this.props.data);
+    //faviconStore.triggerFavicons();
   },
   componentWillUnmount(){
     utilityStore.reloadBg();
@@ -754,6 +768,7 @@ var TileGrid = React.createClass({
   render: function() {
     var p = this.props;
     var s = this.state;
+    var favicons = faviconStore.get_favicon();
     var ssBg = p.stores.prefs && p.stores.prefs.screenshot && p.stores.prefs.screenshotBg;
     var buttonTransparent = {backgroundColor: 'rgba(237, 237, 237, 0.8)'};
     var labels = p.keys.map((key)=> {
@@ -779,6 +794,9 @@ var TileGrid = React.createClass({
         <div className="tile-div" style={p.stores.prefs.sidebar ? p.collapse ? {width: '89%'} : {width: '87%'} : {width: '100%'}}>
           <div id="grid" ref="grid">
               {s.data.map((data, i)=> {
+                if (!_.find(favicons, {domain: data.url.split('/')[2]})) {
+                  faviconStore.set_favicon(data);
+                }
                 return (
                   <Tile sessions={p.sessions} stores={p.stores} render={p.render} i={i} key={data.id} tab={data} tileLimit={p.tileLimit} />
                 );

@@ -721,6 +721,84 @@ export var actionStore = Reflux.createStore({
   }
 });
 
+export var faviconStore = Reflux.createStore({
+  init: function() {
+    //this.favicons = [];
+    var getFavicons = new Promise((resolve, reject)=>{
+      chrome.storage.local.get('favicons', (fv)=>{
+        if (fv && fv.favicons) {
+          resolve(fv);
+        } else {
+          reject();
+        }
+      });
+    });
+    getFavicons.then((fv)=>{
+      console.log('load favicons');
+      this.favicons = fv.favicons;
+      this.trigger(this.favicons);
+    }).catch(()=>{
+      console.log('init favicons');
+      this.favicons = [];
+      chrome.storage.local.set({favicons: this.favicons}, (result)=> {
+        console.log('Init favicons saved: ',result);
+      });
+      this.trigger(this.favicons);
+    });
+  },
+  set_favicon: function(tab) {
+    var domain = tab.url.split('/')[2];
+    if (tab && tab.favIconUrl && !_.find(this.favicons, {domain: domain})) {
+      var resize = new Promise((resolve, reject)=>{
+        var sourceImage = new Image();
+        sourceImage.onload = function() {
+          var imgWidth = sourceImage.width;
+          var imgHeight = sourceImage.height;
+          var canvas = document.createElement("canvas");
+          canvas.width = imgWidth;
+          canvas.height = imgHeight;
+          canvas.getContext("2d").drawImage(sourceImage, 0, 0, imgWidth, imgHeight);
+          var newDataUri = canvas.toDataURL('image/png');
+          if (newDataUri) {
+            resolve(newDataUri);
+          }
+        };
+        sourceImage.src = utilityStore.filterFavicons(tab.favIconUrl, tab.url);
+      });
+      resize.then((img)=>{
+        if (img) {
+          tab.favIconUrl = img;
+          tab.domain = domain;
+          this.favicons.push(tab);
+          this.favIcons = _.uniqBy(this.favicons, 'domain');
+          _.defer(()=>{
+            chrome.storage.local.set({favicons: this.favicons}, (result)=> {
+              console.log('Init favicons saved: ',result);
+              this.trigger(this.favicons);
+            });
+          });
+        }
+      });
+    }
+  },
+  get_favicon: function() {
+    return this.favicons;
+  },
+  clean(){
+    for (var i = this.favicons.length - 1; i >= 0; i--) {
+      if (!this.favicons[i]) {
+        this.favicons = _.without(this.favicons, this.favicons[i]);
+      }
+    }
+    chrome.storage.local.set({favicons: this.favicons}, (result)=> {
+      console.log('cleaned dud favicon entries: ',result);
+    });
+  },
+  triggerFavicons(){
+    this.trigger(this.favicons);
+  }
+});
+
 export var sessionsStore = Reflux.createStore({
   init: function() {
     this.load();
