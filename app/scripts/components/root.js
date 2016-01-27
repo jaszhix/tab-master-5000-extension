@@ -18,8 +18,9 @@ import priv from './priv';
 
 var Loading = React.createClass({
   render: function() {
+    var topStyle = {width: '20px', height: '20px', margin: 'inherit', float: 'left', marginRight: '4px', marginTop: '7px'};
     return (
-      <div className="sk-cube-grid">
+      <div style={this.props.top ? topStyle : null} className="sk-cube-grid">
         <div className="sk-cube sk-cube1"></div>
         <div className="sk-cube sk-cube2"></div>
         <div className="sk-cube sk-cube3"></div>
@@ -65,7 +66,7 @@ var Search = React.createClass({
   render: function() {
     var p = this.props;
     return (
-      <Container fluid={true} style={p.prefs && p.prefs.screenshot && p.prefs.screenshotBg ? {backgroundColor: 'rgba(237, 237, 237, 0.8)'} : null} className="ntg-form">
+      <Container fluid={true} style={p.prefs && p.prefs.screenshot && p.prefs.screenshotBg ? {backgroundColor: 'rgba(237, 237, 237, 0.8)', position: 'fixed', top: '0', width: '100%', zIndex: '2'} : {position: 'fixed', top: '0', width: '100%', zIndex: '2'}} className="ntg-form">
         <Row>
           <Col size="6">
             <Col size="1">
@@ -91,6 +92,8 @@ var Search = React.createClass({
             {p.event === 'newVersion' ? <Btn onClick={()=>chrome.runtime.reload()} className="ntg-update-avail-btn" fa="rocket">New Version Available</Btn> : null}
             {p.event === 'versionUpdate' ? <Btn onClick={this.openAbout} className="ntg-update-btn" fa="info-circle">Updated to {utilityStore.get_manifest().version}</Btn> : null}
             {p.event === 'installed' ? <Btn onClick={this.openAbout} className="ntg-ty-btn" fa="thumbs-o-up">Thank you for installing TM5K</Btn> : null}
+            {p.topLoad ? <Loading top={true} /> : null}
+            {p.event === 'dlFavicons' && p.topLoad ? <div><p className="tm5k-info"> Downloading and caching favicons...</p></div> : null}
           </Col>  
         </Row>
       </Container>
@@ -98,7 +101,7 @@ var Search = React.createClass({
   }
 });
 
-var synchronizeSession = _.throttle(sessionsStore.save, 1500, {leading: true})
+var synchronizeSession = _.throttle(sessionsStore.save, 1500, {leading: true});
 var Root = React.createClass({
   mixins: [
     Reflux.ListenerMixin,
@@ -121,6 +124,7 @@ var Root = React.createClass({
       chromeVersion: utilityStore.chromeVersion(),
       prefs: [],
       load: true,
+      topLoad: false,
       tileLimit: 100,
       sessions: [],
       favicons: faviconStore.get_favicon()
@@ -183,7 +187,8 @@ var Root = React.createClass({
     }
   },
   faviconsChange(e){
-    this.setState({favicons: e});
+    this.setState({favicons: e, event: 'dlFavicons', topLoad: true});
+    _.defer(()=>this.setState({event: '', topLoad: false}));
   },
   handleErrorReporting(e, version){
     var Parse = require('parse');
@@ -203,6 +208,7 @@ var Root = React.createClass({
   },
   captureTabs(opt) {
     var s = this.state;
+    this.setState({topLoad: true});
     // Query current Chrome window for tabs.
     tabStore.promise().then((Tab)=>{
       if (opt !== 'init') {
@@ -257,6 +263,7 @@ var Root = React.createClass({
    
       }
       console.log(Tab);
+      this.setState({topLoad: false});
       v('#main').css({cursor: 'default'});
       // Querying is complete, allow the component to render.
       if (opt === 'init' || opt === 'drag' || opt === 'prefs') {
@@ -404,8 +411,8 @@ var Root = React.createClass({
           {s.context ? <ContextMenu actions={s.actions} tabs={s.tabs} prefs={s.prefs} cursor={cursor} context={context} chromeVersion={s.chromeVersion}/> : null}
           <ModalHandler tabs={s.prefs.mode === 'tabs' ? s.tabs : tabStore.get_altTab()} sessions={s.sessions} prefs={s.prefs} favicons={s.favicons} collapse={s.collapse} />
             {s.tabs ? <div className="tile-container">
-                {s.settings ? <Search event={s.event} prefs={s.prefs} /> : null}
-                <div className="tile-child-container">
+                {s.settings ? <Search event={s.event} prefs={s.prefs} topLoad={s.topLoad} /> : null}
+                <div style={{marginTop: '65px'}} className="tile-child-container">
                   {s.render ? this.tileGrid(stores) : <Loading />}
               </div></div> : null}
           </div>}

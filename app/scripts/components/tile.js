@@ -650,7 +650,7 @@ var Sidebar = React.createClass({
     var s = this.state;
     var iconCollapse = p.width <= 1135;
     return (
-      <div className="side-div" style={p.collapse ? {width: '11%'} : {width: '13%'}}>
+      <div className="side-div" style={p.collapse ? {width: '11%', position: 'fixed'} : {width: '13%', position: 'fixed'}}>
         <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleSort} className="ntg-apply-btn" fa="sort-amount-asc">{p.collapse ? 'Sort Tabs' : 'Sort'}</Btn>
         {s.sort ? <div>
             {p.labels}
@@ -791,7 +791,7 @@ var TileGrid = React.createClass({
     return (
       <div className="tile-body">
         {p.sidebar ? <Sidebar prefs={p.stores.prefs} tabs={p.stores.tabs} labels={labels} width={p.width} collapse={p.collapse} ssBg={ssBg} /> : null}
-        <div className="tile-div" style={p.stores.prefs.sidebar ? p.collapse ? {width: '89%'} : {width: '87%'} : {width: '100%'}}>
+        <div className="tile-div" style={p.sidebar ? p.collapse ? {marginLeft: '11%', width: '89%'} : {marginLeft: '13%', width: '87%'} : {width: '100%'}}>
           <div id="grid" ref="grid">
               {s.data.map((data, i)=> {
                 if (!_.find(favicons, {domain: data.url.split('/')[2]})) {

@@ -773,7 +773,7 @@ export var faviconStore = Reflux.createStore({
           this.favIcons = _.uniqBy(this.favicons, 'domain');
           _.defer(()=>{
             chrome.storage.local.set({favicons: this.favicons}, (result)=> {
-              console.log('Init favicons saved: ',result);
+              console.log('favicons saved: ',result);
               this.trigger(this.favicons);
             });
           });
