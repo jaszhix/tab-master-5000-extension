@@ -416,7 +416,7 @@ var Root = React.createClass({
           <ModalHandler tabs={s.prefs.mode === 'tabs' ? s.tabs : tabStore.get_altTab()} sessions={s.sessions} prefs={s.prefs} favicons={s.favicons} collapse={s.collapse} />
             {s.tabs ? <div className="tile-container">
                 {s.settings ? <Search event={s.event} prefs={s.prefs} topLoad={s.topLoad} /> : null}
-                <div style={{marginTop: '65px'}} className="tile-child-container">
+                <div style={{marginTop: '67px'}} className="tile-child-container">
                   {s.render ? this.tileGrid(stores) : <Loading />}
               </div></div> : null}
           </div>}
