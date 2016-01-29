@@ -26,14 +26,15 @@ var screenshotStore = Reflux.createStore({
     });
   },
   capture(id, wid){
-    var title = _.result(_.find(tabs(), { id: id }), 'title');
+    var tab = _.find(tabs(), { id: id });
+    var title = _.result(tab, 'title');
     var getScreenshot = new Promise((resolve, reject)=>{
       if (!this.invoked) {
         this.invoked = true;
         chrome.runtime.sendMessage({method: 'captureTabs'}, (response) => {
           console.log('response image: ',response);
           if (response) {
-            if (response.image && title !== 'New Tab') {
+            if (response.image) {
               resolve(response.image);
             } else {
               reject();
@@ -87,8 +88,7 @@ var screenshotStore = Reflux.createStore({
           });
         }).catch(()=>{
           this.invoked = false;
-          this.capture(id);
-          _.defer(()=>utilityStore.restartNewTab());
+          _.defer(()=>chrome.tabs.update(id, {active: true}));
         });
       }
     }

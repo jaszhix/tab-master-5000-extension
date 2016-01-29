@@ -32,7 +32,7 @@ var getPrefs = new Promise((resolve, reject)=>{
     }
   });
 });
-/*var getTabs = new Promise((resolve, reject)=>{
+var getTabs = new Promise((resolve, reject)=>{
   chrome.tabs.query({
     windowId: chrome.windows.WINDOW_ID_CURRENT,
     currentWindow: true
@@ -41,7 +41,7 @@ var getPrefs = new Promise((resolve, reject)=>{
       resolve(Tab);
     }
   });
-});*/
+});
 getPrefs.then((prefs)=>{
   if (prefs.mode !== 'tabs') {
     chrome.tabs.onUpdated.removeListener(()=>{
@@ -125,7 +125,7 @@ getPrefs.then((prefs)=>{
     if (msg.method === 'captureTabs') {
       var capture = new Promise((resolve, reject)=>{
         chrome.tabs.captureVisibleTab({format: 'jpeg', quality: 10}, (image)=> {
-          if (image) {
+          if (image && !sender.active) {
             resolve(image);
           } else {
             reject();
@@ -133,7 +133,6 @@ getPrefs.then((prefs)=>{
         });
       });
       capture.then((image)=>{
-        console.log(image);
         sendResponse({'image': image});
         reload('Refreshing bg...');
       }).catch(()=>{

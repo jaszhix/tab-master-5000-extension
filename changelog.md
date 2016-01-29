@@ -9,9 +9,6 @@
 *   Fixed the animation slowness when closing a duplicate tile.
 *   Fixed the right click context menu buttons not having a hover effect.
 *   Known issues
-  * Favicons take two render cycles in history and bookmarks grid views to render.
-  * Activating tabs in a Chrome window while a New Tab page is in another window will initially cause flickering rendering in the New Tab page.
-  * History, Bookmarks, and Session grid views have a noticeable lag when updates occur when hundreds of items are being queried from Chrome.
   * Tab tiles will sometimes stop capturing screenshots in a Chrome window containing a New Tab page when tabs are being activated in another Chrome window.
   * Switching between tabs quickly can cause tab tiles to capture an image of the New Tab page.
   * Tab tile screenshots occassionaly do not render on initialization.
