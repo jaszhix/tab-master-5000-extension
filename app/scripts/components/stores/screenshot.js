@@ -31,7 +31,7 @@ var screenshotStore = Reflux.createStore({
     var getScreenshot = new Promise((resolve, reject)=>{
       if (!this.invoked) {
         this.invoked = true;
-        chrome.runtime.sendMessage({method: 'captureTabs'}, (response) => {
+        chrome.runtime.sendMessage({method: 'captureTabs', id: id}, (response) => {
           console.log('response image: ',response);
           if (response) {
             if (response.image) {

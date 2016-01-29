@@ -139,7 +139,7 @@ var Preferences = React.createClass({
   },
   handleClick(opt){
     prefsStore.set_prefs(opt,!this.state[opt]);
-    reRenderStore.set_reRender(true, 'prefs', this.props.tabs[0].id);
+    reRenderStore.set_reRender(true, 'cycle', this.props.tabs[0].id);
   },
   render: function() {
     var s = this.state;

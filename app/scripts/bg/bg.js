@@ -125,7 +125,7 @@ getPrefs.then((prefs)=>{
     if (msg.method === 'captureTabs') {
       var capture = new Promise((resolve, reject)=>{
         chrome.tabs.captureVisibleTab({format: 'jpeg', quality: 10}, (image)=> {
-          if (image && !sender.active) {
+          if (image) {
             resolve(image);
           } else {
             reject();
@@ -136,7 +136,12 @@ getPrefs.then((prefs)=>{
         sendResponse({'image': image});
         reload('Refreshing bg...');
       }).catch(()=>{
-        sendMsg({e: sender.id, type: 'error'});
+        if (prefs.mode !== 'tabs') {
+          chrome.tabs.update(msg.id, {active: true})
+          reload('Screenshot capture error.');
+        } else {
+          sendMsg({e: sender.id, type: 'error'});
+        }
         //reload('Screenshot capture error.');
       });
     } else if (msg.method === 'close') {

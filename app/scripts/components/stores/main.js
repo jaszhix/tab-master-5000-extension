@@ -31,7 +31,7 @@ var reRender = (type, id) => {
   if (type === 'create' || type === 'activate') {
     actionStore.set_action(type, id);
     active = id.windowId;
-  } else if (type === 'bookmarks' || type === 'history' || type === 'prefs') {
+  } else if (type === 'bookmarks' || type === 'history' || type === 'tile') {
     active = utilityStore.get_window();
   } else {
     item = _.find(tabs(), { id: id });
@@ -81,8 +81,12 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           if (prefs.mode === 'history') {
             throttled.screenshot(msg.e.tabId, msg.e.windowId);
             _.defer(()=>{
-              reRenderStore.set_reRender(true, 'activate', msg.e.tabId);
+              reRenderStore.set_reRender(true, 'tile', msg.e.tabId);
             });
+          } else if (prefs.mode === 'sessions') {
+            throttled.screenshot(msg.e.tabId, msg.e.windowId);
+              reRenderStore.set_reRender(true, 'activate', msg.e.tabId);
+            _.defer(()=>reRenderStore.set_reRender(true, 'cycle', msg.e.tabId));
           } else {
             throttled.screenshot(msg.e.tabId, msg.e.windowId);
             reRender('bookmarks', msg.e);
@@ -991,7 +995,6 @@ export var sessionsStore = Reflux.createStore({
       }
       allTabs.push(this.sessions[i].tabs);
     }
-    allTabs = _.orderBy(allTabs, ['sTimeStamp'], ['asc']);
     allTabs = _.flatten(allTabs);
     allTabs = _.uniqBy(allTabs, 'url');
     allTabs = _.orderBy(allTabs, ['openTab'], ['asc']);

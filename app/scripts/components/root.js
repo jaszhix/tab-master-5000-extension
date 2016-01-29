@@ -113,6 +113,7 @@ var Root = React.createClass({
       init: true,
       tabs: [],
       render: false,
+      grid: true,
       search: '',
       window: true,
       settings: true,
@@ -215,8 +216,11 @@ var Root = React.createClass({
       if (opt !== 'init') {
         v('#main').css({cursor: 'wait'});
         // Render state is toggled to false on the subsequent re-renders only.
-        if (opt === 'drag' || opt === 'prefs') {
+        // tile opt forces the tiles to update, cycle forces the grid to update.
+        if (opt === 'tile') {
           this.setState({render: false});
+        } else if (opt === 'cycle') {
+          this.setState({grid: false});
         }
       }
       utilityStore.set_window(Tab[0].windowId);
@@ -267,12 +271,14 @@ var Root = React.createClass({
       this.setState({topLoad: false});
       v('#main').css({cursor: 'default'});
       // Querying is complete, allow the component to render.
-      if (opt === 'init' || opt === 'drag' || opt === 'prefs') {
+      if (opt === 'init' || opt === 'tile') {
         this.setState({render: true});
         if (opt === 'init') {
           this.setState({load: false});
           actionStore.set_state(false);
         }
+      } else if (opt === 'cycle') {
+        this.setState({grid: true});
       }
     });
   },
@@ -374,7 +380,7 @@ var Root = React.createClass({
         data={s.tabs}
         keys={keys}
         labels={labels}
-        render={true}
+        render={s.render}
         collapse={s.collapse}
         width={s.width}
         sidebar={s.sidebar}
@@ -417,7 +423,7 @@ var Root = React.createClass({
             {s.tabs ? <div className="tile-container">
                 {s.settings ? <Search event={s.event} prefs={s.prefs} topLoad={s.topLoad} /> : null}
                 <div style={{marginTop: '67px'}} className="tile-child-container">
-                  {s.render ? this.tileGrid(stores) : <Loading />}
+                  {s.grid ? this.tileGrid(stores) : <Loading />}
               </div></div> : null}
           </div>}
       </div>
