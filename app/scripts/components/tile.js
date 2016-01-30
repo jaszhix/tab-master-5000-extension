@@ -479,7 +479,7 @@ var Tile = React.createClass({
     console.log('drag clone',clone.attributes);
     clone.classList.add('tileClone');
     console.log('clone: ',clone);
-    var original = v('#tileMain-'+p.i).node();
+    var original = this.refs.tileMain;
     v('#grid').insertBefore(clone, original);
     v('#main').append(original);
     console.log('Event: ', e, ui);
@@ -498,7 +498,7 @@ var Tile = React.createClass({
     var p = this.props;
     v('#tileMain-'+p.i).hide();
     // Move the tile element back to #grid where it belongs.
-    v('#grid').append(v('#tileMain-'+p.i).node());
+    v('#grid').append(this.refs.tileMain);
     console.log('Event: ', e, ui);
     console.log('Stop Position: ', ui.position);
     tileDrag = false;
@@ -508,7 +508,7 @@ var Tile = React.createClass({
     var draggedOver = dragStore.get_tabIndex();
     chrome.tabs.move(dragged.id, {index: draggedOver.index}, (t)=>{
       console.log('moved: ',t);
-      reRenderStore.set_reRender(true, 'cycle', dragged.id);
+      reRenderStore.set_reRender(true, 'cycle', dragged.id)
       v('.tileClone').remove();
     });
   },
