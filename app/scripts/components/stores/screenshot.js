@@ -12,7 +12,6 @@ var screenshotStore = Reflux.createStore({
         console.log(msg);
       });
     };
-    this.invoked = false;
     chrome.storage.local.get('screenshots', (shots)=>{
       if (shots && shots.screenshots) {
         this.index = shots.screenshots;
@@ -29,19 +28,16 @@ var screenshotStore = Reflux.createStore({
     var tab = _.find(tabs(), { id: id });
     var title = _.result(tab, 'title');
     var getScreenshot = new Promise((resolve, reject)=>{
-      if (!this.invoked) {
-        this.invoked = true;
-        chrome.runtime.sendMessage({method: 'captureTabs', id: id}, (response) => {
-          console.log('response image: ',response);
-          if (response) {
-            if (response.image) {
-              resolve(response.image);
-            } else {
-              reject();
-            }
+      chrome.runtime.sendMessage({method: 'captureTabs', id: id}, (response) => {
+        console.log('response image: ',response);
+        if (response) {
+          if (response.image) {
+            resolve(response.image);
+          } else {
+            reject();
           }
-        });
-      }
+        }
+      });
     });
     if (title !== 'New Tab' && prefsStore.get_prefs().screenshot) {
       var ssUrl = _.result(_.find(tabs(), { id: id }), 'url');
@@ -69,25 +65,21 @@ var screenshotStore = Reflux.createStore({
             screenshot.data = image;
             console.log('screenshot: ', ssUrl, image);
             var urlInIndex = _.result(_.find(this.index, { url: ssUrl }), 'url');
-            console.log('urlInIndex: ',urlInIndex);
             if (urlInIndex) {
               var dataInIndex = _.map(_.filter(this.index, { url: ssUrl }), 'data');
               var timeInIndex = _.map(_.filter(this.index, { url: ssUrl }), 'timeStamp');
               var index = _.findIndex(this.index, { 'url': ssUrl, 'data': _.last(dataInIndex), timeStamp: _.last(timeInIndex) });
               var newIndex = _.remove(this.index, this.index[index]);
               this.index = _.without(this.index, newIndex);
-              console.log('newIndex',newIndex, this.index);
             }
             this.index.push(screenshot);
             this.index = _.uniqBy(this.index, 'url');
             this.index = _.uniqBy(this.index, 'data');
             chrome.storage.local.set({screenshots: this.index}, ()=>{
-              this.invoked = false;
               this.trigger(this.index);
             });
           });
         }).catch(()=>{
-          this.invoked = false;
           _.defer(()=>chrome.tabs.update(id, {active: true}));
         });
       }
