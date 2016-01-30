@@ -8,7 +8,7 @@ import moment from 'moment';
 import Draggable from 'react-draggable';
 import utils from './utils';
 
-import {faviconStore, sessionsStore, actionStore, bookmarksStore, dupeStore, reRenderStore, applyTabOrderStore, utilityStore, contextStore, relayStore, dragStore, draggedStore} from './stores/main';
+import {faviconStore, sessionsStore, actionStore, bookmarksStore, dupeStore, reRenderStore, applyTabOrderStore, utilityStore, contextStore, dragStore, draggedStore} from './stores/main';
 import prefsStore from './stores/prefs';
 import tabStore from './stores/tab';
 
@@ -48,7 +48,6 @@ var Tile = React.createClass({
   },
   componentDidMount() {
     this.listenTo(applyTabOrderStore, this.applyTabOrder);
-    this.listenTo(relayStore, this.handleRelays);
     if (this.props.stores.prefs.mode === 'bookmarks') {
       this.listenTo(bookmarksStore, this.bookmarksFolderChange);
     }
@@ -76,6 +75,9 @@ var Tile = React.createClass({
       }
       if (p.stores.search !== this.props.stores.search) {
         this.filterTabs(null, p);
+      }
+      if (p.stores.relay !== this.props.stores.relay) {
+        this.handleRelays(p);
       }
     }
   },
@@ -422,8 +424,8 @@ var Tile = React.createClass({
       contextStore.set_context(true, this.props.tab.id);
     }
   },
-  handleRelays(){
-    var p = this.props;
+  handleRelays(props){
+    var p = props;
     var r = p.stores.relay;
     if (r[1] === p.tab.id) {
       if (r[0] === 'close') {
@@ -436,8 +438,6 @@ var Tile = React.createClass({
         this.handleMuting(p.tab);
       } else if (r[0] === 'closeDupes') {
         this.checkDuplicateTabs('close');
-      } else if (r[0] === 'actions') {
-        actionStore.undoAction();
       }
     }
   },
@@ -691,7 +691,6 @@ var TileGrid = React.createClass({
   componentDidMount(){
     this.prefsInit(this.props);
     this.checkDuplicateTabs(this.props.data);
-    //faviconStore.triggerFavicons();
   },
   componentWillUnmount(){
     utilityStore.reloadBg();

@@ -2,7 +2,7 @@ import React from 'react';
 import _ from 'lodash';
 
 import {Btn} from './bootstrap';
-import {dupeStore, contextStore, relayStore} from './stores/main';
+import {dupeStore, contextStore, relayStore, actionStore} from './stores/main';
 
 var ContextMenu = React.createClass({
   mixins: [require('react-onclickoutside')],
@@ -19,10 +19,14 @@ var ContextMenu = React.createClass({
     contextStore.set_context(false, null);
   },
   handleRelay(opt){
-    var id = this.props.context[1];
-    console.log('relay '+opt+': ',id);
-    relayStore.set_relay(opt, id);
-    this.handleClickOutside();
+    if (opt === 'actions') {
+      actionStore.undoAction();
+    } else {
+      var id = this.props.context[1];
+      console.log('relay '+opt+': ',id);
+      relayStore.set_relay(opt, id);
+      this.handleClickOutside();
+    }
   },
   getStatus(opt){
     var p = this.props;

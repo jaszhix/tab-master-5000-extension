@@ -130,7 +130,8 @@ var Root = React.createClass({
       oldTileLimit: 100,
       sessions: [],
       favicons: faviconStore.get_favicon(),
-      screenshots: []
+      screenshots: [],
+      relay: []
     };
   },
   componentWillMount(){
@@ -149,6 +150,7 @@ var Root = React.createClass({
     this.listenTo(sessionsStore, this.sessionsChange);
     this.listenTo(faviconStore, this.faviconsChange);
     this.listenTo(screenshotStore, this.screenshotsChange);
+    this.listenTo(relayStore, this.relayChange);
 
     console.log('Chrome Version: ',utilityStore.chromeVersion());
     console.log('Manifest: ', utilityStore.get_manifest());
@@ -196,6 +198,9 @@ var Root = React.createClass({
   },
   screenshotsChange(){
     this.setState({screenshots: screenshotStore.get_ssIndex()});
+  },
+  relayChange(e){
+    this.setState({relay: e});
   },
   captureTabs(opt) {
     var s = this.state;
@@ -401,7 +406,6 @@ var Root = React.createClass({
     var search = searchStore.get_search();
     var cursor = utilityStore.get_cursor();
     var context = contextStore.get_context();
-    var relay = relayStore.get_relay();
     var windowId = utilityStore.get_window();
     var stores = {
       tabs: tabs, 
@@ -412,7 +416,7 @@ var Root = React.createClass({
       search: search, 
       cursor: cursor, 
       chromeVersion: s.chromeVersion, 
-      relay: relay, 
+      relay: s.relay, 
       windowId: windowId
     };
     return (
