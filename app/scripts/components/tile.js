@@ -8,7 +8,7 @@ import moment from 'moment';
 import Draggable from 'react-draggable';
 import utils from './utils';
 
-import {faviconStore, sessionsStore, actionStore, bookmarksStore, dupeStore, reRenderStore, applyTabOrderStore, utilityStore, contextStore, dragStore, draggedStore} from './stores/main';
+import {faviconStore, sessionsStore, bookmarksStore, dupeStore, reRenderStore, applyTabOrderStore, utilityStore, contextStore, dragStore, draggedStore} from './stores/main';
 import prefsStore from './stores/prefs';
 import tabStore from './stores/tab';
 
@@ -47,7 +47,6 @@ var Tile = React.createClass({
     };
   },
   componentDidMount() {
-    this.listenTo(applyTabOrderStore, this.applyTabOrder);
     if (this.props.stores.prefs.mode === 'bookmarks') {
       this.listenTo(bookmarksStore, this.bookmarksFolderChange);
     }
@@ -78,6 +77,9 @@ var Tile = React.createClass({
       }
       if (p.stores.relay !== this.props.stores.relay) {
         this.handleRelays(p);
+      }
+      if (p.stores.applyTabOrder) {
+        this.applyTabOrder();
       }
     }
   },

@@ -6,7 +6,7 @@ import ReactUtils from 'react-utils';
 import v from 'vquery';
 import '../../styles/app.scss';
 window.v = v;
-import {faviconStore, sessionsStore, actionStore, historyStore, bookmarksStore, relayStore, sidebarStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore} from './stores/main';
+import {faviconStore, sessionsStore, actionStore, historyStore, bookmarksStore, relayStore, sidebarStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore, applyTabOrderStore} from './stores/main';
 import prefsStore from './stores/prefs';
 import tabStore from './stores/tab';
 import screenshotStore from './stores/screenshot';
@@ -131,7 +131,8 @@ var Root = React.createClass({
       sessions: [],
       favicons: faviconStore.get_favicon(),
       screenshots: [],
-      relay: []
+      relay: [],
+      applyTabOrder: false
     };
   },
   componentWillMount(){
@@ -151,6 +152,7 @@ var Root = React.createClass({
     this.listenTo(faviconStore, this.faviconsChange);
     this.listenTo(screenshotStore, this.screenshotsChange);
     this.listenTo(relayStore, this.relayChange);
+    this.listenTo(applyTabOrderStore, this.applyTabOrderChange);
 
     console.log('Chrome Version: ',utilityStore.chromeVersion());
     console.log('Manifest: ', utilityStore.get_manifest());
@@ -201,6 +203,9 @@ var Root = React.createClass({
   },
   relayChange(e){
     this.setState({relay: e});
+  },
+  applyTabOrderChange(e){
+    this.setState({applyTabOrder: e});
   },
   captureTabs(opt) {
     var s = this.state;
@@ -416,7 +421,8 @@ var Root = React.createClass({
       search: search, 
       cursor: cursor, 
       chromeVersion: s.chromeVersion, 
-      relay: s.relay, 
+      relay: s.relay,
+      applyTabOrder: s.applyTabOrder,
       windowId: windowId
     };
     return (

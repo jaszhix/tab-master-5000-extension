@@ -158,7 +158,8 @@ export var applyTabOrderStore = Reflux.createStore({
     this.saveTab = value;
     setTimeout(() => {
       this.saveTab = false;
-    }, 500);
+      this.trigger(this.saveTab);
+    }, 0);
     console.log('saveTab: ', value);
     this.trigger(this.saveTab);
   },
