@@ -8,9 +8,8 @@ import moment from 'moment';
 import Draggable from 'react-draggable';
 import utils from './utils';
 
-import {faviconStore, sessionsStore, actionStore, bookmarksStore, dupeStore, reRenderStore, searchStore, applyTabOrderStore, utilityStore, contextStore, relayStore, dragStore, draggedStore} from './stores/main';
+import {faviconStore, sessionsStore, actionStore, bookmarksStore, dupeStore, reRenderStore, applyTabOrderStore, utilityStore, contextStore, relayStore, dragStore, draggedStore} from './stores/main';
 import prefsStore from './stores/prefs';
-import screenshotStore from './stores/screenshot';
 import tabStore from './stores/tab';
 
 import {Btn, Col, Row} from './bootstrap';
@@ -48,13 +47,11 @@ var Tile = React.createClass({
     };
   },
   componentDidMount() {
-    this.listenTo(searchStore, this.filterTabs);
     this.listenTo(applyTabOrderStore, this.applyTabOrder);
     this.listenTo(relayStore, this.handleRelays);
     if (this.props.stores.prefs.mode === 'bookmarks') {
       this.listenTo(bookmarksStore, this.bookmarksFolderChange);
     }
-    //this.listenTo(screenshotStore, this.updateScreenshot);
     this.initMethods();
   },
   shouldComponentUpdate() {
@@ -73,10 +70,13 @@ var Tile = React.createClass({
       if (this.props.tab.title === 'New Tab') {
         this.closeNewTabs();
       }
-      this.updateFavicons(nextProps);
+      this.updateFavicons(p);
       if (p.stores.prefs.screenshot) {
-          this.updateScreenshot(null, nextProps);
-        }
+        this.updateScreenshot(null, p);
+      }
+      if (p.stores.search !== this.props.stores.search) {
+        this.filterTabs(null, p);
+      }
     }
   },
   initMethods(){
@@ -236,10 +236,10 @@ var Tile = React.createClass({
       render: true
     });
   },
-  filterTabs(tab) {
+  filterTabs(tab, props) {
     // Filter tab method that triggers re-renders through Reflux store.
     if (tab && tab.title) {
-      var p = this.props;
+      var p = props;
       if (kmp(tab.title.toLowerCase(), p.stores.search) !== -1) {
         return true;
       } else {
@@ -550,7 +550,7 @@ var Tile = React.createClass({
                       onStop={this.handleStop}>
             <div ref="tile" style={s.drag ? {position: 'absolute', left: drag.left-200, top: drag.top} : null}>
             {p.render && s.render && p.tab.title !== 'New Tab' ? <Row fluid={true} id={'subTile-'+p.i} style={s.duplicate && s.focus && !s.hover ? {WebkitAnimationIterationCount: 'infinite', WebkitAnimationDuration: '5s'} : null} onContextMenu={this.handleContextClick} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "animated zoomOut" : s.pinning ? "animated pulse" : s.duplicate && s.focus ? "animated flash" : null}>
-                { this.filterTabs(p.tab) ? <div id={'innerTile-'+p.i} className={s.hover ? "ntg-tile-hover" : "ntg-tile"} style={s.screenshot ? s.hover ? style.tileHovered(s.screenshot) : style.tile(s.screenshot) : null} key={p.key}>
+                { this.filterTabs(p.tab, p) ? <div id={'innerTile-'+p.i} className={s.hover ? "ntg-tile-hover" : "ntg-tile"} style={s.screenshot ? s.hover ? style.tileHovered(s.screenshot) : style.tile(s.screenshot) : null} key={p.key}>
                   <Row className="ntg-tile-row-top">
                     <Col size="3">
                       {p.stores.chromeVersion >= 46 && s.openTab || p.stores.chromeVersion >= 46 && p.stores.prefs.mode === 'tabs' ? <div onMouseEnter={this.handleTabMuteHoverIn} onMouseLeave={this.handleTabMuteHoverOut} onClick={() => this.handleMuting(p.tab)}>
