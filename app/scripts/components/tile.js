@@ -73,10 +73,7 @@ var Tile = React.createClass({
       if (this.props.tab.title === 'New Tab') {
         this.closeNewTabs();
       }
-      var fvData = _.result(_.find(p.stores.favicons, { domain: p.tab.url.split('/')[2] }), 'favIconUrl');
-      if (fvData) {
-        this.setState({favicon: fvData});
-      }
+      this.updateFavicons(nextProps);
       if (nextProps.render !== this.props.render) {
         if (p.stores.prefs.screenshot) {
           this.updateScreenshot();
@@ -98,6 +95,14 @@ var Tile = React.createClass({
       _.defer(()=>{
         this.closeNewTabs();
       });
+    }
+    this.updateFavicons(this.props);
+  },
+  updateFavicons(props){
+    var p = props;
+    var fvData = _.result(_.find(p.stores.favicons, { domain: p.tab.url.split('/')[2] }), 'favIconUrl');
+    if (fvData) {
+      this.setState({favicon: fvData});
     }
   },
   updateScreenshot(opt){
@@ -294,10 +299,7 @@ var Tile = React.createClass({
     var reRender = (defer)=>{
       var t = tabStore.get_altTab();
       if (defer) {
-        _.defer(()=>{
-          this.setState({render: false});
-        });
-        reRenderStore.set_reRender(true, 'defer', t[0].id);
+        reRenderStore.set_reRender(true, 'cycle', t[0].id);
       } else {
         reRenderStore.set_reRender(true, 'create', t[0].id);
       }
@@ -306,7 +308,7 @@ var Tile = React.createClass({
     var close = ()=>{
       //tabStore.close(id);
       chrome.tabs.remove(id, ()=>{
-        if (p.stores.prefs.mode !== 'tabs') {
+        if (p.stores.prefs.mode !== 'tabs' && s.openTab) {
           _.defer(()=>{
             reRender(true);
           });
@@ -315,7 +317,7 @@ var Tile = React.createClass({
       });
     };
     if (p.stores.prefs.animations && !s.openTab) {
-      this.setState({close: true});
+      _.defer(()=>this.setState({close: true}));
     }
     if (p.stores.prefs.mode !== 'tabs') {
       if (s.openTab) {
@@ -358,14 +360,14 @@ var Tile = React.createClass({
       pinned: !tab.pinned
     },(t)=>{
       if (s.bookmarks || s.history || s.sessions) {
-        reRenderStore.set_reRender(true, 'create',id);
+        reRenderStore.set_reRender(true, 'tile',id);
       }
     });
     this.setState({render: true});
-    v('subTile-'+p.i).on('animationend', function animationEnd(e){
+    v('#subTile-'+p.i).on('animationend', function animationEnd(e){
       this.setState({pinning: false});
-      v('subTile-'+p.i).off('animationend', animationEnd);
-    });
+      v('#subTile-'+p.i).off('animationend', animationEnd);
+    }.bind(this));
     pinned = id;
   },
   handleMuting(tab){
@@ -454,10 +456,10 @@ var Tile = React.createClass({
         }
       } else {
         this.setState({focus: true});
-        v('subTile-'+p.i).on('animationend', function animationEnd(e){
+        v('#subTile-'+p.i).on('animationend', function animationEnd(e){
           this.setState({focus: false});
-          v('subTile-'+p.i).off('animationend', animationEnd);
-        });
+          v('#subTile-'+p.i).off('animationend', animationEnd);
+        }.bind(this));
       }
     }
   },
@@ -479,7 +481,7 @@ var Tile = React.createClass({
     console.log('drag clone',clone.attributes);
     clone.classList.add('tileClone');
     console.log('clone: ',clone);
-    var original = this.refs.tileMain;
+    var original = v('#tileMain-'+p.i).node();
     v('#grid').insertBefore(clone, original);
     v('#main').append(original);
     console.log('Event: ', e, ui);
@@ -498,7 +500,7 @@ var Tile = React.createClass({
     var p = this.props;
     v('#tileMain-'+p.i).hide();
     // Move the tile element back to #grid where it belongs.
-    v('#grid').append(this.refs.tileMain);
+    v('#grid').append(v('#tileMain-'+p.i).node());
     console.log('Event: ', e, ui);
     console.log('Stop Position: ', ui.position);
     tileDrag = false;

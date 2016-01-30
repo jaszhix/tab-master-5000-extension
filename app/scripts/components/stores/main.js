@@ -78,18 +78,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       } else {
         title = _.result(_.find(tabs('alt'), { id: msg.e.tabId }), 'title');
         if (title !== 'New Tab') {
-          if (prefs.mode === 'history') {
-            throttled.screenshot(msg.e.tabId, msg.e.windowId);
-            _.defer(()=>{
-              reRenderStore.set_reRender(true, 'tile', msg.e.tabId);
-            });
-          } else if (prefs.mode === 'sessions') {
+          if (prefs.mode !== 'tabs') {
             throttled.screenshot(msg.e.tabId, msg.e.windowId);
               reRenderStore.set_reRender(true, 'activate', msg.e.tabId);
             _.defer(()=>reRenderStore.set_reRender(true, 'cycle', msg.e.tabId));
-          } else {
-            throttled.screenshot(msg.e.tabId, msg.e.windowId);
-            reRender('bookmarks', msg.e);
           }
         }
       }
