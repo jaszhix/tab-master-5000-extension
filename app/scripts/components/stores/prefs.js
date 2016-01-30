@@ -25,7 +25,6 @@ var prefsStore = Reflux.createStore({
                   reject(chrome.extension.lastError);
                 } else {
                   this.prefs = {
-                    reporting: false, 
                     settingsMax: false, 
                     drag: true, 
                     context: true, 
@@ -77,7 +76,6 @@ var prefsStore = Reflux.createStore({
         installTime: prefs.preferences.installTime,
         settingsMax: prefs.preferences.settingsMax,
         actions: prefs.preferences.actions,
-        reporting: prefs.preferences.reporting,
         sessionsSync: prefs.preferences.sessionsSync
       };
       if (typeof this.prefs.installTime === 'undefined') {

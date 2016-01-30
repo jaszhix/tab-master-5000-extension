@@ -508,7 +508,7 @@ var Tile = React.createClass({
     var draggedOver = dragStore.get_tabIndex();
     chrome.tabs.move(dragged.id, {index: draggedOver.index}, (t)=>{
       console.log('moved: ',t);
-      reRenderStore.set_reRender(true, 'cycle', dragged.id)
+      reRenderStore.set_reRender(true, 'cycle', dragged.id);
       v('.tileClone').remove();
     });
   },

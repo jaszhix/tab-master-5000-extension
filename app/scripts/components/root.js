@@ -14,7 +14,6 @@ import {Btn, Col, Row, Container} from './bootstrap';
 import TileGrid from './tile';
 import ModalHandler from './modal';
 import ContextMenu from './context';
-import priv from './priv';
 
 var Loading = React.createClass({
   render: function() {
@@ -183,27 +182,11 @@ var Root = React.createClass({
       this.setState({init: false});
       _.defer(()=>this.captureTabs('init'));
       this.onWindowResize(null, 'init');
-      if (e.reporting) {
-        this.handleErrorReporting(e, s.chromeVersion);
-      }
     }
   },
   faviconsChange(e){
     this.setState({favicons: e, event: 'dlFavicons', topLoad: true});
     _.defer(()=>this.setState({event: '', topLoad: false}));
-  },
-  handleErrorReporting(e, version){
-    var Parse = require('parse');
-    Parse.initialize(priv.id, priv.key);
-    window.onerror = (errorMessage, url, line)=>{
-      var Errors = Parse.Object.extend('Errors');
-      var errors = new Errors();
-      errors.save({
-        resolution: window.outerWidth+'x'+window.outerHeight, browser: version, error: errorMessage, prefs: e
-      }).then((object)=>{
-        console.log('Error reported: ',object);
-      });
-    };
   },
   actionsChange(e){
     this.setState({actions: e});

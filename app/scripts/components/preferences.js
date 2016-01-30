@@ -102,7 +102,6 @@ var Preferences = React.createClass({
       blacklist: p.prefs.blacklist,
       animations: p.prefs.animations,
       actions: p.prefs.actions,
-      reporting: p.prefs.reporting,
       sessionsSync: p.prefs.sessionsSync,
       hover: null,
       bytesInUse: null
@@ -123,7 +122,6 @@ var Preferences = React.createClass({
       blacklist: p.prefs.blacklist,
       animations: p.prefs.animations,
       actions: p.prefs.actions,
-      reporting: p.prefs.reporting,
       sessionsSync: p.prefs.sessionsSync
     });
   },
@@ -203,11 +201,6 @@ var Preferences = React.createClass({
                   on={s.actions}>
                     Enable undoing of tab actions <strong>(Experimental)</strong>
           </Toggle>
-          <Toggle onMouseEnter={()=>this.handleToggle('reporting')}
-                  onClick={()=>this.handleClick('reporting')}
-                  on={s.reporting}>
-                    Enable anonymous error reporting
-          </Toggle>
         </Col>
         <Col size="6">
           <Row className="prefs-row">
@@ -220,7 +213,6 @@ var Preferences = React.createClass({
             {s.hover === 'blacklist' ? <p>Enter a comma separated list of domains, and they will be automatically closed under any circumstance. This is useful for blocking websites which may inhibit productivity, or you simply don't like.</p> : null}
             {s.hover === 'animations' ? <p>This option toggles tab action animations as well as the blur effects. Disabling this is useful on lower end computers with limited hardware acceleration.</p> : null}
             {s.hover === 'actions' ? <p>This option allows you to undo a tab action by pressing CTRL+Z, or using the right-click context menu on a tab tile while in the tabs view.</p> : null}
-            {s.hover === 'reporting' ? <p>Enabling error reporting helps aid the development of TM5K. The error triggering the report, screen resolution, Chrome version, and preferences data are the only pieces of information collected.</p> : null}
             {s.hover === 'sessionsSync' ? <p>Enabling session synchronization allows you to keep a saved session persistently up to date with the current Chrome window.</p> : null}
           </Row>
         </Col>
