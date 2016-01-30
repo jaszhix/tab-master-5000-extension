@@ -38,7 +38,6 @@ var Tile = React.createClass({
       dragged: null,
       screenshot: null,
       favicon: null,
-      folder: true,
       openTab: false,
       bookmarks: false,
       history: false,
@@ -47,9 +46,6 @@ var Tile = React.createClass({
     };
   },
   componentDidMount() {
-    if (this.props.stores.prefs.mode === 'bookmarks') {
-      this.listenTo(bookmarksStore, this.bookmarksFolderChange);
-    }
     this.initMethods();
   },
   shouldComponentUpdate() {
@@ -80,6 +76,9 @@ var Tile = React.createClass({
       }
       if (p.stores.applyTabOrder) {
         this.applyTabOrder();
+      }
+      if (p.stores.folder !== this.props.stores.folder) {
+        this.filterFolders(p);
       }
     }
   },
@@ -157,12 +156,11 @@ var Tile = React.createClass({
       this.setState({openTab: false});
     }
   },
-  bookmarksFolderChange(e){
-    var s = this.state;
-    this.setState({folder: !s.folder});
-    var p = this.props;
-    if (e && p.tab.folder !== e) {
-      if (s.folder) {
+  filterFolders(props){
+    var p = props;
+    var folder = p.stores.folder.name;
+    if (folder && p.tab.folder !== folder) {
+      if (p.stores.folder.state && p.stores.prefs.mode === 'bookmarks') {
         v('#tileMain-'+p.i).hide();
       } else {
         v('#tileMain-'+p.i).show();
@@ -716,14 +714,15 @@ var TileGrid = React.createClass({
     }
   },
   componentWillReceiveProps(nextProps){
-    if (nextProps.tileLimit !== this.props.tileLimit) {
+    var p = nextProps;
+    if (p.tileLimit !== this.props.tileLimit) {
       this.setState({render: false});
       this.setState({tileLimit: nextProps.tileLimit, render: true});
     }
     this.setState({data: nextProps.data});
     this.checkDuplicateTabs(this.props.data);
-    if (nextProps.stores.prefs !== this.props.stores.prefs) {
-      this.prefsInit(nextProps);
+    if (p.stores.prefs !== this.props.stores.prefs) {
+      this.prefsInit(p);
     }
   },
   checkDuplicateTabs(tabs){

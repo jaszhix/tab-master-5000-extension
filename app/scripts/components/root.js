@@ -132,7 +132,9 @@ var Root = React.createClass({
       favicons: faviconStore.get_favicon(),
       screenshots: [],
       relay: [],
-      applyTabOrder: false
+      applyTabOrder: false,
+      folder: '',
+      folderState: false
     };
   },
   componentWillMount(){
@@ -153,6 +155,7 @@ var Root = React.createClass({
     this.listenTo(screenshotStore, this.screenshotsChange);
     this.listenTo(relayStore, this.relayChange);
     this.listenTo(applyTabOrderStore, this.applyTabOrderChange);
+    this.listenTo(bookmarksStore, this.folderChange);
 
     console.log('Chrome Version: ',utilityStore.chromeVersion());
     console.log('Manifest: ', utilityStore.get_manifest());
@@ -206,6 +209,10 @@ var Root = React.createClass({
   },
   applyTabOrderChange(e){
     this.setState({applyTabOrder: e});
+  },
+  folderChange(e){
+    this.setState({folder: e, folderState: !this.state.folderState});
+    this.extendTileLimit(this.state.folderState);
   },
   captureTabs(opt) {
     var s = this.state;
@@ -285,14 +292,17 @@ var Root = React.createClass({
     // Trigger Root component re-render when a user types in the search box.
     clickStore.set_click(true);
     this.setState({search: e});
-    if (e.length > 0 ) {
+    this.extendTileLimit(e.length > 0);
+  },
+  settingsChange(){
+    this.setState({settings: true});
+  },
+  extendTileLimit(argument){
+    if (argument) {
       this.setState({oldTileLimit: this.state.tileLimit,tileLimit: 99999});
     } else {
       this.setState({tileLimit: this.state.oldTileLimit});
     }
-  },
-  settingsChange(){
-    this.setState({settings: true});
   },
   reRender() {
     var reRender = reRenderStore.get_reRender();
@@ -408,7 +418,6 @@ var Root = React.createClass({
     var s = this.state;
     var tabs = tabStore.get_tab();
     var newTabs = tabStore.getNewTabs();
-    var search = searchStore.get_search();
     var cursor = utilityStore.get_cursor();
     var context = contextStore.get_context();
     var windowId = utilityStore.get_window();
@@ -418,11 +427,15 @@ var Root = React.createClass({
       screenshots: s.screenshots, 
       newTabs: newTabs, 
       prefs: s.prefs, 
-      search: search, 
+      search: s.search, 
       cursor: cursor, 
       chromeVersion: s.chromeVersion, 
       relay: s.relay,
       applyTabOrder: s.applyTabOrder,
+      folder: {
+        name: s.folder, 
+        state: s.folderState
+      },
       windowId: windowId
     };
     return (
