@@ -54,7 +54,7 @@ var Tile = React.createClass({
     if (this.props.stores.prefs.mode === 'bookmarks') {
       this.listenTo(bookmarksStore, this.bookmarksFolderChange);
     }
-    this.listenTo(screenshotStore, this.updateScreenshot);
+    //this.listenTo(screenshotStore, this.updateScreenshot);
     this.initMethods();
   },
   shouldComponentUpdate() {
@@ -74,20 +74,15 @@ var Tile = React.createClass({
         this.closeNewTabs();
       }
       this.updateFavicons(nextProps);
-      if (nextProps.render !== this.props.render) {
-        if (p.stores.prefs.screenshot) {
-          this.updateScreenshot();
+      if (p.stores.prefs.screenshot) {
+          this.updateScreenshot(null, nextProps);
         }
-        /*if () {
-
-        }*/
-      }
     }
   },
   initMethods(){
     var p = this.props;
     this.setTabMode();
-    this.updateScreenshot('init');
+    this.updateScreenshot('init', p);
     if (p.stores.prefs.mode === 'tabs') {
       this.checkDuplicateTabs();
     }
@@ -96,7 +91,7 @@ var Tile = React.createClass({
         this.closeNewTabs();
       });
     }
-    this.updateFavicons(this.props);
+    this.updateFavicons(p);
   },
   updateFavicons(props){
     var p = props;
@@ -105,15 +100,15 @@ var Tile = React.createClass({
       this.setState({favicon: fvData});
     }
   },
-  updateScreenshot(opt){
-    var p = this.props;
+  updateScreenshot(opt, props){
+    var p = props;
     var setScreeenshot = ()=>{
       if (chrome.extension.lastError) {
         utilityStore.restartNewTab();
       }
       if (p.stores.prefs.screenshot) {
-        var screenshotIndex = screenshotStore.get_ssIndex();
-        var ssData = _.result(_.find(screenshotIndex, { url: p.tab.url }), 'data');
+        //var screenshotIndex = screenshotStore.get_ssIndex();
+        var ssData = _.result(_.find(p.stores.screenshots, { url: p.tab.url }), 'data');
         if (ssData) {
           this.setState({screenshot: ssData});
         }
@@ -317,7 +312,7 @@ var Tile = React.createClass({
       });
     };
     if (p.stores.prefs.animations && !s.openTab) {
-      _.defer(()=>this.setState({close: true}));
+      this.setState({close: true});
     }
     if (p.stores.prefs.mode !== 'tabs') {
       if (s.openTab) {
@@ -544,63 +539,64 @@ var Tile = React.createClass({
     var remove = p.stores.prefs.mode !== 'tabs' && !s.openTab;
     return (
       <div ref="tileMain" id={'tileMain-'+p.i} onDragEnter={this.currentlyDraggedOver(p.tab)} style={p.stores.prefs.screenshot && p.stores.prefs.screenshotBg ? {opacity: '0.95'} : null}>
-        {p.render ? <Draggable  axis="both"
-                            handle=".handle"
-                            moveOnStartChange={true}
-                            grid={[1, 1]}
-                            zIndex={100}
-                            onStart={this.handleStart}
-                            onDrag={this.handleDrag}
-                            onStop={this.handleStop}>
-                  <div ref="tile" style={s.drag ? {position: 'absolute', left: drag.left-200, top: drag.top} : null}>
-                  {p.render && s.render && p.tab.title !== 'New Tab' ? <Row fluid={true} id={'subTile-'+p.i} style={s.duplicate && s.focus && !s.hover ? {WebkitAnimationIterationCount: 'infinite', WebkitAnimationDuration: '5s'} : null} onContextMenu={this.handleContextClick} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "animated zoomOut" : s.pinning ? "animated pulse" : s.duplicate && s.focus ? "animated flash" : null}>
-                      { this.filterTabs(p.tab) ? <div id={'innerTile-'+p.i} className={s.hover ? "ntg-tile-hover" : "ntg-tile"} style={s.screenshot ? s.hover ? style.tileHovered(s.screenshot) : style.tile(s.screenshot) : null} key={p.key}>
-                        <Row className="ntg-tile-row-top">
-                          <Col size="3">
-                            {p.stores.chromeVersion >= 46 && s.openTab || p.stores.chromeVersion >= 46 && p.stores.prefs.mode === 'tabs' ? <div onMouseEnter={this.handleTabMuteHoverIn} onMouseLeave={this.handleTabMuteHoverOut} onClick={() => this.handleMuting(p.tab)}>
-                                              {s.hover || p.tab.audible || p.tab.mutedInfo.muted ? 
-                                              <i className={p.tab.audible ? s.mHover ? "fa fa-volume-off ntg-mute-audible-hover" : "fa fa-volume-up ntg-mute-audible" : s.mHover ? "fa fa-volume-off ntg-mute-hover" : "fa fa-volume-off ntg-mute"} style={s.screenshot && s.hover ? style.ssIconBg : s.screenshot ? style.ssIconBg : null} />
-                                              : null}
-                                            </div> : null}
-                            <div onMouseEnter={this.handleTabCloseHoverIn} onMouseLeave={this.handleTabCloseHoverOut} onClick={()=>this.handleCloseTab(p.tab.id)}>
-                              {s.hover ? 
-                              <i className={s.xHover ? remove ? "fa fa-eraser ntg-x-hover" : "fa fa-times ntg-x-hover" : remove ? "fa fa-eraser ntg-x" : "fa fa-times ntg-x"} style={s.screenshot && s.hover ? style.ssIconBg : null} />
-                              : null}
-                            </div>
-                            <div onMouseEnter={this.handlePinHoverIn} onMouseLeave={this.handlePinHoverOut} onClick={() => this.handlePinning(p.tab)}>
-                            {p.tab.pinned && p.stores.prefs.mode === 'tabs' || s.hover && s.openTab || s.hover && !s.bookmarks && !s.history && !s.sessions ? 
-                              <i className={s.pHover ? "fa fa-map-pin ntg-pinned-hover" : "fa fa-map-pin ntg-pinned"} style={p.tab.pinned ? s.screenshot && s.hover ? style.ssPinnedIconBg : s.screenshot ? style.ssPinnedIconBg : {color: '#B67777'} : s.screenshot ? style.ssIconBg : null} />
-                              : null}
-                            </div>
-                            <Row>
-                              <img className="ntg-favicon" src={s.favicon ? s.favicon : '../images/file_paper_blank_document.png' } />
-                            </Row>
-                          </Col>
-                          <Col size="9" onClick={!s.bookmarks ? ()=>this.handleClick(p.tab.id) : null} className="ntg-title-container">
-                            <h5 style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-title">
-                              {_.truncate(p.tab.title, {length: titleLimit})}
-                            </h5>
-                            {s.bookmarks ? <h5 onClick={()=>bookmarksStore.set_folder(p.tab.folder)} style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-folder">
-                              <i className="fa fa-folder-o" />{p.tab.folder ? s.bookmarks ? ' '+p.tab.folder : null : null}
-                            </h5> : null}
-                            {s.history ? <h5 style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-folder">
-                              <i className="fa fa-hourglass-o" />{' '+_.capitalize(moment(p.tab.lastVisitTime).fromNow())}
-                            </h5> : null}
-                            {s.sessions ? <h5 style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-folder">
-                              <i className={p.tab.label ? 'fa fa-folder-o' : 'fa fa-hourglass-o'} />{p.tab.label ? ' '+p.tab.label : ' '+_.capitalize(moment(p.tab.sTimeStamp).fromNow())}
-                            </h5> : null}
-                            {p.stores.prefs ? p.stores.prefs.drag && !s.bookmarks && !s.history && !s.sessions ? <div onMouseEnter={this.handleDragHoverIn} onMouseLeave={this.handleDragHoverOut} onClick={() => this.handleCloseTab(p.tab.id)}>
-                              {s.hover ? 
-                              <i className={s.dHover ? "fa fa-hand-grab-o ntg-move-hover handle" : "fa fa-hand-grab-o ntg-move"} style={s.screenshot && s.hover ? style.ssIconBg : null} />
-                              : null}
-                            </div> : null : null}
-                          </Col> 
-                        </Row>
-                        <Row onClick={() => this.handleClick(p.tab.id)} className={s.bookmarks || s.history || s.sessions ? "ntg-tile-row-bottom-bk" : "ntg-tile-row-bottom"} />
-                      </div> : null}
-                    </Row> : null}
-                  </div>
-                </Draggable> : null}
+        {p.render ? 
+          <Draggable  axis="both"
+                      handle=".handle"
+                      moveOnStartChange={true}
+                      grid={[1, 1]}
+                      zIndex={100}
+                      onStart={this.handleStart}
+                      onDrag={this.handleDrag}
+                      onStop={this.handleStop}>
+            <div ref="tile" style={s.drag ? {position: 'absolute', left: drag.left-200, top: drag.top} : null}>
+            {p.render && s.render && p.tab.title !== 'New Tab' ? <Row fluid={true} id={'subTile-'+p.i} style={s.duplicate && s.focus && !s.hover ? {WebkitAnimationIterationCount: 'infinite', WebkitAnimationDuration: '5s'} : null} onContextMenu={this.handleContextClick} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "animated zoomOut" : s.pinning ? "animated pulse" : s.duplicate && s.focus ? "animated flash" : null}>
+                { this.filterTabs(p.tab) ? <div id={'innerTile-'+p.i} className={s.hover ? "ntg-tile-hover" : "ntg-tile"} style={s.screenshot ? s.hover ? style.tileHovered(s.screenshot) : style.tile(s.screenshot) : null} key={p.key}>
+                  <Row className="ntg-tile-row-top">
+                    <Col size="3">
+                      {p.stores.chromeVersion >= 46 && s.openTab || p.stores.chromeVersion >= 46 && p.stores.prefs.mode === 'tabs' ? <div onMouseEnter={this.handleTabMuteHoverIn} onMouseLeave={this.handleTabMuteHoverOut} onClick={() => this.handleMuting(p.tab)}>
+                                        {s.hover || p.tab.audible || p.tab.mutedInfo.muted ? 
+                                        <i className={p.tab.audible ? s.mHover ? "fa fa-volume-off ntg-mute-audible-hover" : "fa fa-volume-up ntg-mute-audible" : s.mHover ? "fa fa-volume-off ntg-mute-hover" : "fa fa-volume-off ntg-mute"} style={s.screenshot && s.hover ? style.ssIconBg : s.screenshot ? style.ssIconBg : null} />
+                                        : null}
+                                      </div> : null}
+                      <div onMouseEnter={this.handleTabCloseHoverIn} onMouseLeave={this.handleTabCloseHoverOut} onClick={()=>this.handleCloseTab(p.tab.id)}>
+                        {s.hover ? 
+                        <i className={s.xHover ? remove ? "fa fa-eraser ntg-x-hover" : "fa fa-times ntg-x-hover" : remove ? "fa fa-eraser ntg-x" : "fa fa-times ntg-x"} style={s.screenshot && s.hover ? style.ssIconBg : null} />
+                        : null}
+                      </div>
+                      <div onMouseEnter={this.handlePinHoverIn} onMouseLeave={this.handlePinHoverOut} onClick={() => this.handlePinning(p.tab)}>
+                      {p.tab.pinned && p.stores.prefs.mode === 'tabs' || s.hover && s.openTab || s.hover && !s.bookmarks && !s.history && !s.sessions ? 
+                        <i className={s.pHover ? "fa fa-map-pin ntg-pinned-hover" : "fa fa-map-pin ntg-pinned"} style={p.tab.pinned ? s.screenshot && s.hover ? style.ssPinnedIconBg : s.screenshot ? style.ssPinnedIconBg : {color: '#B67777'} : s.screenshot ? style.ssIconBg : null} />
+                        : null}
+                      </div>
+                      <Row>
+                        <img className="ntg-favicon" src={s.favicon ? s.favicon : '../images/file_paper_blank_document.png' } />
+                      </Row>
+                    </Col>
+                    <Col size="9" onClick={!s.bookmarks ? ()=>this.handleClick(p.tab.id) : null} className="ntg-title-container">
+                      <h5 style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-title">
+                        {_.truncate(p.tab.title, {length: titleLimit})}
+                      </h5>
+                      {s.bookmarks ? <h5 onClick={()=>bookmarksStore.set_folder(p.tab.folder)} style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-folder">
+                        <i className="fa fa-folder-o" />{p.tab.folder ? s.bookmarks ? ' '+p.tab.folder : null : null}
+                      </h5> : null}
+                      {s.history ? <h5 style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-folder">
+                        <i className="fa fa-hourglass-o" />{' '+_.capitalize(moment(p.tab.lastVisitTime).fromNow())}
+                      </h5> : null}
+                      {s.sessions ? <h5 style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-folder">
+                        <i className={p.tab.label ? 'fa fa-folder-o' : 'fa fa-hourglass-o'} />{p.tab.label ? ' '+p.tab.label : ' '+_.capitalize(moment(p.tab.sTimeStamp).fromNow())}
+                      </h5> : null}
+                      {p.stores.prefs ? p.stores.prefs.drag && !s.bookmarks && !s.history && !s.sessions ? <div onMouseEnter={this.handleDragHoverIn} onMouseLeave={this.handleDragHoverOut} onClick={() => this.handleCloseTab(p.tab.id)}>
+                        {s.hover ? 
+                        <i className={s.dHover ? "fa fa-hand-grab-o ntg-move-hover handle" : "fa fa-hand-grab-o ntg-move"} style={s.screenshot && s.hover ? style.ssIconBg : null} />
+                        : null}
+                      </div> : null : null}
+                    </Col> 
+                  </Row>
+                  <Row onClick={() => this.handleClick(p.tab.id)} className={s.bookmarks || s.history || s.sessions ? "ntg-tile-row-bottom-bk" : "ntg-tile-row-bottom"} />
+                </div> : null}
+              </Row> : null}
+            </div>
+          </Draggable> : null}
       </div>
     );
   }

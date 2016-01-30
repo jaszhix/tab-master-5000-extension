@@ -9,6 +9,7 @@ window.v = v;
 import {faviconStore, sessionsStore, actionStore, historyStore, bookmarksStore, relayStore, sidebarStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore} from './stores/main';
 import prefsStore from './stores/prefs';
 import tabStore from './stores/tab';
+import screenshotStore from './stores/screenshot';
 
 import {Btn, Col, Row, Container} from './bootstrap';
 import TileGrid from './tile';
@@ -128,7 +129,8 @@ var Root = React.createClass({
       tileLimit: 100,
       oldTileLimit: 100,
       sessions: [],
-      favicons: faviconStore.get_favicon()
+      favicons: faviconStore.get_favicon(),
+      screenshots: []
     };
   },
   componentWillMount(){
@@ -146,6 +148,7 @@ var Root = React.createClass({
     this.listenTo(actionStore, this.actionsChange);
     this.listenTo(sessionsStore, this.sessionsChange);
     this.listenTo(faviconStore, this.faviconsChange);
+    this.listenTo(screenshotStore, this.screenshotsChange);
 
     console.log('Chrome Version: ',utilityStore.chromeVersion());
     console.log('Manifest: ', utilityStore.get_manifest());
@@ -190,6 +193,9 @@ var Root = React.createClass({
   },
   actionsChange(e){
     this.setState({actions: e});
+  },
+  screenshotsChange(){
+    this.setState({screenshots: screenshotStore.get_ssIndex()});
   },
   captureTabs(opt) {
     var s = this.state;
@@ -315,9 +321,9 @@ var Root = React.createClass({
     if (wrapper.scrollTop + window.innerHeight >= wrapper.scrollHeight) {
       this.setState({tileLimit: this.state.tileLimit + 100});
     }
-    console.log(viewport.scrollLeft, viewport.scrollTop);
+    /*console.log(viewport.scrollLeft, viewport.scrollTop);
     console.log(viewport.innerWidth, viewport.innerHeight);
-    console.log(viewport.outerWidth, viewport.outerHeight);
+    console.log(viewport.outerWidth, viewport.outerHeight);*/
   },
   tileGrid(stores){
     var s = this.state;
@@ -397,7 +403,18 @@ var Root = React.createClass({
     var context = contextStore.get_context();
     var relay = relayStore.get_relay();
     var windowId = utilityStore.get_window();
-    var stores = {tabs: tabs, favicons: s.favicons, newTabs: newTabs, prefs: s.prefs, search: search, cursor: cursor, chromeVersion: s.chromeVersion, relay: relay, windowId: windowId};
+    var stores = {
+      tabs: tabs, 
+      favicons: s.favicons, 
+      screenshots: s.screenshots, 
+      newTabs: newTabs, 
+      prefs: s.prefs, 
+      search: search, 
+      cursor: cursor, 
+      chromeVersion: s.chromeVersion, 
+      relay: relay, 
+      windowId: windowId
+    };
     return (
       <div className="container-main">
         {s.load ? <Loading /> : <div>

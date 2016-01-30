@@ -80,8 +80,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         if (title !== 'New Tab') {
           if (prefs.mode !== 'tabs') {
             throttled.screenshot(msg.e.tabId, msg.e.windowId);
-              reRenderStore.set_reRender(true, 'activate', msg.e.tabId);
-            _.defer(()=>reRenderStore.set_reRender(true, 'cycle', msg.e.tabId));
+            reRenderStore.set_reRender(true, 'activate', msg.e.tabId);
+            reRenderStore.set_reRender(true, 'cycle', msg.e.tabId);
           }
         }
       }
