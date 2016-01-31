@@ -1,5 +1,15 @@
 #### Release Notes
 
+##### v0.13.1 / *1-31-16*
+
+*   Removed anonymous error reporting as it relies on the now defunct Parse API, and is not a critical feature.
+*   Made improvements to how screenshots are captured and rendered. Tabs are now more reliably captured, and continue capturing if tabs are activated in another window.
+*   Refactored the code so the child components are more stateless, allowing the extension to perform faster.
+*   Close all tabs context menu option now is only available in tab view mode.
+*   Known issues
+  * Open tabs that are closed in Sessions grid view mode will not revert to unopened Session tiles.
+  * The undo tab action functionality can lose track of tab action history occassionally.
+
 ##### v0.13 / *1-26-16*
 
 *   Added favicon caching for tabs and sessions. Before, everytime you loaded a New Tab page, it would send an HTTP request to every website for the URL to its favicon file. Now, TM5K will only download the favicons once for each domain, and cache it in Chrome storage. 
@@ -8,11 +18,6 @@
 *   Changed the tile limit behavior from hiding tiles, to preventing their rendering. This increases the performance of TM5K when hundreds of tiles are being loaded in history, bookmarks, and session grid views. There is still a tile limit of 100, and scrolling to the bottom of the page loads 100 more tiles. When you search a view, all tiles will be searched still.
 *   Fixed the animation slowness when closing a duplicate tile.
 *   Fixed the right click context menu buttons not having a hover effect.
-*   Known issues
-  * Tab tiles will sometimes stop capturing screenshots in a Chrome window containing a New Tab page when tabs are being activated in another Chrome window.
-  * Switching between tabs quickly can cause tab tiles to capture an image of the New Tab page.
-  * Tab tile screenshots occassionaly do not render on initialization.
-  * The undo tab action functionality can lose track of tab action history occassionally.
 
 ##### v0.12 / *1-24-16*
 
@@ -24,13 +29,6 @@
 *   Undoing the removal of a tab now keeps the New Tab page active when the tab is recreated.
 *   The New Tab page now gets captured less often in screenshot mode.
 *   Minor CSS improvements to the Session manager.
-*   Known issues
-  * Activating tabs in a Chrome window while a New Tab page is in another window will initially cause flickering rendering in the New Tab page.
-  * History, Bookmarks, and Session grid views have a noticeable lag when updates occur when hundreds of items are being queried from Chrome.
-  * Tab tiles will sometimes stop capturing screenshots in a Chrome window containing a New Tab page when tabs are being activated in another Chrome window.
-  * Switching between tabs quickly can cause tab tiles to capture an image of the New Tab page.
-  * Tab tile screenshots occassionaly do not render on initialization.
-  * The undo tab action functionality can lose track of tab action history occassionally.
 
 ##### v0.12 / *1-24-16*
 

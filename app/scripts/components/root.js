@@ -341,9 +341,6 @@ var Root = React.createClass({
     if (wrapper.scrollTop + window.innerHeight >= wrapper.scrollHeight) {
       this.setState({tileLimit: this.state.tileLimit + 100});
     }
-    /*console.log(viewport.scrollLeft, viewport.scrollTop);
-    console.log(viewport.innerWidth, viewport.innerHeight);
-    console.log(viewport.outerWidth, viewport.outerHeight);*/
   },
   tileGrid(stores){
     var s = this.state;

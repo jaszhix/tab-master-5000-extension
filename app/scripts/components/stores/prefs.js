@@ -49,13 +49,6 @@ var prefsStore = Reflux.createStore({
                 }
               }
             });
-            /*this.prefs = {settingsMax: false, drag: false, context: true, animations: true, duplicate: false, screenshot: false, screenshotBg: false, blacklist: true, sidebar: false, sort: true, mode: 'tabs', installTime: Date.now()};
-            chrome.storage.sync.set({preferences: this.prefs}, (result)=> {
-              this.ready = true;
-              console.log('Init preferences saved');
-            });
-            console.log('init prefs: ', this.prefs);
-            this.trigger(this.prefs);*/
           }
         }
       });

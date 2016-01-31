@@ -32,7 +32,7 @@ var getPrefs = new Promise((resolve, reject)=>{
     }
   });
 });
-var getTabs = new Promise((resolve, reject)=>{
+/*var getTabs = new Promise((resolve, reject)=>{
   chrome.tabs.query({
     windowId: chrome.windows.WINDOW_ID_CURRENT,
     currentWindow: true
@@ -41,7 +41,7 @@ var getTabs = new Promise((resolve, reject)=>{
       resolve(Tab);
     }
   });
-});
+});*/
 getPrefs.then((prefs)=>{
   if (prefs.mode !== 'tabs') {
     chrome.tabs.onUpdated.removeListener(()=>{

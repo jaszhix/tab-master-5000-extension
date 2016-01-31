@@ -4,7 +4,6 @@ import _ from 'lodash';
 import v from 'vquery';
 import {saveAs} from 'filesaver.js';
 
-import utils from '../utils';
 import prefsStore from './prefs';
 import tabStore from './tab';
 import screenshotStore from './screenshot';
@@ -994,9 +993,6 @@ export var sessionsStore = Reflux.createStore({
       .flatten()
       .orderBy(['openTab'], ['asc'])
       .uniqBy('url').value();
-    /*allTabs = _.flatten(allTabs);
-    allTabs = _.uniqBy(allTabs, 'url');
-    this.tabs = _.orderBy(allTabs, ['openTab'], ['asc']);*/
     return this.tabs;
   }
 });
