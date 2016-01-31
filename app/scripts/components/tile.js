@@ -17,7 +17,6 @@ import style from './style';
 
 var tabUrls = null;
 var duplicateTabs = null;
-var pinned = null;
 var tileDrag = null;
 var Tile = React.createClass({
   mixins: [Reflux.ListenerMixin],
@@ -35,14 +34,12 @@ var Tile = React.createClass({
       focus: false,
       duplicate: false,
       drag: null,
-      dragged: null,
       screenshot: null,
       favicon: null,
       openTab: false,
       bookmarks: false,
       history: false,
-      sessions: false,
-      alt: false
+      sessions: false
     };
   },
   componentDidMount() {
@@ -55,7 +52,7 @@ var Tile = React.createClass({
     if (nextProps !== this.props) {
       var p = nextProps;
       this.setTabMode();
-      if (pinned === p.tab.id && p.tab.pinned) {
+      if (p.tab.pinned) {
         this.handleFocus();
       }
       if (p.stores.prefs.mode === 'tabs') {
@@ -264,7 +261,6 @@ var Tile = React.createClass({
   },
   handleHoverOut(e) {
     this.setState({hover: false});
-
   },
   handleTabCloseHoverIn(e) {
     this.setState({xHover: true});
@@ -365,7 +361,6 @@ var Tile = React.createClass({
       this.setState({pinning: false});
       v('#subTile-'+p.i).off('animationend', animationEnd);
     }.bind(this));
-    pinned = id;
   },
   handleMuting(tab){
     var p = this.props;
