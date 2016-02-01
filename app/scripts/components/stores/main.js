@@ -140,7 +140,7 @@ export var clickStore = Reflux.createStore({
     if (!manual) {
       _.delay(()=>{
         this.click = false;
-      },500);
+      },600);
     }
     console.log('click: ', value);
     this.trigger(this.click);

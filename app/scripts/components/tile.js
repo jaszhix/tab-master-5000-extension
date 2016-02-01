@@ -59,7 +59,7 @@ var Tile = React.createClass({
         this.checkDuplicateTabs();
       }
       if (this.props.tab.title === 'New Tab') {
-        this.closeNewTabs();
+        //this.closeNewTabs();
       }
       this.updateFavicons(p);
       if (p.stores.prefs.screenshot) {
@@ -88,7 +88,7 @@ var Tile = React.createClass({
     }
     if (this.props.tab.title === 'New Tab') {
       _.defer(()=>{
-        this.closeNewTabs();
+        //this.closeNewTabs();
       });
     }
     this.updateFavicons(p);
@@ -598,18 +598,6 @@ var Tile = React.createClass({
 });
 
 var Sidebar = React.createClass({
-  getInitialState(){
-    var p = this.props;
-    return {
-      sort: p.prefs.sort,
-      mode: p.prefs.mode
-    };
-  },
-  componentWillReceiveProps(nextProps){
-    var p = nextProps;
-    this.setState({sort: p.prefs.sort});
-    this.setState({mode: p.prefs.mode});
-  },
   handleBookmarks(){
     prefsStore.set_prefs('mode', 'bookmarks');
     reRenderStore.set_reRender(true, 'defer', null);
@@ -627,23 +615,22 @@ var Sidebar = React.createClass({
     reRenderStore.set_reRender(true, 'defer', null);
   },
   handleSort(){
-    prefsStore.set_prefs('sort', !this.state.sort);
+    prefsStore.set_prefs('sort', !this.props.prefs.sort);
   },
   render: function() {
     var p = this.props;
-    var s = this.state;
     var iconCollapse = p.width <= 1135;
     return (
       <div className="side-div" style={p.collapse ? {width: '11%', position: 'fixed'} : {width: '13%', position: 'fixed'}}>
         <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleSort} className="ntg-apply-btn" fa="sort-amount-asc">{p.collapse ? 'Sort Tabs' : 'Sort'}</Btn>
-        {s.sort ? <div>
+        {p.prefs.sort ? <div>
             {p.labels}
-            {s.mode === 'tabs' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={()=>applyTabOrderStore.set_saveTab(true)} className="ntg-apply-btn" fa="sort">{iconCollapse ? '' : 'Apply'}</Btn> : null}
+            {p.prefs.mode === 'tabs' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={()=>applyTabOrderStore.set_saveTab(true)} className="ntg-apply-btn" fa="sort">{iconCollapse ? '' : 'Apply'}</Btn> : null}
           </div> : null}
-        {s.mode !== 'tabs' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleTabs} className="ntg-apply-btn" fa="square">{iconCollapse ? '' : 'Tabs'}</Btn> : null}
-        {s.mode !== 'bookmarks' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleBookmarks} className="ntg-apply-btn" fa="bookmark">{iconCollapse ? '' : 'Bookmarks'}</Btn> : null}
-        {s.mode !== 'history' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleHistory} className="ntg-apply-btn" fa="history">{iconCollapse ? '' : 'History'}</Btn> : null}
-        {s.mode !== 'sessions' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleSessions} className="ntg-apply-btn" fa="book">{iconCollapse ? '' : 'Sessions'}</Btn> : null}
+        {p.prefs.mode !== 'tabs' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleTabs} className="ntg-apply-btn" fa="square">{iconCollapse ? '' : 'Tabs'}</Btn> : null}
+        {p.prefs.mode !== 'bookmarks' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleBookmarks} className="ntg-apply-btn" fa="bookmark">{iconCollapse ? '' : 'Bookmarks'}</Btn> : null}
+        {p.prefs.mode !== 'history' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleHistory} className="ntg-apply-btn" fa="history">{iconCollapse ? '' : 'History'}</Btn> : null}
+        {p.prefs.mode !== 'sessions' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleSessions} className="ntg-apply-btn" fa="book">{iconCollapse ? '' : 'Sessions'}</Btn> : null}
       </div>
     );
   }

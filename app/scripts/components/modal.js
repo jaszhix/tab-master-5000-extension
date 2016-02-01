@@ -131,7 +131,6 @@ var ModalHandler = React.createClass({
   render: function() {
     var s = this.state;
     var p = this.props;
-    console.log('Modal...')
     return (
       <Modal
         id="modal"
