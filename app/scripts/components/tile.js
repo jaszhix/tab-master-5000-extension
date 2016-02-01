@@ -190,10 +190,7 @@ var Tile = React.createClass({
     var p = this.props;
     if (p.stores.prefs.singleNewTab) {
       var newTabs = p.stores.newTabs;
-      console.log('#newtabs: ',newTabs);
       if (newTabs) {
-        var lastNewTab = _.last(newTabs);
-        console.log('first nt: ', lastNewTab);
         for (var i = 0; i < newTabs.length; i++) {
           if (newTabs[i]) {
             if (p.tab.windowId !== newTabs[i].windowId && p.tab.active) {
@@ -741,6 +738,7 @@ var TileGrid = React.createClass({
   render: function() {
     var p = this.props;
     var s = this.state;
+    var data = p.stores.prefs.sort && p.stores.prefs.sidebar ? s.data : p.data;
     var favicons = faviconStore.get_favicon();
     var ssBg = p.stores.prefs && p.stores.prefs.screenshot && p.stores.prefs.screenshotBg;
     var buttonTransparent = {backgroundColor: 'rgba(237, 237, 237, 0.8)'};
@@ -766,7 +764,7 @@ var TileGrid = React.createClass({
         {p.sidebar ? <Sidebar prefs={p.stores.prefs} tabs={p.stores.tabs} labels={labels} width={p.width} collapse={p.collapse} ssBg={ssBg} /> : null}
         <div className="tile-div" style={p.sidebar ? p.collapse ? {marginLeft: '11%', width: '89%'} : {marginLeft: '13%', width: '87%'} : {width: '100%'}}>
           <div id="grid" ref="grid">
-              {s.data.map((data, i)=> {
+              {data.map((data, i)=> {
                 if (i <= p.tileLimit) {
                   if (!_.find(favicons, {domain: data.url.split('/')[2]})) {
                     faviconStore.set_favicon(data, s.data.length, i);

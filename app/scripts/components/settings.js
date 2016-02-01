@@ -231,8 +231,8 @@ var Settings = React.createClass({
       style.modal.content.bottom = '0%';
     } else {
       style.modal.content.top = '15%';
-      style.modal.content.left = '9%';
-      style.modal.content.right = '9%';
+      style.modal.content.left = '15%';
+      style.modal.content.right = '15%';
       style.modal.content.bottom = '15%';
     }
   },

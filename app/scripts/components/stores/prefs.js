@@ -34,7 +34,7 @@ var prefsStore = Reflux.createStore({
                     screenshotBg: false, 
                     blacklist: true, 
                     sidebar: false, 
-                    sort: true, 
+                    sort: false, 
                     mode: 'tabs', 
                     installTime: Date.now(), 
                     actions: false,
