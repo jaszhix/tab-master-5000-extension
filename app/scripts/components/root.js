@@ -166,9 +166,7 @@ var Root = React.createClass({
     var now = new Date(Date.now()).getTime();
     if (typeof prefs.installTime === 'number') {
       if (prefs.installTime + 2592000000 < now) {
-        _.defer(()=>{
-          modalStore.set_modal(true, 'contribute');
-        });
+        modalStore.set_modal(true, 'contribute');
       }
     }
   },
@@ -180,7 +178,6 @@ var Root = React.createClass({
     var s = this.state;
     this.setState({prefs: e, tileLimit: 100});
     if (s.init) {
-      this.checkTimeInstalled(e);
       if (e.mode !== 'tabs') {
         chrome.tabs.query({currentWindow: true}, (t)=>{
           _.delay(()=>{
@@ -282,6 +279,7 @@ var Root = React.createClass({
         if (opt === 'init') {
           this.setState({load: false});
           actionStore.set_state(false);
+          this.checkTimeInstalled(s.prefs);
         }
       } else if (opt === 'cycle') {
         this.setState({grid: true});

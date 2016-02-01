@@ -71,7 +71,7 @@ var Contribute = React.createClass({
           {p.collapse ? <br /> : null}
           <div>
             <p>Hi, my name is Jason Hicks and I am the author of TM5K. I build and maintain TM5K during my free hours. If you like using this extension, a contribution would help me continue fixing bugs, and adding new features.</p>
-            <p>You can also contribute to this project by submitting <a href="https://github.com/jaszhix/tab-master-5000-chrome-extension/issues" target="_blank">issues</a> on Github if you come across a bug, or have a suggestion. Alternatively, you can enable anonymous error reporting in your <a onClick={this.openPrefs} href="#">Preferences</a>, so I can review errors you might come across.</p>
+            <p>You can also contribute to this project by submitting <a href="https://github.com/jaszhix/tab-master-5000-chrome-extension/issues" target="_blank">issues</a> on Github if you come across a bug, or have a suggestion. When submitting a bug report, please tell me which options are enabled in your <a onClick={this.openPrefs} href="#">Preferences</a>.</p>
             <p>Thank you very much!</p>
           </div>
         </div>
@@ -131,6 +131,7 @@ var ModalHandler = React.createClass({
   render: function() {
     var s = this.state;
     var p = this.props;
+    console.log('Modal...')
     return (
       <Modal
         id="modal"
