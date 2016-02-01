@@ -19,7 +19,7 @@ var prefsStore = Reflux.createStore({
                 chrome.storage.sync.set({preferences: prefs.preferences}, (result)=> {
                   console.log('Imported prefs from local to sync storage', prefs.preferences);
                 });
-                resolve(prefs);
+                resolve(prefs.preferences);
               } else {
                 if (chrome.extension.lastError) {
                   reject(chrome.extension.lastError);
@@ -38,7 +38,8 @@ var prefsStore = Reflux.createStore({
                     mode: 'tabs', 
                     installTime: Date.now(), 
                     actions: false,
-                    sessionsSync: false
+                    sessionsSync: false,
+                    singleNewTab: false
                   };
                   chrome.storage.sync.set({preferences: this.prefs}, (result)=> {
                     this.ready = true;
@@ -69,7 +70,8 @@ var prefsStore = Reflux.createStore({
         installTime: prefs.preferences.installTime,
         settingsMax: prefs.preferences.settingsMax,
         actions: prefs.preferences.actions,
-        sessionsSync: prefs.preferences.sessionsSync
+        sessionsSync: prefs.preferences.sessionsSync,
+        singleNewTab: prefs.preferences.singleNewTab
       };
       if (typeof this.prefs.installTime === 'undefined') {
         this.prefs.installTime = Date.now();

@@ -59,7 +59,7 @@ var Tile = React.createClass({
         this.checkDuplicateTabs();
       }
       if (this.props.tab.title === 'New Tab') {
-        //this.closeNewTabs();
+        this.closeNewTabs();
       }
       this.updateFavicons(p);
       if (p.stores.prefs.screenshot) {
@@ -88,7 +88,7 @@ var Tile = React.createClass({
     }
     if (this.props.tab.title === 'New Tab') {
       _.defer(()=>{
-        //this.closeNewTabs();
+        this.closeNewTabs();
       });
     }
     this.updateFavicons(p);
@@ -188,7 +188,7 @@ var Tile = React.createClass({
   },
   closeNewTabs(){
     var p = this.props;
-    if (p.stores.prefs.screenshot) {
+    if (p.stores.prefs.singleNewTab) {
       var newTabs = p.stores.newTabs;
       console.log('#newtabs: ',newTabs);
       if (newTabs) {
@@ -664,10 +664,7 @@ var TileGrid = React.createClass({
       data: this.props.data,
       sortFlags: flags,
       sortPriority: this.props.keys,
-      title: true,
-      sort: false,
-      render: true,
-      tileLimit: this.props.tileLimit
+      title: true
     };
   },
   componentDidMount(){
@@ -770,7 +767,7 @@ var TileGrid = React.createClass({
         <div className="tile-div" style={p.sidebar ? p.collapse ? {marginLeft: '11%', width: '89%'} : {marginLeft: '13%', width: '87%'} : {width: '100%'}}>
           <div id="grid" ref="grid">
               {s.data.map((data, i)=> {
-                if (i <= s.tileLimit) {
+                if (i <= p.tileLimit) {
                   if (!_.find(favicons, {domain: data.url.split('/')[2]})) {
                     faviconStore.set_favicon(data, s.data.length, i);
                   }

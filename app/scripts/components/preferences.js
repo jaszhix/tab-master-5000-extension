@@ -92,17 +92,7 @@ var Blacklist = React.createClass({
 var Preferences = React.createClass({
   mixins: [Reflux.ListenerMixin],
   getInitialState(){
-    var p = this.props;
     return {
-      drag: p.prefs.drag,
-      context: p.prefs.context,
-      duplicate: p.prefs.duplicate,
-      screenshot: p.prefs.screenshot,
-      screenshotBg: p.prefs.screenshotBg,
-      blacklist: p.prefs.blacklist,
-      animations: p.prefs.animations,
-      actions: p.prefs.actions,
-      sessionsSync: p.prefs.sessionsSync,
       hover: null,
       bytesInUse: null
     };
@@ -111,22 +101,8 @@ var Preferences = React.createClass({
     this.listenTo(screenshotStore, this.getBytesInUse);
     this.getBytesInUse();
   },
-  componentWillReceiveProps(nextProps){
-    var p = nextProps;
-    this.setState({
-      drag: p.prefs.drag,
-      context: p.prefs.context,
-      duplicate: p.prefs.duplicate,
-      screenshot: p.prefs.screenshot,
-      screenshotBg: p.prefs.screenshotBg,
-      blacklist: p.prefs.blacklist,
-      animations: p.prefs.animations,
-      actions: p.prefs.actions,
-      sessionsSync: p.prefs.sessionsSync
-    });
-  },
   getBytesInUse(){
-    if (this.state.screenshot) {
+    if (this.props.prefs.screenshot) {
       utilityStore.get_bytesInUse('screenshots').then((bytes)=>{
         this.setState({bytesInUse: bytes});
       });
@@ -136,7 +112,7 @@ var Preferences = React.createClass({
     this.setState({hover: opt});
   },
   handleClick(opt){
-    prefsStore.set_prefs(opt,!this.state[opt]);
+    prefsStore.set_prefs(opt,!this.props.prefs[opt]);
     reRenderStore.set_reRender(true, 'cycle', this.props.tabs[0].id);
   },
   render: function() {
@@ -147,49 +123,54 @@ var Preferences = React.createClass({
         <Col size="6">
           <Toggle onMouseEnter={()=>this.handleToggle('context')} 
                   onClick={()=>this.handleClick('context')} 
-                  on={s.context}>
+                  on={p.prefs.context}>
                     Enable context menu
           </Toggle>
           <Toggle onMouseEnter={()=>this.handleToggle('drag')}
                   onClick={()=>this.handleClick('drag')} 
-                  on={s.drag}>
+                  on={p.prefs.drag}>
                     Enable draggable tab re-ordering
+          </Toggle>
+          <Toggle onMouseEnter={()=>this.handleToggle('singleNewTab')} 
+                  onClick={()=>this.handleClick('singleNewTab')} 
+                  on={p.prefs.singleNewTab}>
+                    Allow only one New Tab to be open at any time
           </Toggle>
           <Toggle onMouseEnter={()=>this.handleToggle('animations')} 
                   onClick={()=>this.handleClick('animations')} 
-                  on={s.animations}>
+                  on={p.prefs.animations}>
                     Enable animations
           </Toggle>
-          {s.animations ? 
+          {p.prefs.animations ? 
             <Col size="12">
               <Toggle onMouseEnter={()=>this.handleToggle('duplicate')}
                       onClick={()=>this.handleClick('duplicate')} 
-                      on={s.duplicate} child={true}>
+                      on={p.prefs.duplicate} child={true}>
                         Enable pulsing duplicate tabs
               </Toggle>
             </Col> 
           : null}
           <Toggle onMouseEnter={()=>this.handleToggle('blacklist')} 
                   onClick={()=>this.handleClick('blacklist')} 
-                  on={s.blacklist}>
+                  on={p.prefs.blacklist}>
                     Enable website blacklist
           </Toggle>
-          {s.blacklist ? <Blacklist /> : null}
+          {p.prefs.blacklist ? <Blacklist /> : null}
           <Toggle onMouseEnter={()=>this.handleToggle('sessionsSync')}
                   onClick={()=>this.handleClick('sessionsSync')} 
-                  on={s.sessionsSync}>
+                  on={p.prefs.sessionsSync}>
                     Enable session synchronization <strong>(Experimental)</strong>
           </Toggle>
           <Toggle onMouseEnter={()=>this.handleToggle('screenshot')}
                   onClick={()=>this.handleClick('screenshot')}
-                  on={s.screenshot}>
+                  on={p.prefs.screenshot}>
                     Enable tab screenshots <strong>(Experimental)</strong>
           </Toggle>
-          {s.screenshot ? 
+          {p.prefs.screenshot ? 
             <Col size="12">
               <Toggle onMouseEnter={()=>this.handleToggle('screenshotBg')} 
                       onClick={()=>this.handleClick('screenshotBg')} 
-                      on={s.screenshotBg} child={true}>
+                      on={p.prefs.screenshotBg} child={true}>
                         Enable screenshots in the background on hover
               </Toggle>
               {s.bytesInUse ? <p>Screenshot disk usage: {utils.formatBytes(s.bytesInUse, 2)}</p> : null}
@@ -198,7 +179,7 @@ var Preferences = React.createClass({
           : null}
           <Toggle onMouseEnter={()=>this.handleToggle('actions')}
                   onClick={()=>this.handleClick('actions')}
-                  on={s.actions}>
+                  on={p.prefs.actions}>
                     Enable undoing of tab actions <strong>(Experimental)</strong>
           </Toggle>
         </Col>
@@ -214,6 +195,7 @@ var Preferences = React.createClass({
             {s.hover === 'animations' ? <p>This option toggles tab action animations as well as the blur effects. Disabling this is useful on lower end computers with limited hardware acceleration.</p> : null}
             {s.hover === 'actions' ? <p>This option allows you to undo a tab action by pressing CTRL+Z, or using the right-click context menu on a tab tile while in the tabs view.</p> : null}
             {s.hover === 'sessionsSync' ? <p>Enabling session synchronization allows you to keep a saved session persistently up to date with the current Chrome window.</p> : null}
+            {s.hover === 'singleNewTab' ? <p>Enabling this option enforces the closing of all New Tabs except the one that is currently focused. This is useful on older computers.</p> : null}
           </Row>
         </Col>
       </div>
