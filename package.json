@@ -4,7 +4,7 @@
   "description": "Tab Master 5000",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jhen0409/react-chrome-extension-boilerplate"
+    "url": "https://github.com/jaszhix/tab-master-5000-chrome-extension"
   },
   "homepage": "https://chrome.google.com/webstore/detail/tab-master-5000-tab-swiss/mippmhcfjhliihkkdobllhpdnmmciaim",
   "keywords": [
@@ -14,7 +14,10 @@
     "reflux",
     "chrome",
     "extension",
-    "tabs"
+    "tabs",
+    "productivity",
+    "tool",
+    "utility"
   ],
   "author": "jaszhix <jaszhix@gmail.com>",
   "license": "CC-BY-4.0",
