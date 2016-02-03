@@ -143,7 +143,8 @@ var Root = React.createClass({
   componentDidMount() {
     // Initialize Reflux listeners.
     actionStore.clear();
-    this.listenTo(bookmarksStore, this.bookmarksChange);
+    this.listenTo(bookmarksStore, this.updateTabState);
+    this.listenTo(historyStore, this.updateTabState);
     this.listenTo(searchStore, this.searchChanged);
     this.listenTo(reRenderStore, this.reRender);
     this.listenTo(settingsStore, this.settingsChange);
@@ -208,13 +209,16 @@ var Root = React.createClass({
   applyTabOrderChange(e){
     this.setState({applyTabOrder: e});
   },
-  bookmarksChange(e){
+  updateTabState(e){
     if (typeof e === 'string') {
       this.setState({folder: e, folderState: !this.state.folderState});
       this.extendTileLimit(this.state.folderState);    
     } else {
-      this.setState({tabs: e});
-      tabStore.set_tab(e);
+      tabStore.promise().then((Tab)=>{
+        tabStore.set_altTab(Tab);
+        this.setState({tabs: e});
+        tabStore.set_tab(e);
+      });
     }
     
   },
@@ -223,6 +227,7 @@ var Root = React.createClass({
     this.setState({topLoad: true});
     // Query current Chrome window for tabs.
     tabStore.promise().then((Tab)=>{
+      tabStore.set_altTab(Tab);
       if (opt !== 'init') {
         v('#main').css({cursor: 'wait'});
         // Render state is toggled to false on the subsequent re-renders only.
@@ -235,24 +240,16 @@ var Root = React.createClass({
       }
       utilityStore.set_window(Tab[0].windowId);
       var tab = [];
-      if (s.prefs.mode === 'bookmarks') {
-        this.setState({render: false});
-        //tab = bookmarksStore.get_bookmarks();
-      } else if (s.prefs.mode === 'history') {
-        this.setState({render: false});
-        tab = historyStore.get_history();
-      } else if (s.prefs.mode === 'sessions') {
+      if (s.prefs.mode === 'sessions') {
         tab = sessionsStore.flatten();
       } else {
         tab = Tab;
       }
-      //this.setState({tabs: tab});
-      tabStore.set_altTab(Tab);
-      //tabStore.set_tab(tab);
-      if (s.prefs.mode === 'bookmarks') {
-        this.setState({render: true});
-      } else if (s.prefs.mode === 'history') {
-        this.setState({render: true});
+      if (s.prefs.mode !== 'bookmarks' && s.prefs.mode !== 'history') {
+        this.setState({tabs: tab});
+        tabStore.set_tab(tab);
+      } else {
+        this.setState({render: false});
       }
       if (s.prefs.sessionsSync) {
         var sessions = sessionsStore.get_sessions();
@@ -314,9 +311,12 @@ var Root = React.createClass({
     // Method triggered by Chrome event listeners.
     if (!clickStore.get_click()) {
       if (reRender[0]) {
+        var s = this.state;
         // Treat attaching/detaching and created tabs with a full re-render.
-        if (this.state.prefs.mode === 'bookmarks') {
-          this.bookmarksChange(bookmarksStore.get_bookmarks());
+        if (s.prefs.mode === 'bookmarks') {
+          this.updateTabState(bookmarksStore.get_bookmarks());
+        } else if (s.prefs.mode === 'history') {
+          this.updateTabState(historyStore.get_history());
         } else {
           this.captureTabs(reRender[1]);
         }
