@@ -15,6 +15,13 @@ export var tabs = (opt)=>{
     return tabStore.get_tab();
   }
 };
+export var bgPrefs = new Promise((resolve, reject)=>{
+  chrome.runtime.sendMessage(chrome.runtime.id, {method: 'prefs'}, (response)=>{
+    if (response && response.prefs) {
+      resolve(response.prefs);
+    }
+  });
+});
 // Chrome event listeners set to trigger re-renders.
 var reRender = (type, id) => {
   chrome.idle.queryState(900, (idle)=>{
@@ -177,38 +184,7 @@ export var reRenderStore = Reflux.createStore({
     this.reRender[1] = type;
     this.reRender[2] = object;
     console.log('reRender: ', this.reRender);
-    var defer = (opt)=>{
-      _.defer(()=>{
-        if (opt === 'alt') {
-          this.trigger(this.reRender);
-        }
-        _.delay(()=>{
-          this.trigger(this.reRender);
-        },500);
-      });
-    };
-    if (type === 'defer' || type === 'bookmarks' || type === 'history') {
-      if (type !== 'defer') {
-        var getMode = new Promise((resolve, reject)=>{
-          chrome.runtime.sendMessage(chrome.runtime.id, {method: 'prefs'}, (response)=>{
-            if (response && response.prefs) {
-              resolve(response.prefs.mode);
-            }
-          });
-        });
-        getMode.then((mode)=>{
-          if (type === 'bookmarks' && mode === 'bookmarks') {
-            defer('alt');
-          } else if (type === 'history' && mode === 'history') {
-            defer('alt');
-          }
-        });
-      } else {
-        defer();
-      }
-    } else {
-      this.trigger(this.reRender);
-    }
+    this.trigger(this.reRender);
   },
   get_reRender: function() {
     return this.reRender;
@@ -516,8 +492,15 @@ export var sidebarStore = Reflux.createStore({
 
 export var bookmarksStore = Reflux.createStore({
   init: function() {
-    this.bookmarks = [];
-    this.state = false;
+    bgPrefs.then((prefs)=>{
+      console.log('prefs!!',prefs)
+      if (prefs.mode === 'bookmarks') {
+        this.set_bookmarks().then((bk)=>{
+          this.bookmarks = bk;
+          this.trigger(this.bookmarks);
+        });
+      }
+    });
     this.folder = null;
   },
   set_bookmarks: function(value) {
@@ -528,24 +511,26 @@ export var bookmarksStore = Reflux.createStore({
         var t = tabStore.get_altTab();
         var openTab = 0;
         var iter = -1;
+        var defaults = {
+          mutedInfo: {muted: false},
+          audible: false,
+          active: false,
+          favIconUrl: '',
+          highlighted: false,      
+          pinned: false,
+          selected: false,
+          status: 'complete',
+          index: iter,
+          openTab: null,
+          windowId: utilityStore.get_window(),
+        };
         var addBookmarkChildren = (bookmarkLevel, title='')=> {
           bookmarkLevel.folder = title;
           iter = ++iter;
           if (!bookmarkLevel.children) {
             _.assign(bookmarkLevel, {
-              mutedInfo: {muted: false},
-              audible: false,
-              active: false,
-              favIconUrl: '',
-              highlighted: false,
-              index: iter,
-              pinned: false,
-              selected: false,
-              status: 'complete',
-              windowId: utilityStore.get_window(),
               bookmarkId: bookmarkLevel.id,
-              id: parseInt(bookmarkLevel.id),
-              openTab: null
+              id: parseInt(bookmarkLevel.id)
             });
             bookmarks.push(bookmarkLevel);
           } else {
@@ -566,17 +551,10 @@ export var bookmarksStore = Reflux.createStore({
         for (var i = bookmarks.length - 1; i >= 0; i--) {
           for (var y = t.length - 1; y >= 0; y--) {
             if (bookmarks[i].url === t[y].url) {
-              _.assign(bookmarks[i], {
-                openTab: ++openTab,
-                id: t[y].id,
-                mutedInfo: {muted: t[y].mutedInfo.muted},
-                audible: t[y].audible,
-                favIconUrl: t[y].favIconUrl,
-                highlighted: t[y].highlighted,
-                pinned: t[y].pinned,
-                selected: t[y].selected,
-                windowId: t[y].windowId
-              });
+              bookmarks[i] = _.merge(bookmarks[i], t[y]);
+              bookmarks[i].openTab = ++openTab;
+            } else {
+              bookmarks[i] = _.merge(bookmarks[i], defaults);
             }
           }
         }
@@ -590,7 +568,7 @@ export var bookmarksStore = Reflux.createStore({
   get_bookmarks: function() {
     this.set_bookmarks().then((bk)=>{
       this.bookmarks = bk;
-      console.log('bookmarks: ',this.bookmarks);
+      this.trigger(this.bookmarks);
     });
     return this.bookmarks;
   },

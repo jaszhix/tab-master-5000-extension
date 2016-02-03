@@ -143,6 +143,7 @@ var Root = React.createClass({
   componentDidMount() {
     // Initialize Reflux listeners.
     actionStore.clear();
+    this.listenTo(bookmarksStore, this.bookmarksChange);
     this.listenTo(searchStore, this.searchChanged);
     this.listenTo(reRenderStore, this.reRender);
     this.listenTo(settingsStore, this.settingsChange);
@@ -155,7 +156,7 @@ var Root = React.createClass({
     this.listenTo(screenshotStore, this.screenshotsChange);
     this.listenTo(relayStore, this.relayChange);
     this.listenTo(applyTabOrderStore, this.applyTabOrderChange);
-    this.listenTo(bookmarksStore, this.folderChange);
+    
 
     console.log('Chrome Version: ',utilityStore.chromeVersion());
     console.log('Manifest: ', utilityStore.get_manifest());
@@ -207,9 +208,15 @@ var Root = React.createClass({
   applyTabOrderChange(e){
     this.setState({applyTabOrder: e});
   },
-  folderChange(e){
-    this.setState({folder: e, folderState: !this.state.folderState});
-    this.extendTileLimit(this.state.folderState);
+  bookmarksChange(e){
+    if (typeof e === 'string') {
+      this.setState({folder: e, folderState: !this.state.folderState});
+      this.extendTileLimit(this.state.folderState);    
+    } else {
+      this.setState({tabs: e});
+      tabStore.set_tab(e);
+    }
+    
   },
   captureTabs(opt) {
     var s = this.state;
@@ -230,7 +237,7 @@ var Root = React.createClass({
       var tab = [];
       if (s.prefs.mode === 'bookmarks') {
         this.setState({render: false});
-        tab = bookmarksStore.get_bookmarks();
+        //tab = bookmarksStore.get_bookmarks();
       } else if (s.prefs.mode === 'history') {
         this.setState({render: false});
         tab = historyStore.get_history();
@@ -239,9 +246,9 @@ var Root = React.createClass({
       } else {
         tab = Tab;
       }
-      this.setState({tabs: tab});
+      //this.setState({tabs: tab});
       tabStore.set_altTab(Tab);
-      tabStore.set_tab(tab);
+      //tabStore.set_tab(tab);
       if (s.prefs.mode === 'bookmarks') {
         this.setState({render: true});
       } else if (s.prefs.mode === 'history') {
@@ -308,7 +315,11 @@ var Root = React.createClass({
     if (!clickStore.get_click()) {
       if (reRender[0]) {
         // Treat attaching/detaching and created tabs with a full re-render.
-        this.captureTabs(reRender[1]);
+        if (this.state.prefs.mode === 'bookmarks') {
+          this.bookmarksChange(bookmarksStore.get_bookmarks());
+        } else {
+          this.captureTabs(reRender[1]);
+        }
       }
     }
   },
