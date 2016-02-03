@@ -1,14 +1,20 @@
 #### Release Notes
 
+##### v0.14 / *2-3-16*
+
+*   Improved the performance of bookmarks and history view modes.
+*   The closing of additional New Tabs behavior has been removed from screenshot mode, and moved to its own separate option in Preferences.
+*   Fixed Sessions grid view tiles that are open tabs not being assigned the correct tab ID, and improved performance.
+*   Known issues
+  * Bookmarks that are open do not display as open tabs in bookmarks view.
+  * The undo tab action functionality can lose track of tab action history occasionally.
+
 ##### v0.13.1 / *1-31-16*
 
 *   Removed anonymous error reporting as it relies on the now defunct Parse API, and is not a critical feature.
 *   Made improvements to how screenshots are captured and rendered. Tabs are now more reliably captured, and continue capturing if tabs are activated in another window.
 *   Refactored the code so the child components are more stateless, allowing the extension to perform faster.
 *   Close all tabs context menu option now is only available in tab view mode.
-*   Known issues
-  * Open tabs that are closed in Sessions grid view mode will not revert to unopened Session tiles.
-  * The undo tab action functionality can lose track of tab action history occassionally.
 
 ##### v0.13 / *1-26-16*
 

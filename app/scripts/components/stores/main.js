@@ -551,7 +551,7 @@ export var bookmarksStore = Reflux.createStore({
             }
           }
         }
-        bookmarks = _.orderBy(bookmarks, ['openTab'], ['asc']);
+        bookmarks = _.chain(bookmarks).orderBy(['openTab'], ['asc']).uniqBy('id').value();
         if (bookmarks) {
           resolve(bookmarks);
         }
