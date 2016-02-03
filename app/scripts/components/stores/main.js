@@ -94,7 +94,11 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       }
     }
   } else if (msg.type === 'update') {
-    throttled.update(msg.type, msg.e);
+    if (prefs.mode !== 'tabs' && prefs.mode !== 'sessions') {
+      reRenderStore.set_reRender(true, 'cycle', msg.e);
+    } else {
+      throttled.update(msg.type, msg.e);
+    }
   } else if (msg.type === 'move') {
     throttled.update(msg.type, msg.e);
   } else if (msg.type === 'attach') {
@@ -463,16 +467,9 @@ export var blacklistStore = Reflux.createStore({
 
 export var sidebarStore = Reflux.createStore({
   init: function() {
-    var getSidebar = new Promise((resolve, reject)=>{
-      chrome.runtime.sendMessage(chrome.runtime.id, {method: 'prefs'}, (response)=>{
-        if (response && response.prefs) {
-          resolve(response.prefs.sidebar);
-        }
-      });
-    });
-    getSidebar.then((sidebar)=>{
-      if (sidebar) {
-        this.sidebar = sidebar;
+    bgPrefs.then((prefs)=>{
+      if (prefs.sidebar) {
+        this.sidebar = prefs.sidebar;
         this.trigger(this.sidebar);
       } else {
         this.sidebar = false;
@@ -493,12 +490,8 @@ export var sidebarStore = Reflux.createStore({
 export var bookmarksStore = Reflux.createStore({
   init: function() {
     bgPrefs.then((prefs)=>{
-      console.log('prefs!!',prefs)
       if (prefs.mode === 'bookmarks') {
-        this.set_bookmarks().then((bk)=>{
-          this.bookmarks = bk;
-          this.trigger(this.bookmarks);
-        });
+        this.get_bookmarks();
       }
     });
     this.folder = null;
@@ -583,6 +576,11 @@ export var bookmarksStore = Reflux.createStore({
 
 export var historyStore = Reflux.createStore({
   init: function() {
+    bgPrefs.then((prefs)=>{
+      if (prefs.mode === 'history') {
+        this.get_history();
+      }
+    });
     this.history = [];
     this.state = false;
     this.maxResults = 100;
@@ -624,7 +622,7 @@ export var historyStore = Reflux.createStore({
   get_history: function() {
     this.set_history().then((h)=>{
       this.history = h;
-      console.log('history: ',this.history);
+      this.trigger(this.history);
     });
     return this.history;
   },
