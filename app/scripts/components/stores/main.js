@@ -615,31 +615,28 @@ export var historyStore = Reflux.createStore({
         console.log(h);
         var t = tabStore.get_altTab();
         var openTab = 0;
+        var openTabObj = null;
         for (var i = h.length - 1; i >= 0; i--) {
-          h[i].mutedInfo = {muted: false};
-          h[i].audible = false;
-          h[i].active = false;
-          h[i].favIconUrl = '';
-          h[i].highlighted = false;
-          h[i].index = i;
-          h[i].pinned = false;
-          h[i].selected = false;
-          h[i].status = 'complete';
-          h[i].windowId = utilityStore.get_window();
-          h[i].id = parseInt(h[i].id);
-          h[i].openTab = null;
+          _.assign(h[i], {
+            openTab: null,
+            id: parseInt(h[i].id),
+            mutedInfo: {muted: false},
+            audible: false,
+            active: false,
+            favIconUrl: '',
+            highlighted: false,
+            pinned: false,
+            selected: false,
+            status: 'complete',
+            index: i,
+            windowId: utilityStore.get_window()
+          });
           for (var y = t.length - 1; y >= 0; y--) {
+            openTabObj = _.find(t, {windowId: utilityStore.get_window()});
             if (h[i].url === t[y].url) {
+              h[i] = _.merge(h[i], t[y]);
               h[i].openTab = ++openTab;
-              h[i].id = t[y].id;
-              h[i].mutedInfo.muted = t[y].mutedInfo.muted;
-              h[i].audible = t[y].audible;
-              h[i].favIconUrl = t[y].favIconUrl;
-              h[i].highlighted = t[y].highlighted;
-              h[i].pinned = t[y].pinned;
-              h[i].selected = t[y].selected;
-              h[i].windowId = t[y].windowId;
-            }
+            } 
           }
         }
         resolve(h);
@@ -967,16 +964,17 @@ export var sessionsStore = Reflux.createStore({
     var allTabs = [];
     var t = tabStore.get_altTab();
     var openTab = 0;
-    var currentTabIterUrl = null;
+    var openTabObj = null;
     for (var i = this.sessions.length - 1; i >= 0; i--) {
       for (var y = this.sessions[i].tabs.length - 1; y >= 0; y--) {
-        currentTabIterUrl = _.find(t, {url: this.sessions[i].tabs[y].url});
+        openTabObj = _.find(t, {url: this.sessions[i].tabs[y].url});
         _.assign(this.sessions[i].tabs[y], {
-          openTab: currentTabIterUrl ? ++openTab : null,
-          pinned: currentTabIterUrl ? currentTabIterUrl.pinned : false,
-          mutedInfo: currentTabIterUrl ? {muted: currentTabIterUrl.mutedInfo.muted} : {muted: false},
+          openTab: openTabObj ? ++openTab : null,
+          pinned: openTabObj ? openTabObj.pinned : false,
+          mutedInfo: openTabObj ? {muted: openTabObj.mutedInfo.muted} : {muted: false},
+          audible: openTabObj ? openTabObj.audible : false,
           windowId: utilityStore.get_window(),
-          id: currentTabIterUrl ? currentTabIterUrl.id : Date.now() / Math.random(),
+          id: openTabObj ? openTabObj.id : Date.now() / Math.random(),
           tabId: this.sessions[i].tabs[y].id,
           label: this.sessions[i].label,
           sTimeStamp: this.sessions[i].timeStamp
