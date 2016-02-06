@@ -235,6 +235,19 @@ input.label-session-input {
     border-radius: 2px;
     float: left;
 }
+.ntg-tile-disabled {
+    text-align: center;
+    background-color: rgb(237, 237, 237);
+    background-size: cover;
+    margin: 3px;
+    height: 120px;
+    width: 200px;
+    overflow-wrap: break-word;
+    border-radius: 2px;
+    float: left;
+    opacity: 0.4;
+    cursor: 'default';
+}
 .ntg-tile-hover {
     text-align: center;
     background-color: rgb(247, 247, 247);
