@@ -50,34 +50,30 @@ var Tile = React.createClass({
     return this.state.render;
   },
   componentWillReceiveProps(nextProps){
-    if (nextProps !== this.props) {
-      var p = nextProps;
-      this.setTabMode();
-      if (p.tab.pinned) {
-        this.handleFocus();
-      }
-      if (p.stores.prefs.mode === 'tabs') {
-        this.checkDuplicateTabs();
-      }
-      if (this.props.tab.title === 'New Tab') {
-        this.closeNewTabs();
-      }
-      this.updateFavicons(p);
-      if (p.stores.prefs.screenshot) {
-        this.updateScreenshot(null, p);
-      }
-      if (p.stores.search !== this.props.stores.search) {
-        this.filterTabs(null, p);
-      }
-      if (p.stores.relay !== this.props.stores.relay) {
-        this.handleRelays(p);
-      }
-      if (p.stores.applyTabOrder) {
-        this.applyTabOrder();
-      }
-      if (p.stores.folder !== this.props.stores.folder) {
-        this.filterFolders(p);
-      }
+    var p = this.props;
+    this.setTabMode();
+    if (nextProps.tab.pinned) {
+      this.handleFocus(null, null, nextProps);
+    }
+    if (nextProps.stores.prefs.mode === 'tabs') {
+      this.checkDuplicateTabs();
+    }
+    if (p.tab.title === 'New Tab') {
+      this.closeNewTabs();
+    }
+    this.updateFavicons(nextProps);
+    if (nextProps.stores.prefs.screenshot) {
+      this.updateScreenshot(null, nextProps);
+    }
+    if (nextProps.stores.search !== p.stores.search) {
+      this.filterTabs(null, nextProps);
+    }
+    this.handleRelays(nextProps);
+    if (nextProps.stores.applyTabOrder) {
+      this.applyTabOrder();
+    }
+    if (nextProps.stores.folder !== p.stores.folder) {
+      this.filterFolders(nextProps);
     }
   },
   initMethods(){
