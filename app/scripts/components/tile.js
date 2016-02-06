@@ -8,6 +8,7 @@ import moment from 'moment';
 import Draggable from 'react-draggable';
 import utils from './utils';
 
+import {relayStore, faviconStore, sessionsStore, bookmarksStore, dupeStore, reRenderStore, applyTabOrderStore, utilityStore, contextStore, dragStore, draggedStore} from './stores/main';
 import prefsStore from './stores/prefs';
 import tabStore from './stores/tab';
 
@@ -38,7 +39,8 @@ var Tile = React.createClass({
       openTab: false,
       bookmarks: false,
       history: false,
-      sessions: false
+      sessions: false,
+      apps: false
     };
   },
   componentDidMount() {
@@ -425,13 +427,13 @@ var Tile = React.createClass({
   handleContextClick(e){
     if (this.props.stores.prefs.context) {
       e.preventDefault();
-      contextStore.set_context(true, this.props.tab.id);
+      contextStore.set_context(true, this.props.tab);
     }
   },
   handleRelays(props){
-    var p = props;
-    var r = p.stores.relay;
-    if (r[1] === p.tab.id) {
+    var r = props.stores.relay;
+    if (r[1] && r[1].index === props.tab.index) {
+      var p = props;
       if (r[0] === 'close') {
         this.handleCloseTab(r[1]);
       } else if (r[0] === 'closeAll') {
@@ -443,6 +445,7 @@ var Tile = React.createClass({
       } else if (r[0] === 'closeDupes') {
         this.checkDuplicateTabs('close');
       }
+      relayStore.set_relay('', null);
     }
   },
   handleFocus(opt, bool){
