@@ -215,6 +215,7 @@ var Root = React.createClass({
     this.setState({apps: e});
   },
   updateTabState(e){
+    console.log('updateTabState: ',e);
     if (typeof e === 'string') {
       this.setState({folder: e, folderState: !this.state.folderState});
       this.extendTileLimit(this.state.folderState);    
@@ -311,11 +312,10 @@ var Root = React.createClass({
       this.setState({tileLimit: this.state.oldTileLimit});
     }
   },
-  reRender() {
-    var reRender = reRenderStore.get_reRender();
+  reRender(e) {
     // Method triggered by Chrome event listeners.
     if (!clickStore.get_click()) {
-      if (reRender[0]) {
+      if (e[0]) {
         var s = this.state;
         // Treat attaching/detaching and created tabs with a full re-render.
         if (s.prefs.mode === 'bookmarks') {
@@ -325,7 +325,7 @@ var Root = React.createClass({
         } else if (s.prefs.mode === 'apps') {
           this.updateTabState(chromeAppStore.get());
         } else {
-          this.captureTabs(reRender[1]);
+          this.captureTabs(e[1]);
         }
       }
     }
@@ -412,16 +412,15 @@ var Root = React.createClass({
       />
     );
   },
-  contextTrigger(t){
-    var context = contextStore.get_context();
-    if (context[1] === 'newVersion') {
+  contextTrigger(e){
+    if (e[1] === 'newVersion') {
       this.setState({event: 'newVersion'});
-    } else if (context[1] === 'installed') {
+    } else if (e[1] === 'installed') {
       this.setState({event: 'installed'});
-    } else if (context[1] === 'versionUpdate') {
+    } else if (e[1] === 'versionUpdate') {
       this.setState({event: 'versionUpdate'});
     } else {
-      this.setState({context: context[0]});
+      this.setState({context: e[0]});
     }
   },
   sortTrigger(){
