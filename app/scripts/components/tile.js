@@ -399,7 +399,7 @@ var Tile = React.createClass({
   handleApp(opt){
     var p = this.props;
     if (opt === 'toggleEnable') {
-      chrome.management.setEnabled(p.tab.id, !p.tab.enabled)
+      chrome.management.setEnabled(p.tab.id, !p.tab.enabled);
     }
 
   },

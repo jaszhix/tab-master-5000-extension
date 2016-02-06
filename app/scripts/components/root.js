@@ -15,6 +15,7 @@ import {Btn, Col, Row, Container} from './bootstrap';
 import TileGrid from './tile';
 import ModalHandler from './modal';
 import ContextMenu from './context';
+import Preferences from './preferences';
 
 var Loading = React.createClass({
   render: function() {
@@ -452,7 +453,7 @@ var Root = React.createClass({
     };
     return (
       <div className="container-main">
-        {s.load ? <Loading /> : <div>
+        {v('#options').node() ? <Preferences settingsMax={true} prefs={s.prefs} tabs={s.tabs} /> : s.load ? <Loading /> : <div>
           {s.context ? <ContextMenu actions={s.actions} tabs={s.tabs} prefs={s.prefs} cursor={cursor} context={context} chromeVersion={s.chromeVersion}/> : null}
           <ModalHandler tabs={s.prefs.mode === 'tabs' ? s.tabs : tabStore.get_altTab()} sessions={s.sessions} prefs={s.prefs} favicons={s.favicons} collapse={s.collapse} />
             {s.tabs ? <div className="tile-container">
@@ -465,11 +466,6 @@ var Root = React.createClass({
     );
   }
 });
-function run() {
+v(document).ready(()=>{
   ReactDOM.render(<Root />, document.getElementById('main'));
-}
-if ( window.addEventListener ) {
-  v().ready(run);
-} else {
-  v().load(run);
-}
+});
