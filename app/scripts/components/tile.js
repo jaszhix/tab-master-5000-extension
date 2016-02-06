@@ -180,7 +180,7 @@ var Tile = React.createClass({
             this.handleCloseTab(t[i].id);
           } else if (p.tab.id === t[i].id && p.stores.prefs.duplicate) {
             _.defer(()=>{
-              this.handleFocus('duplicate',true);
+              this.handleFocus('duplicate',true,p);
             });
           }
         }
@@ -444,12 +444,11 @@ var Tile = React.createClass({
       relayStore.set_relay('', null);
     }
   },
-  handleFocus(opt, bool){
-    var p = this.props;
-    var s = this.state;
+  handleFocus(opt, bool, props){
+    var p = props;
     if (p.stores.prefs.animations) {
       if (opt === 'duplicate') {
-        if (!s.bookmarks && !s.history) {
+        if (p.stores.prefs.mode === 'tabs') {
           this.setState({focus: bool, duplicate: bool});
         }
       } else {
