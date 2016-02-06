@@ -320,8 +320,8 @@ export var contextStore = Reflux.createStore({
   set_context: function(value, id) {
     this.context[0] = value;
     this.context[1] = id;
-    console.log('context: ', value);
     this.trigger(this.context);
+    console.log('context: ', value);
   },
   get_context: function() {
     return this.context;
@@ -488,7 +488,21 @@ export var sidebarStore = Reflux.createStore({
     return this.sidebar;
   }
 });
-
+var defaults = (iteration)=>{
+  return {
+    mutedInfo: {muted: false},
+    audible: false,
+    active: false,
+    favIconUrl: '',
+    highlighted: false,      
+    pinned: false,
+    selected: false,
+    status: 'complete',
+    index: iteration,
+    openTab: null,
+    windowId: utilityStore.get_window(),
+  };
+};
 export var bookmarksStore = Reflux.createStore({
   init: function() {
     bgPrefs.then((prefs)=>{
@@ -506,19 +520,6 @@ export var bookmarksStore = Reflux.createStore({
         var t = tabStore.get_altTab();
         var openTab = 0;
         var iter = -1;
-        var defaults = {
-          mutedInfo: {muted: false},
-          audible: false,
-          active: false,
-          favIconUrl: '',
-          highlighted: false,      
-          pinned: false,
-          selected: false,
-          status: 'complete',
-          index: iter,
-          openTab: null,
-          windowId: utilityStore.get_window(),
-        };
         var addBookmarkChildren = (bookmarkLevel, title='')=> {
           bookmarkLevel.folder = title;
           iter = ++iter;
@@ -549,7 +550,7 @@ export var bookmarksStore = Reflux.createStore({
               bookmarks[i] = _.merge(bookmarks[i], t[y]);
               bookmarks[i].openTab = ++openTab;
             } else {
-              bookmarks[i] = _.merge(bookmarks[i], defaults);
+              bookmarks[i] = _.merge(bookmarks[i], defaults(iter));
             }
           }
         }
