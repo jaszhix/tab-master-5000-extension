@@ -82,7 +82,7 @@ var Search = React.createClass({
                 type="text" 
                 value={searchStore.get_search()}
                 className="form-control search-tabs" 
-                placeholder={p.prefs.mode === 'bookmarks' ? 'Search bookmarks...' : p.prefs.mode === 'history' ? 'Search history...' : p.prefs.mode === 'sessions' ? 'Search sessions...' : p.prefs.mode === 'apps' ? 'Search apps...' : 'Search tabs...'}
+                placeholder={p.prefs.mode === 'bookmarks' ? 'Search bookmarks...' : p.prefs.mode === 'history' ? 'Search history...' : p.prefs.mode === 'sessions' ? 'Search sessions...' : p.prefs.mode === 'apps' ? 'Search apps...' : p.prefs.mode === 'extensions' ? 'Search extensions...' : 'Search tabs...'}
                 onChange={this.handleSearch} />
               </form>
             </Col>
@@ -252,7 +252,10 @@ var Root = React.createClass({
       } else {
         tab = Tab;
       }
-      if (s.prefs.mode !== 'bookmarks' && s.prefs.mode !== 'history' && s.prefs.mode !== 'apps') {
+      if (s.prefs.mode !== 'bookmarks' 
+        && s.prefs.mode !== 'history' 
+        && s.prefs.mode !== 'apps' 
+        && s.prefs.mode !== 'extensions') {
         this.setState({tabs: tab});
         tabStore.set_tab(tab);
       } else {
@@ -324,7 +327,9 @@ var Root = React.createClass({
         } else if (s.prefs.mode === 'history') {
           this.updateTabState(historyStore.get_history());
         } else if (s.prefs.mode === 'apps') {
-          this.updateTabState(chromeAppStore.get());
+          this.updateTabState(chromeAppStore.get(true));
+        } else if (s.prefs.mode === 'extensions') {
+          this.updateTabState(chromeAppStore.get(false));
         } else {
           this.captureTabs(e[1]);
         }

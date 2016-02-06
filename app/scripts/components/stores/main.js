@@ -973,34 +973,34 @@ export var chromeAppStore = Reflux.createStore({
   init(){
     bgPrefs.then((prefs)=>{
       if (prefs.mode === 'apps') {
-        this.set();
+        this.get(true);
+      } else if (prefs.mode === 'extensions') {
+        this.get(false);
       }
     });
   },
-  set(){
+  set(app){
     return new Promise((resolve, reject)=>{
       chrome.management.getAll((apps)=>{
-        var _apps = _.filter(apps, {isApp: true});
-        
+        var _apps = _.filter(apps, {isApp: app});
         if (_apps) {
           for (let i = _apps.length - 1; i >= 0; i--) {
-            console.log('_.first(apps[i].icons)', _.first(_apps[i].icons).url);
             _.assign(_apps[i], {
-              favIconUrl: _.last(_apps[i].icons).url,
+              favIconUrl: _apps[i].icons ? _.last(_apps[i].icons).url : '../images/IDR_EXTENSIONS_FAVICON@2x.png',
               id: _apps[i].id,
-              url: _apps[i].appLaunchUrl,
+              url: app ? _apps[i].appLaunchUrl : _apps[i].optionsUrl,
               title: _apps[i].name
             });
             _apps[i] = _.merge(defaults(i), _apps[i]);
           }
           resolve(_apps);
-          console.log('installed apps: ', apps);
+          console.log('installed apps: ', _apps);
         }
       });
     });
   },
-  get(){
-    this.set().then((apps)=>{
+  get(app){
+    this.set(app).then((apps)=>{
       this.apps = apps;
       this.trigger(this.apps);
     }).catch(()=>{

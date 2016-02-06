@@ -71,17 +71,26 @@ var ContextMenu = React.createClass({
     var p = this.props;
     var s = this.state;
     var close = p.prefs.mode !== 'apps' && p.prefs.mode !== 'tabs' && !s.openTab ? ' Remove ' : ' Close ';
-    var notBookmarksHistoryApps = p.prefs.mode !== 'bookmarks' && p.prefs.mode !== 'history' && p.prefs.mode !== 'apps';
+    var notBookmarksHistoryAppsExt = p.prefs.mode !== 'bookmarks' && p.prefs.mode !== 'history' && p.prefs.mode !== 'apps' && p.prefs.mode !== 'extensions';
+    var notAppsExt = p.prefs.mode !== 'apps' && p.prefs.mode !== 'extensions';
     return (
       <div className="ntg-context">
         <div style={{left: p.cursor.page.x, top: p.cursor.page.y}} className="ntg-context-menu">
-          {p.prefs.mode !== 'apps' ? <Btn onClick={()=>this.handleRelay('close')} className="ntg-context-btn"><i className={p.prefs.mode !== 'tabs' && !s.openTab ? "fa fa-eraser" : "fa fa-times"} />{close}</Btn> : null}
-          {p.prefs.mode === 'tabs' ? <Btn onClick={()=>this.handleRelay('closeAll')} className="ntg-context-btn-close-all"><i className="fa fa-asterisk" />{close+'all from ' + s.tab.url.split('/')[2]}</Btn> : null}
-          {this.getStatus('duplicate') && p.prefs.mode !== 'apps' ? <Btn onClick={()=>this.handleRelay('closeDupes')} className="ntg-context-btn-close-all"><i className="fa fa-asterisk" /> {close+'duplicates'}</Btn> : null}
-          {s.tab.openTab || notBookmarksHistoryApps ? <Btn onClick={()=>this.handleRelay('pin')} className="ntg-context-btn"><i className="fa fa-map-pin" /> {s.tab.pinned ? 'Unpin' : 'Pin'}</Btn> : null}
-          {p.chromeVersion >= 46 ? s.tab.openTab || notBookmarksHistoryApps ? <Btn onClick={()=>this.handleRelay('mute')} className="ntg-context-btn"><i className="fa fa-volume-off" /> {s.tab.mutedInfo.muted ? 'Unmute' : 'Mute'}</Btn> : null : null}
-          {p.prefs.actions && this.getStatus('actions') && p.prefs.mode !== 'apps' ? <Btn onClick={()=>this.handleRelay('actions')} className="ntg-context-btn"><i className="fa fa-history" />{' Undo'+this.getStatus('actions')} </Btn> : null}
-          {p.prefs.mode === 'apps' ? <Btn onClick={()=>this.handleRelay('toggleEnable')} className="ntg-context-btn" fa={s.tab.enabled ? 'toggle-on' : 'toggle-off'}>{s.tab.enabled ? ' Disable' : ' Enable'}</Btn> : null}
+          {notAppsExt ? <Btn onClick={()=>this.handleRelay('close')} className="ntg-context-btn" fa={p.prefs.mode !== 'tabs' && !s.openTab ? "eraser" : "times"}>{close}</Btn> : null}
+          {p.prefs.mode === 'tabs' ? <Btn onClick={()=>this.handleRelay('closeAll')} className="ntg-context-btn-close-all" fa="asterisk">{close+'all from ' + s.tab.url.split('/')[2]}</Btn> : null}
+          {notAppsExt && this.getStatus('duplicate') ? <Btn onClick={()=>this.handleRelay('closeDupes')} className="ntg-context-btn-close-all" fa="asterisk">{close+'duplicates'}</Btn> : null}
+          {s.tab.openTab || notBookmarksHistoryAppsExt ? <Btn onClick={()=>this.handleRelay('pin')} className="ntg-context-btn" fa="map-pin">{s.tab.pinned ? 'Unpin' : 'Pin'}</Btn> : null}
+          {p.chromeVersion >= 46 ? s.tab.openTab || notBookmarksHistoryAppsExt ? <Btn onClick={()=>this.handleRelay('mute')} className="ntg-context-btn" fa={s.tab.mutedInfo.muted ? 'volume-up' : 'volume-off'}>{s.tab.mutedInfo.muted ? 'Unmute' : 'Mute'}</Btn> : null : null}
+          {notAppsExt && p.prefs.actions && this.getStatus('actions') ? <Btn onClick={()=>this.handleRelay('actions')} className="ntg-context-btn" fa="history">{' Undo'+this.getStatus('actions')} </Btn> : null}
+          {s.tab.enabled ? p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ? <Btn onClick={()=>this.handleRelay('launchApp')} className="ntg-context-btn" style={{fontWeight: 600}} fa="external-link-square">{s.tab.title}</Btn> : null : null}
+          {p.prefs.mode === 'apps' && s.tab.enabled ? s.tab.availableLaunchTypes.map((type, i)=>{
+            if (type !== s.tab.launchType) {
+              return <Btn key={i} onClick={()=>this.handleRelay(type)} className="ntg-context-btn" fa="gear">{_.endsWith(type, 'SCREEN') ? 'Open full screen' : _.endsWith(type, 'PINNED_TAB') ? 'Open as a pinned tab' : 'Open as a '+_.last(_.words(type.toLowerCase()))}</Btn>;
+            }
+          }) : null}
+          {p.prefs.mode === 'apps' && s.tab.enabled ? <Btn onClick={()=>this.handleRelay('createAppShortcut')} className="ntg-context-btn" fa="plus-square-o">Create Shortcut</Btn> : null}
+          {s.tab.mayDisable ? p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ? <Btn onClick={()=>this.handleRelay('toggleEnable')} className="ntg-context-btn" fa={s.tab.enabled ? 'toggle-on' : 'toggle-off'}>{s.tab.enabled ? ' Disable' : ' Enable'}</Btn> : null : null}
+          {s.tab.mayDisable ? p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ? <Btn onClick={()=>this.handleRelay('uninstallApp')} className="ntg-context-btn" fa="trash-o">Uninstall</Btn> : null : null}
         </div>
       </div>
     );

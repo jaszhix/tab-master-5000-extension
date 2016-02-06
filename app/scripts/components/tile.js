@@ -144,7 +144,7 @@ var Tile = React.createClass({
     } else {
       this.setState({sessions: false});
     }
-    if (p.stores.prefs.mode === 'apps') {
+    if (p.stores.prefs.mode === 'apps' || p.stores.prefs.mode === 'extensions') {
       this.setState({apps: true});
     } else {
       this.setState({apps: false});
@@ -400,6 +400,15 @@ var Tile = React.createClass({
     var p = this.props;
     if (opt === 'toggleEnable') {
       chrome.management.setEnabled(p.tab.id, !p.tab.enabled);
+    } else if (opt === 'uninstallApp') {
+      chrome.management.uninstall(p.tab.id);
+    } else if (opt  === 'createAppShortcut') {
+      chrome.management.createAppShortcut(p.tab.id);
+    } else if (opt  === 'launchApp') {
+      this.handleClick(p.tab.id);
+    } else if (_.first(_.words(opt)) === 'OPEN') {
+      chrome.management.setLaunchType(p.tab.id, opt);
+      reRenderStore.set_reRender(true, 'update', null);
     }
 
   },
@@ -449,7 +458,15 @@ var Tile = React.createClass({
         this.checkDuplicateTabs('close');
       } else if (r[0] === 'toggleEnable') {
         this.handleApp(r[0]);
-      } 
+      } else if (r[0] === 'uninstallApp') {
+        this.handleApp(r[0]);
+      } else if (r[0] === 'createAppShortcut') {
+        this.handleApp(r[0]);
+      } else if (r[0] === 'launchApp') {
+        this.handleApp(r[0]);
+      } else if (_.first(_.words(r[0])) === 'OPEN') {
+        this.handleApp(r[0]);
+      }
       relayStore.set_relay('', null);
     }
   },
@@ -596,6 +613,9 @@ var Tile = React.createClass({
                       {s.sessions ? <h5 style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-folder">
                         <i className={p.tab.label ? 'fa fa-folder-o' : 'fa fa-hourglass-o'} />{p.tab.label ? ' '+p.tab.label : ' '+_.capitalize(moment(p.tab.sTimeStamp).fromNow())}
                       </h5> : null}
+                      {s.apps && s.hover ? <h5 className="ntg-folder">
+                        <i className="fa fa-at" />{' '+p.tab.version}{p.tab.offlineEnabled ? <span style={{position: 'absolute', left: '158px'}} title="Offline Enabled"><i style={{opacity: '0.7', fontSize: '12px', position: 'relative', top: '1px'}} className="fa fa-bolt" /></span> : null}{p.tab.homepageUrl.length > 4 ? <span onClick={()=>tabStore.create(p.tab.homepageUrl)} style={{cursor: 'pointer', position: 'absolute', left: '170px'}} title="Homepage" onMouseEnter={this.handleDragHoverIn} onMouseLeave={this.handleDragHoverOut}><i style={s.dHover ? {opacity: '0.7'} : {opacity: '0.5'}} className="fa fa-home" /> </span> : null}
+                      </h5> : null}
                       {p.stores.prefs ? p.stores.prefs.drag && !s.bookmarks && !s.history && !s.sessions  && !s.apps ? <div onMouseEnter={this.handleDragHoverIn} onMouseLeave={this.handleDragHoverOut} onClick={() => this.handleCloseTab(p.tab.id)}>
                         {s.hover ? 
                         <i className={s.dHover ? "fa fa-hand-grab-o ntg-move-hover handle" : "fa fa-hand-grab-o ntg-move"} style={s.screenshot && s.hover ? style.ssIconBg : null} />
@@ -603,7 +623,7 @@ var Tile = React.createClass({
                       </div> : null : null}
                     </Col> 
                   </Row>
-                  <Row onClick={() => this.handleClick(p.tab.id)} className={s.bookmarks || s.history || s.sessions ? "ntg-tile-row-bottom-bk" : "ntg-tile-row-bottom"} />
+                  <Row onClick={() => this.handleClick(p.tab.id)} className={s.bookmarks || s.history || s.sessions || s.apps ? "ntg-tile-row-bottom-bk" : "ntg-tile-row-bottom"} />
                 </div> : null}
               </Row> : null}
             </div>
