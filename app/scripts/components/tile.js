@@ -607,9 +607,11 @@ var Tile = React.createClass({
                       </Row>
                     </Col>
                     <Col size="9" onClick={!s.bookmarks ? ()=>this.handleClick(p.tab.id) : null} className="ntg-title-container">
-                      <h5 style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-title">
+                      <span title={s.apps ? p.tab.description : null}>
+                        <h5 style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-title">
                         {_.truncate(p.tab.title, {length: titleLimit})}
-                      </h5>
+                        </h5>
+                      </span>
                       {s.bookmarks ? <h5 onClick={()=>bookmarksStore.set_folder(p.tab.folder)} style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-folder">
                         <i className="fa fa-folder-o" />{p.tab.folder ? s.bookmarks ? ' '+p.tab.folder : null : null}
                       </h5> : null}
