@@ -266,8 +266,10 @@ var Tile = React.createClass({
     var s = this.state;
     var p = this.props;
     this.setState({hover: true});
-    if (p.stores.prefs.screenshot && p.stores.prefs.screenshotBg && s.screenshot) {
+    if (p.stores.prefs.screenshot && p.stores.prefs.screenshotBg && s.screenshot && !s.apps) {
       document.getElementById('bgImg').style.backgroundImage = `url("${s.screenshot}")`;
+    } else {
+      document.getElementById('bgImg').style.backgroundImage = '';
     }
   },
   handleHoverOut(e) {
