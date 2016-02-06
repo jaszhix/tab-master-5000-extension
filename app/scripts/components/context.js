@@ -71,17 +71,17 @@ var ContextMenu = React.createClass({
     var p = this.props;
     var s = this.state;
     var close = p.prefs.mode !== 'apps' && p.prefs.mode !== 'tabs' && !s.openTab ? ' Remove ' : ' Close ';
-    var toggleAppEnable = s.tab.enabled ? ' Disable' : ' Enable';
     var notBookmarksHistoryApps = p.prefs.mode !== 'bookmarks' && p.prefs.mode !== 'history' && p.prefs.mode !== 'apps';
     return (
       <div className="ntg-context">
         <div style={{left: p.cursor.page.x, top: p.cursor.page.y}} className="ntg-context-menu">
-          <Btn onClick={()=>this.handleRelay('close')} className="ntg-context-btn"><i className={p.prefs.mode !== 'tabs' && !s.openTab ? "fa fa-eraser" : "fa fa-times"} />{p.prefs.mode === 'apps' ? toggleAppEnable : close}</Btn>
+          {p.prefs.mode !== 'apps' ? <Btn onClick={()=>this.handleRelay('close')} className="ntg-context-btn"><i className={p.prefs.mode !== 'tabs' && !s.openTab ? "fa fa-eraser" : "fa fa-times"} />{close}</Btn> : null}
           {p.prefs.mode === 'tabs' ? <Btn onClick={()=>this.handleRelay('closeAll')} className="ntg-context-btn-close-all"><i className="fa fa-asterisk" />{close+'all from ' + s.tab.url.split('/')[2]}</Btn> : null}
           {this.getStatus('duplicate') && p.prefs.mode !== 'apps' ? <Btn onClick={()=>this.handleRelay('closeDupes')} className="ntg-context-btn-close-all"><i className="fa fa-asterisk" /> {close+'duplicates'}</Btn> : null}
           {s.tab.openTab || notBookmarksHistoryApps ? <Btn onClick={()=>this.handleRelay('pin')} className="ntg-context-btn"><i className="fa fa-map-pin" /> {s.tab.pinned ? 'Unpin' : 'Pin'}</Btn> : null}
           {p.chromeVersion >= 46 ? s.tab.openTab || notBookmarksHistoryApps ? <Btn onClick={()=>this.handleRelay('mute')} className="ntg-context-btn"><i className="fa fa-volume-off" /> {s.tab.mutedInfo.muted ? 'Unmute' : 'Mute'}</Btn> : null : null}
           {p.prefs.actions && this.getStatus('actions') && p.prefs.mode !== 'apps' ? <Btn onClick={()=>this.handleRelay('actions')} className="ntg-context-btn"><i className="fa fa-history" />{' Undo'+this.getStatus('actions')} </Btn> : null}
+          {p.prefs.mode === 'apps' ? <Btn onClick={()=>this.handleRelay('toggleEnable')} className="ntg-context-btn" fa={s.tab.enabled ? 'toggle-on' : 'toggle-off'}>{s.tab.enabled ? ' Disable' : ' Enable'}</Btn> : null}
         </div>
       </div>
     );

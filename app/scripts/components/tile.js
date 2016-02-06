@@ -336,7 +336,7 @@ var Tile = React.createClass({
           var tab = _.find(session.tabs, {url: p.tab.url});
           sessionsStore.removeTabFromSession(tab.id, session, tabStore.get_altTab());
           reRender();
-        }  
+        }
       }
     } else {
       close();
@@ -396,6 +396,13 @@ var Tile = React.createClass({
       }
     });
   },
+  handleApp(opt){
+    var p = this.props;
+    if (opt === 'toggleEnable') {
+      chrome.management.setEnabled(p.tab.id, !p.tab.enabled)
+    }
+
+  },
   favIconBlurTextLength() {
     // If the text overflows into the image, blur and opacify the image for legibility.
     if (this.props.tab.pinned) {
@@ -440,7 +447,9 @@ var Tile = React.createClass({
         this.handleMuting(p.tab);
       } else if (r[0] === 'closeDupes') {
         this.checkDuplicateTabs('close');
-      }
+      } else if (r[0] === 'toggleEnable') {
+        this.handleApp(r[0]);
+      } 
       relayStore.set_relay('', null);
     }
   },
