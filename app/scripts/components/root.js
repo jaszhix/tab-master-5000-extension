@@ -369,31 +369,41 @@ var Root = React.createClass({
     var keys = [];
     var labels = {};
     if (stores.prefs.mode === 'bookmarks') {
-      keys = ['openTab', 'url', 'title', 'dateAdded', 'folder'];
+      keys = ['openTab', 'url', 'title', 'dateAdded', 'folder', 'index'];
       labels = {
         folder: 'Folder',
         dateAdded: 'Date Added',
         url: 'Website',
         title: 'Title',
-        openTab: 'Open'
+        openTab: 'Open',
+        index: 'Original Order'
       };
     } else if (stores.prefs.mode === 'history') {
-      keys = ['openTab', 'url', 'title', 'lastVisitTime', 'visitCount'];
+      keys = ['openTab', 'url', 'title', 'lastVisitTime', 'visitCount', 'index'];
       labels = {
         visitCount: 'Most Visited',
         lastVisitTime: 'Last Visit',
         url: 'Website',
         title: 'Title',
-        openTab: 'Open'
+        openTab: 'Open',
+        index: 'Original Order'
       };
     } else if (stores.prefs.mode === 'sessions') {
-      keys = ['openTab', 'url', 'title', 'sTimeStamp', 'label'];
+      keys = ['openTab', 'url', 'title', 'sTimeStamp', 'label', 'index'];
       labels = {
         label: 'Label',
         sTimeStamp: 'Date Added',
         url: 'Website',
         title: 'Title',
-        openTab: 'Open'
+        openTab: 'Open',
+        index: 'Original Order'
+      };
+    } else if (stores.prefs.mode === 'apps' || stores.prefs.mode === 'extensions') {
+      keys = ['title', 'offlineEnabled', 'index'];
+      labels = {
+        offlineEnabled: 'Offline Enabled',
+        title: 'Title',
+        index: 'Original Order'
       };
     } else {
       keys = ['url', 'title', 'index'];
@@ -402,6 +412,14 @@ var Root = React.createClass({
         url: 'Website',
         title: 'Title'
       };
+      if (s.chromeVersion >= 46) {
+        var init = _.initial(keys);
+        init.push('audible');
+        keys = _.union(init, keys);
+        _.assign(labels, {
+          audible: 'Audible'
+        });
+      }
     }
     return (
       <TileGrid
