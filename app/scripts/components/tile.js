@@ -704,7 +704,7 @@ var TileGrid = React.createClass({
     };
   },
   getInitialState: function() {
-    var flags = _.reduce(this.props.keys, (ret, key)=> {
+    var flags = _.transform(this.props.keys, (ret, key)=> {
       if (!this.props.flags[key]) ret[key] = false;
       return ret;
     }, {});
@@ -773,12 +773,13 @@ var TileGrid = React.createClass({
       var flags = self.state.sortFlags;
       var priority = _.remove(self.state.sortPriority, key);
       priority.unshift(key);
-      var order = _.map(priority, function(_key) {
+      var order = _.each(priority, function(_key) {
         return (_key === key) ? !flags[_key] : flags[_key];
       });
+      var result = _.orderBy(self.props.data, priority, order);
       self.setState({
-        data: _.orderBy(self.props.data, priority, order),
-        sortFlags: _.zipObject(priority, order),
+        data: key === 'offlineEnabled' || key === 'sTimeStamp' || key === 'visitCount' || key === 'audible' ? _.reverse(result) : result,
+        sortFlags: _.zipObjectDeep(priority, order),
         sortPriority: priority
       });
     };
