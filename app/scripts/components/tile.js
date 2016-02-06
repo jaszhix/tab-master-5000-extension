@@ -634,14 +634,6 @@ var Tile = React.createClass({
 });
 
 var Sidebar = React.createClass({
-  handleBookmarks(){
-    prefsStore.set_prefs('mode', 'bookmarks');
-    reRenderStore.set_reRender(true, 'defer', null);
-  },
-  handleHistory(){
-    prefsStore.set_prefs('mode', 'history');
-    reRenderStore.set_reRender(true, 'defer', null);
-  },
   handleSessions(){
     prefsStore.set_prefs('mode', 'sessions');
     reRenderStore.set_reRender(true, 'defer', null);
@@ -650,9 +642,15 @@ var Sidebar = React.createClass({
     prefsStore.set_prefs('mode', 'tabs');
     reRenderStore.set_reRender(true, 'defer', null);
   },
-  handleApps(){
-    prefsStore.set_prefs('mode', 'apps');
-    reRenderStore.set_reRender(true, 'defer', null);
+  handleMode(mode, permission){
+    chrome.permissions.request({
+      permissions: [permission],
+    }, (granted)=>{
+      if (granted) {
+        prefsStore.set_prefs('mode', mode);
+        reRenderStore.set_reRender(true, 'defer', null);
+      }
+    });   
   },
   handleSort(){
     prefsStore.set_prefs('sort', !this.props.prefs.sort);
@@ -668,10 +666,11 @@ var Sidebar = React.createClass({
             {p.prefs.mode === 'tabs' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={()=>applyTabOrderStore.set_saveTab(true)} className="ntg-apply-btn" fa="sort">{iconCollapse ? '' : 'Apply'}</Btn> : null}
           </div> : null}
         {p.prefs.mode !== 'tabs' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleTabs} className="ntg-apply-btn" fa="square">{iconCollapse ? '' : 'Tabs'}</Btn> : null}
-        {p.prefs.mode !== 'bookmarks' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleBookmarks} className="ntg-apply-btn" fa="bookmark">{iconCollapse ? '' : 'Bookmarks'}</Btn> : null}
-        {p.prefs.mode !== 'history' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleHistory} className="ntg-apply-btn" fa="history">{iconCollapse ? '' : 'History'}</Btn> : null}
+        {p.prefs.mode !== 'bookmarks' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={()=>this.handleMode('bookmarks', 'bookmarks')} className="ntg-apply-btn" fa="bookmark">{iconCollapse ? '' : 'Bookmarks'}</Btn> : null}
+        {p.prefs.mode !== 'history' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={()=>this.handleMode('history', 'history')} className="ntg-apply-btn" fa="history">{iconCollapse ? '' : 'History'}</Btn> : null}
         {p.prefs.mode !== 'sessions' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleSessions} className="ntg-apply-btn" fa="book">{iconCollapse ? '' : 'Sessions'}</Btn> : null}
-        {p.prefs.mode !== 'apps' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleApps} className="ntg-apply-btn" fa="th">{iconCollapse ? '' : 'Apps'}</Btn> : null}
+        {p.prefs.mode !== 'apps' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={()=>this.handleMode('apps', 'management')} className="ntg-apply-btn" fa="th">{iconCollapse ? '' : 'Apps'}</Btn> : null}
+        {p.prefs.mode !== 'extensions' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={()=>this.handleMode('extensions', 'management')} className="ntg-apply-btn" fa="puzzle-piece">{iconCollapse ? '' : 'Extensions'}</Btn> : null}
       </div>
     );
   }

@@ -53,10 +53,12 @@
     "unlimitedStorage",
     "idle",
     "system.memory",
-    "tabCapture",
+    "tabCapture"
+  ],
+  "optional_permissions": [ 
+    "management",
     "bookmarks",
-    "history",
-    "management"
+    "history"
   ],
   "commands": {
     "undo": {
