@@ -820,7 +820,7 @@ var TileGrid = React.createClass({
           <div id="grid" ref="grid">
               {data.map((data, i)=> {
                 if (i <= p.tileLimit) {
-                  if (!_.find(favicons, {domain: data.url.split('/')[2]})) {
+                  if (p.stores.prefs.mode !== 'apps' && p.stores.prefs.mode !== 'extensions' && !_.find(favicons, {domain: data.url.split('/')[2]})) {
                     faviconStore.set_favicon(data, s.data.length, i);
                   }
                   return (
