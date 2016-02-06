@@ -8,7 +8,6 @@ import moment from 'moment';
 import Draggable from 'react-draggable';
 import utils from './utils';
 
-import {faviconStore, sessionsStore, bookmarksStore, dupeStore, reRenderStore, applyTabOrderStore, utilityStore, contextStore, dragStore, draggedStore} from './stores/main';
 import prefsStore from './stores/prefs';
 import tabStore from './stores/tab';
 
@@ -147,6 +146,11 @@ var Tile = React.createClass({
     } else {
       this.setState({sessions: false});
     }
+    if (p.stores.prefs.mode === 'apps') {
+      this.setState({apps: true});
+    } else {
+      this.setState({apps: false});
+    }
     if (p.stores.prefs.mode === 'sessions' && p.tab.openTab|| p.stores.prefs.mode === 'bookmarks' && p.tab.openTab || p.stores.prefs.mode === 'history' && p.tab.openTab) {
       this.setState({openTab: true});
     } else {
@@ -222,6 +226,14 @@ var Tile = React.createClass({
             active();
           } else {
             chrome.tabs.create({url: p.tab.url});
+          }
+        } else if (s.apps) {
+          if (p.tab.enabled) {
+            if (p.tab.launchType === 'OPEN_AS_REGULAR_TAB') {
+              tabStore.create(p.tab.url);
+            } else {
+              chrome.management.launchApp(p.tab.id);
+            }
           }
         } else {
           active();
@@ -542,7 +554,7 @@ var Tile = React.createClass({
                       onStop={this.handleStop}>
             <div ref="tile" style={s.drag ? {position: 'absolute', left: drag.left-200, top: drag.top} : null}>
             {p.render && s.render && p.tab.title !== 'New Tab' ? <Row fluid={true} id={'subTile-'+p.i} style={s.duplicate && s.focus && !s.hover ? {WebkitAnimationIterationCount: 'infinite', WebkitAnimationDuration: '5s'} : null} onContextMenu={this.handleContextClick} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "animated zoomOut" : s.pinning ? "animated pulse" : s.duplicate && s.focus ? "animated flash" : null}>
-                { this.filterTabs(p.tab, p) ? <div id={'innerTile-'+p.i} className={s.hover ? "ntg-tile-hover" : "ntg-tile"} style={s.screenshot ? s.hover ? style.tileHovered(s.screenshot) : style.tile(s.screenshot) : null} key={p.key}>
+                { this.filterTabs(p.tab, p) ? <div id={'innerTile-'+p.i} className={s.apps && !p.tab.enabled ? "ntg-tile-disabled" : s.hover ? "ntg-tile-hover" : "ntg-tile"} style={s.screenshot ? s.hover ? style.tileHovered(s.screenshot) : style.tile(s.screenshot) : null} key={p.key}>
                   <Row className="ntg-tile-row-top">
                     <Col size="3">
                       {p.stores.chromeVersion >= 46 && s.openTab || p.stores.chromeVersion >= 46 && p.stores.prefs.mode === 'tabs' ? <div onMouseEnter={this.handleTabMuteHoverIn} onMouseLeave={this.handleTabMuteHoverOut} onClick={() => this.handleMuting(p.tab)}>
@@ -551,17 +563,17 @@ var Tile = React.createClass({
                                         : null}
                                       </div> : null}
                       <div onMouseEnter={this.handleTabCloseHoverIn} onMouseLeave={this.handleTabCloseHoverOut} onClick={()=>this.handleCloseTab(p.tab.id)}>
-                        {s.hover ? 
+                        {s.hover && !s.apps ? 
                         <i className={s.xHover ? remove ? "fa fa-eraser ntg-x-hover" : "fa fa-times ntg-x-hover" : remove ? "fa fa-eraser ntg-x" : "fa fa-times ntg-x"} style={s.screenshot && s.hover ? style.ssIconBg : null} />
                         : null}
                       </div>
                       <div onMouseEnter={this.handlePinHoverIn} onMouseLeave={this.handlePinHoverOut} onClick={() => this.handlePinning(p.tab)}>
-                      {p.tab.pinned && p.stores.prefs.mode === 'tabs' || s.hover && s.openTab || s.hover && !s.bookmarks && !s.history && !s.sessions ? 
+                      {p.tab.pinned && p.stores.prefs.mode === 'tabs' || s.hover && s.openTab || s.hover && !s.bookmarks && !s.history && !s.sessions && !s.apps ? 
                         <i className={s.pHover ? "fa fa-map-pin ntg-pinned-hover" : "fa fa-map-pin ntg-pinned"} style={p.tab.pinned ? s.screenshot && s.hover ? style.ssPinnedIconBg : s.screenshot ? style.ssPinnedIconBg : {color: '#B67777'} : s.screenshot ? style.ssIconBg : null} />
                         : null}
                       </div>
                       <Row>
-                        <img className="ntg-favicon" src={s.favicon ? s.favicon : '../images/file_paper_blank_document.png' } />
+                        <img className="ntg-favicon" src={s.apps ? p.tab.favIconUrl : s.favicon ? s.favicon : '../images/file_paper_blank_document.png' } />
                       </Row>
                     </Col>
                     <Col size="9" onClick={!s.bookmarks ? ()=>this.handleClick(p.tab.id) : null} className="ntg-title-container">
@@ -577,7 +589,7 @@ var Tile = React.createClass({
                       {s.sessions ? <h5 style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-folder">
                         <i className={p.tab.label ? 'fa fa-folder-o' : 'fa fa-hourglass-o'} />{p.tab.label ? ' '+p.tab.label : ' '+_.capitalize(moment(p.tab.sTimeStamp).fromNow())}
                       </h5> : null}
-                      {p.stores.prefs ? p.stores.prefs.drag && !s.bookmarks && !s.history && !s.sessions ? <div onMouseEnter={this.handleDragHoverIn} onMouseLeave={this.handleDragHoverOut} onClick={() => this.handleCloseTab(p.tab.id)}>
+                      {p.stores.prefs ? p.stores.prefs.drag && !s.bookmarks && !s.history && !s.sessions  && !s.apps ? <div onMouseEnter={this.handleDragHoverIn} onMouseLeave={this.handleDragHoverOut} onClick={() => this.handleCloseTab(p.tab.id)}>
                         {s.hover ? 
                         <i className={s.dHover ? "fa fa-hand-grab-o ntg-move-hover handle" : "fa fa-hand-grab-o ntg-move"} style={s.screenshot && s.hover ? style.ssIconBg : null} />
                         : null}
@@ -611,6 +623,10 @@ var Sidebar = React.createClass({
     prefsStore.set_prefs('mode', 'tabs');
     reRenderStore.set_reRender(true, 'defer', null);
   },
+  handleApps(){
+    prefsStore.set_prefs('mode', 'apps');
+    reRenderStore.set_reRender(true, 'defer', null);
+  },
   handleSort(){
     prefsStore.set_prefs('sort', !this.props.prefs.sort);
   },
@@ -628,6 +644,7 @@ var Sidebar = React.createClass({
         {p.prefs.mode !== 'bookmarks' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleBookmarks} className="ntg-apply-btn" fa="bookmark">{iconCollapse ? '' : 'Bookmarks'}</Btn> : null}
         {p.prefs.mode !== 'history' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleHistory} className="ntg-apply-btn" fa="history">{iconCollapse ? '' : 'History'}</Btn> : null}
         {p.prefs.mode !== 'sessions' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleSessions} className="ntg-apply-btn" fa="book">{iconCollapse ? '' : 'Sessions'}</Btn> : null}
+        {p.prefs.mode !== 'apps' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleApps} className="ntg-apply-btn" fa="th">{iconCollapse ? '' : 'Apps'}</Btn> : null}
       </div>
     );
   }

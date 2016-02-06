@@ -195,3 +195,15 @@ chrome.runtime.onInstalled.addListener((details)=>{
     });
   }
 });
+chrome.management.onInstalled.addListener((details)=>{
+  sendMsg({e: details, type: 'app'});
+});
+chrome.management.onUninstalled.addListener((details)=>{
+  sendMsg({e: details, type: 'app'});
+});
+chrome.management.onEnabled.addListener((details)=>{
+  sendMsg({e: details, type: 'app'});
+});
+chrome.management.onDisabled.addListener((details)=>{
+  sendMsg({e: details, type: 'app'});
+});

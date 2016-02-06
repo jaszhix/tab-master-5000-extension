@@ -109,6 +109,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     reRender(msg.type, msg.e);
   } else if (msg.type === 'history') {
     throttled.history(msg.type, msg.e);
+  } else if (msg.type === 'app') {
+    reRenderStore.set_reRender(true, 'update', null);
   } else if (msg.type === 'error') {
     utilityStore.restartNewTab();
   } else if (msg.type === 'newVersion') {
@@ -963,6 +965,47 @@ export var sessionsStore = Reflux.createStore({
       .orderBy(['openTab'], ['asc'])
       .uniqBy('url').value();
     return this.tabs;
+  }
+});
+
+export var chromeAppStore = Reflux.createStore({
+  init(){
+    bgPrefs.then((prefs)=>{
+      if (prefs.mode === 'apps') {
+        this.set();
+      }
+    });
+  },
+  set(){
+    return new Promise((resolve, reject)=>{
+      chrome.management.getAll((apps)=>{
+        var _apps = _.filter(apps, {isApp: true});
+        
+        if (_apps) {
+          for (let i = _apps.length - 1; i >= 0; i--) {
+            console.log('_.first(apps[i].icons)', _.first(_apps[i].icons).url);
+            _.assign(_apps[i], {
+              favIconUrl: _.last(_apps[i].icons).url,
+              id: _apps[i].id,
+              url: _apps[i].appLaunchUrl,
+              title: _apps[i].name
+            });
+            _apps[i] = _.merge(defaults(i), _apps[i]);
+          }
+          resolve(_apps);
+          console.log('installed apps: ', apps);
+        }
+      });
+    });
+  },
+  get(){
+    this.set().then((apps)=>{
+      this.apps = apps;
+      this.trigger(this.apps);
+    }).catch(()=>{
+      console.log('No apps were found.');
+    });
+    return this.apps;
   }
 });
 

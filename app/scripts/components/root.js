@@ -6,7 +6,7 @@ import ReactUtils from 'react-utils';
 import v from 'vquery';
 import '../../styles/app.scss';
 window.v = v;
-import {faviconStore, sessionsStore, actionStore, historyStore, bookmarksStore, relayStore, sidebarStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore, applyTabOrderStore} from './stores/main';
+import {chromeAppStore, faviconStore, sessionsStore, actionStore, historyStore, bookmarksStore, relayStore, sidebarStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore, applyTabOrderStore} from './stores/main';
 import prefsStore from './stores/prefs';
 import tabStore from './stores/tab';
 import screenshotStore from './stores/screenshot';
@@ -81,7 +81,7 @@ var Search = React.createClass({
                 type="text" 
                 value={searchStore.get_search()}
                 className="form-control search-tabs" 
-                placeholder={p.prefs.mode === 'bookmarks' ? 'Search bookmarks...' : p.prefs.mode === 'history' ? 'Search history...' : p.prefs.mode === 'sessions' ? 'Search sessions...' : 'Search tabs...'}
+                placeholder={p.prefs.mode === 'bookmarks' ? 'Search bookmarks...' : p.prefs.mode === 'history' ? 'Search history...' : p.prefs.mode === 'sessions' ? 'Search sessions...' : p.prefs.mode === 'apps' ? 'Search apps...' : 'Search tabs...'}
                 onChange={this.handleSearch} />
               </form>
             </Col>
@@ -134,7 +134,8 @@ var Root = React.createClass({
       relay: [],
       applyTabOrder: false,
       folder: '',
-      folderState: false
+      folderState: false,
+      chromeApps: []
     };
   },
   componentWillMount(){
@@ -145,6 +146,7 @@ var Root = React.createClass({
     actionStore.clear();
     this.listenTo(bookmarksStore, this.updateTabState);
     this.listenTo(historyStore, this.updateTabState);
+    this.listenTo(chromeAppStore, this.updateTabState);
     this.listenTo(searchStore, this.searchChanged);
     this.listenTo(reRenderStore, this.reRender);
     this.listenTo(settingsStore, this.settingsChange);
@@ -209,6 +211,9 @@ var Root = React.createClass({
   applyTabOrderChange(e){
     this.setState({applyTabOrder: e});
   },
+  chromeAppChange(e){
+    this.setState({apps: e});
+  },
   updateTabState(e){
     if (typeof e === 'string') {
       this.setState({folder: e, folderState: !this.state.folderState});
@@ -245,7 +250,7 @@ var Root = React.createClass({
       } else {
         tab = Tab;
       }
-      if (s.prefs.mode !== 'bookmarks' && s.prefs.mode !== 'history') {
+      if (s.prefs.mode !== 'bookmarks' && s.prefs.mode !== 'history' && s.prefs.mode !== 'apps') {
         this.setState({tabs: tab});
         tabStore.set_tab(tab);
       } else {
@@ -317,6 +322,8 @@ var Root = React.createClass({
           this.updateTabState(bookmarksStore.get_bookmarks());
         } else if (s.prefs.mode === 'history') {
           this.updateTabState(historyStore.get_history());
+        } else if (s.prefs.mode === 'apps') {
+          this.updateTabState(chromeAppStore.get());
         } else {
           this.captureTabs(reRender[1]);
         }

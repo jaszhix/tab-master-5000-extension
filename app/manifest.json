@@ -54,7 +54,8 @@
     "system.memory",
     "tabCapture",
     "bookmarks",
-    "history"
+    "history",
+    "management"
   ],
   "commands": {
     "undo": {
