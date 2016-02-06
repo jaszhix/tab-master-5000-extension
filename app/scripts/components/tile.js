@@ -753,11 +753,11 @@ var TileGrid = React.createClass({
     }
   },
   checkDuplicateTabs(tabs){
-    tabUrls = [];
-    duplicateTabs = [];
-    dupeStore.set_duplicateTabs(null);
     var p = this.props;
-    if (p.render) {
+    if (p.render && p.stores.prefs.mode === 'tabs') {
+      tabUrls = [];
+      duplicateTabs = [];
+      dupeStore.set_duplicateTabs(null);
       for (var i = tabs.length - 1; i >= 0; i--) {
         tabUrls.push(tabs[i].url);    
       }
