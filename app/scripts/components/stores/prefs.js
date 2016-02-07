@@ -4,7 +4,25 @@ import {utilityStore, reRenderStore} from './main';
 
 var prefsStore = Reflux.createStore({
   init: function() {
-    this.ready = false;
+    this.defaultPrefs = {
+      tabSizeHeight: 120,
+      settingsMax: false, 
+      drag: true, 
+      context: true, 
+      animations: true, 
+      duplicate: false, 
+      screenshot: false, 
+      screenshotBg: false,
+      screenshotBgBlur: 5,
+      blacklist: true, 
+      sidebar: false, 
+      sort: false, 
+      mode: 'tabs', 
+      installTime: Date.now(), 
+      actions: false,
+      sessionsSync: false,
+      singleNewTab: false
+    };
     var getPrefs = new Promise((resolve, reject)=>{
       chrome.storage.sync.get('preferences', (prefs)=>{
         if (prefs && prefs.preferences) {
@@ -24,23 +42,7 @@ var prefsStore = Reflux.createStore({
                 if (chrome.extension.lastError) {
                   reject(chrome.extension.lastError);
                 } else {
-                  this.prefs = {
-                    settingsMax: false, 
-                    drag: true, 
-                    context: true, 
-                    animations: true, 
-                    duplicate: false, 
-                    screenshot: false, 
-                    screenshotBg: false, 
-                    blacklist: true, 
-                    sidebar: false, 
-                    sort: false, 
-                    mode: 'tabs', 
-                    installTime: Date.now(), 
-                    actions: false,
-                    sessionsSync: false,
-                    singleNewTab: false
-                  };
+                  this.prefs = this.defaultPrefs;
                   chrome.storage.sync.set({preferences: this.prefs}, (result)=> {
                     console.log('Init preferences saved');
                   });
