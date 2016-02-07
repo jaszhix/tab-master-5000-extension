@@ -1,6 +1,5 @@
 var sendMsg = (msg) => {
-  chrome.runtime.sendMessage(chrome.runtime.id, msg, (response)=>{
-  });
+  chrome.runtime.sendMessage(chrome.runtime.id, msg, (response)=>{});
 };
 var reload = (reason)=>{
   // console log messages before error triggered location.reload() calls. Preserve console logging in the browser to see them.
@@ -32,16 +31,7 @@ var getPrefs = new Promise((resolve, reject)=>{
     }
   });
 });
-/*var getTabs = new Promise((resolve, reject)=>{
-  chrome.tabs.query({
-    windowId: chrome.windows.WINDOW_ID_CURRENT,
-    currentWindow: true
-  }, (Tab) => {
-    if (Tab) {
-      resolve(Tab);
-    }
-  });
-});*/
+
 getPrefs.then((prefs)=>{
   if (prefs.mode !== 'tabs') {
     chrome.tabs.onUpdated.removeListener(()=>{
@@ -50,7 +40,6 @@ getPrefs.then((prefs)=>{
   }
   window.prefs = prefs;
   window.update = true;
-  sendMsg({prefs: prefs});
   chrome.tabs.onCreated.addListener((e, info) => {
     sendMsg({e: e, type: 'create'});
   });
@@ -164,6 +153,15 @@ getPrefs.then((prefs)=>{
       sendResponse({'reload': true});
     } else if (msg.method === 'prefs') {
       sendResponse({'prefs': prefs.preferences});
+    } else if (msg.method === 'tabs') {
+      chrome.tabs.query({
+        windowId: chrome.windows.WINDOW_ID_CURRENT,
+        currentWindow: true
+      }, (Tab) => {
+        if (Tab) {
+          sendResponse({'tabs': Tab});
+        }
+      });
     }
     return true;
   });
