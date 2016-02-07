@@ -44,6 +44,7 @@
     "markdown-loader": "^0.1.7",
     "moment": "^2.10.6",
     "node-sass": "^3.4.2",
+    "rc-slider": "^3.3.2",
     "react-draggable": "^1.1.1",
     "react-modal": "^0.6.1",
     "react-onclickoutside": "^4.1.1",
