@@ -215,16 +215,22 @@ var Root = React.createClass({
   chromeAppChange(e){
     this.setState({apps: e});
   },
-  updateTabState(e){
+  updateTabState(e, opt){
     console.log('updateTabState: ',e);
     if (typeof e === 'string') {
       this.setState({folder: e, folderState: !this.state.folderState});
       this.extendTileLimit(this.state.folderState);    
     } else {
       tabStore.promise().then((Tab)=>{
+        if (opt === 'cycle') {
+          this.setState({grid: false});
+        }
         tabStore.set_altTab(Tab);
         this.setState({tabs: e});
         tabStore.set_tab(e);
+        if (opt === 'cycle') {
+          this.setState({grid: true});
+        }
       });
     }
     
@@ -325,11 +331,11 @@ var Root = React.createClass({
         if (s.prefs.mode === 'bookmarks') {
           this.updateTabState(bookmarksStore.get_bookmarks());
         } else if (s.prefs.mode === 'history') {
-          this.updateTabState(historyStore.get_history());
+          this.updateTabState(historyStore.get_history(), e[1]);
         } else if (s.prefs.mode === 'apps') {
-          this.updateTabState(chromeAppStore.get(true));
+          this.updateTabState(chromeAppStore.get(true), e[1]);
         } else if (s.prefs.mode === 'extensions') {
-          this.updateTabState(chromeAppStore.get(false));
+          this.updateTabState(chromeAppStore.get(false), e[1]);
         } else {
           this.captureTabs(e[1]);
         }
