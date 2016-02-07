@@ -436,14 +436,6 @@ var Tile = React.createClass({
     }
 
   },
-  favIconBlurTextLength() {
-    // If the text overflows into the image, blur and opacify the image for legibility.
-    if (this.props.tab.pinned) {
-      return 67;
-    } else {
-      return 82;
-    }
-  },
   applyTabOrder() {
     // Apply the sorted tab grid state to the Chrome window.
     var p = this.props;
