@@ -57,69 +57,69 @@ var throttled = {
   update: _.throttle(reRender, 350),
   history: _.throttle(reRender, 4000, {leading: true})
 };
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  console.log('msg: ',msg);
-  var prefs = prefsStore.get_prefs();
-  if (msg.type === 'create') {
-    if (prefs.actions) {
-      reRender(msg.type, msg.e);
-    } else {
-      throttled.update(msg.type, msg.e);
-    }
-  } else if (msg.type === 'remove') {
-    if (prefs.actions) {
-      reRender(msg.type, msg.e);
-    } else {
-      throttled.update(msg.type, msg.e);
-    }
-  } else if (msg.type === 'activate') {
-    if (prefs.screenshot) {
-      // Inject event listener that messages the extension to recapture the image on click.
-      var title = null;
-      if (prefs.mode === 'tabs') {
-        title = _.result(_.find(tabs(), { id: msg.e.tabId }), 'title');
-        if (title !== 'New Tab') {
-          throttled.screenshot(msg.e.tabId, msg.e.windowId);
-          reRender('activate', msg.e);
-        }
+bgPrefs.then((prefs)=>{
+  chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+    console.log('msg: ',msg);
+    if (msg.type === 'create') {
+      if (prefs.actions) {
+        reRender(msg.type, msg.e);
       } else {
-        title = _.result(_.find(tabs('alt'), { id: msg.e.tabId }), 'title');
-        if (title !== 'New Tab') {
-          if (prefs.mode !== 'tabs') {
+        throttled.update(msg.type, msg.e);
+      }
+    } else if (msg.type === 'remove') {
+      if (prefs.actions) {
+        reRender(msg.type, msg.e);
+      } else {
+        throttled.update(msg.type, msg.e);
+      }
+    } else if (msg.type === 'activate') {
+      if (prefs.screenshot) {
+        // Inject event listener that messages the extension to recapture the image on click.
+        var title = null;
+        if (prefs.mode === 'tabs') {
+          title = _.result(_.find(tabs(), { id: msg.e.tabId }), 'title');
+          if (title !== 'New Tab') {
             throttled.screenshot(msg.e.tabId, msg.e.windowId);
-            reRenderStore.set_reRender(true, 'activate', msg.e.tabId);
-            reRenderStore.set_reRender(true, 'cycle', msg.e.tabId);
+            reRender('activate', msg.e);
+          }
+        } else {
+          title = _.result(_.find(tabs('alt'), { id: msg.e.tabId }), 'title');
+          if (title !== 'New Tab') {
+            if (prefs.mode !== 'tabs') {
+              throttled.screenshot(msg.e.tabId, msg.e.windowId);
+              reRenderStore.set_reRender(true, 'activate', msg.e.tabId);
+            }
           }
         }
       }
-    }
-  } else if (msg.type === 'update') {
-    if (prefs.mode !== 'tabs' && prefs.mode !== 'sessions') {
-      reRenderStore.set_reRender(true, 'cycle', msg.e);
-    } else {
+    } else if (msg.type === 'update') {
+      if (prefs.mode !== 'tabs' && prefs.mode !== 'sessions') {
+        reRenderStore.set_reRender(true, 'cycle', msg.e);
+      } else {
+        throttled.update(msg.type, msg.e);
+      }
+    } else if (msg.type === 'move') {
       throttled.update(msg.type, msg.e);
+    } else if (msg.type === 'attach') {
+      reRender(msg.type, msg.e);
+    } else if (msg.type === 'detach') {
+      reRender(msg.type, msg.e);
+    } else if (msg.type === 'bookmarks') {
+      reRender(msg.type, msg.e);
+    } else if (msg.type === 'history') {
+      throttled.history(msg.type, msg.e);
+    } else if (msg.type === 'app') {
+      reRenderStore.set_reRender(true, 'update', null);
+    } else if (msg.type === 'error') {
+      utilityStore.restartNewTab();
+    } else if (msg.type === 'newVersion') {
+      contextStore.set_context(null, 'newVersion');
+    } else if (msg.type === 'installed') {
+      contextStore.set_context(null, 'installed');
+    } else if (msg.type === 'versionUpdate') {
+      contextStore.set_context(null, 'versionUpdate');
     }
-  } else if (msg.type === 'move') {
-    throttled.update(msg.type, msg.e);
-  } else if (msg.type === 'attach') {
-    reRender(msg.type, msg.e);
-  } else if (msg.type === 'detach') {
-    reRender(msg.type, msg.e);
-  } else if (msg.type === 'bookmarks') {
-    reRender(msg.type, msg.e);
-  } else if (msg.type === 'history') {
-    throttled.history(msg.type, msg.e);
-  } else if (msg.type === 'app') {
-    reRenderStore.set_reRender(true, 'update', null);
-  } else if (msg.type === 'error') {
-    utilityStore.restartNewTab();
-  } else if (msg.type === 'newVersion') {
-    contextStore.set_context(null, 'newVersion');
-  } else if (msg.type === 'installed') {
-    contextStore.set_context(null, 'installed');
-  } else if (msg.type === 'versionUpdate') {
-    contextStore.set_context(null, 'versionUpdate');
-  }
+  });
 });
 
 chrome.commands.onCommand.addListener((command) => {
@@ -986,7 +986,7 @@ export var chromeAppStore = Reflux.createStore({
         if (_apps) {
           for (let i = _apps.length - 1; i >= 0; i--) {
             _.assign(_apps[i], {
-              favIconUrl: _apps[i].icons ? _.last(_apps[i].icons).url : '../images/IDR_EXTENSIONS_FAVICON@2x.png',
+              favIconUrl: _apps[i].icons ? utilityStore.filterFavicons(_.last(_apps[i].icons).url, _.last(_apps[i].icons).url) : '../images/IDR_EXTENSIONS_FAVICON@2x.png',
               id: _apps[i].id,
               url: app ? _apps[i].appLaunchUrl : _apps[i].optionsUrl,
               title: _apps[i].name
