@@ -811,7 +811,11 @@ var TileGrid = React.createClass({
       });
       var result = _.orderBy(self.props.data, priority, order);
       self.setState({
-        data: key === 'offlineEnabled' || key === 'sTimeStamp' || key === 'visitCount' || key === 'audible' ? _.reverse(result) : result,
+        data: key === 'offlineEnabled' 
+        || key === 'sTimeStamp' 
+        || key === 'dateAdded' 
+        || key === 'visitCount' 
+        || key === 'audible' ? _.reverse(result) : result,
         sortFlags: _.zipObjectDeep(priority, order),
         sortPriority: priority
       });
