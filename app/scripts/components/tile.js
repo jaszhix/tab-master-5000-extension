@@ -94,6 +94,9 @@ var Tile = React.createClass({
       });
     }
     this.updateFavicons(p);
+    if (this.state.sessions) {
+      this.setTabSize(this.props);
+    }
   },
   updateFavicons(props){
     var p = props;
