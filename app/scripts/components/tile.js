@@ -194,9 +194,7 @@ var Tile = React.createClass({
             this.setState({duplicate: false});
             this.handleCloseTab(t[i].id);
           } else if (p.tab.id === t[i].id && p.stores.prefs.duplicate) {
-            _.defer(()=>{
-              this.handleFocus('duplicate',true,p);
-            });
+            this.handleFocus('duplicate',true,p);
           }
         }
       }
