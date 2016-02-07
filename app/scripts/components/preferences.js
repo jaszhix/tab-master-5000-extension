@@ -184,15 +184,10 @@ var Preferences = React.createClass({
                     Enable website blacklist
           </Toggle>
           {p.prefs.blacklist ? <Blacklist /> : null}
-          <Toggle onMouseEnter={()=>this.handleToggle('sessionsSync')}
-                  onClick={()=>this.handleClick('sessionsSync')} 
-                  on={p.prefs.sessionsSync}>
-                    Enable session synchronization <strong>(Experimental)</strong>
-          </Toggle>
           <Toggle onMouseEnter={()=>this.handleToggle('screenshot')}
                   onClick={()=>this.handleClick('screenshot')}
                   on={p.prefs.screenshot}>
-                    Enable tab screenshots <strong>(Experimental)</strong>
+                    Enable tab screenshots
           </Toggle>
           {p.prefs.screenshot ? 
             <Col size="12">
@@ -218,6 +213,11 @@ var Preferences = React.createClass({
               <Btn onClick={()=>screenshotStore.clear()} style={p.settingsMax ? {top: '95%'} : null} className="ntg-setting-btn" fa="trash">Clear Screenshot Cache</Btn> 
             </Col>
           : null}
+          <Toggle onMouseEnter={()=>this.handleToggle('sessionsSync')}
+                  onClick={()=>this.handleClick('sessionsSync')} 
+                  on={p.prefs.sessionsSync}>
+                    Enable session synchronization <strong>(Experimental)</strong>
+          </Toggle>
           <Toggle onMouseEnter={()=>this.handleToggle('actions')}
                   onClick={()=>this.handleClick('actions')}
                   on={p.prefs.actions}>
