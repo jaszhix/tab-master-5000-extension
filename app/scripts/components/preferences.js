@@ -138,17 +138,17 @@ var Preferences = React.createClass({
     return (
       <div className="preferences">
         <Col size="6">
-          <Slide  className="prefs-row" 
-                  label={`Set tile size: ${p.prefs.tabSizeHeight}x${p.prefs.tabSizeHeight+80}`}
-                  min={120} max={300}
-                  defaultValue={p.prefs.tabSizeHeight}
-                  value={p.prefs.tabSizeHeight}
-                  onChange={(e)=>this.handleSlide(e, 'tabSizeHeight')}
-                  onAfterChange={()=>reRenderStore.set_reRender(true, 'cycle', this.props.tabs[0].id)}
-                  onMouseEnter={()=>this.handleToggle('tabSizeHeight')}
-                  step={20}
-                  dots={true}
-                  />
+          {!p.options ? <Slide  className="prefs-row" 
+                            label={`Set tile size: ${p.prefs.tabSizeHeight}x${p.prefs.tabSizeHeight+80}`}
+                            min={120} max={300}
+                            defaultValue={p.prefs.tabSizeHeight}
+                            value={p.prefs.tabSizeHeight}
+                            onChange={(e)=>this.handleSlide(e, 'tabSizeHeight')}
+                            onAfterChange={()=>reRenderStore.set_reRender(true, 'cycle', this.props.tabs[0].id)}
+                            onMouseEnter={()=>this.handleToggle('tabSizeHeight')}
+                            step={20}
+                            dots={true}
+                            /> : null}
           <Toggle onMouseEnter={()=>this.handleToggle('context')} 
                   onClick={()=>this.handleClick('context')} 
                   on={p.prefs.context}>
