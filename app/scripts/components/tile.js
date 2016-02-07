@@ -75,9 +75,13 @@ var Tile = React.createClass({
     if (nextProps.stores.folder !== p.stores.folder) {
       this.filterFolders(nextProps);
     }
+    if (nextProps.stores.prefs.tabSizeHeight !== p.stores.prefs.tabSizeHeight) {  
+      this.setTabSize(nextProps);
+    }
   },
   initMethods(){
     var p = this.props;
+    this.setTabSize(this.props);
     this.setTabMode();
     this.updateScreenshot('init', p);
     if (p.stores.prefs.mode === 'tabs') {
@@ -153,6 +157,13 @@ var Tile = React.createClass({
       this.setState({openTab: true});
     } else {
       this.setState({openTab: false});
+    }
+  },
+  setTabSize(props){
+    var innerTile = document.getElementById('innerTile-'+props.tab.id);
+    if (innerTile && innerTile.style !== null) {
+      innerTile.style.height = props.stores.prefs.tabSizeHeight;
+      innerTile.style.width = props.stores.prefs.tabSizeHeight+80;
     }
   },
   filterFolders(props){
@@ -268,6 +279,7 @@ var Tile = React.createClass({
     this.setState({hover: true});
     if (p.stores.prefs.screenshot && p.stores.prefs.screenshotBg && s.screenshot && !s.apps) {
       document.getElementById('bgImg').style.backgroundImage = `url("${s.screenshot}")`;
+      document.getElementById('bgImg').style.WebkitFilter = `blur(${p.stores.prefs.screenshotBgBlur}px)`;
     } else {
       document.getElementById('bgImg').style.backgroundImage = '';
     }
@@ -571,6 +583,11 @@ var Tile = React.createClass({
     var titleLimit = s.bookmarks || s.history ? 70 : 83;
     var drag = dragStore.get_drag();
     var remove = p.stores.prefs.mode !== 'tabs' && !s.openTab;
+    var lowerLeft = p.stores.prefs.tabSizeHeight >= 205 ? -40 : -40;
+    var lowerTop = p.stores.prefs.tabSizeHeight - 25;
+    var lowerStyle = s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px', left: lowerLeft.toString()+'px', top: lowerTop.toString()+'px'} : {top: lowerTop.toString()+'px'};
+    var appHomepage = p.stores.prefs.tabSizeHeight >= 170 ? p.stores.prefs.tabSizeHeight + 5 : 170;
+    var appOfflineEnabled = p.stores.prefs.tabSizeHeight >= 170 ? p.stores.prefs.tabSizeHeight - 10 : 158;
     return (
       <div ref="tileMain" id={'tileMain-'+p.i} onDragEnter={this.currentlyDraggedOver(p.tab)} style={p.stores.prefs.screenshot && p.stores.prefs.screenshotBg ? {opacity: '0.95'} : null}>
         {p.render ? 
@@ -584,7 +601,7 @@ var Tile = React.createClass({
                       onStop={this.handleStop}>
             <div ref="tile" style={s.drag ? {position: 'absolute', left: drag.left-200, top: drag.top} : null}>
             {p.render && s.render && p.tab.title !== 'New Tab' ? <Row fluid={true} id={'subTile-'+p.i} style={s.duplicate && s.focus && !s.hover ? {WebkitAnimationIterationCount: 'infinite', WebkitAnimationDuration: '5s'} : null} onContextMenu={this.handleContextClick} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "animated zoomOut" : s.pinning ? "animated pulse" : s.duplicate && s.focus ? "animated flash" : null}>
-                { this.filterTabs(p.tab, p) ? <div id={'innerTile-'+p.i} className={s.apps && !p.tab.enabled ? "ntg-tile-disabled" : s.hover ? "ntg-tile-hover" : "ntg-tile"} style={s.screenshot ? s.hover ? style.tileHovered(s.screenshot) : style.tile(s.screenshot) : null} key={p.key}>
+                { true ? <div id={'innerTile-'+p.tab.id} className={s.apps && !p.tab.enabled ? "ntg-tile-disabled" : s.hover ? "ntg-tile-hover" : "ntg-tile"} style={s.screenshot ? s.hover ? style.tileHovered(s.screenshot) : style.tile(s.screenshot) : null} key={p.key}>
                   <Row className="ntg-tile-row-top">
                     <Col size="3">
                       {p.stores.chromeVersion >= 46 && s.openTab || p.stores.chromeVersion >= 46 && p.stores.prefs.mode === 'tabs' ? <div onMouseEnter={this.handleTabMuteHoverIn} onMouseLeave={this.handleTabMuteHoverOut} onClick={() => this.handleMuting(p.tab)}>
@@ -612,17 +629,17 @@ var Tile = React.createClass({
                         {_.truncate(p.tab.title, {length: titleLimit})}
                         </h5>
                       </span>
-                      {s.bookmarks ? <h5 onClick={()=>bookmarksStore.set_folder(p.tab.folder)} style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-folder">
+                      {s.bookmarks ? <h5 onClick={()=>bookmarksStore.set_folder(p.tab.folder)} style={lowerStyle} className="ntg-folder">
                         <i className="fa fa-folder-o" />{p.tab.folder ? s.bookmarks ? ' '+p.tab.folder : null : null}
                       </h5> : null}
-                      {s.history ? <h5 style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-folder">
+                      {s.history ? <h5 style={lowerStyle} className="ntg-folder">
                         <i className="fa fa-hourglass-o" />{' '+_.capitalize(moment(p.tab.lastVisitTime).fromNow())}
                       </h5> : null}
-                      {s.sessions ? <h5 style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-folder">
+                      {s.sessions ? <h5 style={lowerStyle} className="ntg-folder">
                         <i className={p.tab.label ? 'fa fa-folder-o' : 'fa fa-hourglass-o'} />{p.tab.label ? ' '+p.tab.label : ' '+_.capitalize(moment(p.tab.sTimeStamp).fromNow())}
                       </h5> : null}
-                      {s.apps && s.hover ? <h5 className="ntg-folder">
-                        <i className="fa fa-at" />{' '+p.tab.version}{p.tab.offlineEnabled ? <span style={{position: 'absolute', left: '158px'}} title="Offline Enabled"><i style={{opacity: '0.7', fontSize: '12px', position: 'relative', top: '1px'}} className="fa fa-bolt" /></span> : null}{p.tab.homepageUrl.length > 4 ? <span onClick={()=>tabStore.create(p.tab.homepageUrl)} style={{cursor: 'pointer', position: 'absolute', left: '170px'}} title="Homepage" onMouseEnter={this.handleDragHoverIn} onMouseLeave={this.handleDragHoverOut}><i style={s.dHover ? {opacity: '0.7'} : {opacity: '0.5'}} className="fa fa-home" /> </span> : null}
+                      {s.apps && s.hover ? <h5 style={lowerStyle} className="ntg-folder">
+                        <i className="fa fa-at" />{' '+p.tab.version}{p.tab.offlineEnabled ? <span style={{position: 'absolute', left: appOfflineEnabled.toString()+'px'}} title="Offline Enabled"><i style={{opacity: '0.7', fontSize: '12px', position: 'relative', top: '1px'}} className="fa fa-bolt" /></span> : null}{p.tab.homepageUrl ? <span onClick={()=>tabStore.create(p.tab.homepageUrl)} style={{cursor: 'pointer', position: 'absolute', left: appHomepage.toString()+'px'}} title="Homepage" onMouseEnter={this.handleDragHoverIn} onMouseLeave={this.handleDragHoverOut}><i style={s.dHover ? {opacity: '0.7'} : {opacity: '0.5'}} className="fa fa-home" /> </span> : null}
                       </h5> : null}
                       {p.stores.prefs ? p.stores.prefs.drag && !s.bookmarks && !s.history && !s.sessions  && !s.apps ? <div onMouseEnter={this.handleDragHoverIn} onMouseLeave={this.handleDragHoverOut} onClick={() => this.handleCloseTab(p.tab.id)}>
                         {s.hover ? 

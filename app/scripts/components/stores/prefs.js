@@ -42,7 +42,6 @@ var prefsStore = Reflux.createStore({
                     singleNewTab: false
                   };
                   chrome.storage.sync.set({preferences: this.prefs}, (result)=> {
-                    this.ready = true;
                     console.log('Init preferences saved');
                   });
                   console.log('init prefs: ', this.prefs);
@@ -55,13 +54,14 @@ var prefsStore = Reflux.createStore({
       });
     });
     getPrefs.then((prefs)=>{
-      console.log('load prefs: ', prefs);
       this.prefs = {
+        tabSizeHeight: prefs.preferences.tabSizeHeight,
         drag: prefs.preferences.drag, 
         context: prefs.preferences.context,
         duplicate: prefs.preferences.duplicate,
         screenshot: prefs.preferences.screenshot,
         screenshotBg: prefs.preferences.screenshotBg,
+        screenshotBgBlur: prefs.preferences.screenshotBgBlur,
         blacklist: prefs.preferences.blacklist,
         sidebar: prefs.preferences.sidebar,
         sort: prefs.preferences.sort,
@@ -73,13 +73,19 @@ var prefsStore = Reflux.createStore({
         sessionsSync: prefs.preferences.sessionsSync,
         singleNewTab: prefs.preferences.singleNewTab
       };
+      if (typeof this.prefs.tabSizeHeight === 'undefined') {
+        this.prefs.tabSizeHeight = 120;
+      }
       if (typeof this.prefs.installTime === 'undefined') {
         this.prefs.installTime = Date.now();
       }
       if (typeof this.prefs.mode === 'undefined') {
         this.prefs.mode = 'tabs';
       }
-      this.ready = true;
+      if (typeof this.prefs.screenshotBgBlur === 'undefined') {
+        this.prefs.screenshotBgBlur = 5;
+      }
+      console.log('load prefs: ', prefs, this.prefs);
       this.trigger(this.prefs);
     }).catch((err)=>{
       console.log('chrome.extension.lastError: ',err);
@@ -96,9 +102,7 @@ var prefsStore = Reflux.createStore({
     this.savePrefs(opt, value);
   },
   get_prefs() {
-    if (this.ready) {
-      return this.prefs;
-    }
+    return this.prefs;
   },
   savePrefs(opt, value){
     var newPrefs = null;

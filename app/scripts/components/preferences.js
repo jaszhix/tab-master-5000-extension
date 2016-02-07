@@ -4,18 +4,31 @@ import _ from 'lodash';
 
 import utils from './utils';
 
+import Slider from 'rc-slider';
 import {reRenderStore, utilityStore, blacklistStore} from './stores/main';
 import prefsStore from './stores/prefs';
 import screenshotStore from './stores/screenshot';
 
 import {Btn, Col, Row} from './bootstrap';
 
+var Slide = React.createClass({
+  render: function() {
+    var p = this.props;
+    return (
+      <Row className={p.className} onMouseEnter={p.onMouseEnter}>
+        <span>{p.label}</span>
+        <Slider min={p.min} max={p.max} defaultValue={p.defaultValue} value={p.value} onChange={p.onChange} />
+      </Row>
+    );
+  }
+});
+
 var Toggle = React.createClass({
   render: function() {
     var p = this.props;
     return (
       <div className="Toggle">
-        <Row onMouseEnter={p.onMouseEnter} onMouseLeave={p.onMouseLeave} className={p.child ? "prefs-row-child" : "prefs-row"}>
+        <Row onMouseEnter={p.onMouseEnter} className={p.child === 'last' ? 'prefs-row-last' :  p.child ? "prefs-row-child" : "prefs-row"}>
           <span onClick={p.onClick}><i className={p.on ? "fa fa-toggle-on" : "fa fa-toggle-off"} style={{cursor: 'pointer', fontSize: '18px'}}/> {p.children}</span>
         </Row>
       </div>
@@ -113,7 +126,11 @@ var Preferences = React.createClass({
   },
   handleClick(opt){
     prefsStore.set_prefs(opt,!this.props.prefs[opt]);
-    reRenderStore.set_reRender(true, 'cycle', this.props.tabs[0].id);
+    reRenderStore.set_reRender(true, 'cycle', null);
+  },
+  handleSlide(e, opt){
+    prefsStore.set_prefs(opt,e);
+    reRenderStore.set_reRender(true, 'cycle', null);
   },
   render: function() {
     var s = this.state;
@@ -121,6 +138,17 @@ var Preferences = React.createClass({
     return (
       <div className="preferences">
         <Col size="6">
+          <Slide  className="prefs-row" 
+                  label={`Set tile size: ${p.prefs.tabSizeHeight}x${p.prefs.tabSizeHeight+80}`}
+                  min={120} max={300}
+                  defaultValue={p.prefs.tabSizeHeight}
+                  value={p.prefs.tabSizeHeight}
+                  onChange={(e)=>this.handleSlide(e, 'tabSizeHeight')}
+                  onAfterChange={()=>reRenderStore.set_reRender(true, 'cycle', this.props.tabs[0].id)}
+                  onMouseEnter={()=>this.handleToggle('tabSizeHeight')}
+                  step={20}
+                  dots={true}
+                  />
           <Toggle onMouseEnter={()=>this.handleToggle('context')} 
                   onClick={()=>this.handleClick('context')} 
                   on={p.prefs.context}>
@@ -168,12 +196,25 @@ var Preferences = React.createClass({
           </Toggle>
           {p.prefs.screenshot ? 
             <Col size="12">
+              <Row className="prefs-row-first">
+                {s.bytesInUse ? `Screenshot disk usage: ${utils.formatBytes(s.bytesInUse, 2)}` : null}
+              </Row>
               <Toggle onMouseEnter={()=>this.handleToggle('screenshotBg')} 
                       onClick={()=>this.handleClick('screenshotBg')} 
                       on={p.prefs.screenshotBg} child={true}>
                         Enable screenshots in the background on hover
               </Toggle>
-              {s.bytesInUse ? <p>Screenshot disk usage: {utils.formatBytes(s.bytesInUse, 2)}</p> : null}
+              <Col size="12">
+                <Slide 
+                  className="prefs-row-last" 
+                  label={`Set screenshot background blur strength: ${p.prefs.screenshotBgBlur}`}
+                  min={0} max={15}
+                  defaultValue={p.prefs.screenshotBgBlur}
+                  value={p.prefs.screenshotBgBlur}
+                  onChange={(e)=>prefsStore.set_prefs('screenshotBgBlur',e)} 
+                  onMouseEnter={()=>this.handleToggle('screenshotBgBlur')}
+                  />
+              </Col>
               <Btn onClick={()=>screenshotStore.clear()} style={p.settingsMax ? {top: '95%'} : null} className="ntg-setting-btn" fa="trash">Clear Screenshot Cache</Btn> 
             </Col>
           : null}
@@ -196,6 +237,7 @@ var Preferences = React.createClass({
             {s.hover === 'actions' ? <p>This option allows you to undo a tab action by pressing CTRL+Z, or using the right-click context menu on a tab tile while in the tabs view.</p> : null}
             {s.hover === 'sessionsSync' ? <p>Enabling session synchronization allows you to keep a saved session persistently up to date with the current Chrome window.</p> : null}
             {s.hover === 'singleNewTab' ? <p>Enabling this option enforces the closing of all New Tabs except the one that is currently focused. This is useful on older computers.</p> : null}
+            {s.hover === 'tabSizeHeight' ? <span><p>This setting controls the size of the tiles.</p><Btn style={{marginTop: '7px'}} onClick={()=>this.handleSlide(120, 'tabSizeHeight')} className="ntg-btn" fa="plus">Reset</Btn></span> : null}
           </Row>
         </Col>
       </div>
