@@ -66,7 +66,8 @@ var Tile = React.createClass({
       this.updateScreenshot(null, nextProps);
     }
     if (nextProps.stores.search !== p.stores.search) {
-      this.filterTabs(null, nextProps);
+      _.delay(()=>this.setTabSize(p),1);
+      this.filterTabs(nextProps);
     }
     this.handleRelays(nextProps);
     if (nextProps.stores.applyTabOrder) {
@@ -222,11 +223,7 @@ var Tile = React.createClass({
     this.setState({
       render: false
     });
-    var active = ()=>{
-      chrome.tabs.update(id, {
-        active: true
-      });
-    };
+    var active = ()=>chrome.tabs.update(id, {active: true});
     // Navigate to a tab when its clicked from the grid.
     if (!s.xHover || !s.pHover) {
       if (!s.close) {
@@ -253,22 +250,30 @@ var Tile = React.createClass({
         }
       }
     }
-    this.setState({
-      render: true
-    });
+    this.setState({render: true});
   },
-  filterTabs(tab, props) {
+  filterTabs(props) {
     // Filter tab method that triggers re-renders through Reflux store.
-    if (tab && tab.title) {
-      var p = props;
-      if (kmp(tab.title.toLowerCase(), p.stores.search) !== -1) {
+    var iTile = (opt)=>{
+      var innerTile = document.getElementById('innerTile-'+p.tab.id);
+      if (innerTile && _.isObject(innerTile.style)) {
+        if (opt === 'show') {
+          innerTile.style.display = 'block';
+        } else {
+          innerTile.style.display = 'none';
+        }
+      }
+    };
+    var p = props;
+    if (kmp(p.tab.title.toLowerCase(), p.stores.search) !== -1) {
+      iTile('show');
+      return true;
+    } else {
+      if (p.stores.search.length === 0) {
+        iTile('show');
         return true;
       } else {
-        if (p.stores.search.length === 0) {
-          return true;
-        } else {
-          return false;
-        }
+        iTile();
       }
     }
   },
@@ -330,8 +335,7 @@ var Tile = React.createClass({
           _.defer(()=>{
             reRender(true);
           });
-        }
-        
+        }      
       });
     };
     if (p.stores.prefs.animations && !s.openTab) {
@@ -370,7 +374,9 @@ var Tile = React.createClass({
     } else {
       id = tab.id;
     }
-    this.setState({pinning: true});
+    if (p.stores.prefs.animations) {
+      this.setState({pinning: true});
+    }
     tabStore.keepNewTabOpen();
     // Toggle pinned state.
     this.setState({render: false});
