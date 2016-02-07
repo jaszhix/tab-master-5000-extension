@@ -122,7 +122,6 @@ var Root = React.createClass({
       width: window.innerWidth,
       context: false,
       event: '',
-      sidebar: sidebarStore.get_sidebar(),
       chromeVersion: utilityStore.chromeVersion(),
       prefs: [],
       load: true,
@@ -181,7 +180,11 @@ var Root = React.createClass({
   prefsChange(e){
     utilityStore.reloadBg();
     var s = this.state;
-    this.setState({prefs: e, tileLimit: 100});
+    this.setState({
+      prefs: e, 
+      tileLimit: 100, 
+      sidebar: e.sidebar
+    });
     if (s.init) {
       if (e.mode !== 'tabs') {
         chrome.tabs.query({currentWindow: true}, (t)=>{
