@@ -53,32 +53,29 @@ var Tile = React.createClass({
   componentWillReceiveProps(nextProps){
     var p = this.props;
     this.setTabMode();
+    this.updateFavicons(nextProps);
     if (!_.isEqual(nextProps.stores, p.stores)) {
       this.setState({stores: nextProps.stores});
-      if (nextProps.stores.prefs.screenshot) {
-        this.updateScreenshot('init', nextProps);
-      } else {
-        this.setState({screenshot: null});
-      }
-    }
-    if (!_.isEqual(nextProps.tab, p.tab)) {
-      this.setState({tab: nextProps.tab});
-    }
-    if (nextProps.i !== p.i) {
-      this.setState({i: nextProps.i});
-    }
-    if (nextProps.tab.pinned) {
-      this.handleFocus(null, null, nextProps);
     }
     if (nextProps.stores.prefs.mode === 'tabs') {
       this.checkDuplicateTabs();
     }
+    if (nextProps.stores.prefs.screenshot) {
+      this.updateScreenshot('init', nextProps);
+    }
+    if (!_.isEqual(nextProps.tab, p.tab)) {
+      this.setState({tab: nextProps.tab});
+    }
+    if (nextProps.tab.pinned) {
+      this.handleFocus(null, null, nextProps);
+    }
+    if (nextProps.i !== p.i) {
+      this.setState({i: nextProps.i});
+    }
     if (p.tab.title === 'New Tab') {
       this.closeNewTabs();
     }
-    this.updateFavicons(nextProps);
     if (nextProps.stores.search !== p.stores.search) {
-      //_.delay(()=>this.setTabSize(p),1);
       this.filterTabs(nextProps);
     }
     this.handleRelays(nextProps);
@@ -87,8 +84,7 @@ var Tile = React.createClass({
     }
     if (nextProps.stores.folder !== p.stores.folder) {
       this.filterFolders(nextProps);
-    }
-    
+    } 
   },
   initMethods(){
     var p = this.props;
@@ -691,8 +687,7 @@ var TileGrid = React.createClass({
       data: this.props.data,
       sortFlags: flags,
       sortPriority: this.props.keys,
-      title: true,
-      render: false
+      title: true
     };
   },
   componentDidMount(){
@@ -703,9 +698,6 @@ var TileGrid = React.createClass({
   },
   prefsInit(type){
     var p = type;
-    if (!this.state.render) {
-      this.setState({render: true});
-    }
     if (!p.stores.prefs.screenshotBg || !p.stores.prefs.screenshot) {
       v('#main').css({position: ''});
       v('#bgImg').css({
