@@ -53,9 +53,7 @@
     "unlimitedStorage",
     "idle",
     "system.memory",
-    "tabCapture"
-  ],
-  "optional_permissions": [ 
+    "tabCapture",
     "management",
     "bookmarks",
     "history"
