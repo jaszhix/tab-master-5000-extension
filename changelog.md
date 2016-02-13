@@ -1,5 +1,17 @@
 #### Release Notes
 
+##### v0.16 / *2-13-16*
+
+*   Improved the performance of the extension.
+*   Fixed the context menu moving while it is open.
+*   Fixed session syncing not working in non-tab modes, and not updating the synced sessions correctly.
+*   Made history, bookmarks, and management permissions mandatory due to tabs Chrome event listeners not firing until all optional permissions are enabled.
+*   Known issues
+  * Sorted tab orders will not stay in place when tab data changes.
+  * If a New Tab is open and another Chrome app has mapped CTRL+Z, it sometimes will undo tab actions and override the active app's command key binding. Closing a New Tab or disabling undoing of tab actions resolves the issue.
+  * The undo tab action functionality can lose track of tab action history occasionally.
+
+
 ##### v0.15 / *2-7-16*
 
 *   Added Chrome App/Extension management modes. Accessible from the left side bar, it will allow you to search, sort, enable/disable, and uninstall apps and extensions. In apps mode, through the context menu, you can set an app to launch as a tab, pinned tab, window, or in full screen view if the app supports it. You can also set app shortcuts.
@@ -11,19 +23,12 @@
 *   Fixed the right click context menu not working after using it once. 
 *   Fixed pinning animation not turning off when animations are disabled.
 *   Fixed the sidebar not loading correctly on initial load.  
-*   Known issues
-  * Session syncing stops working if you switch to any mode other than tabs. Sometimes it will require reloading the New Tab page after switching to tabs view before it will work again.
-  * If a New Tab is open and another Chrome app has mapped CTRL+Z, it sometimes will undo tab actions and override the active app's command key binding. Closing a New Tab or disabling undoing of tab actions resolves the issue.
-  * The undo tab action functionality can lose track of tab action history occasionally.
 
 ##### v0.14 / *2-3-16*
 
 *   Improved the performance of bookmarks and history view modes.
 *   The closing of additional New Tabs behavior has been removed from screenshot mode, and moved to its own separate option in Preferences.
 *   Fixed Sessions grid view tiles that are open tabs not being assigned the correct tab ID, and improved performance.
-*   Known issues
-  * Bookmarks that are open do not display as open tabs in bookmarks view.
-  * The undo tab action functionality can lose track of tab action history occasionally.
 
 ##### v0.13.1 / *1-31-16*
 
