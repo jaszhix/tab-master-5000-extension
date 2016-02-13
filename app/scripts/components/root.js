@@ -10,7 +10,7 @@ import {chromeAppStore, faviconStore, sessionsStore, actionStore, historyStore, 
 import prefsStore from './stores/prefs';
 import tabStore from './stores/tab';
 import screenshotStore from './stores/screenshot';
-
+import utils from './utils';
 import {Btn, Col, Row, Container} from './bootstrap';
 import TileGrid from './tile';
 import ModalHandler from './modal';
@@ -102,7 +102,7 @@ var Search = React.createClass({
   }
 });
 
-var synchronizeSession = _.throttle(sessionsStore.save, 1500, {leading: true});
+var synchronizeSession = _.throttle(sessionsStore.save, 9000, {leading: true});
 var Root = React.createClass({
   mixins: [
     Reflux.ListenerMixin,
@@ -135,7 +135,8 @@ var Root = React.createClass({
       applyTabOrder: false,
       folder: '',
       folderState: false,
-      chromeApps: []
+      chromeApps: [],
+      duplicateTabs: []
     };
   },
   componentWillMount(){
@@ -271,6 +272,7 @@ var Root = React.createClass({
         && s.prefs.mode !== 'extensions') {
         this.setState({tabs: tab});
         tabStore.set_tab(tab);
+        this.checkDuplicateTabs(Tab);
       } else {
         this.setState({render: false});
       }
@@ -314,6 +316,16 @@ var Root = React.createClass({
         } 
       }
     }
+  },
+  checkDuplicateTabs(tabs){
+    let tabUrls = [];
+    for (var i = tabs.length - 1; i >= 0; i--) {
+      tabUrls.push(tabs[i].url);    
+    }
+    console.log('Duplicates: ', utils.getDuplicates(tabUrls));
+    if (utils.hasDuplicates(tabUrls)) {
+      this.setState({duplicateTabs: utils.getDuplicates(tabUrls)});
+    } 
   },
   searchChanged(e) {
     // Trigger Root component re-render when a user types in the search box.
@@ -476,7 +488,8 @@ var Root = React.createClass({
     var context = contextStore.get_context();
     var windowId = utilityStore.get_window();
     var stores = {
-      tabs: tabs, 
+      tabs: tabs,
+      duplicateTabs: s.duplicateTabs,
       favicons: s.favicons, 
       screenshots: s.screenshots, 
       newTabs: newTabs, 
@@ -495,7 +508,7 @@ var Root = React.createClass({
     return (
       <div className="container-main">
         {v('#options').n ? <Preferences options={true} settingsMax={true} prefs={s.prefs} tabs={s.tabs} /> : s.load ? <Loading /> : <div>
-          {s.context ? <ContextMenu actions={s.actions} tabs={s.tabs} prefs={s.prefs} cursor={cursor} context={context} chromeVersion={s.chromeVersion}/> : null}
+          {s.context ? <ContextMenu actions={s.actions} tabs={s.tabs} prefs={s.prefs} cursor={cursor} context={context} chromeVersion={s.chromeVersion} duplicateTabs={s.duplicateTabs}/> : null}
           <ModalHandler tabs={s.prefs.mode === 'tabs' ? s.tabs : tabStore.get_altTab()} sessions={s.sessions} prefs={s.prefs} favicons={s.favicons} collapse={s.collapse} />
             {s.tabs ? <div className="tile-container">
                 {s.settings ? <Search event={s.event} prefs={s.prefs} topLoad={s.topLoad} /> : null}

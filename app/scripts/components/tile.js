@@ -6,17 +6,14 @@ import v from 'vquery';
 import kmp from 'kmp';
 import moment from 'moment';
 import Draggable from 'react-draggable';
-import utils from './utils';
 
-import {relayStore, faviconStore, sessionsStore, bookmarksStore, dupeStore, reRenderStore, applyTabOrderStore, utilityStore, contextStore, dragStore, draggedStore} from './stores/main';
+import {relayStore, faviconStore, sessionsStore, bookmarksStore, reRenderStore, applyTabOrderStore, utilityStore, contextStore, dragStore, draggedStore} from './stores/main';
 import prefsStore from './stores/prefs';
 import tabStore from './stores/tab';
 
 import {Btn, Col, Row} from './bootstrap';
 import style from './style';
 
-var tabUrls = null;
-var duplicateTabs = null;
 var tileDrag = null;
 var Tile = React.createClass({
   mixins: [Reflux.ListenerMixin],
@@ -96,7 +93,6 @@ var Tile = React.createClass({
   initMethods(){
     var p = this.props;
     var s = this.state;
-    //this.setTabSize(this.props);
     this.setTabMode();
     this.updateScreenshot('init', p);
     if (s.stores.prefs.mode === 'tabs') {
@@ -123,7 +119,6 @@ var Tile = React.createClass({
         utilityStore.restartNewTab();
       }
       if (s.stores.prefs.screenshot) {
-        //var screenshotIndex = screenshotStore.get_ssIndex();
         var ssData = _.result(_.find(s.stores.screenshots, { url: s.tab.url }), 'data');
         if (ssData) {
           this.setState({screenshot: ssData});
@@ -186,14 +181,13 @@ var Tile = React.createClass({
       }
     } 
   },
-  checkDuplicateTabs(opt){
+  checkDuplicateTabs(opt, props){
     var p = this.props;
     var s = this.state;
-    if (_.includes(duplicateTabs, s.tab.url)) {
+    if (_.includes(s.stores.duplicateTabs, s.tab.url)) {
       var t = _.filter(s.stores.tabs, { url: s.tab.url });
       var first = _.first(t);
       var activeTab = _.map(_.find(t, { 'active': true }), 'id');
-      console.log('checkDuplicateTabs: ',t, first);
       for (var i = t.length - 1; i >= 0; i--) {
         if (t[i].id !== first.id && t[i].title !== 'New Tab' && t[i].id !== activeTab) {
           if (opt === 'close') {
@@ -703,7 +697,6 @@ var TileGrid = React.createClass({
   },
   componentDidMount(){
     this.prefsInit(this.props);
-    this.checkDuplicateTabs(this.props.data);
   },
   componentWillUnmount(){
     utilityStore.reloadBg();
@@ -735,26 +728,9 @@ var TileGrid = React.createClass({
     if (nextProps.tileLimit !== p.tileLimit) {
       this.setState({tileLimit: nextProps.tileLimit});
     }
-
     this.setState({data: nextProps.data});
-    this.checkDuplicateTabs(p.data);
     if (!_.isEqual(nextProps.stores, p.stores)) {
       this.prefsInit(nextProps);
-    }
-  },
-  checkDuplicateTabs(tabs){
-    var p = this.props;
-    if (p.render && p.stores.prefs.mode === 'tabs') {
-      tabUrls = [];
-      duplicateTabs = [];
-      dupeStore.set_duplicateTabs(null);
-      for (var i = tabs.length - 1; i >= 0; i--) {
-        tabUrls.push(tabs[i].url);    
-      }
-      if (utils.hasDuplicates(tabUrls)) {
-        duplicateTabs = utils.getDuplicates(tabUrls);
-        dupeStore.set_duplicateTabs(duplicateTabs);
-      } 
     }
   },
   sort: function(key) {

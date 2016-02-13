@@ -386,24 +386,6 @@ export var dragStore = Reflux.createStore({
   },
 });
 
-
-
-export var dupeStore = Reflux.createStore({
-  init: function() {
-    this.tabUrls = null;
-  },
-  set_duplicateTabs: function(value) {
-    this.duplicateTabs = value;
-    console.log('duplicateTabs: ', value);
-    this.trigger(this.duplicateTabs);
-  },
-  get_duplicateTabs: function() {
-    return this.duplicateTabs;
-  }
-});
-
-
-
 export var blacklistStore = Reflux.createStore({
   init: function() {
     var getBlacklist = new Promise((resolve, reject)=>{
