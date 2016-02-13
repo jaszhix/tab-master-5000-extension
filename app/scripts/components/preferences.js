@@ -126,11 +126,12 @@ var Preferences = React.createClass({
   },
   handleClick(opt){
     prefsStore.set_prefs(opt,!this.props.prefs[opt]);
-    reRenderStore.set_reRender(true, 'cycle', null);
+    if (opt === 'screenshot') {
+      reRenderStore.set_reRender(true, 'cycle', null);
+    }
   },
   handleSlide(e, opt){
     prefsStore.set_prefs(opt,e);
-    reRenderStore.set_reRender(true, 'cycle', null);
   },
   render: function() {
     var s = this.state;
