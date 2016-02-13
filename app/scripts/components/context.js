@@ -7,14 +7,24 @@ import {dupeStore, contextStore, relayStore, actionStore} from './stores/main';
 var ContextMenu = React.createClass({
   mixins: [require('react-onclickoutside')],
   getInitialState(){
+    var p = this.props;
     return {
-      actions: this.props.actions,
-      tab: this.props.context[1]
+      actions: p.actions,
+      tab: p.context[1],
+      cursor: p.cursor
     };
   },
   componentWillReceiveProps(nextProps){
-    this.setState({tab: nextProps.context[1]});
-    this.setState({actions: nextProps.actions});
+    var p = this.props;
+    if (!_.isEqual(nextProps.context, p.context)) {
+      this.setState({tab: nextProps.context[1]});
+    }
+    if (!_.isEqual(nextProps.actions, p.actions)) {
+      this.setState({actions: nextProps.actions});
+    }
+  },
+  shouldComponentUpdate(){
+    return !this.props.context[0];
   },
   handleClickOutside(e){
     contextStore.set_context(false, null);
@@ -75,7 +85,7 @@ var ContextMenu = React.createClass({
     var notAppsExt = p.prefs.mode !== 'apps' && p.prefs.mode !== 'extensions';
     return (
       <div className="ntg-context">
-        <div style={{left: p.cursor.page.x, top: p.cursor.page.y}} className="ntg-context-menu">
+        <div style={{left: s.cursor.page.x, top: s.cursor.page.y}} className="ntg-context-menu">
           {notAppsExt ? <Btn onClick={()=>this.handleRelay('close')} className="ntg-context-btn" fa={p.prefs.mode !== 'tabs' && !s.openTab ? "eraser" : "times"}>{close}</Btn> : null}
           {p.prefs.mode === 'tabs' ? <Btn onClick={()=>this.handleRelay('closeAll')} className="ntg-context-btn-close-all" fa="asterisk">{close+'all from ' + s.tab.url.split('/')[2]}</Btn> : null}
           {notAppsExt && this.getStatus('duplicate') ? <Btn onClick={()=>this.handleRelay('closeDupes')} className="ntg-context-btn-close-all" fa="asterisk">{close+'duplicates'}</Btn> : null}
