@@ -176,6 +176,9 @@ var Root = React.createClass({
   },
   sessionsChange(e){
     this.setState({sessions: e});
+    if (!this.state.init) {
+      this.syncSessions(e, tabStore.get_altTab(), null);
+    }
   },
   prefsChange(e){
     utilityStore.reloadBg();
@@ -194,7 +197,6 @@ var Root = React.createClass({
         });
       }
       // Init methods called here after prefs are loaded from Chrome storage.
-      this.setState({init: false});
       _.defer(()=>this.captureTabs('init'));
       this.onWindowResize(null, 'init');
     }
@@ -243,7 +245,9 @@ var Root = React.createClass({
     this.setState({topLoad: true});
     // Query current Chrome window for tabs.
     tabStore.promise().then((Tab)=>{
+      this.syncSessions(s.sessions, Tab, opt);
       tabStore.set_altTab(Tab);
+      this.setState({init: false});
       if (opt !== 'init') {
         v('#main').css({cursor: 'wait'});
         // Render state is toggled to false on the subsequent re-renders only.
@@ -270,29 +274,6 @@ var Root = React.createClass({
       } else {
         this.setState({render: false});
       }
-      if (s.prefs.sessionsSync) {
-        var sessions = sessionsStore.get_sessions();
-        if (sessions) {
-          for (var i = sessions.length - 1; i >= 0; i--) {
-            if (sessions[i].id === Tab[0].windowId) {
-              synchronizeSession('sync', sessions[i], null, Tab); 
-            } else {
-              if (typeof sessions[i].sync !== 'undefined' && sessions[i].sync && opt === 'init') {
-                var truthySession = [];
-                for (var y = sessions[i].tabs.length - 1; y >= 0; y--) {
-                  if (typeof Tab[y] !== 'undefined' && sessions[i].tabs[y].url === Tab[y].url) {
-                    truthySession.push(sessions[i].tabs[y].url);
-                  }
-                }
-                if (truthySession.length > 0) {
-                  sessionsStore.save('update', sessions[i], null, Tab);
-                }
-              }
-            }
-          } 
-        }
-   
-      }
       console.log(Tab);
       this.setState({topLoad: false});
       v('#main').css({cursor: 'default'});
@@ -308,6 +289,31 @@ var Root = React.createClass({
         this.setState({grid: true});
       }
     });
+  },
+  syncSessions(sessions, Tab, opt){
+    var s = this.state;
+    if (s.prefs.sessionsSync) {
+      //var sessions = sessionsStore.get_sessions();
+      if (sessions) {
+        for (var i = sessions.length - 1; i >= 0; i--) {
+          if (sessions[i].id === Tab[0].windowId) {
+            synchronizeSession('sync', sessions[i], null, Tab); 
+          } else {
+            if (typeof sessions[i].sync !== 'undefined' && sessions[i].sync && opt === 'init') {
+              var truthySession = [];
+              for (var y = sessions[i].tabs.length - 1; y >= 0; y--) {
+                if (typeof Tab[y] !== 'undefined' && sessions[i].tabs[y].url === Tab[y].url) {
+                  truthySession.push(sessions[i].tabs[y].url);
+                }
+              }
+              if (truthySession.length > 0) {
+                sessionsStore.save('update', sessions[i], null, Tab);
+              }
+            }
+          }
+        } 
+      }
+    }
   },
   searchChanged(e) {
     // Trigger Root component re-render when a user types in the search box.
@@ -327,9 +333,12 @@ var Root = React.createClass({
   },
   reRender(e) {
     // Method triggered by Chrome event listeners.
+    var s = this.state;
+    if (s.prefs.mode !== 'tabs') {
+      this.syncSessions(s.sessions, tabStore.get_altTab(), null);
+    }
     if (!clickStore.get_click()) {
       if (e[0]) {
-        var s = this.state;
         // Treat attaching/detaching and created tabs with a full re-render.
         if (s.prefs.mode === 'bookmarks') {
           this.updateTabState(bookmarksStore.get_bookmarks());
