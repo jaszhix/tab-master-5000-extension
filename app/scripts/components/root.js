@@ -102,7 +102,7 @@ var Search = React.createClass({
   }
 });
 
-var synchronizeSession = _.throttle(sessionsStore.save, 9000, {leading: true});
+var synchronizeSession = _.throttle(sessionsStore.save, 15000, {leading: true});
 var Root = React.createClass({
   mixins: [
     Reflux.ListenerMixin,
