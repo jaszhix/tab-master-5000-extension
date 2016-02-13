@@ -93,11 +93,7 @@ bgPrefs.then((prefs)=>{
         }
       }
     } else if (msg.type === 'update') {
-      if (prefs.mode !== 'tabs' && prefs.mode !== 'sessions') {
-        reRenderStore.set_reRender(true, 'cycle', msg.e);
-      } else {
-        throttled.update(msg.type, msg.e);
-      }
+      throttled.update(msg.type, msg.e);
     } else if (msg.type === 'move') {
       throttled.update(msg.type, msg.e);
     } else if (msg.type === 'attach') {

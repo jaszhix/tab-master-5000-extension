@@ -1,14 +1,18 @@
 var style = {
-  tile: function(dataUrl) {
+  tile: function(dataUrl, tabSizeHeight) {
     return {
       backgroundImage: 'url("'+dataUrl+'")',
-      backgroundBlendMode: 'multiply'
+      backgroundBlendMode: 'multiply',
+      height: tabSizeHeight,
+      width: tabSizeHeight+80
     };
   },
-  tileHovered: function(dataUrl) {
+  tileHovered: function(dataUrl, tabSizeHeight) {
     return {
       backgroundImage: 'url("'+dataUrl+'")',
-      backgroundBlendMode: 'multiply, soft-light'
+      backgroundBlendMode: 'multiply, soft-light',
+      height: tabSizeHeight,
+      width: tabSizeHeight+80
     };
   },
   ssIconBg: {
