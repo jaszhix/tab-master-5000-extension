@@ -494,7 +494,7 @@ var Root = React.createClass({
     };
     return (
       <div className="container-main">
-        {v('#options').node() ? <Preferences options={true} settingsMax={true} prefs={s.prefs} tabs={s.tabs} /> : s.load ? <Loading /> : <div>
+        {v('#options').n ? <Preferences options={true} settingsMax={true} prefs={s.prefs} tabs={s.tabs} /> : s.load ? <Loading /> : <div>
           {s.context ? <ContextMenu actions={s.actions} tabs={s.tabs} prefs={s.prefs} cursor={cursor} context={context} chromeVersion={s.chromeVersion}/> : null}
           <ModalHandler tabs={s.prefs.mode === 'tabs' ? s.tabs : tabStore.get_altTab()} sessions={s.sessions} prefs={s.prefs} favicons={s.favicons} collapse={s.collapse} />
             {s.tabs ? <div className="tile-container">

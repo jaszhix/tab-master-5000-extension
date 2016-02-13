@@ -506,22 +506,13 @@ var Tile = React.createClass({
   handleStart(e, ui) {
     var p = this.props;
     // Temporarily move tile element to the parent div, so the drag position stays in sync with the cursor.
-    var clone = v(ReactDOM.findDOMNode(this.refs.tileMain)).clone().node();
-    var removeDataReactIds = (el)=> {
-      el.removeAttribute('data-reactid');
-      if (el.childNodes.length > 0) {
-        for (var child in el.childNodes) {
-          if (el.childNodes[child].nodeType == 1)
-            removeDataReactIds(el.childNodes[child]);
-        }
-      }
-    };
-    removeDataReactIds(clone);
+    var clone = v(ReactDOM.findDOMNode(this.refs.tileMain)).clone().n;
+    v(clone).allChildren().removeAttr('data-reactid');
     clone.removeAttribute('id');
     console.log('drag clone',clone.attributes);
     clone.classList.add('tileClone');
     console.log('clone: ',clone);
-    var original = v('#tileMain-'+p.i).node();
+    var original = v('#tileMain-'+s.i).n;
     v('#grid').insertBefore(clone, original);
     v('#main').append(original);
     console.log('Event: ', e, ui);
@@ -540,7 +531,7 @@ var Tile = React.createClass({
     var p = this.props;
     v('#tileMain-'+p.i).hide();
     // Move the tile element back to #grid where it belongs.
-    v('#grid').append(v('#tileMain-'+p.i).node());
+    v('#grid').append(v('#tileMain-'+s.i).n);
     console.log('Event: ', e, ui);
     console.log('Stop Position: ', ui.position);
     tileDrag = false;
