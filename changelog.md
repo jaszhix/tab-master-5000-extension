@@ -2,11 +2,12 @@
 
 ##### v0.16 / *2-13-16*
 
-*   Improved the performance of the extension.
+*   Refactored code handling render updates, and improved performance of the extension.
 *   Fixed the context menu moving while it is open.
 *   Fixed session syncing not working in non-tab modes, and not updating the synced sessions correctly.
 *   Made history, bookmarks, and management permissions mandatory due to tabs Chrome event listeners not firing until all optional permissions are enabled.
 *   Known issues
+  * On first install, tab tiles do not update until the New Tab page is refreshed.
   * Sorted tab orders will not stay in place when tab data changes.
   * If a New Tab is open and another Chrome app has mapped CTRL+Z, it sometimes will undo tab actions and override the active app's command key binding. Closing a New Tab or disabling undoing of tab actions resolves the issue.
   * The undo tab action functionality can lose track of tab action history occasionally.
