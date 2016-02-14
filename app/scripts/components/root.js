@@ -190,13 +190,6 @@ var Root = React.createClass({
       sidebar: e.sidebar
     });
     if (s.init) {
-      if (e.mode !== 'tabs') {
-        chrome.tabs.query({currentWindow: true}, (t)=>{
-          _.delay(()=>{
-            reRenderStore.set_reRender(true, 'activate', {tabId: t[0].id});
-          },500);
-        });
-      }
       // Init methods called here after prefs are loaded from Chrome storage.
       _.defer(()=>this.captureTabs('init'));
       this.onWindowResize(null, 'init');

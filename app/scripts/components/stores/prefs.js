@@ -48,6 +48,7 @@ var prefsStore = Reflux.createStore({
                   });
                   console.log('init prefs: ', this.prefs);
                   this.trigger(this.prefs);
+                  utilityStore.restartNewTab();
                 }
               }
             });
