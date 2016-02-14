@@ -440,7 +440,7 @@ var Tile = React.createClass({
   },
   handleRelays(props){
     var s = this.state;
-    var r = s.stores.relay;
+    var r = props.stores.relay;
     if (r[1] && r[1].index === s.tab.index) {
       if (r[0] === 'close') {
         this.handleCloseTab(r[1]);
