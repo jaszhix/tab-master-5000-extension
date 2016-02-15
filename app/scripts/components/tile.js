@@ -54,7 +54,7 @@ var Tile = React.createClass({
     var p = this.props;
     this.setTabMode();
     this.updateFavicons(nextProps);
-    if (!_.isEqual(nextProps.stores, p.stores)) {
+    if (!_.isEqual(nextProps.stores, p.stores) && !this.state.drag) {
       this.setState({stores: nextProps.stores});
     }
     if (nextProps.stores.prefs.mode === 'tabs') {
@@ -484,6 +484,7 @@ var Tile = React.createClass({
   },
   handleStart(e, ui) {
     var s = this.state;
+    var p = this.props;
     // Temporarily move tile element to the parent div, so the drag position stays in sync with the cursor.
     var clone = v(ReactDOM.findDOMNode(this.refs.tileMain)).clone().n;
     v(clone).allChildren().removeAttr('data-reactid');
@@ -500,14 +501,15 @@ var Tile = React.createClass({
     tileDrag = true;
     this.setState({drag: tileDrag});
     draggedStore.set_dragged(this.state.tab);
-    this.getPos(s.stores.cursor.page.x, s.stores.cursor.page.y);
+    this.getPos(p.stores.cursor.page.x, p.stores.cursor.page.y);
   },
   handleDrag(e, ui) {
-    var s = this.state;
-    this.getPos(s.stores.cursor.page.x, s.stores.cursor.page.y);
+    var p = this.props;
+    this.getPos(p.stores.cursor.page.x, p.stores.cursor.page.y);
   },
   handleStop(e, ui) {
     var s = this.state;
+    var p = this.props;
     v('#tileMain-'+s.i).hide();
     // Move the tile element back to #grid where it belongs.
     v('#grid').append(v('#tileMain-'+s.i).n);
@@ -515,7 +517,7 @@ var Tile = React.createClass({
     console.log('Stop Position: ', ui.position);
     tileDrag = false;
     this.setState({drag: tileDrag});
-    this.getPos(s.stores.cursor.page.x, s.stores.cursor.page.y);
+    this.getPos(p.stores.cursor.page.x, p.stores.cursor.page.y);
     var dragged = draggedStore.get_dragged();
     var draggedOver = dragStore.get_tabIndex();
     chrome.tabs.move(dragged.id, {index: draggedOver.index}, (t)=>{
