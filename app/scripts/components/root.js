@@ -6,7 +6,7 @@ import ReactUtils from 'react-utils';
 import v from 'vquery';
 import '../../styles/app.scss';
 window.v = v;
-import {chromeAppStore, faviconStore, sessionsStore, actionStore, historyStore, bookmarksStore, relayStore, sidebarStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore, applyTabOrderStore} from './stores/main';
+import {sortStore, chromeAppStore, faviconStore, sessionsStore, actionStore, historyStore, bookmarksStore, relayStore, sidebarStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore, applyTabOrderStore} from './stores/main';
 import prefsStore from './stores/prefs';
 import tabStore from './stores/tab';
 import screenshotStore from './stores/screenshot';
@@ -136,7 +136,8 @@ var Root = React.createClass({
       folder: '',
       folderState: false,
       chromeApps: [],
-      duplicateTabs: []
+      duplicateTabs: [],
+      sort: 'index'
     };
   },
   componentWillMount(){
@@ -160,6 +161,7 @@ var Root = React.createClass({
     this.listenTo(screenshotStore, this.screenshotsChange);
     this.listenTo(relayStore, this.relayChange);
     this.listenTo(applyTabOrderStore, this.applyTabOrderChange);
+    this.listenTo(sortStore, this.sortChange);
     
 
     console.log('Chrome Version: ',utilityStore.chromeVersion());
@@ -213,6 +215,9 @@ var Root = React.createClass({
   },
   chromeAppChange(e){
     this.setState({apps: e});
+  },
+  sortChange(e){
+    this.setState({sort: e});
   },
   updateTabState(e, opt){
     console.log('updateTabState: ',e);
@@ -496,7 +501,8 @@ var Root = React.createClass({
         name: s.folder, 
         state: s.folderState
       },
-      windowId: windowId
+      windowId: windowId,
+      sort: s.sort
     };
     return (
       <div className="container-main">

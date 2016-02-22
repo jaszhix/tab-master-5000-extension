@@ -988,6 +988,19 @@ export var chromeAppStore = Reflux.createStore({
   }
 });
 
+export var sortStore = Reflux.createStore({
+  init(){
+    this.key = 'index';
+  },
+  set(value){
+    this.key = value;
+    this.trigger(this.key);
+  },
+  get(){
+    return this.key;
+  }
+});
+
 (function() {
     document.onmousemove = handleMouseMove;
     function handleMouseMove(event) {

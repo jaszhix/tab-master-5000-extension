@@ -7,7 +7,7 @@ import kmp from 'kmp';
 import moment from 'moment';
 import Draggable from 'react-draggable';
 
-import {relayStore, faviconStore, sessionsStore, bookmarksStore, reRenderStore, applyTabOrderStore, utilityStore, contextStore, dragStore, draggedStore} from './stores/main';
+import {sortStore, relayStore, faviconStore, sessionsStore, bookmarksStore, reRenderStore, applyTabOrderStore, utilityStore, contextStore, dragStore, draggedStore} from './stores/main';
 import prefsStore from './stores/prefs';
 import tabStore from './stores/tab';
 
@@ -634,6 +634,7 @@ var Sidebar = React.createClass({
       utilityStore.reloadBg();
     }
     prefsStore.set_prefs('mode', mode);
+    sortStore.set('index');
   },
   handleSort(){
     prefsStore.set_prefs('sort', !this.props.prefs.sort);
@@ -666,7 +667,6 @@ var TileGrid = React.createClass({
     data: React.PropTypes.array,
     keys: React.PropTypes.array,
     labels: React.PropTypes.object,
-    flags: React.PropTypes.object,
     collapse: React.PropTypes.bool
   },
   getDefaultProps: function() {
@@ -674,19 +674,12 @@ var TileGrid = React.createClass({
       data: [],
       keys: [],
       labels: {},
-      flags: {},
       collapse: true
     };
   },
   getInitialState: function() {
-    var flags = _.transform(this.props.keys, (ret, key)=> {
-      if (!this.props.flags[key]) ret[key] = false;
-      return ret;
-    }, {});
     return {
       data: this.props.data,
-      sortFlags: flags,
-      sortPriority: this.props.keys,
       title: true
     };
   },
@@ -717,34 +710,24 @@ var TileGrid = React.createClass({
   },
   componentWillReceiveProps(nextProps){
     var p = this.props;
-    if (nextProps.tileLimit !== p.tileLimit) {
-      this.setState({tileLimit: nextProps.tileLimit});
-    }
-    this.setState({data: nextProps.data});
     if (!_.isEqual(nextProps.stores, p.stores)) {
       this.prefsInit(nextProps);
     }
+    if (nextProps.tileLimit !== p.tileLimit) {
+      this.setState({tileLimit: nextProps.tileLimit});
+    }
+    this.sort(nextProps.stores.sort, nextProps);
   },
-  sort: function(key) {
-    var self = this;
-    return function() {
-      var flags = self.state.sortFlags;
-      var priority = _.remove(self.state.sortPriority, key);
-      priority.unshift(key);
-      var order = _.each(priority, function(_key) {
-        return (_key === key) ? !flags[_key] : flags[_key];
-      });
-      var result = _.orderBy(self.props.data, priority, order);
-      self.setState({
-        data: key === 'offlineEnabled' 
-        || key === 'sTimeStamp' 
-        || key === 'dateAdded' 
-        || key === 'visitCount' 
-        || key === 'audible' ? _.reverse(result) : result,
-        sortFlags: _.zipObjectDeep(priority, order),
-        sortPriority: priority
-      });
-    };
+  sort(key, props) {
+    var result = _.orderBy(props.data, key, 'asc');
+    this.setState({
+      data: key === 'offlineEnabled' 
+      || key === 'sTimeStamp' 
+      || key === 'dateAdded' 
+      || key === 'visitCount' 
+      || key === 'audible' 
+      || key === 'lastVisitTime' ? _.reverse(result) : result
+    });
   },
   handleTitleIcon(){
     this.setState({title: !this.state.title});
@@ -760,7 +743,7 @@ var TileGrid = React.createClass({
       var label = p.labels[key] || key;
       var cLabel = p.width <= 1135 ? '' : label;
       return (
-        <div key={key} onClick={this.sort(key)}>
+        <div key={key} onClick={()=>sortStore.set(key)}>
           {label === 'Tab Order' || label === 'Original Order' ? <Btn style={ssBg ? buttonTransparent : null} className="ntg-btn" fa="history">{cLabel}</Btn> : null}
           {label === 'Website' ? <Btn style={ssBg ? buttonTransparent : null} className="ntg-btn" fa="external-link">{cLabel}</Btn> : null}
           {label === 'Title' ? <Btn style={ssBg ? buttonTransparent : null} onClick={this.handleTitleIcon} className="ntg-btn" fa={s.title ? 'sort-alpha-asc' : 'sort-alpha-desc'}>{cLabel}</Btn> : null}
