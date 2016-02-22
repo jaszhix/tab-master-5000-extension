@@ -3,6 +3,7 @@ import kmp from 'kmp';
 import _ from 'lodash';
 import v from 'vquery';
 import {saveAs} from 'filesaver.js';
+import mouseTrap from 'mousetrap';
 
 import prefsStore from './prefs';
 import tabStore from './tab';
@@ -118,11 +119,9 @@ bgPrefs.then((prefs)=>{
   });
 });
 
-chrome.commands.onCommand.addListener((command) => {
-  if (command === 'undo') {
-    if (prefsStore.get_prefs().actions) {
-      actionStore.undoAction();
-    }
+mouseTrap.bind('ctrl+z', ()=>{
+  if (prefsStore.get_prefs().actions) {
+    actionStore.undoAction();
   }
 });
 
