@@ -88,7 +88,8 @@ var ContextMenu = React.createClass({
         <div style={{left: s.cursor.page.x, top: s.cursor.page.y}} className="ntg-context-menu">
           {notAppsExt ? <Btn onClick={()=>this.handleRelay('close')} className="ntg-context-btn" fa={p.prefs.mode !== 'tabs' && !s.openTab ? "eraser" : "times"}>{close}</Btn> : null}
           {p.prefs.mode === 'tabs' ? <Btn onClick={()=>this.handleRelay('closeAll')} className="ntg-context-btn-close-all" fa="asterisk">{close+'all from ' + s.tab.url.split('/')[2]}</Btn> : null}
-          {notAppsExt && this.getStatus('duplicate') ? <Btn onClick={()=>this.handleRelay('closeDupes')} className="ntg-context-btn-close-all" fa="asterisk">{close+'duplicates'}</Btn> : null}
+          {notAppsExt && this.getStatus('duplicate') ? <Btn onClick={()=>this.handleRelay('closeDupes')} className="ntg-context-btn-close-all" fa="asterisk">{close+'duplicates from '+s.tab.url.split('/')[2]}</Btn> : null}
+          {notAppsExt && this.getStatus('duplicate') && p.duplicateTabs.length > 1 ? <Btn onClick={()=>this.handleRelay('closeAllDupes')} className="ntg-context-btn-close-all" fa="asterisk">{close+'all duplicates'}</Btn> : null}
           {s.tab.openTab || notBookmarksHistoryAppsExt ? <Btn onClick={()=>this.handleRelay('pin')} className="ntg-context-btn" fa="map-pin">{s.tab.pinned ? 'Unpin' : 'Pin'}</Btn> : null}
           {p.chromeVersion >= 46 ? s.tab.openTab || notBookmarksHistoryAppsExt ? <Btn onClick={()=>this.handleRelay('mute')} className="ntg-context-btn" fa={s.tab.mutedInfo.muted ? 'volume-up' : 'volume-off'}>{s.tab.mutedInfo.muted ? 'Unmute' : 'Mute'}</Btn> : null : null}
           {notAppsExt && p.prefs.actions && this.getStatus('actions') ? <Btn onClick={()=>this.handleRelay('actions')} className="ntg-context-btn" fa="history">{' Undo'+this.getStatus('actions')} </Btn> : null}

@@ -180,13 +180,28 @@ var Tile = React.createClass({
   checkDuplicateTabs(opt, props){
     var p = this.props;
     var s = this.state;
+    var first;
+    if (opt === 'closeAllDupes') {
+      var duplicates;
+      for (var y = s.stores.duplicateTabs.length - 1; y >= 0; y--) {
+        duplicates = _.filter(s.stores.tabs, {url: s.stores.duplicateTabs[y]});
+        first = _.first(duplicates);
+        if (duplicates) {
+          for (var x = duplicates.length - 1; x >= 0; x--) {
+            if (duplicates[x].id !== first.id) {
+              this.handleCloseTab(duplicates[x].id);
+            }
+          }
+        }
+      }
+    }
     if (_.includes(s.stores.duplicateTabs, s.tab.url)) {
-      var t = _.filter(s.stores.tabs, { url: s.tab.url });
-      var first = _.first(t);
+      var t = _.filter(s.stores.tabs, {url: s.tab.url});
+      first = _.first(t);
       var activeTab = _.map(_.find(t, { 'active': true }), 'id');
       for (var i = t.length - 1; i >= 0; i--) {
         if (t[i].id !== first.id && t[i].title !== 'New Tab' && t[i].id !== activeTab) {
-          if (opt === 'close') {
+          if (opt === 'closeDupes') {
             this.handleCloseTab(t[i].id);
           } else if (s.tab.id === t[i].id && s.stores.prefs.duplicate) {
             this.handleFocus('duplicate',true,p);
@@ -449,7 +464,9 @@ var Tile = React.createClass({
       } else if (r[0] === 'mute') {
         this.handleMuting(s.tab);
       } else if (r[0] === 'closeDupes') {
-        this.checkDuplicateTabs('close');
+        this.checkDuplicateTabs(r[0]);
+      } else if (r[0] === 'closeAllDupes') {
+        this.checkDuplicateTabs(r[0]);
       } else if (r[0] === 'toggleEnable') {
         this.handleApp(r[0]);
       } else if (r[0] === 'uninstallApp') {
