@@ -14,6 +14,37 @@ import {Btn, Col} from './bootstrap';
 
 var keepContributeModalOpen = false;
 
+var ResolutionWarning = React.createClass({
+  componentDidMount(){
+    style.modal.content.top = '25%';
+    style.modal.content.left = '25%';
+    style.modal.content.right = '25%';
+    style.modal.content.bottom = '35%';
+  },
+  handleCloseBtn(){
+    prefsStore.set_prefs('resolutionWarning', false);
+    clickStore.set_click(true, false);
+    modalStore.set_modal(false);
+  },
+  render: function() {
+    var p = this.props;
+    return (
+      <Col size="12" style={{marginLeft: '2px'}} className="about">
+        <Btn style={{top: '26%', right: '26%'}} className="ntg-modal-btn-close" fa="close" onClick={this.handleCloseBtn} />
+        <img src="../../images/icon-128-54.png" className="ntg-about"/>
+        <div className="ntg-about">
+          {p.collapse ? <br /> : null}
+          <h3 className="ntg-about">Thank you for using Tab Master 5000.</h3>
+          {p.collapse ? <br /> : null}
+          <div>
+            <p>Tab Master 5000 is optimized for resolutions above <strong>1280x720</strong>. Your resolution is currently <strong>{`${window.outerWidth+'x'+window.outerHeight}`}</strong>. The extension will still work, but some elements may overflow or clip. </p>
+          </div>
+        </div>
+      </Col>
+    );
+  }
+});
+
 var Contribute = React.createClass({
   getInitialState(){
     return {
@@ -139,6 +170,7 @@ var ModalHandler = React.createClass({
         style={style.modal}>
           {s.modal.type === 'settings' ? <Settings sessions={p.sessions} modal={s.modal} tabs={p.tabs} prefs={p.prefs} favicons={p.favicons} collapse={p.collapse} /> : null}
           {s.modal.type === 'contribute' ? <Contribute collapse={p.collapse} /> : null}
+          {s.modal.type === 'resolutionWarning' ? <ResolutionWarning /> : null}
       </Modal>
     );
   }

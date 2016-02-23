@@ -177,6 +177,11 @@ var Root = React.createClass({
       }
     }
   },
+  handleResolutionWarning(){
+    if (this.state.prefs.resolutionWarning) {
+      modalStore.set_modal(true, 'resolutionWarning');
+    }
+  },
   sessionsChange(e){
     this.setState({sessions: e});
     if (!this.state.init) {
@@ -289,6 +294,9 @@ var Root = React.createClass({
           this.setState({load: false});
           actionStore.set_state(false);
           this.checkTimeInstalled(s.prefs);
+          if (s.resolutionWarning) {
+            this.handleResolutionWarning();
+          }
         }
       } else if (opt === 'cycle') {
         this.setState({grid: true});
@@ -379,6 +387,11 @@ var Root = React.createClass({
         this.setState({collapse: true});
       } else {
         this.setState({collapse: false});
+      }
+      if (window.outerWidth < 1280 && window.outerHeight < 720) {
+        this.setState({resolutionWarning: true});
+      } else {
+        this.setState({resolutionWarning: false});
       }
     } else {
       this.setState({width: event.width});

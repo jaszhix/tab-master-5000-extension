@@ -22,7 +22,8 @@ var prefsStore = Reflux.createStore({
       actions: false,
       sessionsSync: false,
       singleNewTab: false,
-      keyboardShortcuts: true
+      keyboardShortcuts: true,
+      resolutionWarning: true
     };
     var getPrefs = new Promise((resolve, reject)=>{
       chrome.storage.sync.get('preferences', (prefs)=>{
@@ -76,7 +77,8 @@ var prefsStore = Reflux.createStore({
         actions: prefs.preferences.actions,
         sessionsSync: prefs.preferences.sessionsSync,
         singleNewTab: prefs.preferences.singleNewTab,
-        keyboardShortcuts: prefs.preferences.keyboardShortcuts
+        keyboardShortcuts: prefs.preferences.keyboardShortcuts,
+        resolutionWarning: prefs.preferences.resolutionWarning
       };
       if (typeof this.prefs.tabSizeHeight === 'undefined') {
         this.prefs.tabSizeHeight = 120;
@@ -92,6 +94,9 @@ var prefsStore = Reflux.createStore({
       }
       if (typeof this.prefs.keyboardShortcuts === 'undefined') {
         this.prefs.keyboardShortcuts = true;
+      }
+      if (typeof this.prefs.resolutionWarning === 'undefined') {
+        this.prefs.resolutionWarning = true;
       }
       console.log('load prefs: ', prefs, this.prefs);
       this.trigger(this.prefs);
