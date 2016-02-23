@@ -1,13 +1,21 @@
 #### Release Notes
 
+##### v1.0 / *2-23-16*
+
+This is the first major version bump for TM5K. It still has plenty of room for improvement, but it is now stable and complete enough for a 1.0 release.
+
+*   Added key bindings for navigating the extension. Enable in Preferences.
+*   Reformatted the Sessions and Preferences tabs in the Settings modal.
+*   Fixed session syncing not being synced after restoring Chrome.
+*   Fixed sorted items reverting to their original order during state updates, and the state not updating while the items are sorted.
+*   Fixed CTRL+Z keybinding overriding other Chrome apps' keybindings.
+*   Undoing a closed tab will now restore the tab at its previous index.
+*   Added an option to the context menu to close all duplicate tabs from all domains.
+
 ##### v0.16.1 / *2-15-16*
 
 *   Fixed duplicate tab closing not firing until an unrelated render update.
 *   Fixed tab tiles not updating on first install.
-*   Known issues
-  * Sorted tab orders will not stay in place when tab data changes.
-  * If a New Tab is open and another Chrome app has mapped CTRL+Z, it sometimes will undo tab actions and override the active app's command key binding. Closing a New Tab or disabling undoing of tab actions resolves the issue.
-  * The undo tab action functionality can lose track of tab action history occasionally.
 
 ##### v0.16 / *2-13-16*
 

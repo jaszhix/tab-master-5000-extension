@@ -1039,7 +1039,7 @@ export var keyboardStore = Reflux.createStore({
       modalStore.set_modal(true, 'settings');
       v('body > div.ReactModalPortal > div > div > div > div.row.ntg-settings-pane > div > div.col-xs-5.session-col > button').click();
     });
-    mouseTrap(v('body > div.ReactModalPortal > div').n).bind('ctrl+m', (e)=>{
+    mouseTrap.bind('ctrl+m', (e)=>{
       e.preventDefault();
       v('body > div.ReactModalPortal > div > div > div > div.row.ntg-tabs > button:nth-child(3)').click();
     });
