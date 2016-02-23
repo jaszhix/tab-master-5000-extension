@@ -3,11 +3,11 @@ import kmp from 'kmp';
 import _ from 'lodash';
 import v from 'vquery';
 import {saveAs} from 'filesaver.js';
+import mouseTrap from 'mousetrap';
 
 import prefsStore from './prefs';
 import tabStore from './tab';
 import screenshotStore from './screenshot';
-import './keybindings';
 
 export var tabs = (opt)=>{
   if (opt === 'alt') {
@@ -392,17 +392,7 @@ export var blacklistStore = Reflux.createStore({
         if (bl && bl.blacklist) {
           resolve(bl);
         } else {
-          // Temporary local storage import for users upgrading from previous versions.
-          chrome.storage.local.get('blacklist', (bl)=>{
-            if (bl && bl.blacklist) {
-              chrome.storage.sync.set({blacklist: bl.blacklist}, (result)=> {
-                console.log('Imported blacklist from local to sync storage', bl.blacklist);
-              });
-              resolve(bl);
-            } else {
-              reject();
-            }
-          });
+          reject();
         }
       });
     });
