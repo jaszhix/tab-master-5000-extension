@@ -294,14 +294,11 @@ var Root = React.createClass({
     var _newTabs = _.remove(Tab, (tab)=>{
       return tab.url.includes('chrome://newtab');
     });
-    console.log('chrome://newtab/#',_newTabs);
     var _tab = _.without(Tab, _newTabs);
-    console.log('without',_tab);
     var s = this.state;
     if (s.prefs.sessionsSync) {
       if (sessions) {
         for (var i = sessions.length - 1; i >= 0; i--) {
-          console.log('equal to tabs', _.isEqual(_.map(sessions[i].tabs, 'url'), _.map(_tab, 'url')), _.map(sessions[i].tabs, 'url'), _.map(_tab, 'url'));
           if (sessions[i].id === _tab[0].windowId || _.isEqual(_.map(sessions[i].tabs, 'url'), _.map(_tab, 'url'))) {
             synchronizeSession('sync', sessions[i], null, _tab); 
           } else {

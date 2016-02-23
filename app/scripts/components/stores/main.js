@@ -305,6 +305,13 @@ export var utilityStore = Reflux.createStore({
   reloadBg(){
     chrome.runtime.sendMessage({method: 'reload'}, (response)=>{
     });
+  },
+  handleMode(mode){
+    if (mode === 'apps' || mode === 'extensions') {
+      this.reloadBg();
+    }
+    prefsStore.set_prefs('mode', mode);
+    sortStore.set('index');
   }
 });
 
