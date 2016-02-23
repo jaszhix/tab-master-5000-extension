@@ -6,7 +6,7 @@ import v from 'vquery';
 import ReactUtils from 'react-utils';
 import '../../styles/app.scss';
 window.v = v;
-import {sortStore, chromeAppStore, faviconStore, sessionsStore, actionStore, historyStore, bookmarksStore, relayStore, sidebarStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore, applyTabOrderStore} from './stores/main';
+import {keyboardStore, sortStore, chromeAppStore, faviconStore, sessionsStore, actionStore, historyStore, bookmarksStore, relayStore, sidebarStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore, applyTabOrderStore} from './stores/main';
 import prefsStore from './stores/prefs';
 import tabStore from './stores/tab';
 import screenshotStore from './stores/screenshot';
@@ -195,6 +195,11 @@ var Root = React.createClass({
       // Init methods called here after prefs are loaded from Chrome storage.
       _.defer(()=>this.captureTabs('init'));
       this.onWindowResize(null, 'init');
+    }
+    if (e.keyboardShortcuts) {
+      keyboardStore.set();
+    } else {
+      keyboardStore.reset();
     }
   },
   faviconsChange(e){
