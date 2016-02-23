@@ -1,6 +1,6 @@
 #### Release Notes
 
-##### v1.0 / *2-23-16*
+##### v1.0.0 / *2-23-16*
 
 This is the first major version bump for TM5K. It still has plenty of room for improvement, but it is now stable and complete enough for a 1.0 release.
 
