@@ -198,8 +198,8 @@ var Root = React.createClass({
     });
     if (s.init) {
       // Init methods called here after prefs are loaded from Chrome storage.
-      _.defer(()=>this.captureTabs('init'));
       this.onWindowResize(null, 'init');
+      _.defer(()=>this.captureTabs('init'));
     }
     if (e.keyboardShortcuts) {
       keyboardStore.set();
@@ -254,7 +254,10 @@ var Root = React.createClass({
     this.setState({topLoad: true});
     // Query current Chrome window for tabs.
     tabStore.promise().then((Tab)=>{
-      this.syncSessions(s.sessions, Tab, opt);
+      chrome.windows.getCurrent((w)=>{
+        utilityStore.set_window(w.id);
+        this.syncSessions(s.sessions, Tab, w, opt);
+      });
       tabStore.set_altTab(Tab);
       this.setState({init: false});
       if (opt !== 'init') {
@@ -267,7 +270,6 @@ var Root = React.createClass({
           this.setState({grid: false});
         }
       }
-      utilityStore.set_window(Tab[0].windowId);
       var tab = [];
       if (s.prefs.mode === 'sessions') {
         tab = sessionsStore.flatten();
@@ -303,7 +305,7 @@ var Root = React.createClass({
       }
     });
   },
-  syncSessions(sessions, Tab, opt){
+  syncSessions(sessions, Tab, windowId, opt){
     var _newTabs = _.remove(Tab, (tab)=>{
       return tab.url.includes('chrome://newtab');
     });
@@ -312,18 +314,18 @@ var Root = React.createClass({
     if (s.prefs.sessionsSync) {
       if (sessions) {
         for (var i = sessions.length - 1; i >= 0; i--) {
-          if (sessions[i].id === _tab[0].windowId || _.isEqual(_.map(sessions[i].tabs, 'url'), _.map(_tab, 'url'))) {
+          if (sessions[i].id === windowId || _.isEqual(_.map(sessions[i].tabs, 'url'), _.map(_tab, 'url'))) {
             synchronizeSession('sync', sessions[i], null, _tab); 
           } else {
             if (typeof sessions[i].sync !== 'undefined' && sessions[i].sync && opt === 'init') {
               var truthySession = [];
               for (var y = sessions[i].tabs.length - 1; y >= 0; y--) {
-                if (typeof _tab[y] !== 'undefined' && sessions[i].tabs[y].url === _tab[y].url) {
+                if (typeof Tab[y] !== 'undefined' && sessions[i].tabs[y].url === Tab[y].url) {
                   truthySession.push(sessions[i].tabs[y].url);
                 }
               }
               if (truthySession.length > 0) {
-                sessionsStore.save('update', sessions[i], null, _tab);
+                sessionsStore.save('update', sessions[i], null, Tab);
               }
             }
           }
@@ -360,7 +362,7 @@ var Root = React.createClass({
   reRender(e) {
     // Method triggered by Chrome event listeners.
     var s = this.state;
-    if (s.prefs.mode !== 'tabs') {
+    if (s.prefs.mode !== 'tabs' && s.prefs.sessionsSync) {
       this.syncSessions(s.sessions, tabStore.get_altTab(), null);
     }
     if (!clickStore.get_click()) {
