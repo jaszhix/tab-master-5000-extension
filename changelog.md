@@ -1,5 +1,10 @@
 #### Release Notes
 
+##### v1.0.1 / *2-23-16*
+
+*   Fixed critical bug preventing the New Tab page from initializing if there are no other tabs open.
+*   Added resolution warning modal. It will pop up once if your screen resolution is below 1280x720.
+
 ##### v1.0.0 / *2-23-16*
 
 This is the first major version bump for TM5K. It still has plenty of room for improvement, but it is now stable and complete enough for a 1.0 release.
