@@ -3,11 +3,11 @@ import kmp from 'kmp';
 import _ from 'lodash';
 import v from 'vquery';
 import {saveAs} from 'filesaver.js';
-import mouseTrap from 'mousetrap';
 
 import prefsStore from './prefs';
 import tabStore from './tab';
 import screenshotStore from './screenshot';
+import './keybindings';
 
 export var tabs = (opt)=>{
   if (opt === 'alt') {
@@ -118,13 +118,6 @@ bgPrefs.then((prefs)=>{
     }
   });
 });
-
-mouseTrap.bind('ctrl+z', ()=>{
-  if (prefsStore.get_prefs().actions) {
-    actionStore.undoAction();
-  }
-});
-
 export var searchStore = Reflux.createStore({
   init: function() {
     this.search = '';
@@ -638,7 +631,7 @@ export var actionStore = Reflux.createStore({
   undoAction(){
     console.log('this.actions: ',this.actions);
     this.undoActionState = true;
-    var undo = (opt)=>{
+    var undo = ()=>{
       var lastAction = _.last(this.actions);
       console.log('lastAction: ',lastAction);
       if (lastAction) {
