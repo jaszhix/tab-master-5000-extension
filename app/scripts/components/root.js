@@ -291,23 +291,29 @@ var Root = React.createClass({
     });
   },
   syncSessions(sessions, Tab, opt){
+    var _newTabs = _.remove(Tab, (tab)=>{
+      return tab.url.includes('chrome://newtab');
+    });
+    console.log('chrome://newtab/#',_newTabs);
+    var _tab = _.without(Tab, _newTabs);
+    console.log('without',_tab);
     var s = this.state;
     if (s.prefs.sessionsSync) {
-      //var sessions = sessionsStore.get_sessions();
       if (sessions) {
         for (var i = sessions.length - 1; i >= 0; i--) {
-          if (sessions[i].id === Tab[0].windowId) {
-            synchronizeSession('sync', sessions[i], null, Tab); 
+          console.log('equal to tabs', _.isEqual(_.map(sessions[i].tabs, 'url'), _.map(_tab, 'url')), _.map(sessions[i].tabs, 'url'), _.map(_tab, 'url'));
+          if (sessions[i].id === _tab[0].windowId || _.isEqual(_.map(sessions[i].tabs, 'url'), _.map(_tab, 'url'))) {
+            synchronizeSession('sync', sessions[i], null, _tab); 
           } else {
             if (typeof sessions[i].sync !== 'undefined' && sessions[i].sync && opt === 'init') {
               var truthySession = [];
               for (var y = sessions[i].tabs.length - 1; y >= 0; y--) {
-                if (typeof Tab[y] !== 'undefined' && sessions[i].tabs[y].url === Tab[y].url) {
+                if (typeof _tab[y] !== 'undefined' && sessions[i].tabs[y].url === _tab[y].url) {
                   truthySession.push(sessions[i].tabs[y].url);
                 }
               }
               if (truthySession.length > 0) {
-                sessionsStore.save('update', sessions[i], null, Tab);
+                sessionsStore.save('update', sessions[i], null, _tab);
               }
             }
           }
