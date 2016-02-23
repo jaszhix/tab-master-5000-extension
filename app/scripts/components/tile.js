@@ -438,6 +438,7 @@ var Tile = React.createClass({
           chrome.tabs.move(s.tab.id, {
             index: -1
           });
+          _.defer(()=>sortStore.set('index'));
         } else {
           chrome.tabs.move(s.tab.id, {
             index: s.i
