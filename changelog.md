@@ -1,5 +1,10 @@
 #### Release Notes
 
+##### v1.0.2 / *3-3-16*
+
+*   Improved the CSS.
+*   Fixed an issue causing non-existent tabs being queried when the extension is restarted.
+
 ##### v1.0.1 / *2-23-16*
 
 *   Fixed critical bug preventing the New Tab page from initializing if there are no other tabs open.

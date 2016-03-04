@@ -172,7 +172,7 @@ var Root = React.createClass({
     //2592000000
     var now = new Date(Date.now()).getTime();
     if (typeof prefs.installTime === 'number') {
-      if (prefs.installTime + 3600000 < now) {
+      if (prefs.installTime + 2592000000 < now) {
         modalStore.set_modal(true, 'contribute');
       }
     }
