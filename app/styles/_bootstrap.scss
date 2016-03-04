@@ -3807,7 +3807,8 @@ textarea.input-group-sm>.input-group-btn>.btn {
 }
 
 .nav-tabs>li>a:hover {
-    border-color: #eee #eee #ddd
+    border-color: #eee #eee #ddd;
+    background-color: rgba(255, 255, 255, 0.25);
 }
 
 .nav-tabs>li.active>a,

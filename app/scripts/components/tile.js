@@ -655,17 +655,19 @@ var Sidebar = React.createClass({
     var iconCollapse = p.width <= 1135;
     return (
       <div className="side-div" style={p.collapse ? {width: '11%', position: 'fixed'} : {width: '13%', position: 'fixed'}}>
-        <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={this.handleSort} className="ntg-apply-btn" fa="sort-amount-asc">{p.collapse ? 'Sort Tabs' : 'Sort'}</Btn>
-        {p.prefs.sort ? <div>
-            {p.labels}
-            {p.prefs.mode === 'tabs' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={()=>applyTabOrderStore.set_saveTab(true)} className="ntg-apply-btn" fa="sort">{iconCollapse ? '' : 'Apply'}</Btn> : null}
-          </div> : null}
-        {p.prefs.mode !== 'tabs' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={()=>utilityStore.handleMode('tabs')} className="ntg-apply-btn" fa="square">{iconCollapse ? '' : 'Tabs'}</Btn> : null}
-        {p.prefs.mode !== 'bookmarks' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={()=>utilityStore.handleMode('bookmarks')} className="ntg-apply-btn" fa="bookmark">{iconCollapse ? '' : 'Bookmarks'}</Btn> : null}
-        {p.prefs.mode !== 'history' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={()=>utilityStore.handleMode('history')} className="ntg-apply-btn" fa="history">{iconCollapse ? '' : 'History'}</Btn> : null}
-        {p.prefs.mode !== 'sessions' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={()=>utilityStore.handleMode('sessions')} className="ntg-apply-btn" fa="book">{iconCollapse ? '' : 'Sessions'}</Btn> : null}
-        {p.prefs.mode !== 'apps' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={()=>utilityStore.handleMode('apps')} className="ntg-apply-btn" fa="th">{iconCollapse ? '' : 'Apps'}</Btn> : null}
-        {p.prefs.mode !== 'extensions' ? <Btn style={p.ssBg ? {WebkitBoxShadow: '1px 1px 15px -1px #fff'} : null} onClick={()=>utilityStore.handleMode('extensions')} className="ntg-apply-btn" fa="puzzle-piece">{iconCollapse ? '' : 'Extensions'}</Btn> : null}
+        <Btn onClick={this.handleSort} className="ntg-apply-btn" fa="sort-amount-asc">{p.collapse ? 'Sort Tabs' : 'Sort'}</Btn>
+          {p.prefs.sort ? <div>
+              {p.labels}
+              {p.prefs.mode === 'tabs' ? <Btn onClick={()=>applyTabOrderStore.set_saveTab(true)} className="ntg-apply-btn" fa="sort">{iconCollapse ? '' : 'Apply'}</Btn> : null}
+            </div> : null}
+          <div className="mode-container">
+            {p.prefs.mode !== 'tabs' ? <Btn onClick={()=>utilityStore.handleMode('tabs')} className="ntg-apply-btn" fa="square">{iconCollapse ? '' : 'Tabs'}</Btn> : null}
+            {p.prefs.mode !== 'bookmarks' ? <Btn onClick={()=>utilityStore.handleMode('bookmarks')} className="ntg-apply-btn" fa="bookmark">{iconCollapse ? '' : 'Bookmarks'}</Btn> : null}
+            {p.prefs.mode !== 'history' ? <Btn onClick={()=>utilityStore.handleMode('history')} className="ntg-apply-btn" fa="history">{iconCollapse ? '' : 'History'}</Btn> : null}
+            {p.prefs.mode !== 'sessions' ? <Btn onClick={()=>utilityStore.handleMode('sessions')} className="ntg-apply-btn" fa="book">{iconCollapse ? '' : 'Sessions'}</Btn> : null}
+            {p.prefs.mode !== 'apps' ? <Btn onClick={()=>utilityStore.handleMode('apps')} className="ntg-apply-btn" fa="th">{iconCollapse ? '' : 'Apps'}</Btn> : null}
+            {p.prefs.mode !== 'extensions' ? <Btn onClick={()=>utilityStore.handleMode('extensions')} className="ntg-apply-btn" fa="puzzle-piece">{iconCollapse ? '' : 'Extensions'}</Btn> : null}
+          </div>
       </div>
     );
   }
@@ -749,23 +751,22 @@ var TileGrid = React.createClass({
     var data = p.stores.prefs.sort && p.stores.prefs.sidebar ? s.data : p.data;
     var favicons = faviconStore.get_favicon();
     var ssBg = p.stores.prefs && p.stores.prefs.screenshot && p.stores.prefs.screenshotBg;
-    var buttonTransparent = {backgroundColor: 'rgba(237, 237, 237, 0.8)'};
     var labels = p.keys.map((key)=> {
       var label = p.labels[key] || key;
       var cLabel = p.width <= 1135 ? '' : label;
       return (
         <div key={key} onClick={()=>sortStore.set(key)}>
-          {label === 'Tab Order' || label === 'Original Order' ? <Btn style={ssBg ? buttonTransparent : null} className="ntg-btn" fa="history">{cLabel}</Btn> : null}
-          {label === 'Website' ? <Btn style={ssBg ? buttonTransparent : null} className="ntg-btn" fa="external-link">{cLabel}</Btn> : null}
-          {label === 'Title' ? <Btn style={ssBg ? buttonTransparent : null} onClick={this.handleTitleIcon} className="ntg-btn" fa={s.title ? 'sort-alpha-asc' : 'sort-alpha-desc'}>{cLabel}</Btn> : null}
-          {label === 'Audible' ? <Btn style={ssBg ? buttonTransparent : null} className="ntg-btn" fa="volume-up">{cLabel}</Btn> : null}
-          {label === 'Open' ? <Btn style={ssBg ? buttonTransparent : null} className="ntg-btn" fa="folder-open">{cLabel}</Btn> : null}
-          {label === 'Folder' ? <Btn style={ssBg ? buttonTransparent : null} className="ntg-btn" fa="folder">{cLabel}</Btn> : null}
-          {label === 'Label' ? <Btn style={ssBg ? buttonTransparent : null} className="ntg-btn" fa="folder">{cLabel}</Btn> : null}
-          {label === 'Date Added' ? <Btn style={ssBg ? buttonTransparent : null} className="ntg-btn" fa="hourglass">{cLabel}</Btn> : null}
-          {label === 'Last Visit' ? <Btn style={ssBg ? buttonTransparent : null} className="ntg-btn" fa="hourglass">{cLabel}</Btn> : null}
-          {label === 'Most Visited' ? <Btn style={ssBg ? buttonTransparent : null} className="ntg-btn" fa="line-chart">{cLabel}</Btn> : null}
-          {label === 'Offline Enabled' ? <Btn style={ssBg ? buttonTransparent : null} className="ntg-btn" fa="bolt">{cLabel}</Btn> : null}
+          {label === 'Tab Order' || label === 'Original Order' ? <Btn className="ntg-btn" fa="history">{cLabel}</Btn> : null}
+          {label === 'Website' ? <Btn className="ntg-btn" fa="external-link">{cLabel}</Btn> : null}
+          {label === 'Title' ? <Btn onClick={this.handleTitleIcon} className="ntg-btn" fa={s.title ? 'sort-alpha-asc' : 'sort-alpha-desc'}>{cLabel}</Btn> : null}
+          {label === 'Audible' ? <Btn className="ntg-btn" fa="volume-up">{cLabel}</Btn> : null}
+          {label === 'Open' ? <Btn className="ntg-btn" fa="folder-open">{cLabel}</Btn> : null}
+          {label === 'Folder' ? <Btn className="ntg-btn" fa="folder">{cLabel}</Btn> : null}
+          {label === 'Label' ? <Btn className="ntg-btn" fa="folder">{cLabel}</Btn> : null}
+          {label === 'Date Added' ? <Btn className="ntg-btn" fa="hourglass">{cLabel}</Btn> : null}
+          {label === 'Last Visit' ? <Btn className="ntg-btn" fa="hourglass">{cLabel}</Btn> : null}
+          {label === 'Most Visited' ? <Btn className="ntg-btn" fa="line-chart">{cLabel}</Btn> : null}
+          {label === 'Offline Enabled' ? <Btn className="ntg-btn" fa="bolt">{cLabel}</Btn> : null}
         </div>
       );
     });

@@ -1,0 +1,286 @@
+button {
+    box-shadow: rgb(133, 132, 132) 1px 1px 5px -1px;
+    outline: none;
+    cursor: pointer;
+    font-size: 14px;
+};
+.btn-label {
+
+};
+
+button.ntg-btn {
+    width: 100%;
+    height: 24px;
+    color: #FFF;
+    background-color: #A8A8A8;
+    text-shadow: 1px 1px #000;
+    margin-bottom: 20px;
+    border: 0;
+    vertical-align: middle;
+    display: inline-block;
+    font-weight: 600;
+    line-height: 1.42857143;
+    white-space: nowrap;
+    vertical-align: middle;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    overflow: hidden;
+}
+button.ntg-top-btn {
+    position: relative;
+    width: auto;
+    color: #FFF;
+    background-color: #A8A8A8;
+    text-shadow: 1px 1px #000;
+    margin-bottom: 20px;
+    margin-right: 20px;
+    border: 0;
+    padding-right: 0;
+    padding-left: 0;
+    vertical-align: middle;
+    display: inline-block;
+    padding: 6px 12px;
+    font-weight: 600;
+    line-height: 1.42857143;
+    white-space: wrap;
+    vertical-align: middle;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    top: 1px;
+}
+button.ntg-sort-btn {
+    position: relative;
+    width: auto;
+    color: #000;
+    background-color: #EDEDED;
+    text-shadow: 2px 2px #FFF;
+    margin-bottom: 20px;
+    margin-right: 20px;
+    border: 0;
+    padding-right: 0;
+    padding-left: 0;
+    vertical-align: middle;
+    display: inline-block;
+    padding: 6px 12px;
+    line-height: 1.42857143;
+    white-space: wrap;
+    vertical-align: middle;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    top: 1px;
+}
+
+button.ntg-apply-btn {
+    position: relative;
+    width: 100%;
+    height: 32px;
+    color: #000;
+    background-color: #EDEDED;
+    text-shadow: 2px 2px #FFF;
+    margin-bottom: 20px;
+    margin-right: 20px;
+    border: 0;
+    padding-right: 0;
+    padding-left: 0;
+    vertical-align: middle;
+    display: inline-block;
+    padding: 6px 12px;
+    line-height: 1.42857143;
+    white-space: wrap;
+    vertical-align: middle;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    top: 1px;
+}
+button.ntg-setting-btn {
+    width: auto;
+    height: 32px;
+    color: #000;
+    background-color: #EDEDED;
+    text-shadow: 2px 2px #FFF;
+    margin-bottom: 20px;
+    margin-left: 5px;
+    border: 0;
+    vertical-align: middle;
+    display: inline-block;
+    padding-left: 10px;
+    padding-right: 10px;
+    line-height: 1.42857143;
+    white-space: nowrap;
+    vertical-align: middle;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    overflow: hidden;
+    position: fixed;
+    top: 80%;
+}
+button.ntg-impexp-btn {
+    width: 150px;
+    height: 32px;
+    color: #000;
+    background-color: #EDEDED;
+    text-shadow: 2px 2px #FFF;
+    margin-bottom: 20px;
+    margin-left: 5px;
+    border: 0;
+    vertical-align: middle;
+    display: inline-block;
+    padding: 6px 2px;
+    line-height: 1.42857143;
+    white-space: nowrap;
+    vertical-align: middle;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    overflow: hidden;
+    position: fixed;
+    top: 80%;
+}
+button.ntg-session-btn {
+    width: auto;
+    height: 20px;
+    color: #000;
+    background-color: #EDEDED;
+    text-shadow: 2px 2px #FFF;
+    margin-left: 4px;
+    border: 0;
+    vertical-align: middle;
+    display: inline-block;
+    line-height: 1.42857143;
+    white-space: nowrap;
+    vertical-align: middle;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    overflow: hidden;
+    float: right;
+}
+
+
+button.ntg-expanded-session-tab-btn {
+    width: auto;
+    height: 15px;
+    color: #000;
+    background-color: #EDEDED;
+    text-shadow: 2px 2px #FFF;
+    margin-left: 4px;
+    border: 0;
+    vertical-align: middle;
+    display: inline-block;
+    padding: 3px 1px;
+    line-height: 1.42857143;
+    white-space: nowrap;
+    vertical-align: middle;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    overflow: hidden;
+    float: right;
+}
+button.ntg-context-btn {
+    width: 100%;
+    height: 26px;
+    color: #000;
+    background-color: #EDEDED;
+    text-shadow: 2px 2px #FFF;
+    margin-bottom: 4px;
+    border: 0;
+    vertical-align: middle;
+    display: inline-block;
+    padding: 3px 1px;
+    font-size: 13px;
+    line-height: 1.42857143;
+    text-align: left;
+    white-space: nowrap;
+    vertical-align: middle;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    overflow: hidden;
+    float: right;
+    padding-left: 8px;
+    padding-right: 8px;
+    box-shadow: #858585 1px 1px 8px 0px;
+}
+button.ntg-context-btn-close-all {
+    width: 100%;
+    height: 26px;
+    color: #000;
+    background-color: #EDEDED;
+    text-shadow: 2px 2px #FFF;
+    margin-bottom: 4px;
+    border: 0;
+    vertical-align: middle;
+    display: inline-block;
+    padding: 3px 1px;
+    font-size: 13px;
+    line-height: 1.42857143;
+    text-align: left;
+    white-space: nowrap;
+    vertical-align: middle;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    overflow: hidden;
+    float: right;
+    padding-left: 8px;
+    padding-right: 8px;
+    box-shadow: #858585 1px 1px 8px 0px;
+}
+button.ntg-modal-btn-close {
+    width: auto;
+    height: auto;
+    color: #000;
+    background-color: #EDEDED;
+    text-shadow: 2px 2px #FFF;
+    margin-bottom: 20px;
+    margin-left: 4px;
+    border: 0;
+    vertical-align: middle;
+    display: inline-block;
+    line-height: 1.42857143;
+    white-space: nowrap;
+    vertical-align: middle;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    overflow: hidden;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+button.ntg-modal-btn-max {
+    width: auto;
+    height: auto;
+    color: #000;
+    background-color: #EDEDED;
+    text-shadow: 2px 2px #FFF;
+    margin-bottom: 20px;
+    border: 0;
+    vertical-align: middle;
+    display: inline-block;
+    line-height: 1.42857143;
+    white-space: nowrap;
+    vertical-align: middle;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    overflow: hidden;
+    margin-right: 4px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+button.more-btn {
+    position: relative;
+    width: auto;
+    color: #000;
+    background-color: #EDEDED;
+    text-shadow: 2px 2px #FFF;
+    margin-top: 20px;
+    margin-right: auto;
+    margin-left: auto;
+    border: 0;
+    padding-right: 0;
+    padding-left: 0;
+    vertical-align: middle;
+    display: inline-block;
+    padding: 6px 12px;
+    line-height: 1.42857143;
+    white-space: wrap;
+    vertical-align: middle;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    top: 1px;
+}

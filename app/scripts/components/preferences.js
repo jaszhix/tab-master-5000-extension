@@ -111,7 +111,7 @@ var Blacklist = React.createClass({
         <Col size="6" style={{width: '350px'}}>
           {s.formatError ? <span style={{width: '350px', color: 'A94442'}}>{s.formatError.join(', ')}</span> : null}
           <textarea value={s.blacklistValue} onChange={this.setBlacklist} name="" id="input" className="form-control blacklist" rows="3" required="required" />
-          <Btn style={{marginTop: '7px'}} onClick={this.blacklistSubmit} className="ntg-btn" fa="plus">Save</Btn>
+          <Btn style={{marginTop: '7px'}} onClick={this.blacklistSubmit} className="ntg-apply-btn" fa="plus">Save</Btn>
         </Col>
         <Col size="6" />
       </Col>

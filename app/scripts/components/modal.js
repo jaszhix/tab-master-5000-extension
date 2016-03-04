@@ -86,7 +86,7 @@ var Contribute = React.createClass({
     var p = this.props;
     return (
       <Col size="12" style={{marginLeft: '2px'}} className="about">
-        <Btn style={{top: '26%', right: '26%'}} className="ntg-modal-btn-close" fa="close" onClick={this.handleCloseBtn} />
+        <Btn style={{position: 'fixed', top: '26%', right: '26%'}} className="ntg-modal-btn-close" fa="close" onClick={this.handleCloseBtn} />
         <form  action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank">
           <input type="hidden" name="cmd" value="_s-xclick" />
           <input type="hidden" name="hosted_button_id" value="8VL34HHRFN3LS" />

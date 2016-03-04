@@ -71,7 +71,7 @@ var Search = React.createClass({
         <Row>
           <Col size="6">
             <Col size="1">
-              <Btn onClick={this.handleSidebar} className="ntg-sort-btn" fa="reorder" />
+              <Btn onClick={this.handleSidebar} style={{fontSize: '20px'}} className="ntg-top-btn" fa="reorder" />
             </Col>
             <Col size="11">
               <form 
@@ -90,9 +90,9 @@ var Search = React.createClass({
           <Col size="6">
             {searchStore.get_search().length > 3 ? <span className="search-msg ntg-search-google-text">Press Enter to Search Google</span> : null}
             <Btn style={{float: 'left'}} onClick={()=>modalStore.set_modal(true, 'settings')} className="ntg-top-btn" fa="cogs">Settings</Btn>
-            {p.event === 'newVersion' ? <Btn onClick={()=>chrome.runtime.reload()} style={{float: 'left'}} className="ntg-update-avail-btn" fa="rocket">New Version Available</Btn> : null}
-            {p.event === 'versionUpdate' ? <Btn onClick={this.openAbout} style={{float: 'left'}} className="ntg-update-btn" fa="info-circle">Updated to {utilityStore.get_manifest().version}</Btn> : null}
-            {p.event === 'installed' ? <Btn onClick={this.openAbout} style={{float: 'left'}} className="ntg-ty-btn" fa="thumbs-o-up">Thank you for installing TM5K</Btn> : null}
+            {p.event === 'newVersion' ? <Btn onClick={()=>chrome.runtime.reload()} style={{float: 'left'}} className="ntg-top-btn" fa="rocket">New Version Available</Btn> : null}
+            {p.event === 'versionUpdate' ? <Btn onClick={this.openAbout} style={{float: 'left'}} className="ntg-top-btn" fa="info-circle">Updated to {utilityStore.get_manifest().version}</Btn> : null}
+            {p.event === 'installed' ? <Btn onClick={this.openAbout} style={{float: 'left'}} className="ntg-top-btn" fa="thumbs-o-up">Thank you for installing TM5K</Btn> : null}
             {p.topLoad ? <Loading top={true} /> : null}
             {p.event === 'dlFavicons' && p.topLoad ? <div><p className="tm5k-info"> Downloading and caching favicons...</p></div> : null}
           </Col>  
@@ -172,7 +172,7 @@ var Root = React.createClass({
     //2592000000
     var now = new Date(Date.now()).getTime();
     if (typeof prefs.installTime === 'number') {
-      if (prefs.installTime + 2592000000 < now) {
+      if (prefs.installTime + 3600000 < now) {
         modalStore.set_modal(true, 'contribute');
       }
     }
