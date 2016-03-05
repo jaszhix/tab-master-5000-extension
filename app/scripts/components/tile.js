@@ -611,7 +611,7 @@ var Tile = React.createClass({
                         <img className="ntg-favicon" src={s.apps ? s.tab.favIconUrl : s.favicon ? s.favicon : '../images/file_paper_blank_document.png' } />
                       </Row>
                     </Col>
-                    <Col size="9" onClick={!s.bookmarks ? ()=>this.handleClick(s.tab.id) : null} className="ntg-title-container">
+                    <Col size="9" onClick={!s.bookmarks && !s.apps ? ()=>this.handleClick(s.tab.id) : null} className="ntg-title-container">
                       <span title={s.apps ? s.tab.description : null}>
                         <h5 style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-title">
                         {_.truncate(s.tab.title, {length: titleLimit})}
