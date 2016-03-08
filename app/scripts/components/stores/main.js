@@ -804,8 +804,13 @@ export var sessionsStore = Reflux.createStore({
       tabs = tabsState;
       timeStamp = Date.now();
     }
-    tabs = _.without(tabs, _.find(tabs, { title: 'New Tab' }));
-    var tabData = {timeStamp: timeStamp, tabs: tabs, label: sessionLabel, id: id, sync: sync};
+    // Default session object
+    var tabData = {
+      timeStamp: timeStamp, 
+      tabs: tabs, 
+      label: sessionLabel, 
+      id: id, 
+      sync: sync};
     var session = null;
     chrome.storage.local.get('sessionData',(item)=>{
       if (!item.sessionData) {
@@ -821,6 +826,8 @@ export var sessionsStore = Reflux.createStore({
             tabData.sync = _.first(syncedSession).sync;
             tabData.label = _.first(syncedSession).label;
           }
+        } else {
+
         }
         session.sessionData.push(tabData);
       }
@@ -830,7 +837,7 @@ export var sessionsStore = Reflux.createStore({
         session.sessionData = _.without(session.sessionData, _.first(replacedSession));
       } else if (opt === 'sync') {
         console.log('synced Session: ',syncedSession);
-        session.sessionData = _.without(session.sessionData, _.last(syncedSession));
+        session.sessionData = _.without(session.sessionData, _.first(syncedSession));
       }
       if (opt === 'sync' && tabData.sync || opt !== 'sync') {
         chrome.storage.local.set(session, (result)=> {
