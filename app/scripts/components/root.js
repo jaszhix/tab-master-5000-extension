@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import Reflux from 'reflux';
 import _ from 'lodash';
 import v from 'vquery';
+import kmp from 'kmp';
 import ReactUtils from 'react-utils';
 import '../../styles/app.scss';
 window.v = v;
@@ -102,7 +103,7 @@ var Search = React.createClass({
   }
 });
 
-var synchronizeSession = _.throttle(sessionsStore.save, 15000, {leading: true});
+var synchronizeSession = _.throttle(sessionsStore.save, 1500, {leading: true});
 var Root = React.createClass({
   mixins: [
     Reflux.ListenerMixin,
@@ -254,11 +255,13 @@ var Root = React.createClass({
     this.setState({topLoad: true});
     // Query current Chrome window for tabs.
     tabStore.promise().then((Tab)=>{
-      chrome.windows.getCurrent((w)=>{
-        utilityStore.set_window(w.id);
-        this.syncSessions(s.sessions, Tab, w, opt);
-      });
       tabStore.set_altTab(Tab);
+      chrome.windows.getCurrent((w)=>{
+        // Store the Chrome window ID for global reference
+        utilityStore.set_window(w.id);
+        // Call the session sync method
+        this.syncSessions(s.sessions, Tab, w.id, opt);
+      });
       this.setState({init: false});
       if (opt !== 'init') {
         v('#main').css({cursor: 'wait'});
@@ -306,28 +309,26 @@ var Root = React.createClass({
     });
   },
   syncSessions(sessions, Tab, windowId, opt){
+    // Ensure new tabs are not a part of the current tabs array.
     var _newTabs = _.remove(Tab, (tab)=>{
-      return tab.url.includes('chrome://newtab');
+      return kmp(tab.url, 'chrome://newtab') !== -1;
     });
     var _tab = _.without(Tab, _newTabs);
     var s = this.state;
     if (s.prefs.sessionsSync) {
       if (sessions) {
         for (var i = sessions.length - 1; i >= 0; i--) {
-          if (sessions[i].id === windowId || _.isEqual(_.map(sessions[i].tabs, 'url'), _.map(_tab, 'url'))) {
-            synchronizeSession('sync', sessions[i], null, _tab); 
-          } else {
-            if (typeof sessions[i].sync !== 'undefined' && sessions[i].sync && opt === 'init') {
-              var truthySession = [];
-              for (var y = sessions[i].tabs.length - 1; y >= 0; y--) {
-                if (typeof Tab[y] !== 'undefined' && sessions[i].tabs[y].url === Tab[y].url) {
-                  truthySession.push(sessions[i].tabs[y].url);
-                }
-              }
-              if (truthySession.length > 0) {
-                sessionsStore.save('update', sessions[i], null, Tab);
-              }
+          // Map the current and stored sessions URLs to an array
+          var sessionUrls = _.map(sessions[i].tabs, 'title');
+          var tabUrls = _.map(_tab, 'title');
+          // Check if either the window ID matches the session window ID, or create an array of different URLs between them and check if it is less than 10% of the current tab array length.
+          if (sessions[i].id === windowId || _.difference(sessionUrls, tabUrls).length < _tab.length * 0.1) {
+            if (opt === 'init') {
+              sessionsStore.save('update', sessions[i], sessions[i].label, s.tabs, null, true);
+            } else {
+              synchronizeSession('sync', sessions[i], null, _tab, null, true); 
             }
+
           }
         } 
       }
@@ -410,7 +411,6 @@ var Root = React.createClass({
   },
   onViewportChange: function (viewport) {
     var wrapper = document.body;
-
     if (wrapper.scrollTop + window.innerHeight >= wrapper.scrollHeight) {
       this.setState({tileLimit: this.state.tileLimit + 100});
     }
