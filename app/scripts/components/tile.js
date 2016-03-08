@@ -54,21 +54,12 @@ var Tile = React.createClass({
     var p = this.props;
     this.setTabMode();
     this.updateFavicons(nextProps);
-    /*if (!_.isEqual(nextProps.stores, p.stores) && !this.state.drag) {
-      this.setState({stores: nextProps.stores});
-    }*/
-    /*if (!_.isEqual(nextProps.stores.cursor, p.stores.cursor)) {
-      this.setState({cursor: nextProps.stores.cursor});
-    }*/
     if (nextProps.stores.prefs.mode === 'tabs') {
       this.checkDuplicateTabs();
     }
     if (nextProps.stores.prefs.screenshot) {
       this.updateScreenshot('init', nextProps);
     }
-    /*if (!_.isEqual(nextPropp.tab, p.tab)) {
-      this.setState({tab: nextPropp.tab});
-    }*/
     if (nextProps.tab.pinned) {
       this.handleFocus(null, null, nextProps);
     }
@@ -91,7 +82,6 @@ var Tile = React.createClass({
   },
   initMethods(){
     var p = this.props;
-    var s = this.state;
     this.setTabMode();
     this.updateScreenshot('init', p);
     if (p.stores.prefs.mode === 'tabs') {
@@ -105,7 +95,6 @@ var Tile = React.createClass({
     this.updateFavicons(p);
   },
   updateFavicons(props){
-    var s = this.state;
     var p = this.props;
     var fvData = _.result(_.find(p.stores.favicons, { domain: p.tab.url.split('/')[2] }), 'favIconUrl');
     if (fvData) {
@@ -113,7 +102,6 @@ var Tile = React.createClass({
     }
   },
   updateScreenshot(opt, props){
-    var s = this.state;
     var p = this.props;
     var setScreeenshot = ()=>{
       if (chrome.extension.lastError) {
@@ -135,8 +123,7 @@ var Tile = React.createClass({
     }
   },
   updateFavicon(e){
-    var s = this.state;
-
+    var p = this.props;
     var fvIndex = faviconStore.get_favicon();
     var fvData = _.result(_.find(fvIndex, { domain: p.tab.url.split('/')[2] }), 'favIconUrl');
     if (fvData) {
@@ -144,7 +131,6 @@ var Tile = React.createClass({
     }
   },
   setTabMode(){
-    var s = this.state;
     var p = this.props;
     if (p.stores.prefs.mode === 'bookmarks') {
       this.setState({bookmarks: true});
@@ -187,7 +173,6 @@ var Tile = React.createClass({
   },
   checkDuplicateTabs(opt, props){
     var p = this.props;
-    var s = this.state;
     var first;
     if (opt === 'closeAllDupes') {
       var duplicates;
@@ -219,7 +204,6 @@ var Tile = React.createClass({
     }
   },
   closeNewTabs(){
-    var s = this.state;
     var p = this.props;
     if (p.stores.prefs.singleNewTab) {
       var newTabs = p.stores.newTabs;
@@ -348,7 +332,6 @@ var Tile = React.createClass({
 
     };
     var close = ()=>{
-      //tabStore.close(id);
       chrome.tabs.remove(id, ()=>{
         if (p.stores.prefs.mode !== 'tabs' && s.openTab) {
           _.defer(()=>{

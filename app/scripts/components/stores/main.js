@@ -663,7 +663,6 @@ export var actionStore = Reflux.createStore({
 
 export var faviconStore = Reflux.createStore({
   init: function() {
-    //this.favicons = [];
     var getFavicons = new Promise((resolve, reject)=>{
       chrome.storage.local.get('favicons', (fv)=>{
         if (fv && fv.favicons) {
@@ -826,8 +825,6 @@ export var sessionsStore = Reflux.createStore({
             tabData.sync = _.first(syncedSession).sync;
             tabData.label = _.first(syncedSession).label;
           }
-        } else {
-
         }
         session.sessionData.push(tabData);
       }

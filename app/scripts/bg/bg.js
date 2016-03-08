@@ -130,7 +130,6 @@ getPrefs.then((prefs)=>{
         } else {
           sendMsg({e: sender.id, type: 'error'});
         }
-        //reload('Screenshot capture error.');
       });
     } else if (msg.method === 'close') {
       close(sender.tab.id);
