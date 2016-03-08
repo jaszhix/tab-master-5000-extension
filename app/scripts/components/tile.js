@@ -39,9 +39,9 @@ var Tile = React.createClass({
       history: false,
       sessions: false,
       apps: false,
-      stores: p.stores,
       tab: p.tab,
-      i: p.i
+      i: p.i,
+      cursor: p.stores.cursor
     };
   },
   componentDidMount() {
@@ -54,18 +54,21 @@ var Tile = React.createClass({
     var p = this.props;
     this.setTabMode();
     this.updateFavicons(nextProps);
-    if (!_.isEqual(nextProps.stores, p.stores) && !this.state.drag) {
+    /*if (!_.isEqual(nextProps.stores, p.stores) && !this.state.drag) {
       this.setState({stores: nextProps.stores});
-    }
+    }*/
+    /*if (!_.isEqual(nextProps.stores.cursor, p.stores.cursor)) {
+      this.setState({cursor: nextProps.stores.cursor});
+    }*/
     if (nextProps.stores.prefs.mode === 'tabs') {
       this.checkDuplicateTabs();
     }
     if (nextProps.stores.prefs.screenshot) {
       this.updateScreenshot('init', nextProps);
     }
-    if (!_.isEqual(nextProps.tab, p.tab)) {
-      this.setState({tab: nextProps.tab});
-    }
+    /*if (!_.isEqual(nextPropp.tab, p.tab)) {
+      this.setState({tab: nextPropp.tab});
+    }*/
     if (nextProps.tab.pinned) {
       this.handleFocus(null, null, nextProps);
     }
@@ -91,10 +94,10 @@ var Tile = React.createClass({
     var s = this.state;
     this.setTabMode();
     this.updateScreenshot('init', p);
-    if (s.stores.prefs.mode === 'tabs') {
+    if (p.stores.prefs.mode === 'tabs') {
       this.checkDuplicateTabs();
     }
-    if (this.state.tab.title === 'New Tab') {
+    if (this.props.tab.title === 'New Tab') {
       _.defer(()=>{
         this.closeNewTabs();
       });
@@ -103,19 +106,21 @@ var Tile = React.createClass({
   },
   updateFavicons(props){
     var s = this.state;
-    var fvData = _.result(_.find(s.stores.favicons, { domain: s.tab.url.split('/')[2] }), 'favIconUrl');
+    var p = this.props;
+    var fvData = _.result(_.find(p.stores.favicons, { domain: p.tab.url.split('/')[2] }), 'favIconUrl');
     if (fvData) {
       this.setState({favicon: fvData});
     }
   },
   updateScreenshot(opt, props){
     var s = this.state;
+    var p = this.props;
     var setScreeenshot = ()=>{
       if (chrome.extension.lastError) {
         utilityStore.restartNewTab();
       }
-      if (s.stores.prefs.screenshot) {
-        var ssData = _.result(_.find(s.stores.screenshots, { url: s.tab.url }), 'data');
+      if (p.stores.prefs.screenshot) {
+        var ssData = _.result(_.find(p.stores.screenshots, { url: p.tab.url }), 'data');
         if (ssData) {
           this.setState({screenshot: ssData});
         }
@@ -124,42 +129,44 @@ var Tile = React.createClass({
     if (opt === 'init') {
       setScreeenshot();
     } else {
-      if (s.tab.active) {
+      if (p.tab.active) {
         setScreeenshot();
       }
     }
   },
   updateFavicon(e){
     var s = this.state;
+
     var fvIndex = faviconStore.get_favicon();
-    var fvData = _.result(_.find(fvIndex, { domain: s.tab.url.split('/')[2] }), 'favIconUrl');
+    var fvData = _.result(_.find(fvIndex, { domain: p.tab.url.split('/')[2] }), 'favIconUrl');
     if (fvData) {
       this.setState({favicon: fvData});
     }
   },
   setTabMode(){
     var s = this.state;
-    if (s.stores.prefs.mode === 'bookmarks') {
+    var p = this.props;
+    if (p.stores.prefs.mode === 'bookmarks') {
       this.setState({bookmarks: true});
     } else {
       this.setState({bookmarks: false});
     }
-    if (s.stores.prefs.mode === 'history') {
+    if (p.stores.prefs.mode === 'history') {
       this.setState({history: true});
     } else {
       this.setState({history: false});
     }
-    if (s.stores.prefs.mode === 'sessions') {
+    if (p.stores.prefs.mode === 'sessions') {
       this.setState({sessions: true});
     } else {
       this.setState({sessions: false});
     }
-    if (s.stores.prefs.mode === 'apps' || s.stores.prefs.mode === 'extensions') {
+    if (p.stores.prefs.mode === 'apps' || p.stores.prefs.mode === 'extensions') {
       this.setState({apps: true});
     } else {
       this.setState({apps: false});
     }
-    if (s.stores.prefs.mode === 'sessions' && s.tab.openTab|| s.stores.prefs.mode === 'bookmarks' && s.tab.openTab || s.stores.prefs.mode === 'history' && s.tab.openTab) {
+    if (p.stores.prefs.mode === 'sessions' && p.tab.openTab|| p.stores.prefs.mode === 'bookmarks' && p.tab.openTab || p.stores.prefs.mode === 'history' && p.tab.openTab) {
       this.setState({openTab: true});
     } else {
       this.setState({openTab: false});
@@ -168,9 +175,10 @@ var Tile = React.createClass({
   
   filterFolders(props){
     var s = this.state;
-    var folder = s.stores.folder.name;
-    if (folder && s.tab.folder !== folder) {
-      if (s.stores.folder.state && s.stores.prefs.mode === 'bookmarks') {
+    var p = this.props;
+    var folder = p.stores.folder.name;
+    if (folder && p.tab.folder !== folder) {
+      if (p.stores.folder.state && p.stores.prefs.mode === 'bookmarks') {
         v('#tileMain-'+s.i).hide();
       } else {
         v('#tileMain-'+s.i).show();
@@ -183,8 +191,8 @@ var Tile = React.createClass({
     var first;
     if (opt === 'closeAllDupes') {
       var duplicates;
-      for (var y = s.stores.duplicateTabs.length - 1; y >= 0; y--) {
-        duplicates = _.filter(s.stores.tabs, {url: s.stores.duplicateTabs[y]});
+      for (var y = p.stores.duplicateTabs.length - 1; y >= 0; y--) {
+        duplicates = _.filter(p.stores.tabs, {url: p.stores.duplicateTabs[y]});
         first = _.first(duplicates);
         if (duplicates) {
           for (var x = duplicates.length - 1; x >= 0; x--) {
@@ -195,15 +203,15 @@ var Tile = React.createClass({
         }
       }
     }
-    if (_.includes(s.stores.duplicateTabs, s.tab.url)) {
-      var t = _.filter(s.stores.tabs, {url: s.tab.url});
+    if (_.includes(p.stores.duplicateTabs, p.tab.url)) {
+      var t = _.filter(p.stores.tabs, {url: p.tab.url});
       first = _.first(t);
       var activeTab = _.map(_.find(t, { 'active': true }), 'id');
       for (var i = t.length - 1; i >= 0; i--) {
         if (t[i].id !== first.id && t[i].title !== 'New Tab' && t[i].id !== activeTab) {
           if (opt === 'closeDupes') {
             this.handleCloseTab(t[i].id);
-          } else if (s.tab.id === t[i].id && s.stores.prefs.duplicate) {
+          } else if (p.tab.id === t[i].id && p.stores.prefs.duplicate) {
             this.handleFocus('duplicate',true,p);
           }
         }
@@ -212,14 +220,15 @@ var Tile = React.createClass({
   },
   closeNewTabs(){
     var s = this.state;
-    if (s.stores.prefs.singleNewTab) {
-      var newTabs = s.stores.newTabs;
+    var p = this.props;
+    if (p.stores.prefs.singleNewTab) {
+      var newTabs = p.stores.newTabs;
       if (newTabs) {
         for (var i = 0; i < newTabs.length; i++) {
           if (newTabs[i]) {
-            if (s.tab.windowId !== newTabs[i].windowId && s.tab.active) {
+            if (p.tab.windowId !== newTabs[i].windowId && p.tab.active) {
               tabStore.close(newTabs[i].id);
-            } else if (newTabs.length > 1 && !s.tab.active && !newTabs[i].active) {
+            } else if (newTabs.length > 1 && !p.tab.active && !newTabs[i].active) {
               tabStore.close(newTabs[i].id);
             }
           }
@@ -229,6 +238,7 @@ var Tile = React.createClass({
   },
   handleClick(id, e) {
     var s = this.state;
+    var p = this.props;
     this.setState({
       render: false
     });
@@ -240,18 +250,18 @@ var Tile = React.createClass({
           if (s.openTab) {
             active();
           } else {
-            chrome.tabs.create({url: s.tab.url});
+            chrome.tabs.create({url: p.tab.url});
           }
         } else if (s.apps) {
-          if (s.tab.enabled) {
-            if (s.stores.prefs.mode === 'extensions' || s.tab.launchType === 'OPEN_AS_REGULAR_TAB') {
-              if (s.tab.url.length > 0) {
-                tabStore.create(s.tab.url);
+          if (p.tab.enabled) {
+            if (p.stores.prefs.mode === 'extensions' || p.tab.launchType === 'OPEN_AS_REGULAR_TAB') {
+              if (p.tab.url.length > 0) {
+                tabStore.create(p.tab.url);
               } else {
-                tabStore.create(s.tab.homepageUrl);
+                tabStore.create(p.tab.homepageUrl);
               }
             } else {
-              chrome.management.launchApp(s.tab.id);
+              chrome.management.launchApp(p.tab.id);
             }
           }
         } else {
@@ -264,7 +274,7 @@ var Tile = React.createClass({
   filterTabs(props) {
     // Filter tab method that triggers re-renders through Reflux store.
     var iTile = (opt)=>{
-      var innerTile = document.getElementById('innerTile-'+s.tab.id);
+      var innerTile = document.getElementById('innerTile-'+p.tab.id);
       if (innerTile && _.isObject(innerTile.style)) {
         if (opt === 'show') {
           innerTile.style.display = 'block';
@@ -273,8 +283,8 @@ var Tile = React.createClass({
         }
       }
     };
-    var s = this.state;
-    if (kmp(s.tab.title.toLowerCase(), props.stores.search) !== -1) {
+    var p = this.props;
+    if (kmp(p.tab.title.toLowerCase(), props.stores.search) !== -1) {
       iTile('show');
       return true;
     } else {
@@ -289,10 +299,11 @@ var Tile = React.createClass({
   // Trigger hovers states that will update the inline CSS in style.js.
   handleHoverIn(e) {
     var s = this.state;
+    var p = this.props;
     this.setState({hover: true});
-    if (s.stores.prefs.screenshot && s.stores.prefs.screenshotBg && s.screenshot && !s.apps) {
+    if (p.stores.prefs.screenshot && p.stores.prefs.screenshotBg && s.screenshot && !s.apps) {
       document.getElementById('bgImg').style.backgroundImage = `url("${s.screenshot}")`;
-      document.getElementById('bgImg').style.WebkitFilter = `blur(${s.stores.prefs.screenshotBgBlur}px)`;
+      document.getElementById('bgImg').style.WebkitFilter = `blur(${p.stores.prefs.screenshotBgBlur}px)`;
     } else {
       document.getElementById('bgImg').style.backgroundImage = '';
     }
@@ -339,31 +350,31 @@ var Tile = React.createClass({
     var close = ()=>{
       //tabStore.close(id);
       chrome.tabs.remove(id, ()=>{
-        if (s.stores.prefs.mode !== 'tabs' && s.openTab) {
+        if (p.stores.prefs.mode !== 'tabs' && s.openTab) {
           _.defer(()=>{
             reRender(true);
           });
         }      
       });
     };
-    if (s.stores.prefs.animations && !s.openTab) {
+    if (p.stores.prefs.animations && !s.openTab) {
       this.setState({close: true});
     }
-    if (s.stores.prefs.mode !== 'tabs') {
+    if (p.stores.prefs.mode !== 'tabs') {
       if (s.openTab) {
         close();
       } else {
         if (s.bookmarks) {          
-          chrome.bookmarks.remove(s.tab.bookmarkId,(b)=>{
+          chrome.bookmarks.remove(p.tab.bookmarkId,(b)=>{
             console.log('Bookmark deleted: ',b);
           });
         } else if (s.history) {
-          chrome.history.deleteUrl({url: s.tab.url},(h)=>{
+          chrome.history.deleteUrl({url: p.tab.url},(h)=>{
             console.log('History url deleted: ', h);
           });
         } else if (s.sessions) {
-          var session = _.find(p.sessions, {timeStamp: s.tab.sTimeStamp});
-          var tab = _.find(session.tabs, {url: s.tab.url});
+          var session = _.find(p.sessions, {timeStamp: p.tab.sTimeStamp});
+          var tab = _.find(session.tabs, {url: p.tab.url});
           sessionsStore.removeTabFromSession(tab.id, session, tabStore.get_altTab());
           reRender();
         }
@@ -375,13 +386,14 @@ var Tile = React.createClass({
   },
   handlePinning(tab, opt) {
     var s = this.state;
+    var p = this.props;
     var id = null;
     if (opt === 'context') {
       id = tab;
     } else {
       id = tab.id;
     }
-    if (s.stores.prefs.animations) {
+    if (p.stores.prefs.animations) {
       this.setState({pinning: true});
     }
     tabStore.keepNewTabOpen();
@@ -407,24 +419,24 @@ var Tile = React.createClass({
     }, (Tab)=> {
       console.log(Tab);
       for (var i = Tab.length - 1; i >= 0; i--) {
-        if (Tab[i].windowId === this.state.stores.windowId) {
+        if (Tab[i].windowId === this.props.stores.windowId) {
           this.handleCloseTab(Tab[i].id);
         }
       }
     });
   },
   handleApp(opt){
-    var s = this.state;
+    var p = this.props;
     if (opt === 'toggleEnable') {
-      chrome.management.setEnabled(s.tab.id, !s.tab.enabled);
+      chrome.management.setEnabled(p.tab.id, !p.tab.enabled);
     } else if (opt === 'uninstallApp') {
-      chrome.management.uninstall(s.tab.id);
+      chrome.management.uninstall(p.tab.id);
     } else if (opt  === 'createAppShortcut') {
-      chrome.management.createAppShortcut(s.tab.id);
+      chrome.management.createAppShortcut(p.tab.id);
     } else if (opt  === 'launchApp') {
-      this.handleClick(s.tab.id);
+      this.handleClick(p.tab.id);
     } else if (_.first(_.words(opt)) === 'OPEN') {
-      chrome.management.setLaunchType(s.tab.id, opt);
+      chrome.management.setLaunchType(p.tab.id, opt);
       reRenderStore.set_reRender(true, 'update', null);
     }
 
@@ -432,38 +444,39 @@ var Tile = React.createClass({
   applyTabOrder() {
     // Apply the sorted tab grid state to the Chrome window.
     var s = this.state;
-    var tabs = _.orderBy(s.stores.tabs, ['index'], ['desc']);
+    var p = this.props;
+    var tabs = _.orderBy(p.stores.tabs, ['index'], ['desc']);
       if (tabs.length > 0) {
-        if (s.tab.title === 'New Tab') {
-          chrome.tabs.move(s.tab.id, {
+        if (p.tab.title === 'New Tab') {
+          chrome.tabs.move(p.tab.id, {
             index: -1
           });
           _.defer(()=>sortStore.set('index'));
         } else {
-          chrome.tabs.move(s.tab.id, {
+          chrome.tabs.move(p.tab.id, {
             index: s.i
           });
         }
       }
   },
   handleContextClick(e){
-    if (this.state.stores.prefs.context) {
+    if (this.props.stores.prefs.context) {
       e.preventDefault();
-      contextStore.set_context(true, this.state.tab);
+      contextStore.set_context(true, this.props.tab);
     }
   },
   handleRelays(props){
-    var s = this.state;
+    var p = props;
     var r = props.stores.relay;
-    if (r[1] && r[1].index === s.tab.index) {
+    if (r[1] && r[1].index === p.tab.index) {
       if (r[0] === 'close') {
         this.handleCloseTab(r[1]);
       } else if (r[0] === 'closeAll') {
-        this.handleCloseAll(s.tab);
+        this.handleCloseAll(p.tab);
       } else if (r[0] === 'pin') {
-        this.handlePinning(s.tab);
+        this.handlePinning(p.tab);
       } else if (r[0] === 'mute') {
-        this.handleMuting(s.tab);
+        this.handleMuting(p.tab);
       } else if (r[0] === 'closeDupes') {
         this.checkDuplicateTabs(r[0]);
       } else if (r[0] === 'closeAllDupes') {
@@ -484,9 +497,10 @@ var Tile = React.createClass({
   },
   handleFocus(opt, bool, props){
     var s = this.state;
-    if (s.stores.prefs.animations) {
+    var p = this.props;
+    if (p.stores.prefs.animations) {
       if (opt === 'duplicate') {
-        if (s.stores.prefs.mode === 'tabs') {
+        if (p.stores.prefs.mode === 'tabs') {
           this.setState({focus: bool, duplicate: bool});
         }
       } else {
@@ -516,7 +530,7 @@ var Tile = React.createClass({
     // tileDrag will store the state outside of the component's lifecycle.
     tileDrag = true;
     this.setState({drag: tileDrag});
-    draggedStore.set_dragged(this.state.tab);
+    draggedStore.set_dragged(this.props.tab);
     this.getPos(p.stores.cursor.page.x, p.stores.cursor.page.y);
   },
   handleDrag(e, ui) {
@@ -543,9 +557,9 @@ var Tile = React.createClass({
     });
   },
   getPos(left, top){
-    var s = this.state;
-    var oLeft = left - s.stores.cursor.offset.x;
-    var oRight = top - s.stores.cursor.offset.y;
+    var p = this.props;
+    var oLeft = left - p.stores.cursor.offset.x;
+    var oRight = top - p.stores.cursor.offset.y;
     dragStore.set_drag(oLeft, oRight);
   },
   currentlyDraggedOver(tab){
@@ -567,17 +581,17 @@ var Tile = React.createClass({
   render: function() {
     var s = this.state;
     var p = this.props;
-    var tileStyle = {height: s.stores.prefs.tabSizeHeight, width: s.stores.prefs.tabSizeHeight+80};
+    var tileStyle = {height: p.stores.prefs.tabSizeHeight, width: p.stores.prefs.tabSizeHeight+80};
     var titleLimit = s.bookmarks || s.history ? 70 : 83;
     var drag = dragStore.get_drag();
-    var remove = s.stores.prefs.mode !== 'tabs' && !s.openTab;
-    var lowerLeft = s.stores.prefs.tabSizeHeight >= 205 ? -40 : -40;
-    var lowerTop = s.stores.prefs.tabSizeHeight - 25;
+    var remove = p.stores.prefs.mode !== 'tabs' && !s.openTab;
+    var lowerLeft = p.stores.prefs.tabSizeHeight >= 205 ? -40 : -40;
+    var lowerTop = p.stores.prefs.tabSizeHeight - 25;
     var lowerStyle = s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px', left: lowerLeft.toString()+'px', top: lowerTop.toString()+'px'} : {top: lowerTop.toString()+'px'};
-    var appHomepage = s.stores.prefs.tabSizeHeight >= 170 ? s.stores.prefs.tabSizeHeight + 5 : 170;
-    var appOfflineEnabled = s.stores.prefs.tabSizeHeight >= 170 ? s.stores.prefs.tabSizeHeight - 10 : 158;
+    var appHomepage = p.stores.prefs.tabSizeHeight >= 170 ? p.stores.prefs.tabSizeHeight + 5 : 170;
+    var appOfflineEnabled = p.stores.prefs.tabSizeHeight >= 170 ? p.stores.prefs.tabSizeHeight - 10 : 158;
     return (
-      <div ref="tileMain" id={'tileMain-'+s.i} onDragEnter={this.currentlyDraggedOver(s.tab)} style={s.stores.prefs.screenshot && s.stores.prefs.screenshotBg ? {opacity: '0.95'} : null}>
+      <div ref="tileMain" id={'tileMain-'+s.i} onDragEnter={this.currentlyDraggedOver(p.tab)} style={p.stores.prefs.screenshot && p.stores.prefs.screenshotBg ? {opacity: '0.95'} : null}>
         {p.render ? 
           <Draggable  axis="both"
                       handle=".handle"
@@ -588,55 +602,55 @@ var Tile = React.createClass({
                       onDrag={this.handleDrag}
                       onStop={this.handleStop}>
             <div ref="tile" style={s.drag ? {position: 'absolute', left: drag.left-200, top: drag.top} : null}>
-            {p.render && s.render && s.tab.title !== 'New Tab' ? <Row fluid={true} id={'subTile-'+s.i} style={s.duplicate && s.focus && !s.hover ? {WebkitAnimationIterationCount: 'infinite', WebkitAnimationDuration: '5s'} : null} onContextMenu={this.handleContextClick} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "animated zoomOut" : s.pinning ? "animated pulse" : s.duplicate && s.focus ? "animated flash" : null}>
-                { true ? <div id={'innerTile-'+s.tab.id} className={s.apps && !s.tab.enabled ? "ntg-tile-disabled" : s.hover ? "ntg-tile-hover" : "ntg-tile"} style={s.screenshot ? s.hover ? style.tileHovered(s.screenshot, s.stores.prefs.tabSizeHeight) : style.tile(s.screenshot, s.stores.prefs.tabSizeHeight) : tileStyle} key={p.key}>
+            {p.render && s.render && p.tab.title !== 'New Tab' ? <Row fluid={true} id={'subTile-'+s.i} style={s.duplicate && s.focus && !s.hover ? {WebkitAnimationIterationCount: 'infinite', WebkitAnimationDuration: '5s'} : null} onContextMenu={this.handleContextClick} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "animated zoomOut" : s.pinning ? "animated pulse" : s.duplicate && s.focus ? "animated flash" : null}>
+                { true ? <div id={'innerTile-'+p.tab.id} className={s.apps && !p.tab.enabled ? "ntg-tile-disabled" : s.hover ? "ntg-tile-hover" : "ntg-tile"} style={s.screenshot ? s.hover ? style.tileHovered(s.screenshot, p.stores.prefs.tabSizeHeight) : style.tile(s.screenshot, p.stores.prefs.tabSizeHeight) : tileStyle} key={p.key}>
                   <Row className="ntg-tile-row-top">
                     <Col size="3">
-                      {s.stores.chromeVersion >= 46 && s.openTab || s.stores.chromeVersion >= 46 && s.stores.prefs.mode === 'tabs' ? <div onMouseEnter={this.handleTabMuteHoverIn} onMouseLeave={this.handleTabMuteHoverOut} onClick={() => this.handleMuting(s.tab)}>
-                                        {s.hover || s.tab.audible || s.tab.mutedInfo.muted ? 
-                                        <i className={s.tab.audible ? s.mHover ? "fa fa-volume-off ntg-mute-audible-hover" : "fa fa-volume-up ntg-mute-audible" : s.mHover ? "fa fa-volume-off ntg-mute-hover" : "fa fa-volume-off ntg-mute"} style={s.screenshot && s.hover ? style.ssIconBg : s.screenshot ? style.ssIconBg : null} />
+                      {p.stores.chromeVersion >= 46 && s.openTab || p.stores.chromeVersion >= 46 && p.stores.prefs.mode === 'tabs' ? <div onMouseEnter={this.handleTabMuteHoverIn} onMouseLeave={this.handleTabMuteHoverOut} onClick={() => this.handleMuting(p.tab)}>
+                                        {s.hover || p.tab.audible || p.tab.mutedInfo.muted ? 
+                                        <i className={p.tab.audible ? s.mHover ? "fa fa-volume-off ntg-mute-audible-hover" : "fa fa-volume-up ntg-mute-audible" : s.mHover ? "fa fa-volume-off ntg-mute-hover" : "fa fa-volume-off ntg-mute"} style={s.screenshot && s.hover ? style.ssIconBg : s.screenshot ? style.ssIconBg : null} />
                                         : null}
                                       </div> : null}
-                      <div onMouseEnter={this.handleTabCloseHoverIn} onMouseLeave={this.handleTabCloseHoverOut} onClick={()=>this.handleCloseTab(s.tab.id)}>
+                      <div onMouseEnter={this.handleTabCloseHoverIn} onMouseLeave={this.handleTabCloseHoverOut} onClick={()=>this.handleCloseTab(p.tab.id)}>
                         {s.hover && !s.apps ? 
                         <i className={s.xHover ? remove ? "fa fa-eraser ntg-x-hover" : "fa fa-times ntg-x-hover" : remove ? "fa fa-eraser ntg-x" : "fa fa-times ntg-x"} style={s.screenshot && s.hover ? style.ssIconBg : null} />
                         : null}
                       </div>
-                      <div onMouseEnter={this.handlePinHoverIn} onMouseLeave={this.handlePinHoverOut} onClick={() => this.handlePinning(s.tab)}>
-                      {s.tab.pinned && s.stores.prefs.mode === 'tabs' || s.hover && s.openTab || s.hover && !s.bookmarks && !s.history && !s.sessions && !s.apps ? 
-                        <i className={s.pHover ? "fa fa-map-pin ntg-pinned-hover" : "fa fa-map-pin ntg-pinned"} style={s.tab.pinned ? s.screenshot && s.hover ? style.ssPinnedIconBg : s.screenshot ? style.ssPinnedIconBg : {color: '#B67777'} : s.screenshot ? style.ssIconBg : null} />
+                      <div onMouseEnter={this.handlePinHoverIn} onMouseLeave={this.handlePinHoverOut} onClick={() => this.handlePinning(p.tab)}>
+                      {p.tab.pinned && p.stores.prefs.mode === 'tabs' || s.hover && s.openTab || s.hover && !s.bookmarks && !s.history && !s.sessions && !s.apps ? 
+                        <i className={s.pHover ? "fa fa-map-pin ntg-pinned-hover" : "fa fa-map-pin ntg-pinned"} style={p.tab.pinned ? s.screenshot && s.hover ? style.ssPinnedIconBg : s.screenshot ? style.ssPinnedIconBg : {color: '#B67777'} : s.screenshot ? style.ssIconBg : null} />
                         : null}
                       </div>
                       <Row>
-                        <img className="ntg-favicon" src={s.apps ? s.tab.favIconUrl : s.favicon ? s.favicon : '../images/file_paper_blank_document.png' } />
+                        <img className="ntg-favicon" src={s.apps ? p.tab.favIconUrl : s.favicon ? s.favicon : '../images/file_paper_blank_document.png' } />
                       </Row>
                     </Col>
-                    <Col size="9" onClick={!s.bookmarks && !s.apps ? ()=>this.handleClick(s.tab.id) : null} className="ntg-title-container">
-                      <span title={s.apps ? s.tab.description : null}>
+                    <Col size="9" onClick={!s.bookmarks && !s.apps ? ()=>this.handleClick(p.tab.id) : null} className="ntg-title-container">
+                      <span title={s.apps ? p.tab.description : null}>
                         <h5 style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-title">
-                        {_.truncate(s.tab.title, {length: titleLimit})}
+                        {_.truncate(p.tab.title, {length: titleLimit})}
                         </h5>
                       </span>
-                      {s.bookmarks ? <h5 onClick={()=>bookmarksStore.set_folder(s.tab.folder)} style={lowerStyle} className="ntg-folder">
-                        <i className="fa fa-folder-o" />{s.tab.folder ? s.bookmarks ? ' '+s.tab.folder : null : null}
+                      {s.bookmarks ? <h5 onClick={()=>bookmarksStore.set_folder(p.tab.folder)} style={lowerStyle} className="ntg-folder">
+                        <i className="fa fa-folder-o" />{p.tab.folder ? s.bookmarks ? ' '+p.tab.folder : null : null}
                       </h5> : null}
                       {s.history ? <h5 style={lowerStyle} className="ntg-folder">
-                        <i className="fa fa-hourglass-o" />{' '+_.capitalize(moment(s.tab.lastVisitTime).fromNow())}
+                        <i className="fa fa-hourglass-o" />{' '+_.capitalize(moment(p.tab.lastVisitTime).fromNow())}
                       </h5> : null}
                       {s.sessions ? <h5 style={lowerStyle} className="ntg-folder">
-                        <i className={s.tab.label ? 'fa fa-folder-o' : 'fa fa-hourglass-o'} />{s.tab.label ? ' '+s.tab.label : ' '+_.capitalize(moment(s.tab.sTimeStamp).fromNow())}
+                        <i className={p.tab.label ? 'fa fa-folder-o' : 'fa fa-hourglass-o'} />{p.tab.label ? ' '+p.tab.label : ' '+_.capitalize(moment(p.tab.sTimeStamp).fromNow())}
                       </h5> : null}
                       {s.apps && s.hover ? <h5 style={lowerStyle} className="ntg-folder">
-                        <i className="fa fa-at" />{' '+s.tab.version}{s.tab.offlineEnabled ? <span style={{position: 'absolute', left: appOfflineEnabled.toString()+'px'}} title="Offline Enabled"><i style={{opacity: '0.7', fontSize: '12px', position: 'relative', top: '1px'}} className="fa fa-bolt" /></span> : null}{s.tab.homepageUrl ? <span onClick={()=>tabStore.create(s.tab.homepageUrl)} style={{cursor: 'pointer', position: 'absolute', left: appHomepage.toString()+'px'}} title="Homepage" onMouseEnter={this.handleDragHoverIn} onMouseLeave={this.handleDragHoverOut}><i style={s.dHover ? {opacity: '0.7'} : {opacity: '0.5'}} className="fa fa-home" /> </span> : null}
+                        <i className="fa fa-at" />{' '+p.tab.version}{p.tab.offlineEnabled ? <span style={{position: 'absolute', left: appOfflineEnabled.toString()+'px'}} title="Offline Enabled"><i style={{opacity: '0.7', fontSize: '12px', position: 'relative', top: '1px'}} className="fa fa-bolt" /></span> : null}{p.tab.homepageUrl ? <span onClick={()=>tabStore.create(p.tab.homepageUrl)} style={{cursor: 'pointer', position: 'absolute', left: appHomepage.toString()+'px'}} title="Homepage" onMouseEnter={this.handleDragHoverIn} onMouseLeave={this.handleDragHoverOut}><i style={s.dHover ? {opacity: '0.7'} : {opacity: '0.5'}} className="fa fa-home" /> </span> : null}
                       </h5> : null}
-                      {s.stores.prefs ? s.stores.prefs.drag && !s.bookmarks && !s.history && !s.sessions  && !s.apps ? <div onMouseEnter={this.handleDragHoverIn} onMouseLeave={this.handleDragHoverOut} onClick={() => this.handleCloseTab(s.tab.id)}>
+                      {p.stores.prefs ? p.stores.prefs.drag && !s.bookmarks && !s.history && !s.sessions  && !s.apps ? <div onMouseEnter={this.handleDragHoverIn} onMouseLeave={this.handleDragHoverOut} onClick={() => this.handleCloseTab(p.tab.id)}>
                         {s.hover ? 
                         <i className={s.dHover ? "fa fa-hand-grab-o ntg-move-hover handle" : "fa fa-hand-grab-o ntg-move"} style={s.screenshot && s.hover ? style.ssIconBg : null} />
                         : null}
                       </div> : null : null}
                     </Col> 
                   </Row>
-                  <Row onClick={() => this.handleClick(s.tab.id)} className={s.bookmarks || s.history || s.sessions || s.apps ? "ntg-tile-row-bottom-bk" : "ntg-tile-row-bottom"} />
+                  <Row onClick={() => this.handleClick(p.tab.id)} className={s.bookmarks || s.history || s.sessions || s.apps ? "ntg-tile-row-bottom-bk" : "ntg-tile-row-bottom"} />
                 </div> : null}
               </Row> : null}
             </div>
