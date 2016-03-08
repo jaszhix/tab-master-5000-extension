@@ -54,7 +54,7 @@ var reRender = (type, id) => {
   }
 };
 var throttled = {
-  screenshot: _.throttle(screenshotStore.capture, 1500, {leading: true}),
+  screenshot: _.throttle(screenshotStore.capture, 1, {leading: true}),
   update: _.throttle(reRender, 350),
   history: _.throttle(reRender, 4000, {leading: true})
 };
