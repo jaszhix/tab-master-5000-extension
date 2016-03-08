@@ -1,5 +1,13 @@
 #### Release Notes
 
+##### v1.1.0 / *3-7-16*
+
+*   Fixed session synchronization not working. It will now continue to sync your sessions after you restore them, or if Chrome restarts. Synchronization occurs at a max interval of fifteen seconds in order to keep resource footprint lower.
+*   Fixed session labeling disabling a session's synchronization.
+*   Rewrote state handling to optimize memory usage, and to prevent memory related extension crashes.
+*   Improved screenshot rendering.
+*   Fixed screenshots not being created until a New Tab is refreshed after initially enabling them.
+
 ##### v1.0.2 / *3-3-16*
 
 *   Improved the CSS.
