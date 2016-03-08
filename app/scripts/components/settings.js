@@ -56,7 +56,7 @@ var Sessions = React.createClass({
   },
   labelSession(session){
     console.log(session);
-    sessionsStore.save('update', session, this.state.sessionLabelValue, this.setState({sessionLabelValue: null}));
+    sessionsStore.save('update', session, this.state.sessionLabelValue, null, this.setState({sessionLabelValue: null}), session.sync);
     //this.saveSession('update', session, this.state.sessionLabelValue);
     this.setState({labelSession: null});
   },
