@@ -123,7 +123,6 @@ getPrefs.then((prefs)=>{
       });
       capture.then((image)=>{
         sendResponse({'image': image});
-        reload('Refreshing bg...');
       }).catch(()=>{
         if (prefs.mode !== 'tabs') {
           chrome.tabs.update(msg.id, {active: true})
