@@ -142,8 +142,12 @@ var Preferences = React.createClass({
     this.setState({hover: opt});
   },
   handleClick(opt){
-    prefsStore.set_prefs(opt,!this.props.prefs[opt]);
+    var p = this.props;
+    prefsStore.set_prefs(opt,!p.prefs[opt]);
     if (opt === 'screenshot') {
+      if (p.prefs[opt]) {
+        utilityStore.restartNewTab();
+      }
       reRenderStore.set_reRender(true, 'cycle', null);
     }
   },
