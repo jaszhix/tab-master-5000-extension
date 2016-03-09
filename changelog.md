@@ -1,9 +1,10 @@
 #### Release Notes
 
-##### v1.1.1 / *3-8-16*
+##### v1.2.0 / *3-8-16*
 
+*   Searching history, bookmarks, and sessions is no longer slow.
+*   Added a close all searched tiles feature. During a search, a context menu item will appear allowing you to close every tile in the searched view. You can close all searched items in tabs, history, and bookmarks.
 *   Improved search functionality. Before the search only filtered tabs by title, but now it will search the URL as well.
-*   Added a close all searched tabs feature. During a tab search, a context menu item will appear allowing you to close every tab in the searched view.
 *   The search query now resets after clicking a tile from a search result.
 
 ##### v1.1.0 / *3-7-16*
