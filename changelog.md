@@ -1,5 +1,11 @@
 #### Release Notes
 
+##### v1.1.1 / *3-8-16*
+
+*   Improved search functionality. Before the search only filtered tabs by title, but now it will search the URL as well.
+*   Added a close all searched tabs feature. During a tab search, a context menu item will appear allowing you to close every tab in the searched view.
+*   The search query now resets after clicking a tile from a search result.
+
 ##### v1.1.0 / *3-7-16*
 
 *   Fixed session synchronization not working. It will now continue to sync your sessions after you restore them, or if Chrome restarts. Synchronization occurs at a max interval of fifteen seconds in order to keep resource footprint lower.
