@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom';
 import Reflux from 'reflux';
 import _ from 'lodash';
 import v from 'vquery';
-import kmp from 'kmp';
 import moment from 'moment';
 import Draggable from 'react-draggable';
 import {searchStore, sortStore, relayStore, faviconStore, sessionsStore, bookmarksStore, reRenderStore, applyTabOrderStore, utilityStore, contextStore, dragStore, draggedStore} from './stores/main';
@@ -13,7 +12,6 @@ import tabStore from './stores/tab';
 import {Btn, Col, Row} from './bootstrap';
 import style from './style';
 
-var visibleTabs = [];
 var tileDrag = null;
 var Tile = React.createClass({
   mixins: [Reflux.ListenerMixin],
@@ -68,9 +66,6 @@ var Tile = React.createClass({
     }
     if (p.tab.title === 'New Tab') {
       this.closeNewTabs();
-    }
-    if (nextProps.stores.search !== p.stores.search) {
-      this.filterTabs(nextProps);
     }
     this.handleRelays(nextProps);
     if (nextProps.stores.applyTabOrder) {
@@ -260,30 +255,6 @@ var Tile = React.createClass({
     }
     this.setState({render: true});
   },
-  filterTabs(props) {
-    // Filter tab method that triggers re-renders through Reflux store.
-    var iTile = (opt)=>{
-      var innerTile = document.getElementById('innerTile-'+p.tab.id);
-      if (innerTile && _.isObject(innerTile.style)) {
-        if (opt === 'show') {
-          innerTile.style.display = 'block';
-        } else {
-          innerTile.style.display = 'none';
-        }
-      }
-    };
-    var p = this.props;
-    if (kmp(p.tab.url, props.stores.search) !== -1 || kmp(p.tab.title.toLowerCase(), props.stores.search) !== -1 || props.stores.search.length === 0) {
-      iTile('show');
-      visibleTabs.push(p.tab.id);
-      return true;
-    } else {
-      iTile();
-      visibleTabs = _.without(visibleTabs, p.tab.id);
-    }
-    visibleTabs = _.uniq(visibleTabs);
-    console.log('visibleTabs',visibleTabs);
-  },
   // Trigger hovers states that will update the inline CSS in style.js.
   handleHoverIn(e) {
     var s = this.state;
@@ -323,7 +294,7 @@ var Tile = React.createClass({
   handleDragHoverOut(){
     this.setState({dHover: false});
   },
-  handleCloseTab(id) {
+  handleCloseTab(id, search) {
     var p = this.props;
     var s = this.state;
     var reRender = (defer)=>{
@@ -351,12 +322,13 @@ var Tile = React.createClass({
       if (s.openTab) {
         close();
       } else {
-        if (s.bookmarks) {          
-          chrome.bookmarks.remove(p.tab.bookmarkId,(b)=>{
+        if (s.bookmarks) {
+        var bookmarkId = search ? id.bookmarkId : p.tab.bookmarkId;
+          chrome.bookmarks.remove(bookmarkId,(b)=>{
             console.log('Bookmark deleted: ',b);
           });
         } else if (s.history) {
-          chrome.history.deleteUrl({url: p.tab.url},(h)=>{
+          chrome.history.deleteUrl({url: search ? id.url : p.tab.url},(h)=>{
             console.log('History url deleted: ', h);
           });
         } else if (s.sessions) {
@@ -413,8 +385,14 @@ var Tile = React.createClass({
     });
   },
   handleCloseAllSearched(){
-    for (var i = visibleTabs.length - 1; i >= 0; i--) {
-      this.handleCloseTab(visibleTabs[i]);
+    var p = this.props;
+    var s = this.state;
+    for (var i = p.stores.tabs.length - 1; i >= 0; i--) {
+      if (s.history || s.bookmarks) {
+        this.handleCloseTab(p.stores.tabs[i], true);
+      } else {
+        this.handleCloseTab(p.stores.tabs[i].id);
+      }
     }
     searchStore.set_search('');
   },
@@ -667,7 +645,7 @@ var Sidebar = React.createClass({
         <Btn onClick={this.handleSort} className="ntg-apply-btn" fa="sort-amount-asc">{p.collapse ? 'Sort Tabs' : 'Sort'}</Btn>
           {p.prefs.sort ? <div>
               {p.labels}
-              {p.prefs.mode === 'tabs' ? <Btn onClick={()=>applyTabOrderStore.set_saveTab(true)} className="ntg-apply-btn" fa="sort">{iconCollapse ? '' : 'Apply'}</Btn> : null}
+              {p.prefs.mode === 'tabs' && p.search.length === 0 ? <Btn onClick={()=>applyTabOrderStore.set_saveTab(true)} className="ntg-apply-btn" fa="sort">{iconCollapse ? '' : 'Apply'}</Btn> : null}
             </div> : null}
           <div className="mode-container">
             {p.prefs.mode !== 'tabs' ? <Btn onClick={()=>utilityStore.handleMode('tabs')} className="ntg-apply-btn" fa="square">{iconCollapse ? '' : 'Tabs'}</Btn> : null}
@@ -781,7 +759,7 @@ var TileGrid = React.createClass({
     });
     return (
       <div className="tile-body">
-        {p.sidebar ? <Sidebar prefs={p.stores.prefs} tabs={p.stores.tabs} labels={labels} width={p.width} collapse={p.collapse} ssBg={ssBg} /> : null}
+        {p.sidebar ? <Sidebar prefs={p.stores.prefs} tabs={p.stores.tabs} labels={labels} width={p.width} collapse={p.collapse} ssBg={ssBg} search={p.stores.search} /> : null}
         <div className="tile-div" style={p.sidebar ? p.collapse ? {marginLeft: '11%', width: '89%'} : {marginLeft: '13%', width: '87%'} : {width: '100%'}}>
           <div id="grid" ref="grid">
               {data.map((data, i)=> {

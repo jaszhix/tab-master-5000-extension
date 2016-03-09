@@ -286,9 +286,7 @@ export var utilityStore = Reflux.createStore({
     return this.cursor;
   },
   restartNewTab(){
-    _.defer(()=>{
-      location.reload(); 
-    }); 
+    location.reload(); 
   },
   createTab(href){
     chrome.tabs.create({url: href}, (t)=>{
@@ -300,9 +298,7 @@ export var utilityStore = Reflux.createStore({
     });
   },
   handleMode(mode){
-    if (mode === 'apps' || mode === 'extensions') {
-      this.reloadBg();
-    }
+    this.reloadBg();
     prefsStore.set_prefs('mode', mode);
     sortStore.set('index');
   }
@@ -834,7 +830,7 @@ export var sessionsStore = Reflux.createStore({
         session.sessionData = _.without(session.sessionData, _.first(replacedSession));
       } else if (opt === 'sync') {
         console.log('synced Session: ',syncedSession);
-        session.sessionData = _.without(session.sessionData, _.first(syncedSession));
+        session.sessionData = _.without(session.sessionData, _.last(syncedSession));
       }
       if (opt === 'sync' && tabData.sync || opt !== 'sync') {
         chrome.storage.local.set(session, (result)=> {

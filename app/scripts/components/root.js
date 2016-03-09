@@ -102,7 +102,6 @@ var Search = React.createClass({
     );
   }
 });
-
 var synchronizeSession = _.throttle(sessionsStore.save, 15000, {leading: true});
 var Root = React.createClass({
   mixins: [
@@ -231,18 +230,25 @@ var Root = React.createClass({
     this.setState({sort: e});
   },
   updateTabState(e, opt){
+    var s = this.state;
     console.log('updateTabState: ',e);
     if (typeof e === 'string') {
       this.setState({folder: e, folderState: !this.state.folderState});
       this.extendTileLimit(this.state.folderState);    
     } else {
       tabStore.promise().then((Tab)=>{
+        this.setState({topLoad: true});
         if (opt === 'cycle') {
           this.setState({grid: false});
         }
         tabStore.set_altTab(Tab);
-        this.setState({tabs: e});
-        tabStore.set_tab(e);
+        if (s.search.length === 0) {
+          this.setState({tabs: e});
+          tabStore.set_tab(e);
+        } else {
+          this.searchChanged(s.search, e);
+        }
+        _.defer(()=>this.setState({topLoad: false}));
         if (opt === 'cycle') {
           this.setState({grid: true});
         }
@@ -283,8 +289,12 @@ var Root = React.createClass({
         && s.prefs.mode !== 'history' 
         && s.prefs.mode !== 'apps' 
         && s.prefs.mode !== 'extensions') {
-        this.setState({tabs: tab});
-        tabStore.set_tab(tab);
+        if (s.search.length === 0) {
+          this.setState({tabs: tab});
+          tabStore.set_tab(tab);
+        } else {
+          this.searchChanged(s.search, tab);
+        }
         this.checkDuplicateTabs(Tab);
       } else {
         this.setState({render: false});
@@ -344,21 +354,30 @@ var Root = React.createClass({
       this.setState({duplicateTabs: utils.getDuplicates(tabUrls)});
     } 
   },
-  searchChanged(e) {
-    // Trigger Root component re-render when a user types in the search box.
-    clickStore.set_click(true);
+  searchChanged(e, update) {
     this.setState({search: e});
-    this.extendTileLimit(e.length > 0);
+    var search = e;
+    var s = this.state;
+    var tabs = update ? update : s.tabs;
+    this.setState({topLoad: true});
+    // Mutate the tabs array and reroute all event methods to searchChanged while search length > 0
+    if (search.length > 0) {
+      for (var i = tabs.length - 1; i >= 0; i--) {
+        if (kmp(tabs[i].title.toLowerCase(), search) !== -1 || kmp(tabs[i].url, search) !== -1) {
+          tabs.push(tabs[i]);
+        } else {
+          tabs = _.without(tabs, tabs[i]);
+        }
+      }
+      this.setState({tabs: _.uniq(tabs)});
+      tabStore.set_tab(tabs);
+    } else {
+      prefsStore.set_prefs('mode', s.prefs.mode);
+    }
+    _.defer(()=>this.setState({topLoad: false}));
   },
   settingsChange(){
     this.setState({settings: true});
-  },
-  extendTileLimit(argument){
-    if (argument) {
-      this.setState({oldTileLimit: this.state.tileLimit,tileLimit: 99999});
-    } else {
-      this.setState({tileLimit: this.state.oldTileLimit});
-    }
   },
   reRender(e) {
     // Method triggered by Chrome event listeners.
