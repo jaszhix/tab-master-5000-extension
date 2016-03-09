@@ -6,14 +6,14 @@ import v from 'vquery';
 import kmp from 'kmp';
 import moment from 'moment';
 import Draggable from 'react-draggable';
-
-import {sortStore, relayStore, faviconStore, sessionsStore, bookmarksStore, reRenderStore, applyTabOrderStore, utilityStore, contextStore, dragStore, draggedStore} from './stores/main';
+import {searchStore, sortStore, relayStore, faviconStore, sessionsStore, bookmarksStore, reRenderStore, applyTabOrderStore, utilityStore, contextStore, dragStore, draggedStore} from './stores/main';
 import prefsStore from './stores/prefs';
 import tabStore from './stores/tab';
 
 import {Btn, Col, Row} from './bootstrap';
 import style from './style';
 
+var visibleTabs = [];
 var tileDrag = null;
 var Tile = React.createClass({
   mixins: [Reflux.ListenerMixin],
@@ -226,7 +226,12 @@ var Tile = React.createClass({
     this.setState({
       render: false
     });
-    var active = ()=>chrome.tabs.update(id, {active: true});
+    var active = ()=>{
+      if (p.stores.search.length > 0) {
+        searchStore.set_search('');
+      }
+      chrome.tabs.update(id, {active: true});
+    };
     // Navigate to a tab when its clicked from the grid.
     if (!s.xHover || !s.pHover) {
       if (!s.close) {
@@ -268,17 +273,16 @@ var Tile = React.createClass({
       }
     };
     var p = this.props;
-    if (kmp(p.tab.title.toLowerCase(), props.stores.search) !== -1) {
+    if (kmp(p.tab.url, props.stores.search) !== -1 || kmp(p.tab.title.toLowerCase(), props.stores.search) !== -1 || props.stores.search.length === 0) {
       iTile('show');
+      visibleTabs.push(p.tab.id);
       return true;
     } else {
-      if (props.stores.search.length === 0) {
-        iTile('show');
-        return true;
-      } else {
-        iTile();
-      }
+      iTile();
+      visibleTabs = _.without(visibleTabs, p.tab.id);
     }
+    visibleTabs = _.uniq(visibleTabs);
+    console.log('visibleTabs',visibleTabs);
   },
   // Trigger hovers states that will update the inline CSS in style.js.
   handleHoverIn(e) {
@@ -408,6 +412,12 @@ var Tile = React.createClass({
       }
     });
   },
+  handleCloseAllSearched(){
+    for (var i = visibleTabs.length - 1; i >= 0; i--) {
+      this.handleCloseTab(visibleTabs[i]);
+    }
+    searchStore.set_search('');
+  },
   handleApp(opt){
     var p = this.props;
     if (opt === 'toggleEnable') {
@@ -464,6 +474,8 @@ var Tile = React.createClass({
         this.checkDuplicateTabs(r[0]);
       } else if (r[0] === 'closeAllDupes') {
         this.checkDuplicateTabs(r[0]);
+      } else if (r[0] === 'closeSearched') {
+        this.handleCloseAllSearched();
       } else if (r[0] === 'toggleEnable') {
         this.handleApp(r[0]);
       } else if (r[0] === 'uninstallApp') {
