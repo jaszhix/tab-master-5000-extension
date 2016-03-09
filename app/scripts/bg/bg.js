@@ -48,9 +48,6 @@ getPrefs.then((prefs)=>{
   });
   chrome.tabs.onActivated.addListener((e, info) => {
     sendMsg({e: e, type: 'activate'});
-    if (prefs.screenshot && prefs.mode === 'tabs') {
-      reload();
-    }
   });
   if (prefs.mode !== 'tabs') {
     chrome.tabs.onUpdated.addListener((e, info) => {
