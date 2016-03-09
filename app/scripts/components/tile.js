@@ -202,15 +202,10 @@ var Tile = React.createClass({
     var p = this.props;
     if (p.stores.prefs.singleNewTab) {
       var newTabs = p.stores.newTabs;
-      if (newTabs) {
-        for (var i = 0; i < newTabs.length; i++) {
-          if (newTabs[i]) {
-            if (p.tab.windowId !== newTabs[i].windowId && p.tab.active) {
-              tabStore.close(newTabs[i].id);
-            } else if (newTabs.length > 1 && !p.tab.active && !newTabs[i].active) {
-              tabStore.close(newTabs[i].id);
-            }
-          }
+      var activeNewTab = _.filter(p.stores.altTabs, {active: true, title: 'New Tab'}).length > 0;
+      for (var i = newTabs.length - 1; i >= 0; i--) {
+        if (newTabs[i].windowId !== p.stores.windowId && activeNewTab || newTabs.length > 1 && !activeNewTab && !newTabs[i].active) {
+          tabStore.close(newTabs[i].id);
         }
       }
     }

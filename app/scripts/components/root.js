@@ -523,12 +523,14 @@ var Root = React.createClass({
   render: function() {
     var s = this.state;
     var tabs = tabStore.get_tab();
+    var altTabs = tabStore.get_altTab();
     var newTabs = tabStore.getNewTabs();
     var cursor = utilityStore.get_cursor();
     var context = contextStore.get_context();
     var windowId = utilityStore.get_window();
     var stores = {
       tabs: tabs,
+      altTabs: altTabs,
       duplicateTabs: s.duplicateTabs,
       favicons: s.favicons, 
       screenshots: s.screenshots, 
