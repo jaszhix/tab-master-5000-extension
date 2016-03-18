@@ -78,6 +78,7 @@ var Tile = React.createClass({
   initMethods(){
     var p = this.props;
     this.setTabMode();
+    this.updateFavicons(p);
     this.updateScreenshot('init', p);
     if (p.stores.prefs.mode === 'tabs') {
       this.checkDuplicateTabs();
@@ -87,11 +88,9 @@ var Tile = React.createClass({
         this.closeNewTabs();
       });
     }
-    this.updateFavicons(p);
   },
   updateFavicons(props){
-    var p = this.props;
-    var fvData = _.result(_.find(p.stores.favicons, { domain: p.tab.url.split('/')[2] }), 'favIconUrl');
+    var fvData = _.result(_.find(props.stores.favicons, { domain: props.tab.url.split('/')[2] }), 'favIconUrl');
     if (fvData) {
       this.setState({favicon: fvData});
     }
@@ -115,14 +114,6 @@ var Tile = React.createClass({
       if (p.tab.active) {
         setScreeenshot();
       }
-    }
-  },
-  updateFavicon(e){
-    var p = this.props;
-    var fvIndex = faviconStore.get_favicon();
-    var fvData = _.result(_.find(fvIndex, { domain: p.tab.url.split('/')[2] }), 'favIconUrl');
-    if (fvData) {
-      this.setState({favicon: fvData});
     }
   },
   setTabMode(){
