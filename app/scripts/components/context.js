@@ -11,8 +11,17 @@ var ContextMenu = React.createClass({
     return {
       actions: p.actions,
       tab: p.context[1],
-      cursor: p.cursor
+      cursor: p.cursor,
+      inViewport: true
     };
+  },
+  componentDidMount(){
+    console.log('context visible? ',v('#main > div > div > div.ntg-context > div').isVisible());
+    var positionedDiv = v('#main > div > div > div.ntg-context > div');
+    if (!positionedDiv.isVisible()) {
+      positionedDiv.css({top: `${positionedDiv.css().top.split('px')[0] - 100}px`});
+    }
+    
   },
   componentWillReceiveProps(nextProps){
     var p = this.props;
@@ -84,7 +93,7 @@ var ContextMenu = React.createClass({
     var notBookmarksHistorySessAppsExt = p.prefs.mode !== 'bookmarks' && p.prefs.mode !== 'history' && p.prefs.mode !== 'sessions' && p.prefs.mode !== 'apps' && p.prefs.mode !== 'extensions';
     var notAppsExt = p.prefs.mode !== 'apps' && p.prefs.mode !== 'extensions';
     return (
-      <div className="ntg-context">
+      <div ref="context" className="ntg-context">
         <div style={{left: s.cursor.page.x, top: s.cursor.page.y}} className="ntg-context-menu">
           {notAppsExt ? <Btn onClick={()=>this.handleRelay('close')} className="ntg-context-btn" fa={p.prefs.mode !== 'tabs' && !s.openTab ? "eraser" : "times"}>{close}</Btn> : null}
           {p.prefs.mode === 'tabs' ? <Btn onClick={()=>this.handleRelay('closeAll')} className="ntg-context-btn-close-all" fa="asterisk">{close+'all from ' + s.tab.url.split('/')[2]}</Btn> : null}
