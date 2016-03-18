@@ -74,20 +74,27 @@ bgPrefs.then((prefs)=>{
         throttled.update(msg.type, msg.e);
       }
     } else if (msg.type === 'activate') {
+      var getImageFromTab = ()=>{
+        if (kmp(msg.e.url, 'chrome://' !== -1)) {
+          throttled.screenshot(msg.e.tabId, msg.e.windowId, false, msg.type);
+        } else {
+          chrome.tabs.sendMessage(msg.e.tabId, {type: 'screenshot'}, (response)=>{});
+        }
+      };
       if (prefs.screenshot) {
         // Inject event listener that messages the extension to recapture the image on click.
         var title = null;
         if (prefs.mode === 'tabs') {
           title = _.result(_.find(tabs(), { id: msg.e.tabId }), 'title');
           if (title !== 'New Tab') {
-            throttled.screenshot(msg.e.tabId, msg.e.windowId);
+            getImageFromTab();
             reRender('activate', msg.e);
           }
         } else {
           title = _.result(_.find(tabs('alt'), { id: msg.e.tabId }), 'title');
           if (title !== 'New Tab') {
             if (prefs.mode !== 'tabs') {
-              throttled.screenshot(msg.e.tabId, msg.e.windowId);
+              getImageFromTab();
               reRenderStore.set_reRender(true, 'activate', msg.e.tabId);
             }
           }
@@ -115,6 +122,11 @@ bgPrefs.then((prefs)=>{
       contextStore.set_context(null, 'installed');
     } else if (msg.type === 'versionUpdate') {
       contextStore.set_context(null, 'versionUpdate');
+    } else if (msg.type === 'screenshot') {
+      throttled.screenshot(sender.tab.id, sender.tab.windowId, msg.image, msg.type);
+      reRender('activate', sender.tab.id);
+    } else if (msg.type === 'checkSSCapture') {
+      sendResponse(screenshotStore.tabHasScreenshot(sender.tab.url));
     }
   });
 });
