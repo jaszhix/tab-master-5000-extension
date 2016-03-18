@@ -629,6 +629,9 @@ export var actionStore = Reflux.createStore({
   undoAction(){
     console.log('this.actions: ',this.actions);
     this.undoActionState = true;
+    var removeLastAction = ()=>{
+      this.actions = _.without(this.actions, _.last(this.actions));
+    };
     var undo = ()=>{
       var lastAction = _.last(this.actions);
       console.log('lastAction: ',lastAction);
@@ -638,9 +641,9 @@ export var actionStore = Reflux.createStore({
           tabStore.keepNewTabOpen();
           tabStore.create(lastAction.item.url, lastAction.item.index);
         } else if (lastAction.type === 'update') {
-          if (tab.pinned !== lastAction.item.pinned) {
+          if (tab && tab.pinned !== lastAction.item.pinned) {
             tabStore.pin(tab);
-          } else if (utilityStore.chromeVersion() >= 46 && tab.mutedInfo.muted !== lastAction.item.mutedInfo.muted ) {
+          } else if (utilityStore.chromeVersion() >= 46 && tab && tab.mutedInfo.muted !== lastAction.item.mutedInfo.muted ) {
             tabStore.mute(tab);
           } else {
             this.actions = _.without(this.actions, _.last(this.actions));
@@ -651,11 +654,11 @@ export var actionStore = Reflux.createStore({
         } else if (lastAction.type === 'move') {
           tabStore.move(lastAction.item.id, lastAction.item.index);
         } else {
-          this.actions = _.without(this.actions, _.last(this.actions));
+          removeLastAction();
           undo();
         }
       }
-      this.actions = _.without(this.actions, _.last(this.actions));
+      removeLastAction();
       this.trigger(this.actions);
     };
     undo();
