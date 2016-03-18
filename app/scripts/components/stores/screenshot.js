@@ -24,20 +24,27 @@ var screenshotStore = Reflux.createStore({
       this.trigger(this.index);
     });
   },
-  capture(id, wid){
+  capture(id, wid, imageData, type){
     var tab = _.find(tabs(), { id: id });
     var title = _.result(tab, 'title');
     var getScreenshot = new Promise((resolve, reject)=>{
-      chrome.runtime.sendMessage({method: 'captureTabs', id: id}, (response) => {
-        console.log('response image: ',response);
-        if (response) {
-          if (response.image) {
-            resolve(response.image);
-          } else {
-            reject();
-          }
+      if (imageData) {
+        console.log('resolving content data')
+        resolve(imageData);
+      } else {
+        if (type === 'activate') {
+          chrome.runtime.sendMessage({method: 'captureTabs', id: id}, (response) => {
+            console.log('response image: ',response);
+            if (response) {
+              if (response.image) {
+                resolve(response.image);
+              } else {
+                reject();
+              }
+            }
+          });
         }
-      });
+      }
     });
     if (title !== 'New Tab' && prefsStore.get_prefs().screenshot) {
       var ssUrl = _.result(_.find(tabs(), { id: id }), 'url');
@@ -131,6 +138,9 @@ var screenshotStore = Reflux.createStore({
         }
       }
     });
+  },
+  tabHasScreenshot(url){
+    return _.filter(this.index, {url: url});
   }
 });
 
