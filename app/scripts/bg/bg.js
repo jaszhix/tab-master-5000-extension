@@ -152,11 +152,13 @@ chrome.runtime.onInstalled.addListener((details)=>{
       }
     });
     chrome.tabs.create({active: true}, (tab)=>{
-      if (details.reason === 'install') {
-        sendMsg({e: details, type: 'installed'});
-      } else if (details.reason === 'update') {
-        sendMsg({e: details, type: 'versionUpdate'});
-      }
+      setTimeout(()=>{
+        if (details.reason === 'install') {
+          sendMsg({e: details, type: 'installed'});
+        } else if (details.reason === 'update') {
+          sendMsg({e: details, type: 'versionUpdate'});
+        }
+      },500);
     });
   }
 });
