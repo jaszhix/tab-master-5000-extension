@@ -49,35 +49,9 @@ getPrefs.then((prefs)=>{
   chrome.tabs.onActivated.addListener((e, info) => {
     sendMsg({e: e, type: 'activate'});
   });
-  if (prefs.mode !== 'tabs') {
-    chrome.tabs.onUpdated.addListener((e, info) => {
-      if (window.update) {
-        window.update = false;
-        setTimeout(()=>{
-          sendMsg({e: e, type: 'update'});
-        },50);
-      } else {
-        window.update = true;
-      }
-    });
-  } else {
-    chrome.tabs.onUpdated.addListener((e, info) => {
-      sendMsg({e: e, type: 'update'});
-    });
-  }
   chrome.tabs.onUpdated.addListener((e, info) => {
-    if (prefs.mode !== 'tabs') {
-      if (window.update) {
-        window.update = false;
-        setTimeout(()=>{
-          sendMsg({e: e, type: 'update'});
-        },50);
-      } else {
-        window.update = true;
-      }
-    } else {
-      sendMsg({e: e, type: 'update'});
-    }
+    sendMsg({e: e, type: 'update'});
+    //setTimeout(()=>reload(), 500);
   });
   chrome.tabs.onMoved.addListener((e, info) => {
     sendMsg({e: e, type: 'move'});
@@ -122,7 +96,7 @@ getPrefs.then((prefs)=>{
         sendResponse({'image': image});
       }).catch(()=>{
         if (prefs.mode !== 'tabs') {
-          chrome.tabs.update(msg.id, {active: true})
+          chrome.tabs.update(msg.id, {active: true});
           reload('Screenshot capture error.');
         } else {
           sendMsg({e: sender.id, type: 'error'});
@@ -185,6 +159,9 @@ chrome.runtime.onInstalled.addListener((details)=>{
       }
     });
   }
+});
+chrome.runtime.onStartup.addListener(()=>{
+  sendMsg({type: 'startup'});
 });
 chrome.management.onInstalled.addListener((details)=>{
   sendMsg({e: details, type: 'app'});
