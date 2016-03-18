@@ -375,7 +375,9 @@ var Tile = React.createClass({
     var s = this.state;
     for (var i = p.stores.tabs.length - 1; i >= 0; i--) {
       if (s.history || s.bookmarks) {
-        this.handleCloseTab(p.stores.tabs[i], true);
+        if (!s.openTab) {
+          this.handleCloseTab(p.stores.tabs[i], true);
+        }
       } else {
         this.handleCloseTab(p.stores.tabs[i].id);
       }
