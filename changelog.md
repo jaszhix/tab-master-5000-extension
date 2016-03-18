@@ -1,11 +1,20 @@
 #### Release Notes
 
-##### v1.2.0 / *3-8-16*
+##### v1.3.0 / *3-18-16*
+
+*   Screenshots now capture when tabs are created, as well as update when they are activated. Moved screenshot capturing to the content script using canvas, and Chrome API capturing as a fallback.
+*   Context menu is now forced into the viewport if it initially renders off screen.
+*   Fixed a bug causing undo actions to throw errors under certain conditions.
+*   Fixed removing searched items failing when an open tab is selected.
+*   Session synchronization and duplicate tab animations are now enabled by default on new installations.
+
+##### v1.2.0 / *3-9-16*
 
 *   Searching history, bookmarks, and sessions is no longer slow.
 *   Added a close all searched tiles feature. During a search, a context menu item will appear allowing you to close every tile in the searched view. You can close all searched items in tabs, history, and bookmarks.
 *   Improved search functionality. Before the search only filtered tabs by title, but now it will search the URL as well.
 *   The search query now resets after clicking a tile from a search result.
+*   Fixed New Tabs closing themselves in sessions view mode when only one New Tab is allowed.
 
 ##### v1.1.0 / *3-7-16*
 
