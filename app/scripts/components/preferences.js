@@ -145,9 +145,6 @@ var Preferences = React.createClass({
     var p = this.props;
     prefsStore.set_prefs(opt,!p.prefs[opt]);
     if (opt === 'screenshot') {
-      if (p.prefs[opt]) {
-        utilityStore.restartNewTab();
-      }
       reRenderStore.set_reRender(true, 'cycle', null);
     }
   },

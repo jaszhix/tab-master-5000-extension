@@ -189,7 +189,6 @@ var Root = React.createClass({
     }
   },
   prefsChange(e){
-    utilityStore.reloadBg();
     var s = this.state;
     this.setState({
       prefs: e, 
