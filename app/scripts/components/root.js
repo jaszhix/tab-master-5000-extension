@@ -153,7 +153,6 @@ var Root = React.createClass({
     this.listenTo(reRenderStore, this.reRender);
     this.listenTo(settingsStore, this.settingsChange);
     this.listenTo(contextStore, this.contextTrigger);
-    this.listenTo(sidebarStore, this.sortTrigger);
     this.listenTo(prefsStore, this.prefsChange);
     this.listenTo(actionStore, this.actionsChange);
     this.listenTo(sessionsStore, this.sessionsChange);
@@ -515,9 +514,6 @@ var Root = React.createClass({
     } else {
       this.setState({context: e[0]});
     }
-  },
-  sortTrigger(){
-    this.setState({sidebar: sidebarStore.get_sidebar()});
   },
   render: function() {
     var s = this.state;
