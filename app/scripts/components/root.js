@@ -62,7 +62,6 @@ var Search = React.createClass({
     modalStore.set_modal(true, 'settings');
   },
   handleSidebar(){
-    clickStore.set_click(true, false);
     sidebarStore.set_sidebar(!sidebarStore.get_sidebar());
   },
   render: function() {
@@ -162,7 +161,6 @@ var Root = React.createClass({
     this.listenTo(applyTabOrderStore, this.applyTabOrderChange);
     this.listenTo(sortStore, this.sortChange);
     
-
     console.log('Chrome Version: ',utilityStore.chromeVersion());
     console.log('Manifest: ', utilityStore.get_manifest());
   },
@@ -197,7 +195,7 @@ var Root = React.createClass({
     if (s.init) {
       // Init methods called here after prefs are loaded from Chrome storage.
       this.onWindowResize(null, 'init');
-      _.defer(()=>this.captureTabs('init'));
+      this.captureTabs('init');
     }
     if (e.keyboardShortcuts) {
       keyboardStore.set();
@@ -278,11 +276,13 @@ var Root = React.createClass({
         }
       }
       var tab = [];
+      // Handle session view querying, and set it to tabs var.
       if (s.prefs.mode === 'sessions') {
         tab = sessionsStore.flatten();
       } else {
         tab = Tab;
       }
+      // Avoid setting tabs state here if the mode is not tabs or sessions. updateTabState will handle other modes.
       if (s.prefs.mode !== 'bookmarks' 
         && s.prefs.mode !== 'history' 
         && s.prefs.mode !== 'apps' 
