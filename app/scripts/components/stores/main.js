@@ -78,7 +78,7 @@ bgPrefs.then((prefs)=>{
         if (kmp(msg.e.url, 'chrome://' !== -1)) {
           throttled.screenshot(msg.e.tabId, msg.e.windowId, false, msg.type);
         } else {
-          chrome.tabs.sendMessage(msg.e.tabId, {type: 'screenshot'}, (response)=>{});
+          chrome.tabs.sendMessage(msg.e.tabId, {type: msg.type}, (response)=>{});
         }
       };
       if (prefs.screenshot) {
@@ -123,7 +123,7 @@ bgPrefs.then((prefs)=>{
     } else if (msg.type === 'versionUpdate') {
       contextStore.set_context(null, 'versionUpdate');
     } else if (msg.type === 'screenshot') {
-      throttled.screenshot(sender.tab.id, sender.tab.windowId, msg.image, msg.type);
+      screenshotStore.capture(sender.tab.id, sender.tab.windowId, msg.image, msg.type);
       reRender('activate', sender.tab.id);
     } else if (msg.type === 'checkSSCapture') {
       sendResponse(screenshotStore.tabHasScreenshot(sender.tab.url));

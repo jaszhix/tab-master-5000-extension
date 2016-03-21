@@ -29,12 +29,12 @@ var screenshotStore = Reflux.createStore({
     var title = _.result(tab, 'title');
     var getScreenshot = new Promise((resolve, reject)=>{
       if (imageData) {
-        console.log('resolving content data')
+        console.log('response from content canvas: ', id, wid, type);
         resolve(imageData);
       } else {
         if (type === 'activate') {
           chrome.runtime.sendMessage({method: 'captureTabs', id: id}, (response) => {
-            console.log('response image: ',response);
+            console.log('response from captureVisibleTab: ', id, wid, type);
             if (response) {
               if (response.image) {
                 resolve(response.image);
@@ -70,7 +70,7 @@ var screenshotStore = Reflux.createStore({
             var screenshot = {url: null, data: null, timeStamp: Date.now()};
             screenshot.url = ssUrl;
             screenshot.data = image;
-            console.log('screenshot: ', ssUrl, image);
+            console.log('screenshot: ', ssUrl);
             var urlInIndex = _.result(_.find(this.index, { url: ssUrl }), 'url');
             if (urlInIndex) {
               var dataInIndex = _.map(_.filter(this.index, { url: ssUrl }), 'data');
