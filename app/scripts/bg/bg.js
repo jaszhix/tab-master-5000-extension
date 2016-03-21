@@ -38,8 +38,6 @@ getPrefs.then((prefs)=>{
       console.log('Update listener removed');
     });
   }
-  window.prefs = prefs;
-  window.update = true;
   chrome.tabs.onCreated.addListener((e, info) => {
     sendMsg({e: e, type: 'create'});
   });
@@ -51,7 +49,6 @@ getPrefs.then((prefs)=>{
   });
   chrome.tabs.onUpdated.addListener((e, info) => {
     sendMsg({e: e, type: 'update'});
-    //setTimeout(()=>reload(), 500);
   });
   chrome.tabs.onMoved.addListener((e, info) => {
     sendMsg({e: e, type: 'move'});
