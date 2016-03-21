@@ -3,7 +3,7 @@ import html2canvas from 'html2canvas';
 
 var getImage = (type)=>{
   chrome.runtime.sendMessage(chrome.runtime.id, {type: 'checkSSCapture'}, (response)=>{
-    if (response.length === 0 || type === 'activate') {
+    if (response && response.length === 0 || type === 'activate') {
       html2canvas(document.body,{
         height: window.innerHeight,
         width: window.innerWidth,
@@ -14,10 +14,10 @@ var getImage = (type)=>{
           var quality =  0.2;
           var dataUrl = canvas.toDataURL('image/jpeg', quality);
           console.log(dataUrl);
-          chrome.runtime.sendMessage(chrome.runtime.id, {type: 'screenshot',image: dataUrl}, (response)=>{});
+          chrome.runtime.sendMessage(chrome.runtime.id, {type: 'screenshot', image: dataUrl}, (response)=>{});
         }
       }).catch(()=>{
-        chrome.runtime.sendMessage(chrome.runtime.id, {type: 'screenshot',image: false}, (response)=>{});
+        chrome.runtime.sendMessage(chrome.runtime.id, {type: type, image: false}, (response)=>{});
       });
     }
   });
