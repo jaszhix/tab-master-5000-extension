@@ -8,12 +8,13 @@ var getImage = (type)=>{
         height: window.innerHeight,
         width: window.innerWidth,
         allowTaint: false,
-        useCORS: true,
+        taintTest: true,
+        useCORS: false,
         background: '#FFFFFF',
-        onrendered: function(canvas) {
+        onrendered: (canvas)=>{
           var quality =  0.2;
           var dataUrl = canvas.toDataURL('image/jpeg', quality);
-          console.log(dataUrl);
+          console.log('Data url created');
           chrome.runtime.sendMessage(chrome.runtime.id, {type: 'screenshot', image: dataUrl}, (response)=>{});
         }
       }).catch(()=>{

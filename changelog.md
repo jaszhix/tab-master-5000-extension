@@ -1,5 +1,9 @@
 #### Release Notes
 
+##### v1.3.1 / *3-23-16*
+
+*   Fixed canvas capturing in content script attempting to load cross-origin images.
+
 ##### v1.3.0 / *3-18-16*
 
 *   Screenshots now capture when tabs are created, as well as update when they are activated. Moved screenshot capturing to the content script using canvas, and Chrome API capturing as a fallback.
