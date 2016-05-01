@@ -65,7 +65,7 @@ var Tile = React.createClass({
       this.setState({i: nextProps.i});
     }
     if (p.tab.title === 'New Tab') {
-      this.closeNewTabs();
+      //this.closeNewTabs();
     }
     this.handleRelays(nextProps);
     if (nextProps.stores.applyTabOrder) {
@@ -564,7 +564,7 @@ var Tile = React.createClass({
                       onStop={this.handleStop}>
             <div ref="tile" style={s.drag ? {position: 'absolute', left: drag.left-200, top: drag.top} : null}>
             {p.render && s.render && p.tab.title !== 'New Tab' ? <Row fluid={true} id={'subTile-'+s.i} style={s.duplicate && s.focus && !s.hover ? {WebkitAnimationIterationCount: 'infinite', WebkitAnimationDuration: '5s'} : null} onContextMenu={this.handleContextClick} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "animated zoomOut" : s.pinning ? "animated pulse" : s.duplicate && s.focus ? "animated flash" : null}>
-                { true ? <div id={'innerTile-'+p.tab.id} className={s.apps && !p.tab.enabled ? "ntg-tile-disabled" : s.hover ? "ntg-tile-hover" : "ntg-tile"} style={s.screenshot ? s.hover ? style.tileHovered(s.screenshot, p.stores.prefs.tabSizeHeight) : style.tile(s.screenshot, p.stores.prefs.tabSizeHeight) : tileStyle} key={p.key}>
+                { true ? <div id={'innerTile-'+p.tab.id} className={s.apps && !p.tab.enabled ? "ntg-tile-disabled" : s.hover ? "ntg-tile-hover" : "ntg-tile"} style={s.screenshot ? s.hover ? style.tileHovered(s.screenshot, p.stores.prefs.tabSizeHeight) : style.tile(s.screenshot, p.stores.prefs.tabSizeHeight) : tileStyle}>
                   <Row className="ntg-tile-row-top">
                     <Col size="3">
                       {p.stores.chromeVersion >= 46 && s.openTab || p.stores.chromeVersion >= 46 && p.stores.prefs.mode === 'tabs' ? <div onMouseEnter={this.handleTabMuteHoverIn} onMouseLeave={this.handleTabMuteHoverOut} onClick={() => this.handleMuting(p.tab)}>
@@ -726,11 +726,11 @@ var TileGrid = React.createClass({
     var data = p.stores.prefs.sort && p.stores.prefs.sidebar ? s.data : p.data;
     var favicons = faviconStore.get_favicon();
     var ssBg = p.stores.prefs && p.stores.prefs.screenshot && p.stores.prefs.screenshotBg;
-    var labels = p.keys.map((key)=> {
+    var labels = p.keys.map((key, i)=> {
       var label = p.labels[key] || key;
       var cLabel = p.width <= 1135 ? '' : label;
       return (
-        <div key={key} onClick={()=>sortStore.set(key)}>
+        <div key={i} onClick={()=>sortStore.set(key)}>
           {label === 'Tab Order' || label === 'Original Order' ? <Btn className="ntg-btn" fa="history">{cLabel}</Btn> : null}
           {label === 'Website' ? <Btn className="ntg-btn" fa="external-link">{cLabel}</Btn> : null}
           {label === 'Title' ? <Btn onClick={this.handleTitleIcon} className="ntg-btn" fa={s.title ? 'sort-alpha-asc' : 'sort-alpha-desc'}>{cLabel}</Btn> : null}

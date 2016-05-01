@@ -67,7 +67,7 @@ var Search = React.createClass({
   render: function() {
     var p = this.props;
     return (
-      <Container fluid={true} style={p.prefs && p.prefs.screenshot && p.prefs.screenshotBg ? {backgroundColor: 'rgba(237, 237, 237, 0.8)', position: 'fixed', top: '0', width: '100%', zIndex: '2'} : {position: 'fixed', top: '0', width: '100%', zIndex: '2'}} className="ntg-form">
+      <Container fluid={true} style={p.prefs && p.prefs.screenshot && p.prefs.screenshotBg ? {backgroundColor: 'rgba(237, 237, 237, 0.8)', position: 'fixed', top: '0px', width: '100%', zIndex: '2'} : {position: 'fixed', top: '0', width: '100%', zIndex: '2'}} className="ntg-form">
         <Row>
           <Col size="6">
             <Col size="1">

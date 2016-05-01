@@ -55,7 +55,7 @@ var reRender = (type, id) => {
 };
 var throttled = {
   screenshot: _.throttle(screenshotStore.capture, 1, {leading: true}),
-  update: _.throttle(reRender, 350),
+  update: _.throttle(reRender, 2000, {leading: true}),
   history: _.throttle(reRender, 4000, {leading: true})
 };
 bgPrefs.then((prefs)=>{
