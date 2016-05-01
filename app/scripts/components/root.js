@@ -336,7 +336,9 @@ var Root = React.createClass({
             } else {
               synchronizeSession('sync', sessions[i], null, _tab, null, true); 
             }
-
+          } else if (sessions[i].sync) {
+            // Saved session wasn't similar enough to the current window, so we will revert their sync state.
+            sessionsStore.save('update', sessions[i], sessions[i].label, s.tabs, null, false);
           }
         } 
       }
