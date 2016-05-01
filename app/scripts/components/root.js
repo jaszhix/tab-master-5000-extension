@@ -506,6 +506,7 @@ var Root = React.createClass({
         stores={stores}
         tileLimit={s.tileLimit}
         sessions={s.sessions}
+        init={s.init}
       />
     );
   },

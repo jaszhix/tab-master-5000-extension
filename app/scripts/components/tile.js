@@ -13,6 +13,8 @@ import {Btn, Col, Row} from './bootstrap';
 import style from './style';
 
 var tileDrag = null;
+var closeNewTabsThrottled = _.throttle(tabStore.closeNewTabs, 15000, {leading: false});
+var closeNewTabsOnce = _.once(tabStore.closeNewTabs);
 var Tile = React.createClass({
   mixins: [Reflux.ListenerMixin],
   getInitialState() {
@@ -54,8 +56,6 @@ var Tile = React.createClass({
     this.updateFavicons(nextProps);
     if (nextProps.stores.prefs.mode === 'tabs') {
       this.checkDuplicateTabs();
-    } else {
-      this.closeNewTabs();
     }
     if (nextProps.stores.prefs.screenshot) {
       this.updateScreenshot('init', nextProps);
@@ -66,8 +66,12 @@ var Tile = React.createClass({
     if (nextProps.i !== p.i) {
       this.setState({i: nextProps.i});
     }
-    if (p.tab.title === 'New Tab') {
-      this.closeNewTabs();
+    if (p.i === 0) {
+      if (nextProps.stores.prefs.mode === 'tabs') {
+        closeNewTabsOnce();
+      } else {
+        closeNewTabsThrottled();
+      }
     }
     this.handleRelays(nextProps);
     if (nextProps.stores.applyTabOrder) {
@@ -84,11 +88,6 @@ var Tile = React.createClass({
     this.updateScreenshot('init', p);
     if (p.stores.prefs.mode === 'tabs') {
       this.checkDuplicateTabs();
-    }
-    if (this.props.tab.title === 'New Tab') {
-      _.defer(()=>{
-        this.closeNewTabs();
-      });
     }
   },
   updateFavicons(props){
@@ -169,7 +168,7 @@ var Tile = React.createClass({
         first = _.first(duplicates);
         if (duplicates) {
           for (var x = duplicates.length - 1; x >= 0; x--) {
-            if (duplicates[x].id !== first.id) {
+            if (duplicates[x].id !== first.id && !chrome.runtime.lastError) {
               this.handleCloseTab(duplicates[x].id);
             }
           }
@@ -187,18 +186,6 @@ var Tile = React.createClass({
           } else if (p.tab.id === t[i].id && p.stores.prefs.duplicate) {
             this.handleFocus('duplicate',true,p);
           }
-        }
-      }
-    }
-  },
-  closeNewTabs(){
-    var p = this.props;
-    if (p.stores.prefs.singleNewTab) {
-      var newTabs = p.stores.newTabs;
-      var activeNewTab = _.filter(p.stores.altTabs, {active: true, title: 'New Tab'}).length > 0;
-      for (var i = newTabs.length - 1; i >= 0; i--) {
-        if (newTabs[i].windowId !== p.stores.windowId && activeNewTab || newTabs.length > 1 && !activeNewTab && !newTabs[i].active) {
-          tabStore.close(newTabs[i].id);
         }
       }
     }
@@ -758,7 +745,7 @@ var TileGrid = React.createClass({
                     faviconStore.set_favicon(data, s.data.length, i);
                   }
                   return (
-                    <Tile sessions={p.sessions} stores={p.stores} render={p.render} i={i} key={data.id} tab={data} tileLimit={p.tileLimit} />
+                    <Tile sessions={p.sessions} stores={p.stores} render={p.render} i={i} key={data.id} tab={data} tileLimit={p.tileLimit} init={p.init} />
                   );
                 }
               })}

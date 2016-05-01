@@ -736,16 +736,18 @@ export var faviconStore = Reflux.createStore({
           }
         }
       }).catch(()=>{
-        tab.favIconUrl = null;
-        tab.domain = domain;
-        this.favicons.push(tab);
-        this.favIcons = _.uniqBy(this.favicons, 'domain');
-        _.defer(()=>{
-          chrome.storage.local.set({favicons: this.favicons}, (result)=> {
-            console.log('favicons saved: ',result);
-            this.trigger(this.favicons);
+        if (this.favicons) {
+          tab.favIconUrl = null;
+          tab.domain = domain;
+          this.favicons.push(tab);
+          this.favIcons = _.uniqBy(this.favicons, 'domain');
+          _.defer(()=>{
+            chrome.storage.local.set({favicons: this.favicons}, (result)=> {
+              console.log('favicons saved: ',result);
+              this.trigger(this.favicons);
+            });
           });
-        });
+        }
       });
     }
   },

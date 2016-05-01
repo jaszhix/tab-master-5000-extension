@@ -1,6 +1,9 @@
 import Reflux from 'reflux';
 import _ from 'lodash';
 
+import {utilityStore} from './main';
+import prefsStore from './prefs';
+
 var tabStore = Reflux.createStore({
   init: function() {
     this.tab = [];
@@ -75,8 +78,20 @@ var tabStore = Reflux.createStore({
     get.then(()=>{
       chrome.tabs.remove(id);
     }).catch(()=>{
-      console.log(chrome.extension.lastError);
+      console.log(chrome.runtime.lastError);
     });
+  },
+  closeNewTabs(){
+    if (prefsStore.get_prefs().singleNewTab) {
+      var newTabs = this.getNewTabs();
+      var windowId = utilityStore.get_window();
+      var activeNewTab = _.filter(this.altTab, {active: true, title: 'New Tab'}).length > 0;
+      for (var i = newTabs.length - 1; i >= 0; i--) {
+        if (newTabs[i].windowId !== windowId && activeNewTab || newTabs.length > 1 && !activeNewTab && !newTabs[i].active) {
+          this.close(newTabs[i].id);
+        }
+      }
+    }
   },
   create(href, index){
     chrome.tabs.create({url: href, index: index}, (t)=>{
