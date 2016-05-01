@@ -1,5 +1,12 @@
 #### Release Notes
 
+##### v1.3.2 / *5-1-16*
+
+*   Updated dependencies.
+*   Fixed new tabs auto closing themselves if "Allow only one New Tab" option is selected.
+*   Synced sessions will now be checked if they are stale, and will be switched back to an unsynced state if so.
+*   Screenshot mode has been disabled by default on new installations.
+
 ##### v1.3.1 / *3-23-16*
 
 *   Fixed canvas capturing in content script attempting to load cross-origin images.
