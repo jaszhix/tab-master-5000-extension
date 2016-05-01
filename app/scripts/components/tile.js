@@ -54,6 +54,8 @@ var Tile = React.createClass({
     this.updateFavicons(nextProps);
     if (nextProps.stores.prefs.mode === 'tabs') {
       this.checkDuplicateTabs();
+    } else {
+      this.closeNewTabs();
     }
     if (nextProps.stores.prefs.screenshot) {
       this.updateScreenshot('init', nextProps);
