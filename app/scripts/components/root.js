@@ -194,6 +194,9 @@ var Root = React.createClass({
     });
     if (s.init) {
       // Init methods called here after prefs are loaded from Chrome storage.
+      if (e.mode === 'sessions') {
+        _.defer(()=>utilityStore.handleMode('sessions'));
+      }
       this.onWindowResize(null, 'init');
       this.captureTabs('init');
     }
