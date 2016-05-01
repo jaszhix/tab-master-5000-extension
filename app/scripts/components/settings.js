@@ -24,7 +24,7 @@ var Sessions = React.createClass({
       selectedSessionTabHover: null,
       expandedSession: null,
       labelSession: null,
-      sessionLabelValue: null,
+      sessionLabelValue: '',
       searchField: null,
       search: ''
     };
@@ -56,8 +56,8 @@ var Sessions = React.createClass({
   },
   labelSession(session){
     console.log(session);
-    sessionsStore.save('update', session, this.state.sessionLabelValue, null, this.setState({sessionLabelValue: null}), session.sync);
-    this.setState({labelSession: null});
+    sessionsStore.save('update', session, this.state.sessionLabelValue, null, this.setState({sessionLabelValue: ''}), session.sync);
+    this.setState({labelSession: ''});
   },
   setLabel(e){
     this.setState({sessionLabelValue: e.target.value});
@@ -160,7 +160,7 @@ var Sessions = React.createClass({
                               </span>
                             </Col>
                             <Col size="4">
-                              {s.selectedSessionTabHover === i ? <Btn onClick={()=>sessionsStore.removeTabFromSession(t.id, session, s.tabs, this.setState({sessionLabelValue: null}))} className="ntg-session-btn" fa="times">{p.collapse ? 'Remove' : null}</Btn> : null}
+                              {s.selectedSessionTabHover === i ? <Btn onClick={()=>sessionsStore.removeTabFromSession(t.id, session, s.tabs, this.setState({sessionLabelValue: ''}))} className="ntg-session-btn" fa="times">{p.collapse ? 'Remove' : null}</Btn> : null}
                               {s.selectedSessionTabHover === i ? <Btn onClick={()=>utilityStore.createTab(t.url)} className="ntg-session-btn" fa="external-link">{p.collapse ? 'Open' : null}</Btn> : null}
                             </Col>
                         </Row>;

@@ -790,7 +790,7 @@ export var sessionsStore = Reflux.createStore({
   save(opt, sess, label, tabsState, setLabel, syncOpt){
     v('div.ReactModalPortal > div').css({cursor: 'wait'});
     // Check if array exists, and push a new tabs object if not. Otherwise, create it.
-    var sessionLabel = null;
+    var sessionLabel = '';
     var tabs = null;
     var timeStamp = null;
     var id = utilityStore.get_window();
@@ -801,8 +801,6 @@ export var sessionsStore = Reflux.createStore({
       } else if (sess.label && sess.label.length > 0) {
         sessionLabel = sess.label;
       }
-    }
-    if (opt === 'update') {
       if (typeof syncOpt !== 'undefined' || syncOpt !== null) {
         sync = syncOpt;
       } else if (typeof sess.sync !== 'undefined') {
