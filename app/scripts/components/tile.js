@@ -13,7 +13,7 @@ import {Btn, Col, Row} from './bootstrap';
 import style from './style';
 
 var tileDrag = null;
-var closeNewTabsThrottled = _.throttle(tabStore.closeNewTabs, 15000, {leading: false});
+var closeNewTabsThrottled = _.throttle(tabStore.closeNewTabs, 1500, {leading: false});
 var closeNewTabsOnce = _.once(tabStore.closeNewTabs);
 var Tile = React.createClass({
   mixins: [Reflux.ListenerMixin],

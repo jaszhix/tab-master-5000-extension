@@ -1,5 +1,6 @@
 import Reflux from 'reflux';
 import _ from 'lodash';
+import kmp from 'kmp';
 
 import {utilityStore} from './main';
 import prefsStore from './prefs';
@@ -63,7 +64,9 @@ var tabStore = Reflux.createStore({
     });
   },
   getNewTabs(){
-    return _.filter(this.getAllTabs(), { title: 'New Tab' });
+    return _.filter(this.getAllTabs(), (tab)=>{
+      return kmp(tab.url, 'chrome://newtab') !== -1;
+    });
   },
   close(id){
     var get = new Promise((resolve, reject)=>{
@@ -85,9 +88,11 @@ var tabStore = Reflux.createStore({
     if (prefsStore.get_prefs().singleNewTab) {
       var newTabs = this.getNewTabs();
       var windowId = utilityStore.get_window();
-      var activeNewTab = _.filter(this.altTab, {active: true, title: 'New Tab'}).length > 0;
+      var activeNewTab = _.find(newTabs, {active: true});
+      console.log('activeNewTab',activeNewTab,'newTabs',newTabs);
       for (var i = newTabs.length - 1; i >= 0; i--) {
-        if (newTabs[i].windowId !== windowId && activeNewTab || newTabs.length > 1 && !activeNewTab && !newTabs[i].active) {
+        if (newTabs[i].windowId !== windowId && newTabs[i].id !== activeNewTab.id 
+          || newTabs.length > 1 && newTabs[i].id !== activeNewTab.id && !newTabs[i].active) {
           this.close(newTabs[i].id);
         }
       }
