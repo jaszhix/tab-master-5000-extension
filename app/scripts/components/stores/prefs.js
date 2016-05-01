@@ -11,7 +11,7 @@ var prefsStore = Reflux.createStore({
       context: true, 
       animations: true, 
       duplicate: true, 
-      screenshot: true, 
+      screenshot: false, 
       screenshotBg: false,
       screenshotBgBlur: 5,
       blacklist: true, 
