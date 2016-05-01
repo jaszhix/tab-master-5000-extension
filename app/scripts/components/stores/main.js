@@ -769,6 +769,7 @@ export var faviconStore = Reflux.createStore({
 
 export var sessionsStore = Reflux.createStore({
   init: function() {
+    this.sessions = [];
     this.tabs = [];
     this.load();
   },
@@ -920,32 +921,36 @@ export var sessionsStore = Reflux.createStore({
     return this.sessions;
   },
   flatten(){
-    var allTabs = [];
-    var t = tabStore.get_altTab();
-    var openTab = 0;
-    var openTabObj = null;
-    for (var i = this.sessions.length - 1; i >= 0; i--) {
-      for (var y = this.sessions[i].tabs.length - 1; y >= 0; y--) {
-        openTabObj = _.find(t, {url: this.sessions[i].tabs[y].url});
-        _.assign(this.sessions[i].tabs[y], {
-          openTab: openTabObj ? ++openTab : null,
-          pinned: openTabObj ? openTabObj.pinned : false,
-          mutedInfo: openTabObj ? {muted: openTabObj.mutedInfo.muted} : {muted: false},
-          audible: openTabObj ? openTabObj.audible : false,
-          windowId: utilityStore.get_window(),
-          id: openTabObj ? openTabObj.id : Date.now() / Math.random(),
-          tabId: this.sessions[i].tabs[y].id,
-          label: this.sessions[i].label,
-          sTimeStamp: this.sessions[i].timeStamp
-        });
+    if (this.sessions) {
+      var allTabs = [];
+      var t = tabStore.get_altTab();
+      var openTab = 0;
+      var openTabObj = null;
+      for (var i = this.sessions.length - 1; i >= 0; i--) {
+        for (var y = this.sessions[i].tabs.length - 1; y >= 0; y--) {
+          openTabObj = _.find(t, {url: this.sessions[i].tabs[y].url});
+          _.assign(this.sessions[i].tabs[y], {
+            openTab: openTabObj ? ++openTab : null,
+            pinned: openTabObj ? openTabObj.pinned : false,
+            mutedInfo: openTabObj ? {muted: openTabObj.mutedInfo.muted} : {muted: false},
+            audible: openTabObj ? openTabObj.audible : false,
+            windowId: utilityStore.get_window(),
+            id: openTabObj ? openTabObj.id : Date.now() / Math.random(),
+            tabId: this.sessions[i].tabs[y].id,
+            label: this.sessions[i].label,
+            sTimeStamp: this.sessions[i].timeStamp
+          });
+        }
+        allTabs.push(this.sessions[i].tabs);
       }
-      allTabs.push(this.sessions[i].tabs);
+      this.tabs = _.chain(allTabs)
+        .flatten()
+        .orderBy(['openTab'], ['asc'])
+        .uniqBy('url').value();
+      return this.tabs;
+    } else {
+      prefsStore.set_prefs('mode', 'tabs');
     }
-    this.tabs = _.chain(allTabs)
-      .flatten()
-      .orderBy(['openTab'], ['asc'])
-      .uniqBy('url').value();
-    return this.tabs;
   }
 });
 

@@ -65,7 +65,7 @@ var Tile = React.createClass({
       this.setState({i: nextProps.i});
     }
     if (p.tab.title === 'New Tab') {
-      //this.closeNewTabs();
+      this.closeNewTabs();
     }
     this.handleRelays(nextProps);
     if (nextProps.stores.applyTabOrder) {
