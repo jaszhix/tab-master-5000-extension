@@ -16,9 +16,9 @@ var ContextMenu = React.createClass({
     };
   },
   componentDidMount(){
-    console.log('context visible? ',v('#main > div > div > div.ntg-context > div').isVisible());
+    console.log('context visible? ',v('#main > div > div > div.ntg-context > div').inViewport());
     var positionedDiv = v('#main > div > div > div.ntg-context > div');
-    if (!positionedDiv.isVisible()) {
+    if (!positionedDiv.inViewport()) {
       positionedDiv.css({top: `${positionedDiv.css().top.split('px')[0] - 100}px`});
     }
     
