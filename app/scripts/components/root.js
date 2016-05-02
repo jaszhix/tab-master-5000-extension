@@ -194,8 +194,8 @@ var Root = React.createClass({
     });
     if (s.init) {
       // Init methods called here after prefs are loaded from Chrome storage.
-      if (e.mode === 'sessions') {
-        _.defer(()=>utilityStore.handleMode('sessions'));
+      if (e.mode !== 'tabs') {
+        _.defer(()=>utilityStore.handleMode(e.mode));
       }
       this.onWindowResize(null, 'init');
       this.captureTabs('init');
@@ -251,9 +251,11 @@ var Root = React.createClass({
         if (opt === 'cycle') {
           this.setState({grid: true});
         }
+        if (s.prefs.sessionsSync) {
+          this.syncSessions(s.sessions, Tab, opt);
+        }
       });
     }
-    
   },
   captureTabs(opt) {
     var s = this.state;
@@ -297,10 +299,8 @@ var Root = React.createClass({
           this.searchChanged(s.search, tab);
         }
         this.checkDuplicateTabs(Tab);
-      } else {
-        this.setState({render: false});
       }
-      console.log(Tab);
+      console.log('Tabs: ',Tab);
       this.setState({topLoad: false});
       v('#main').css({cursor: 'default'});
       // Querying is complete, allow the component to render.
@@ -326,22 +326,39 @@ var Root = React.createClass({
     });
     var _tab = _.without(Tab, _newTabs);
     var s = this.state;
+    //var altTabs = tabStore.get_altTab();
     if (s.prefs.sessionsSync) {
       if (sessions) {
+        var similarToCurrentSession = (sessionUrls, tabUrls, marginOfError)=>{
+          return _.difference(sessionUrls, tabUrls).length < _tab.length * marginOfError;
+        };
         for (var i = sessions.length - 1; i >= 0; i--) {
           // Map the current and stored sessions URLs to an array
           var sessionUrls = _.map(sessions[i].tabs, 'title');
           var tabUrls = _.map(_tab, 'title');
+          var now = new Date(Date.now()).getTime();
           // Check if either the window ID matches the session window ID, or create an array of different URLs between them and check if it is less than 10% of the current tab array length.
-          if (sessions[i].id === windowId || _.difference(sessionUrls, tabUrls).length < _tab.length * 0.1) {
+          if (sessions[i].id === windowId || similarToCurrentSession(sessionUrls, tabUrls, 0.1)) {
             if (opt === 'init') {
-              sessionsStore.save('update', sessions[i], sessions[i].label, s.tabs, null, true);
+              sessionsStore.save('update', sessions[i], sessions[i].label, _tab, null, true);
             } else {
               synchronizeSession('sync', sessions[i], null, _tab, null, true); 
             }
-          } else if (sessions[i].sync) {
-            // Saved session wasn't similar enough to the current window, so we will revert their sync state.
-            sessionsStore.save('update', sessions[i], sessions[i].label, s.tabs, null, false);
+            // Saved session wasn't similar enough to the current window, so we will check its age and loosen the margin of error.
+          } else if (sessions[i].sync && sessions[i].timeStamp + 172800000 < now) {
+            if (opt === 'init') {
+              if (similarToCurrentSession(sessionUrls, tabUrls, 0.1)) {
+                sessionsStore.save('update', sessions[i], sessions[i].label, _tab, null, true); 
+              } else {
+                sessionsStore.save('update', sessions[i], sessions[i].label, _tab, null, false); 
+              }
+            } else {
+              if (similarToCurrentSession(sessionUrls, tabUrls, 0.5)) {
+                synchronizeSession('sync', sessions[i], null, _tab, null, true);
+              } else {
+                sessionsStore.save('update', sessions[i], sessions[i].label, _tab, null, false); 
+              }
+            }
           }
         } 
       }
@@ -385,14 +402,11 @@ var Root = React.createClass({
   reRender(e) {
     // Method triggered by Chrome event listeners.
     var s = this.state;
-    if (s.prefs.mode !== 'tabs' && s.prefs.sessionsSync) {
-      this.syncSessions(s.sessions, tabStore.get_altTab(), null);
-    }
     if (!clickStore.get_click()) {
       if (e[0]) {
         // Treat attaching/detaching and created tabs with a full re-render.
         if (s.prefs.mode === 'bookmarks') {
-          this.updateTabState(bookmarksStore.get_bookmarks());
+          this.updateTabState(bookmarksStore.get_bookmarks(), e[1]);
         } else if (s.prefs.mode === 'history') {
           this.updateTabState(historyStore.get_history(), e[1]);
         } else if (s.prefs.mode === 'apps') {

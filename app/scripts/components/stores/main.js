@@ -24,7 +24,7 @@ export var bgPrefs = new Promise((resolve, reject)=>{
   });
 });
 // Chrome event listeners set to trigger re-renders.
-var reRender = (type, id) => {
+var reRender = (type, id, prefs) => {
   chrome.idle.queryState(900, (idle)=>{
     utilityStore.set_systemState(idle);
   });
@@ -39,7 +39,7 @@ var reRender = (type, id) => {
   if (type === 'create' || type === 'activate') {
     actionStore.set_action(type, id);
     active = id.windowId;
-  } else if (type === 'bookmarks' || type === 'history' || type === 'tile') {
+  } else if (type === 'bookmarks' || type === 'history' || type === 'tile' || prefs.mode !== 'tabs') {
     active = utilityStore.get_window();
   } else {
     item = _.find(tabs(), { id: id });
@@ -48,14 +48,14 @@ var reRender = (type, id) => {
     }
     active = _.result(item, 'windowId');
   }
-  console.log('window: ', active, utilityStore.get_window(), 'state: ',utilityStore.get_systemState());
+  console.log('window: ', active, utilityStore.get_window(), 'state: ',utilityStore.get_systemState(), 'type: ', type, 'id: ',id);
   if (active === utilityStore.get_window() && utilityStore.get_systemState() === 'active') {
     reRenderStore.set_reRender(true, type, id);
   }
 };
 var throttled = {
   screenshot: _.throttle(screenshotStore.capture, 1, {leading: true}),
-  update: _.throttle(reRender, 2000, {leading: true}),
+  update: _.throttle(reRender, 100, {leading: true}),
   history: _.throttle(reRender, 4000, {leading: true})
 };
 bgPrefs.then((prefs)=>{
@@ -63,15 +63,15 @@ bgPrefs.then((prefs)=>{
     console.log('msg: ',msg);
     if (msg.type === 'create') {
       if (prefs.actions) {
-        reRender(msg.type, msg.e);
+        reRender(msg.type, msg.e, prefs);
       } else {
-        throttled.update(msg.type, msg.e);
+        throttled.update(msg.type, msg.e, prefs);
       }
     } else if (msg.type === 'remove') {
       if (prefs.actions) {
-        reRender(msg.type, msg.e);
+        reRender(msg.type, msg.e, prefs);
       } else {
-        throttled.update(msg.type, msg.e);
+        throttled.update(msg.type, msg.e, prefs);
       }
     } else if (msg.type === 'activate') {
       var getImageFromTab = ()=>{
@@ -88,7 +88,7 @@ bgPrefs.then((prefs)=>{
           title = _.result(_.find(tabs(), { id: msg.e.tabId }), 'title');
           if (title !== 'New Tab') {
             getImageFromTab();
-            reRender('activate', msg.e);
+            reRender('activate', msg.e, prefs);
           }
         } else {
           title = _.result(_.find(tabs('alt'), { id: msg.e.tabId }), 'title');
@@ -101,17 +101,17 @@ bgPrefs.then((prefs)=>{
         }
       }
     } else if (msg.type === 'update') {
-      throttled.update(msg.type, msg.e);
+      throttled.update(msg.type, msg.e, prefs);
     } else if (msg.type === 'move') {
-      throttled.update(msg.type, msg.e);
+      throttled.update(msg.type, msg.e, prefs);
     } else if (msg.type === 'attach') {
-      reRender(msg.type, msg.e);
+      reRender(msg.type, msg.e, prefs);
     } else if (msg.type === 'detach') {
-      reRender(msg.type, msg.e);
+      reRender(msg.type, msg.e, prefs);
     } else if (msg.type === 'bookmarks') {
-      reRender(msg.type, msg.e);
+      reRender(msg.type, msg.e, prefs);
     } else if (msg.type === 'history') {
-      throttled.history(msg.type, msg.e);
+      throttled.history(msg.type, msg.e, prefs);
     } else if (msg.type === 'app') {
       reRenderStore.set_reRender(true, 'update', null);
     } else if (msg.type === 'error') {
@@ -124,7 +124,7 @@ bgPrefs.then((prefs)=>{
       contextStore.set_context(null, 'versionUpdate');
     } else if (msg.type === 'screenshot') {
       screenshotStore.capture(sender.tab.id, sender.tab.windowId, msg.image, msg.type);
-      reRender('activate', sender.tab.id);
+      reRender('activate', sender.tab.id, prefs);
     } else if (msg.type === 'checkSSCapture') {
       sendResponse(screenshotStore.tabHasScreenshot(sender.tab.url));
     }
@@ -832,7 +832,6 @@ export var sessionsStore = Reflux.createStore({
         session = item;
         if (opt === 'sync') {
           var syncedSession = _.filter(session.sessionData, { id: id, sync: true});
-          console.log('syncedSession: ',syncedSession);
           if (syncedSession && syncedSession.length > 0) {
             tabData.sync = _.first(syncedSession).sync;
             tabData.label = _.first(syncedSession).label;

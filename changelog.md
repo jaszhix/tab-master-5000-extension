@@ -4,9 +4,10 @@
 
 *   Updated dependencies.
 *   Fixed new tabs auto closing themselves if "Allow only one New Tab" option is selected.
-*   Fixed "Allow only one New Tab" option not working outside of tabs mode.
+*   Fixed "Allow only one New Tab" option not working outside of the tabs view.
+*   Fixed synced sessions not updating outside of the tabs view.
 *   Fixed sessions view not loading on initialization under some circumstances.
-*   Synced sessions will now be checked if they are stale, and will be switched back to an unsynced state if so.
+*   Synced sessions will now be checked if they are old, and will be updated if they are similar enough to the current window. If they're not, their sync state will be reverted.
 *   Screenshot mode has been disabled by default on new installations.
 
 ##### v1.3.1 / *3-23-16*
