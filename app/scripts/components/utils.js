@@ -9,6 +9,11 @@ var utils = {
       return _.includes(array, x, i + 1);
     });
   },
+  arrayMove(arr, fromIndex, toIndex){
+    var element = arr[fromIndex];
+    arr.splice(fromIndex, 1);
+    arr.splice(toIndex, 0, element);
+  },
   formatBytes(bytes,decimals) {
     if(bytes === 0) {
       return '0 Byte';

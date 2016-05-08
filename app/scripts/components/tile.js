@@ -3,9 +3,10 @@ import ReactDOM from 'react-dom';
 import Reflux from 'reflux';
 import _ from 'lodash';
 import v from 'vquery';
+import kmp from 'kmp';
 import moment from 'moment';
 import Draggable from 'react-draggable';
-import {searchStore, sortStore, relayStore, faviconStore, sessionsStore, bookmarksStore, reRenderStore, applyTabOrderStore, utilityStore, contextStore, dragStore, draggedStore} from './stores/main';
+import {updateStore, searchStore, sortStore, relayStore, faviconStore, sessionsStore, bookmarksStore, reRenderStore, applyTabOrderStore, utilityStore, contextStore, dragStore, draggedStore} from './stores/main';
 import prefsStore from './stores/prefs';
 import tabStore from './stores/tab';
 
@@ -55,7 +56,7 @@ var Tile = React.createClass({
     this.setTabMode();
     this.updateFavicons(nextProps);
     if (nextProps.stores.prefs.mode === 'tabs') {
-      this.checkDuplicateTabs();
+      this.checkDuplicateTabs('', nextProps);
     }
     if (nextProps.stores.prefs.screenshot) {
       this.updateScreenshot('init', nextProps);
@@ -87,7 +88,7 @@ var Tile = React.createClass({
     this.updateFavicons(p);
     this.updateScreenshot('init', p);
     if (p.stores.prefs.mode === 'tabs') {
-      this.checkDuplicateTabs();
+      this.checkDuplicateTabs('', p);
     }
   },
   updateFavicons(props){
@@ -159,32 +160,36 @@ var Tile = React.createClass({
     } 
   },
   checkDuplicateTabs(opt, props){
-    var p = this.props;
-    var first;
-    if (opt === 'closeAllDupes') {
-      var duplicates;
-      for (var y = p.stores.duplicateTabs.length - 1; y >= 0; y--) {
-        duplicates = _.filter(p.stores.tabs, {url: p.stores.duplicateTabs[y]});
-        first = _.first(duplicates);
-        if (duplicates) {
-          for (var x = duplicates.length - 1; x >= 0; x--) {
-            if (duplicates[x].id !== first.id && !chrome.runtime.lastError) {
-              this.handleCloseTab(duplicates[x].id);
+    if (props.stores.prefs.duplicate) {
+      var s = this.state;
+      var first;
+      if (opt === 'closeAllDupes') {
+        var duplicates;
+        for (var y = props.stores.duplicateTabs.length - 1; y >= 0; y--) {
+          duplicates = _.filter(props.stores.tabs, {url: props.stores.duplicateTabs[y]});
+          first = _.first(duplicates);
+          if (duplicates) {
+            for (var x = duplicates.length - 1; x >= 0; x--) {
+              if (duplicates[x].id !== first.id && !chrome.runtime.lastError) {
+                this.handleCloseTab(duplicates[x].id);
+              }
             }
           }
         }
       }
-    }
-    if (_.includes(p.stores.duplicateTabs, p.tab.url)) {
-      var t = _.filter(p.stores.tabs, {url: p.tab.url});
-      first = _.first(t);
-      var activeTab = _.map(_.find(t, { 'active': true }), 'id');
-      for (var i = t.length - 1; i >= 0; i--) {
-        if (t[i].id !== first.id && t[i].title !== 'New Tab' && t[i].id !== activeTab) {
-          if (opt === 'closeDupes') {
-            this.handleCloseTab(t[i].id);
-          } else if (p.tab.id === t[i].id && p.stores.prefs.duplicate) {
-            this.handleFocus('duplicate',true,p);
+      if (_.includes(props.stores.duplicateTabs, props.tab.url)) {
+        var t = _.filter(props.stores.tabs, {url: props.tab.url});
+        first = _.first(t);
+        console.log('t', t, 'first', first)
+        var activeTab = _.map(_.find(t, { 'active': true }), 'id');
+        for (var i = 0; i < t.length; i++) {
+          if (t[i].id !== first.id && t[i].title !== 'New Tab' && t[i].id !== activeTab && t[i].id === props.tab.id) {
+            if (opt === 'closeDupes') {
+              console.log(s.i);
+              this.handleCloseTab(t[i].id, s.i);
+            } else if (props.stores.duplicateTabs.length > 0) {
+              this.handleFocus('duplicate',true,props);
+            }
           }
         }
       }
@@ -330,13 +335,9 @@ var Tile = React.createClass({
     if (p.stores.prefs.animations) {
       this.setState({pinning: true});
     }
-    tabStore.keepNewTabOpen();
-    // Toggle pinned state.
-    this.setState({render: false});
     chrome.tabs.update(id, {
       pinned: !tab.pinned
     });
-    this.setState({render: true});
     v('#subTile-'+s.i).on('animationend', function animationEnd(e){
       this.setState({pinning: false});
       v('#subTile-'+s.i).off('animationend', animationEnd);
@@ -418,7 +419,7 @@ var Tile = React.createClass({
     var r = props.stores.relay;
     if (r[1] && r[1].index === p.tab.index) {
       if (r[0] === 'close') {
-        this.handleCloseTab(r[1]);
+        this.handleCloseTab(r[1].id);
       } else if (r[0] === 'closeAll') {
         this.handleCloseAll(p.tab);
       } else if (r[0] === 'pin') {
@@ -426,9 +427,9 @@ var Tile = React.createClass({
       } else if (r[0] === 'mute') {
         this.handleMuting(p.tab);
       } else if (r[0] === 'closeDupes') {
-        this.checkDuplicateTabs(r[0]);
+        this.checkDuplicateTabs(r[0], props);
       } else if (r[0] === 'closeAllDupes') {
-        this.checkDuplicateTabs(r[0]);
+        this.checkDuplicateTabs(r[0], props);
       } else if (r[0] === 'closeSearched') {
         this.handleCloseAllSearched();
       } else if (r[0] === 'toggleEnable') {
@@ -552,7 +553,7 @@ var Tile = React.createClass({
                       onDrag={this.handleDrag}
                       onStop={this.handleStop}>
             <div ref="tile" style={s.drag ? {position: 'absolute', left: drag.left-200, top: drag.top} : null}>
-            {p.render && s.render && p.tab.title !== 'New Tab' ? <Row fluid={true} id={'subTile-'+s.i} style={s.duplicate && s.focus && !s.hover ? {WebkitAnimationIterationCount: 'infinite', WebkitAnimationDuration: '5s'} : null} onContextMenu={this.handleContextClick} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "animated zoomOut" : s.pinning ? "animated pulse" : s.duplicate && s.focus ? "animated flash" : null}>
+            {p.render && s.render && p.tab.title !== 'New Tab' ? <Row fluid={true} id={'subTile-'+s.i} style={s.duplicate && s.focus && !s.hover ? {WebkitAnimationIterationCount: 'infinite', WebkitAnimationDuration: '5s'} : null} onContextMenu={this.handleContextClick} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "animated zoomOut" : s.pinning ? "animated pulse" : s.duplicate && s.focus ? "animated flash" : ''}>
                 { true ? <div id={'innerTile-'+p.tab.id} className={s.apps && !p.tab.enabled ? "ntg-tile-disabled" : s.hover ? "ntg-tile-hover" : "ntg-tile"} style={s.screenshot ? s.hover ? style.tileHovered(s.screenshot, p.stores.prefs.tabSizeHeight) : style.tile(s.screenshot, p.stores.prefs.tabSizeHeight) : tileStyle}>
                   <Row className="ntg-tile-row-top">
                     <Col size="3">
@@ -702,7 +703,8 @@ var TileGrid = React.createClass({
       || key === 'sTimeStamp' 
       || key === 'dateAdded' 
       || key === 'visitCount' 
-      || key === 'audible' 
+      || key === 'audible'
+      || key === 'timeStamp'  
       || key === 'lastVisitTime' ? _.reverse(result) : result
     });
   },
@@ -724,6 +726,7 @@ var TileGrid = React.createClass({
           {label === 'Website' ? <Btn className="ntg-btn" fa="external-link">{cLabel}</Btn> : null}
           {label === 'Title' ? <Btn onClick={this.handleTitleIcon} className="ntg-btn" fa={s.title ? 'sort-alpha-asc' : 'sort-alpha-desc'}>{cLabel}</Btn> : null}
           {label === 'Audible' ? <Btn className="ntg-btn" fa="volume-up">{cLabel}</Btn> : null}
+          {label === 'Updated' ? <Btn className="ntg-btn" fa="hourglass">{cLabel}</Btn> : null}
           {label === 'Open' ? <Btn className="ntg-btn" fa="folder-open">{cLabel}</Btn> : null}
           {label === 'Folder' ? <Btn className="ntg-btn" fa="folder">{cLabel}</Btn> : null}
           {label === 'Label' ? <Btn className="ntg-btn" fa="folder">{cLabel}</Btn> : null}

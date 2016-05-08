@@ -7,7 +7,7 @@ import kmp from 'kmp';
 import ReactUtils from 'react-utils';
 import '../../styles/app.scss';
 window.v = v;
-import {keyboardStore, sortStore, chromeAppStore, faviconStore, sessionsStore, actionStore, historyStore, bookmarksStore, relayStore, sidebarStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore, applyTabOrderStore} from './stores/main';
+import {createStore, removeStore, updateStore, keyboardStore, sortStore, chromeAppStore, faviconStore, sessionsStore, actionStore, historyStore, bookmarksStore, relayStore, sidebarStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore, applyTabOrderStore} from './stores/main';
 import prefsStore from './stores/prefs';
 import tabStore from './stores/tab';
 import screenshotStore from './stores/screenshot';
@@ -145,6 +145,9 @@ var Root = React.createClass({
   componentDidMount() {
     // Initialize Reflux listeners.
     actionStore.clear();
+    this.listenTo(createStore, this.createSingleItem);
+    this.listenTo(removeStore, this.removeSingleItem);
+    this.listenTo(updateStore, this.updateSingleItem);
     this.listenTo(bookmarksStore, this.updateTabState);
     this.listenTo(historyStore, this.updateTabState);
     this.listenTo(chromeAppStore, this.updateTabState);
@@ -228,6 +231,92 @@ var Root = React.createClass({
   sortChange(e){
     this.setState({sort: e});
   },
+  createSingleItem(e){
+    var s = this.state;
+    var tab = e;
+    _.assign(tab, {
+      timeStamp: new Date(Date.now()).getTime()
+    });
+    var tabs = tabStore.get_altTab();
+    if (typeof tabs[tab.index] !== 'undefined') {
+      for (var i = tabs.length - 1; i >= 0; i--) {
+        if (i > tab.index) {
+          if (i <= tabs.length) {
+            tabs[i].index = i + 1;
+          }
+        }
+      }
+      tabs.push(tab);
+      utils.arrayMove(tabs, _.findIndex(tabs, _.last(tabs)), tab.index);   
+    } else {
+      tabs.push(tab);
+    }
+    tabs = _.orderBy(_.uniqBy(tabs, 'id'), ['pinned'], ['desc']);
+    console.log('Single tab to update:', tab);
+    if (s.prefs.sessionsSync) {
+      this.syncSessions(s.sessions, tabs, utilityStore.get_window(), null);
+    }
+    tabStore.set_altTab(tabs);
+    this.syncSessions(s.sessions, tabs, utilityStore.get_window(), null);
+    if (s.prefs.mode === 'tabs') {
+      tabStore.set_tab(tabs);
+      this.setState({
+        tabs: tabs
+      });
+    }
+  },
+  removeSingleItem(e){
+    var tabs = tabStore.get_altTab();
+    var tab = _.find(tabs, {id: e});
+    var tabToUpdate = _.findIndex(tabs, {id: tab.id});
+    if (tabToUpdate > -1) {
+      var s = this.state;
+      tabs = _.without(tabs, tab);
+      tabs = _.orderBy(_.uniqBy(tabs, 'id'), ['pinned'], ['desc']);
+      console.log('Single tab to remove:', tab);
+      if (s.prefs.sessionsSync) {
+        this.syncSessions(s.sessions, tabs, utilityStore.get_window(), null);
+      }
+      tabStore.set_altTab(tabs);
+      this.syncSessions(s.sessions, tabs, utilityStore.get_window(), null);
+      if (s.prefs.mode === 'tabs') {
+        tabStore.set_tab(tabs);
+        this.setState({
+          tabs: tabs
+        });
+      }
+    }
+  },
+  updateSingleItem(e){
+    tabStore.getSingleTab(e).then((tab)=>{
+      _.merge(tab, {
+        timeStamp: new Date(Date.now()).getTime()
+      });
+      var tabs = tabStore.get_altTab();
+      var tabToUpdate = _.findIndex(tabs, {id: tab.id});
+      if (tabToUpdate > -1) {
+        var s = this.state;
+        tabs[tabToUpdate] = tab;
+        if (tab.pinned) {
+          tabs = _.orderBy(_.uniqBy(tabs, 'id'), ['pinned'], ['desc']);
+        } else {
+          tabs = _.orderBy(tabs, ['pinned'], ['desc']);
+        }
+        console.log('Single tab to update:', tab);
+        if (s.prefs.sessionsSync) {
+          this.syncSessions(s.sessions, tabs, utilityStore.get_window(), null);
+        }
+        tabStore.set_altTab(tabs);
+        this.syncSessions(s.sessions, tabs, utilityStore.get_window(), null);
+        if (s.prefs.mode === 'tabs') {
+          tabStore.set_tab(tabs);
+          this.setState({
+            tabs: tabs
+          });
+        }
+      }
+    });
+  },
   updateTabState(e, opt){
     var s = this.state;
     console.log('updateTabState: ',e);
@@ -262,6 +351,11 @@ var Root = React.createClass({
     this.setState({topLoad: true});
     // Query current Chrome window for tabs.
     tabStore.promise().then((Tab)=>{
+      for (let i = 0; i < Tab.length; i++) {
+        _.assign(Tab[i], {
+          timeStamp: new Date(Date.now()).getTime()
+        });
+      }
       tabStore.set_altTab(Tab);
       chrome.windows.getCurrent((w)=>{
         // Store the Chrome window ID for global reference
@@ -456,13 +550,12 @@ var Root = React.createClass({
     var keys = [];
     var labels = {};
     if (stores.prefs.mode === 'bookmarks') {
-      keys = ['openTab', 'url', 'title', 'dateAdded', 'folder', 'index'];
+      keys = ['url', 'title', 'dateAdded', 'folder', 'index'];
       labels = {
         folder: 'Folder',
         dateAdded: 'Date Added',
         url: 'Website',
         title: 'Title',
-        openTab: 'Open',
         index: 'Original Order'
       };
     } else if (stores.prefs.mode === 'history') {
@@ -493,11 +586,12 @@ var Root = React.createClass({
         index: 'Original Order'
       };
     } else {
-      keys = ['url', 'title', 'index'];
+      keys = ['url', 'title', 'timeStamp', 'index',];
       labels = {
         index: 'Tab Order',
         url: 'Website',
-        title: 'Title'
+        title: 'Title',
+        'timeStamp': 'Updated'
       };
       if (s.chromeVersion >= 46) {
         var init = _.initial(keys);

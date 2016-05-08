@@ -39,7 +39,7 @@ var reRender = (type, id, prefs) => {
   if (type === 'create' || type === 'activate') {
     actionStore.set_action(type, id);
     active = id.windowId;
-  } else if (type === 'bookmarks' || type === 'history' || type === 'tile' || prefs.mode !== 'tabs') {
+  } else if (type === 'tile' || prefs.mode !== 'tabs') {
     active = utilityStore.get_window();
   } else {
     item = _.find(tabs(), { id: id });
@@ -50,29 +50,31 @@ var reRender = (type, id, prefs) => {
   }
   console.log('window: ', active, utilityStore.get_window(), 'state: ',utilityStore.get_systemState(), 'type: ', type, 'id: ',id);
   if (active === utilityStore.get_window() && utilityStore.get_systemState() === 'active') {
-    reRenderStore.set_reRender(true, type, id);
+    if (type === 'update' || type === 'move') {
+      updateStore.set(id);
+    } else if (type === 'activate') {
+      updateStore.set(id.tabId);
+    } else if (type === 'create' || type === 'attach') {
+      createStore.set(id);
+    } else if (type === 'remove' || type === 'detach') {
+      removeStore.set(id);
+    } else {
+      reRenderStore.set_reRender(true, type, id);
+    }
   }
 };
 var throttled = {
-  screenshot: _.throttle(screenshotStore.capture, 1, {leading: true}),
-  update: _.throttle(reRender, 100, {leading: true}),
+  screenshot: _.throttle(screenshotStore.capture, 100, {leading: true}),
+  update: _.throttle(reRender, 1, {leading: true}),
   history: _.throttle(reRender, 4000, {leading: true})
 };
 bgPrefs.then((prefs)=>{
   chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     console.log('msg: ',msg);
     if (msg.type === 'create') {
-      if (prefs.actions) {
-        reRender(msg.type, msg.e, prefs);
-      } else {
-        throttled.update(msg.type, msg.e, prefs);
-      }
+      reRender(msg.type, msg.e, prefs);
     } else if (msg.type === 'remove') {
-      if (prefs.actions) {
-        reRender(msg.type, msg.e, prefs);
-      } else {
-        throttled.update(msg.type, msg.e, prefs);
-      }
+      reRender(msg.type, msg.e, prefs);
     } else if (msg.type === 'activate') {
       var getImageFromTab = ()=>{
         if (kmp(msg.e.url, 'chrome://' !== -1)) {
@@ -88,22 +90,22 @@ bgPrefs.then((prefs)=>{
           title = _.result(_.find(tabs(), { id: msg.e.tabId }), 'title');
           if (title !== 'New Tab') {
             getImageFromTab();
-            reRender('activate', msg.e, prefs);
           }
         } else {
           title = _.result(_.find(tabs('alt'), { id: msg.e.tabId }), 'title');
           if (title !== 'New Tab') {
             if (prefs.mode !== 'tabs') {
               getImageFromTab();
-              reRenderStore.set_reRender(true, 'activate', msg.e.tabId);
             }
           }
         }
       }
+      reRender(msg.type, msg.e, prefs);
     } else if (msg.type === 'update') {
-      throttled.update(msg.type, msg.e, prefs);
+      console.log('Update: ',msg);
+      reRender(msg.type, msg.e, prefs);
     } else if (msg.type === 'move') {
-      throttled.update(msg.type, msg.e, prefs);
+      reRender(msg.type, msg.e, prefs);
     } else if (msg.type === 'attach') {
       reRender(msg.type, msg.e, prefs);
     } else if (msg.type === 'detach') {
@@ -130,6 +132,45 @@ bgPrefs.then((prefs)=>{
     }
   });
 });
+export var updateStore = Reflux.createStore({
+  init(){
+    this.update = null;
+  },
+  set(id){
+    this.update = id;
+    this.trigger(this.update);
+  },
+  get(){
+    return this.update;
+  }
+});
+
+export var removeStore = Reflux.createStore({
+  init(){
+    this.remove = null;
+  },
+  set(id){
+    this.remove = id;
+    this.trigger(this.remove);
+  },
+  get(){
+    return this.remove;
+  }
+});
+
+export var createStore = Reflux.createStore({
+  init(){
+    this.create = null;
+  },
+  set(id){
+    this.create = id;
+    this.trigger(this.create);
+  },
+  get(){
+    return this.create;
+  }
+});
+
 export var searchStore = Reflux.createStore({
   init: function() {
     this.search = '';

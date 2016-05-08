@@ -12,6 +12,7 @@ var tabStore = Reflux.createStore({
     this.allTabs = null;
     this.query = [];
     this.windowIds = [];
+    this.singleTab = {};
   },
   promise(){
     return new Promise((resolve, reject)=>{
@@ -66,6 +67,17 @@ var tabStore = Reflux.createStore({
   getNewTabs(){
     return _.filter(this.getAllTabs(), (tab)=>{
       return kmp(tab.url, 'chrome://newtab') !== -1;
+    });
+  },
+  getSingleTab(id){
+    return new Promise((resolve, reject)=>{
+      chrome.tabs.get(id, (tab)=>{
+        if (tab) {
+          resolve(tab);
+        } else {
+          reject();
+        }
+      });
     });
   },
   close(id){
