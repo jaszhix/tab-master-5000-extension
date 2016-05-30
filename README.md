@@ -20,5 +20,6 @@ Tab Master 5K replaces your New Tab page with a full-featured tabs, history, boo
 - View a screenshot of each tab in the grid. Optionally enable screenshots to cover the background of a New Tab page when you hover over a tab tile. You can also adjust the strength of the blur effect on screenshot backgrounds in Preferences.
 
 ### Contributing
-Install node modules with ```npm install```, and start build-watch with ```gulp spawn-watch```.
-Run ```gulp build``` then enable developer mode in Chrome Extensions, and load the ```app``` directory as an unpackaged extension.
+- Install node modules with ```npm install```, and start build-watch with ```gulp spawn-watch```.
+- In ```/node_modules/react-modal/```, rename ```.babelrc``` to ```.babelrc.presets```.
+- Run ```gulp build``` then enable developer mode in Chrome Extensions, and load the ```app``` directory as an unpackaged extension.
