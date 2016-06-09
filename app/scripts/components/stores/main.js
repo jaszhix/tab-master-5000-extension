@@ -1050,6 +1050,30 @@ export var sortStore = Reflux.createStore({
   }
 });
 
+export var themeStore = Reflux.createStore({
+  init(){
+    this.theme = {
+      headerBg: 'rgba(237, 237, 237, 0.8)',
+      bodyBg: 'rgba(255, 255, 255, 0.75)',
+      bodyText: 'rgba(51, 51, 51, 1)',
+      darkBtnBg: 'rgba(168, 168, 168, 1)',
+      darkBtnBgHover: 'rgba(175, 175, 175, 1)',
+      darkBtnText: 'rgba(168, 168, 168, 1)',
+      lightBtnBg: 'rgba(237, 237, 237, 1)',
+      lightBtnBgHover: 'rgba(240, 240, 240, 1)',
+      lightBtnText: 'rgba(237, 237, 237, 1)'
+    };
+  },
+  set(obj){
+    _.merge(this.theme, obj);
+    console.log('colors: ', this.theme);
+    this.trigger(this.theme);
+  },
+  get(){
+    return this.theme;
+  },
+});
+
 export var keyboardStore = Reflux.createStore({
   init(){
     this.key = '';

@@ -4,8 +4,11 @@ import Reflux from 'reflux';
 import moment from 'moment';
 import _ from 'lodash';
 import kmp from 'kmp';
+import cf from 'colorformat';
 
-import {faviconStore, sessionsStore, clickStore, modalStore, settingsStore, utilityStore} from './stores/main';
+import ColorPicker from 'rc-color-picker';
+
+import {themeStore, faviconStore, sessionsStore, clickStore, modalStore, settingsStore, utilityStore} from './stores/main';
 import prefsStore from './stores/prefs';
 import tabStore from './stores/tab';
 
@@ -14,6 +17,143 @@ import About from './about';
 
 import {Btn, Col, Row, Container} from './bootstrap';
 import style from './style';
+
+var ColorPickerContainer = React.createClass({
+  getDefaultProps(){
+    return {
+      color: '#FFFFFF'
+    };
+  },
+  getInitialState(){
+    return {
+      alpha: 1,
+      color: null,
+      hover: null
+    };
+  },
+  componentDidMount(){
+    this.convertColor(this.props.color);
+  },
+  componentWillReceiveProps(nP){
+    this.convertColor(nP.color);
+  },
+  handleColorChange(color){
+    console.log(color);
+    var rgb = cf.hexToRgb(color.color);
+    var p = this.props;
+    var theme = {};
+    theme[p.themeKey] = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${color.alpha / 100})`;
+    themeStore.set(theme);
+  },
+  convertColor(color){
+    if (kmp(color, '#') !== -1) {
+      this.setState({color: color});
+    } else if (kmp(color, 'a') !== -1) {
+      var arr = color.split(', ');
+      var r = arr[0].split('rgba(')[1];
+      var g = arr[1];
+      var b = arr[2];
+      var alpha = arr[3].split(')')[0];
+      this.setState({
+        alpha: alpha * 100,
+        color: cf.rgbToHex(r, g, b)
+      });
+    }
+  },
+  render:function(){
+    var s = this.state;
+    var p = this.props;
+    console.log('color: ',s);
+    return (
+      <Row onMouseEnter={()=>this.setState({hover: true})} onMouseLeave={()=>this.setState({hover: false})} style={s.hover ? {cursor: 'pointer', backgroundColor: 'rgb(249, 249, 249)', borderRadius: '3px'} : {cursor: 'pointer'}}>
+        <Row onMouseEnter={p.onMouseEnter}>
+          <span>
+            <ColorPicker
+              animation="slide-up"
+              color={s.color ? s.color : '#FFFFFF'}
+              mode="RGB"
+              defaultColor="#FFFFFF"
+              defaultAlpha={100}
+              alpha={s.alpha}
+              onChange={this.handleColorChange}
+            /> 
+          </span>
+          <div style={{display: 'inline-block', position: 'relative', top: '-5px', left: '6px'}}>
+            {p.label}
+          </div>
+        </Row>
+      </Row>
+    );
+  }
+});
+
+var Theming = React.createClass({
+  componentDidMount(){
+    v('body > div.ReactModalPortal > div > div').css({
+      transition: 'background .2s ease-in', 
+      background: 'rgba(255, 255, 255, 0.89)',
+      width: '100%',
+      height: '30%',
+      top: 'initial',
+      left: 'initial',
+      right: 'initial',
+      bottom: '0'
+    });
+    v('body > div.ReactModalPortal > div > div > div > div.row.ntg-tabs > div:nth-child(2)').css({
+      top: '71%',
+      right: '1%'
+    });
+    if (this.props.prefs.animations) {
+      v('#main').css({WebkitFilter: 'none'});
+    } else {
+      v('body > div.ReactModalPortal > div').css({backgroundColor: 'rgba(216, 216, 216, 0)'});
+    }
+  },
+  componentWillUnmount(){
+    v('body > div.ReactModalPortal > div > div').css({
+      background: '#FFF',
+      width: 'initial',
+      height: 'initial',
+      top: '15%',
+      left: '15%',
+      right: '15%',
+      bottom: '15%'
+    });
+    v('body > div.ReactModalPortal > div > div > div > div.row.ntg-tabs > div:nth-child(2)').css({
+      top: '16%',
+      right: '16%'
+    });
+    if (this.props.modal.state) {
+      if (this.props.prefs.animations) {
+        v('#main').css({
+          transition: '-webkit-filter .2s ease-in',
+          WebkitFilter: 'blur(5px)'
+        });
+      } else {
+        v('body > div.ReactModalPortal > div').css({backgroundColor: 'rgba(216, 216, 216, 0.59)'});
+      }
+    }
+  },
+  render: function(){
+    var p = this.props;
+    return (
+      <div className="preferences">
+        <Row>
+          <Col size="6">
+            <ColorPickerContainer color={p.theme.headerBg} themeKey="headerBg" label="Header Background"/>
+            <ColorPickerContainer color={p.theme.bodyBg} themeKey="bodyBg" label="Body Background"/>
+            <ColorPickerContainer color={p.theme.bodyText} themeKey="bodyText" label="Body Text"/>
+            <ColorPickerContainer color={p.theme.darkBtnBg} themeKey="darkBtnBg" label="Dark Button Background"/>
+            <ColorPickerContainer color={p.theme.darkBtnBgHover} themeKey="darkBtnBgHover" label="Dark Button Background On Hover"/>
+            <ColorPickerContainer color={p.theme.lightBtnBg} themeKey="lightBtnBg" label="Light Button Background"/>
+            <ColorPickerContainer color={p.theme.lightBtnBgHover} themeKey="lightBtnBgHover" label="Light Button Background On Hover"/>
+          </Col>
+        </Row>
+      </div>
+
+    );
+  }
+});
 
 var Sessions = React.createClass({
   getInitialState(){
@@ -274,6 +414,7 @@ var Settings = React.createClass({
     var settings = settingsStore.get_settings();
     var sessions = settings === 'sessions';
     var preferences = settings === 'preferences';
+    var theming = settings === 'theming';
     var about = settings === 'about';
     return (
       <Container fluid={true}>
@@ -285,6 +426,9 @@ var Settings = React.createClass({
                   </li>
                   <li className={preferences ? "active" : null}>
                       <a href="#" onClick={()=>this.handleTabClick('preferences')}><i className="settings-fa fa fa-dashboard"/>  Preferences</a>
+                  </li>
+                  <li className={theming ? "active" : null}>
+                      <a href="#" onClick={()=>this.handleTabClick('theming')}><i className="settings-fa fa fa-paint-brush"/>  Theming</a>
                   </li>
                   <li className={about ? "active" : null}>
                       <a href="#" onClick={()=>this.handleTabClick('about')}><i className="settings-fa fa fa-info-circle"/>  About</a>
@@ -299,6 +443,7 @@ var Settings = React.createClass({
           <Row className="ntg-settings-pane">
             {sessions ? <Sessions settingsMax={s.settingsMax} sessions={p.sessions} tabs={p.tabs} prefs={p.prefs} favicons={p.favicons} collapse={p.collapse} /> : null}
             {preferences ? <Preferences settingsMax={s.settingsMax} prefs={p.prefs} tabs={p.tabs} /> : null}
+            {theming ? <Theming settingsMax={s.settingsMax} prefs={p.prefs} tabs={p.tabs} theme={p.theme} modal={p.modal}/> : null}
             {about ? <About settingsMax={s.settingsMax} /> : null}
           </Row>
       </Container>

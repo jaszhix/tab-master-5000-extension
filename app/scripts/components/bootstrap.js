@@ -1,24 +1,43 @@
 import React from 'react';
+import Reflux from 'reflux';
+import {themeStore} from './stores/main';
 
 export var Btn = React.createClass({
+  mixins: [Reflux.ListenerMixin],
+  getInitialState(){
+    return {
+      theme: themeStore.get()
+    };
+  },
+  componentDidMount(){
+    this.listenTo(themeStore, this.themeChange);
+  },
+  themeChange(e){
+    var p = this.props;
+    if (p.className === 'ntg-btn' || p.className === 'ntg-top-btn') {
+      this.refs.btn.style.backgroundColor = e.darkBtnBg;
+    } else {
+      this.refs.btn.style.backgroundColor = e.lightBtnBg;
+    }
+    this.setState({theme: e});
+
+  },
   hoverIn(e){
-    var backgroundColor = window.getComputedStyle(this.refs.btn,null).getPropertyValue('background-color');
-    if (backgroundColor === 'rgb(168, 168, 168)') {
-      this.refs.btn.style.backgroundColor = 'rgb(175, 175, 175)';
-    } else if (backgroundColor === 'rgb(237, 237, 237)') {
-      this.refs.btn.style.backgroundColor = 'rgb(240, 240, 240)';
-    } else if (backgroundColor === 'rgba(237, 237, 237, 0.8)') {
-      this.refs.btn.style.backgroundColor = 'rgba(240, 240, 240, 0.8)';
+    var p = this.props;
+    var s = this.state;
+    if (p.className === 'ntg-btn' || p.className === 'ntg-top-btn') {
+      this.refs.btn.style.backgroundColor = s.theme.darkBtnBgHover;
+    } else {
+      this.refs.btn.style.backgroundColor = s.theme.lightBtnBgHover;
     }
   },
   hoverOut(e){
-    var backgroundColor = window.getComputedStyle(this.refs.btn,null).getPropertyValue('background-color');
-    if (backgroundColor === 'rgb(175, 175, 175)') {
-      this.refs.btn.style.backgroundColor = '#A8A8A8';
-    } else if (backgroundColor === 'rgb(240, 240, 240)') {
-      this.refs.btn.style.backgroundColor = '#EDEDED';
-    } else if (backgroundColor === 'rgba(240, 240, 240, 0.8)') {
-      this.refs.btn.style.backgroundColor = 'rgba(237, 237, 237, 0.8)';
+    var p = this.props;
+    var s = this.state;
+    if (p.className === 'ntg-btn' || p.className === 'ntg-top-btn') {
+      this.refs.btn.style.backgroundColor = s.theme.darkBtnBg;
+    } else {
+      this.refs.btn.style.backgroundColor = s.theme.lightBtnBg;
     }
   },
   render: function() {

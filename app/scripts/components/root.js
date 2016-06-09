@@ -7,7 +7,7 @@ import kmp from 'kmp';
 import ReactUtils from 'react-utils';
 import '../../styles/app.scss';
 window.v = v;
-import {createStore, removeStore, updateStore, keyboardStore, sortStore, chromeAppStore, faviconStore, sessionsStore, actionStore, historyStore, bookmarksStore, relayStore, sidebarStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore, applyTabOrderStore} from './stores/main';
+import {themeStore, createStore, removeStore, updateStore, keyboardStore, sortStore, chromeAppStore, faviconStore, sessionsStore, actionStore, historyStore, bookmarksStore, relayStore, sidebarStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore, applyTabOrderStore} from './stores/main';
 import prefsStore from './stores/prefs';
 import tabStore from './stores/tab';
 import screenshotStore from './stores/screenshot';
@@ -38,8 +38,18 @@ var Loading = React.createClass({
 });
 
 var Search = React.createClass({
-  shouldComponentUpdate() {
+  /*shouldComponentUpdate() {
     return searchStore.get_search().length > -1;
+  },*/
+  getInitialState(){
+    return {
+      theme: this.props.theme
+    };
+  },
+  componentWillReceiveProps(nP){
+    if (nP.theme !== this.props.theme) {
+      this.setState({theme: nP.theme});
+    }
   },
   preventSubmit(e) {
     e.preventDefault();
@@ -66,8 +76,10 @@ var Search = React.createClass({
   },
   render: function() {
     var p = this.props;
+    const headerStyle = p.prefs && p.prefs.screenshot && p.prefs.screenshotBg ? {backgroundColor: this.state.theme.headerBg, position: 'fixed', top: '0px', width: '100%', zIndex: '2'} : {backgroundColor: this.state.theme.headerBg, position: 'fixed', top: '0px', width: '100%', zIndex: '2'};
+
     return (
-      <Container fluid={true} style={p.prefs && p.prefs.screenshot && p.prefs.screenshotBg ? {backgroundColor: 'rgba(237, 237, 237, 0.8)', position: 'fixed', top: '0px', width: '100%', zIndex: '2'} : {position: 'fixed', top: '0px', width: '100%', zIndex: '2'}} className="ntg-form">
+      <Container fluid={true} style={headerStyle} className="ntg-form">
         <Row>
           <Col size="6">
             <Col size="1">
@@ -136,7 +148,8 @@ var Root = React.createClass({
       folderState: false,
       chromeApps: [],
       duplicateTabs: [],
-      sort: 'index'
+      sort: 'index',
+      theme: themeStore.get()
     };
   },
   componentWillMount(){
@@ -145,6 +158,7 @@ var Root = React.createClass({
   componentDidMount() {
     // Initialize Reflux listeners.
     actionStore.clear();
+    this.listenTo(themeStore, this.themeChange);
     this.listenTo(createStore, this.createSingleItem);
     this.listenTo(removeStore, this.removeSingleItem);
     this.listenTo(updateStore, this.updateSingleItem);
@@ -230,6 +244,14 @@ var Root = React.createClass({
   },
   sortChange(e){
     this.setState({sort: e});
+  },
+  themeChange(e){
+    v(document.body).css({
+      color: e.bodyText,
+      backgroundColor: e.bodyBg,
+    });
+    v('#bgImg').css({backgroundColor: e.bodyBg});
+    this.setState({theme: e});
   },
   createSingleItem(e){
     var s = this.state;
@@ -615,6 +637,7 @@ var Root = React.createClass({
         tileLimit={s.tileLimit}
         sessions={s.sessions}
         init={s.init}
+        theme={s.theme}
       />
     );
   },
@@ -661,9 +684,9 @@ var Root = React.createClass({
       <div className="container-main">
         {v('#options').n ? <Preferences options={true} settingsMax={true} prefs={s.prefs} tabs={s.tabs} /> : s.load ? <Loading /> : <div>
           {s.context ? <ContextMenu search={stores.search} actions={s.actions} tabs={s.tabs} prefs={s.prefs} cursor={cursor} context={context} chromeVersion={s.chromeVersion} duplicateTabs={s.duplicateTabs}/> : null}
-          <ModalHandler tabs={s.prefs.mode === 'tabs' ? s.tabs : tabStore.get_altTab()} sessions={s.sessions} prefs={s.prefs} favicons={s.favicons} collapse={s.collapse} />
+          <ModalHandler tabs={s.prefs.mode === 'tabs' ? s.tabs : tabStore.get_altTab()} sessions={s.sessions} prefs={s.prefs} favicons={s.favicons} collapse={s.collapse} theme={s.theme} />
             {s.tabs ? <div className="tile-container">
-                {s.settings ? <Search event={s.event} prefs={s.prefs} topLoad={s.topLoad} /> : null}
+                {s.settings ? <Search event={s.event} prefs={s.prefs} topLoad={s.topLoad} theme={s.theme}/> : null}
                 <div style={{marginTop: '67px'}} className="tile-child-container">
                   {s.grid ? this.tileGrid(stores) : <Loading />}
               </div></div> : null}
