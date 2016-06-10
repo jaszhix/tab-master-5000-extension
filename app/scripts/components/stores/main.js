@@ -1053,20 +1053,42 @@ export var sortStore = Reflux.createStore({
 export var themeStore = Reflux.createStore({
   init(){
     this.theme = {
+      textFieldsBg: 'rgba(255, 255, 255, 1)',
+      textFieldsPlaceholder: 'rgba(204, 204, 204, 1)',
+      textFieldsText: 'rgba(85, 85, 85, 1)',
+      textFieldsBorder: 'rgba(204, 204, 204, 1)',
+      settingsBg: 'rgba(255, 255, 255, 1)',
+      settingsItemHover: 'rgba(249, 249, 249, 1)',
       headerBg: 'rgba(237, 237, 237, 0.8)',
       bodyBg: 'rgba(255, 255, 255, 0.75)',
       bodyText: 'rgba(51, 51, 51, 1)',
       darkBtnBg: 'rgba(168, 168, 168, 1)',
       darkBtnBgHover: 'rgba(175, 175, 175, 1)',
-      darkBtnText: 'rgba(168, 168, 168, 1)',
+      darkBtnText: 'rgba(255, 255, 255, 1)',
       lightBtnBg: 'rgba(237, 237, 237, 1)',
       lightBtnBgHover: 'rgba(240, 240, 240, 1)',
-      lightBtnText: 'rgba(237, 237, 237, 1)'
+      lightBtnText: 'rgba(0, 0, 0, 1)',
+      tileBg: 'rgba(237, 237, 237, 0.97)',
+      tileBgHover: 'rgba(247, 247, 247, 0.97)',
+      tileText: 'rgba(51, 51, 51, 1)',
+      tileTextShadow: 'rgba(255, 255, 255, 1)',
+      tileShadow: 'rgba(133, 132, 132, 1)',
+      tileX: 'rgba(51, 51, 51, 1)',
+      tileXHover: 'rgba(0, 0, 0, 1)',
+      tilePin: 'rgba(51, 51, 51, 1)',
+      tilePinHover: 'rgba(0, 0, 0, 1)',
+      tilePinned: 'rgba(182, 119, 119, 1)',
+      tileMute: 'rgba(51, 51, 51, 1)',
+      tileMuteHover: 'rgba(0, 0, 0, 1)',
+      tileMuteAudible: 'rgba(182, 119, 119, 1)',
+      tileMuteAudibleHover: 'rgba(182, 119, 119, 1)',
+      tileMove: 'rgba(51, 51, 51, 1)',
+      tileMoveHover: 'rgba(0, 0, 0, 1)',
+      tileButtonBg: 'rgba(255, 255, 255, 1)'
     };
   },
   set(obj){
     _.merge(this.theme, obj);
-    console.log('colors: ', this.theme);
     this.trigger(this.theme);
   },
   get(){

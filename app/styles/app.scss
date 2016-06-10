@@ -236,6 +236,7 @@
     cursor: move;
 }
 .ntg-move-hover {
+    color: #FFF;
     width: 15px;
     height: 15px;
     position: absolute;
@@ -382,4 +383,8 @@
 .tm5k-info {
     margin-top: 7px;
     text-shadow: 2px 2px #fff;
+}
+.form-control::-webkit-input-placeholder {color: #CCCCCC;}
+.small-tab {
+    padding: 5px 7.5px;
 }

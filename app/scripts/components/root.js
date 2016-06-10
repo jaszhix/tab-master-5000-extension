@@ -76,7 +76,7 @@ var Search = React.createClass({
   },
   render: function() {
     var p = this.props;
-    const headerStyle = p.prefs && p.prefs.screenshot && p.prefs.screenshotBg ? {backgroundColor: this.state.theme.headerBg, position: 'fixed', top: '0px', width: '100%', zIndex: '2'} : {backgroundColor: this.state.theme.headerBg, position: 'fixed', top: '0px', width: '100%', zIndex: '2'};
+    const headerStyle = p.prefs && p.prefs.screenshot && p.prefs.screenshotBg ? {backgroundColor: this.state.theme.headerBg, position: 'fixed', top: '0px', width: '100%', zIndex: '2', boxShadow: `${p.theme.tileShadow} 1px 1px 3px -1px`} : {backgroundColor: this.state.theme.headerBg, position: 'fixed', top: '0px', width: '100%', zIndex: '2', boxShadow: `${p.theme.tileShadow} 1px 1px 3px -1px`};
 
     return (
       <Container fluid={true} style={headerStyle} className="ntg-form">
@@ -91,7 +91,7 @@ var Search = React.createClass({
               id="search"
               onSubmit={this.handleWebSearch}>
                 <input 
-                type="text" 
+                type="text"
                 value={searchStore.get_search()}
                 className="form-control search-tabs" 
                 placeholder={p.prefs.mode === 'bookmarks' ? 'Search bookmarks...' : p.prefs.mode === 'history' ? 'Search history...' : p.prefs.mode === 'sessions' ? 'Search sessions...' : p.prefs.mode === 'apps' ? 'Search apps...' : p.prefs.mode === 'extensions' ? 'Search extensions...' : 'Search tabs...'}
@@ -181,16 +181,6 @@ var Root = React.createClass({
     console.log('Chrome Version: ',utilityStore.chromeVersion());
     console.log('Manifest: ', utilityStore.get_manifest());
   },
-  checkTimeInstalled(prefs){
-    //3600000
-    //2592000000
-    var now = new Date(Date.now()).getTime();
-    if (typeof prefs.installTime === 'number') {
-      if (prefs.installTime + 2592000000 < now) {
-        modalStore.set_modal(true, 'contribute');
-      }
-    }
-  },
   handleResolutionWarning(){
     if (this.state.prefs.resolutionWarning) {
       modalStore.set_modal(true, 'resolutionWarning');
@@ -246,6 +236,58 @@ var Root = React.createClass({
     this.setState({sort: e});
   },
   themeChange(e){
+    v('style').n.innerHTML += `
+    .form-control::-webkit-input-placeholder {
+      color: ${e.textFieldsPlaceholder};
+    }
+    .form-control {
+      color: ${e.textFieldsText};
+      background-color: ${e.textFieldsBg};
+      border: 1px solid ${e.textFieldsBorder};
+    }
+    .nav-tabs>li {
+      color: ${e.lightBtnText};
+      background-color: ${e.lightBtnBg};
+    }
+    .nav-tabs>li:hover {
+      background-color: ${e.lightBtnBgHover};
+    }
+    .ntg-tile-disabled, .ntg-tile-hover, .ntg-tile-moving { 
+      color: ${e.tileText};
+      background-color: ${e.tileBg};
+      box-shadow: ${e.tileShadow} 1px 1px 3px -1px;
+    }
+    .ntg-x {
+      color: ${e.tileX};
+    }
+    .ntg-x-hover {
+      color: ${e.tileXHover};
+    }
+    .ntg-pinned {
+      color: ${e.tilePin};
+    }
+    .ntg-pinned-hover {
+      color: ${e.tilePinHover};
+    }
+    .ntg-mute {
+      color: ${e.tileMute};
+    }
+    .ntg-mute-hover {
+      color: ${e.tileMuteHover};
+    }
+    .ntg-mute-audible {
+      color: ${e.tileMuteAudible};
+    }
+    .ntg-mute-audible-hover {
+      color: ${e.tileMuteAudibleHover};
+    }
+    .ntg-move {
+      color: ${e.tileMove}
+    }
+    .ntg-move-hover {
+      color: ${e.tileMoveHover}
+    }
+    `;
     v(document.body).css({
       color: e.bodyText,
       backgroundColor: e.bodyBg,
@@ -425,7 +467,6 @@ var Root = React.createClass({
         if (opt === 'init') {
           this.setState({load: false});
           actionStore.set_state(false);
-          this.checkTimeInstalled(s.prefs);
           if (s.resolutionWarning) {
             this.handleResolutionWarning();
           }

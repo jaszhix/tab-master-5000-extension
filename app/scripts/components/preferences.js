@@ -21,7 +21,7 @@ var Slide = React.createClass({
     var p = this.props;
     var s = this.state;
     return (
-      <div onMouseEnter={()=>this.setState({hover: true})} onMouseLeave={()=>this.setState({hover: false})} style={s.hover ? {backgroundColor: 'rgb(249, 249, 249)', borderRadius: '3px'} : null}>
+      <div onMouseEnter={()=>this.setState({hover: true})} onMouseLeave={()=>this.setState({hover: false})} style={s.hover ? {backgroundColor: p.hoverBg, borderRadius: '3px'} : null}>
         <Row className={p.className} onMouseEnter={p.onMouseEnter}>
           <span>{p.label}</span>
           <Slider min={p.min} max={p.max} defaultValue={p.defaultValue} value={p.value} onChange={p.onChange} />
@@ -41,7 +41,7 @@ var Toggle = React.createClass({
     var p = this.props;
     var s = this.state;
     return (
-      <Row onMouseEnter={()=>this.setState({hover: true})} onMouseLeave={()=>this.setState({hover: false})} style={s.hover ? {cursor: 'pointer', backgroundColor: 'rgb(249, 249, 249)', borderRadius: '3px'} : {cursor: 'pointer'}}>
+      <Row onMouseEnter={()=>this.setState({hover: true})} onMouseLeave={()=>this.setState({hover: false})} style={s.hover ? {cursor: 'pointer', backgroundColor: p.hoverBg, borderRadius: '3px'} : {cursor: 'pointer'}}>
         <Row onMouseEnter={p.onMouseEnter} className={p.child ? "prefs-row-child" : "prefs-row"}>
           <span onClick={p.onClick}><i className={p.on ? "fa fa-toggle-on" : "fa fa-toggle-off"} style={{fontSize: '18px'}}/> {p.label}</span>
           <Col size="12">
@@ -161,25 +161,31 @@ var Preferences = React.createClass({
             <Btn onClick={()=>this.handleSlide(120, 'tabSizeHeight')} style={p.settingsMax ? {top: '95%'} : null} className="ntg-setting-btn" fa="undo">Reset Tile Size</Btn>
             <Toggle onMouseEnter={()=>this.handleToggle('context')} 
                     onClick={()=>this.handleClick('context')} 
-                    on={p.prefs.context} label="Enable context menu" />
+                    on={p.prefs.context} label="Enable context menu"
+                    hoverBg={p.theme.settingsItemHover} />
             <Toggle onMouseEnter={()=>this.handleToggle('drag')}
                     onClick={()=>this.handleClick('drag')} 
-                    on={p.prefs.drag} label="Enable draggable tab re-ordering"/>
+                    on={p.prefs.drag} label="Enable draggable tab re-ordering"
+                    hoverBg={p.theme.settingsItemHover}/>
             <Toggle onMouseEnter={()=>this.handleToggle('singleNewTab')} 
                     onClick={()=>this.handleClick('singleNewTab')} 
-                    on={p.prefs.singleNewTab} label="Allow only one New Tab to be open at any time"/>
+                    on={p.prefs.singleNewTab} label="Allow only one New Tab to be open at any time"
+                    hoverBg={p.theme.settingsItemHover}/>
             <Toggle onMouseEnter={()=>this.handleToggle('animations')} 
                     onClick={()=>this.handleClick('animations')} 
-                    on={p.prefs.animations} label="Enable animations">
+                    on={p.prefs.animations} label="Enable animations"
+                    hoverBg={p.theme.settingsItemHover}>
               {p.prefs.animations ? 
                 <Toggle onMouseEnter={()=>this.handleToggle('duplicate')}
                       onClick={()=>this.handleClick('duplicate')} 
-                      on={p.prefs.duplicate} child={true} label="Enable pulsing duplicate tabs">
+                      on={p.prefs.duplicate} child={true} label="Enable pulsing duplicate tabs"
+                      hoverBg={p.theme.settingsItemHover}>
               </Toggle> : null}
             </Toggle>
             <Toggle onMouseEnter={()=>this.handleToggle('screenshot')}
                     onClick={()=>this.handleClick('screenshot')}
-                    on={p.prefs.screenshot} label="Enable tab screenshots">
+                    on={p.prefs.screenshot} label="Enable tab screenshots"
+                    hoverBg={p.theme.settingsItemHover}>
               {p.prefs.screenshot ?
                 <div>
                   <Row className="prefs-row-first">
@@ -187,7 +193,10 @@ var Preferences = React.createClass({
                   </Row>
                   <Toggle onMouseEnter={()=>this.handleToggle('screenshotBg')} 
                           onClick={()=>this.handleClick('screenshotBg')} 
-                          on={p.prefs.screenshotBg} child={true} label="Enable screenshots in the background on hover">
+                          on={p.prefs.screenshotBg} 
+                          child={true} 
+                          label="Enable screenshots in the background on hover"
+                          hoverBg={p.theme.settingsItemHover}>
                     <Slide 
                       className="prefs-row-last" 
                       label={`Set screenshot background blur strength: ${p.prefs.screenshotBgBlur}`}
@@ -195,7 +204,8 @@ var Preferences = React.createClass({
                       defaultValue={p.prefs.screenshotBgBlur}
                       value={p.prefs.screenshotBgBlur}
                       onChange={(e)=>prefsStore.set_prefs('screenshotBgBlur',e)} 
-                      onMouseEnter={()=>this.handleToggle('screenshotBgBlur')}/>  
+                      onMouseEnter={()=>this.handleToggle('screenshotBgBlur')}
+                      hoverBg={p.theme.settingsItemHover}/>  
                   </Toggle>
                   <Btn onClick={()=>screenshotStore.clear()} style={p.settingsMax ? {top: '95%', marginLeft: '125px'} : {marginLeft: '125px'}} className="ntg-setting-btn" fa="trash">Clear Screenshot Cache</Btn>
                 </div>
@@ -213,19 +223,23 @@ var Preferences = React.createClass({
                               onMouseEnter={()=>this.handleToggle('tabSizeHeight')}
                               step={20}
                               dots={true}
-                              /> : null}
+                              hoverBg={p.theme.settingsItemHover}/> : null}
             <Toggle onMouseEnter={()=>this.handleToggle('sessionsSync')}
                     onClick={()=>this.handleClick('sessionsSync')} 
-                    on={p.prefs.sessionsSync} label="Enable session synchronization"/>
+                    on={p.prefs.sessionsSync} label="Enable session synchronization"
+                    hoverBg={p.theme.settingsItemHover}/>
             <Toggle onMouseEnter={()=>this.handleToggle('actions')}
                     onClick={()=>this.handleClick('actions')}
-                    on={p.prefs.actions} label="Enable undoing of tab actions"/>
+                    on={p.prefs.actions} label="Enable undoing of tab actions"
+                    hoverBg={p.theme.settingsItemHover}/>
             <Toggle onMouseEnter={()=>this.handleToggle('keyboardShortcuts')}
                     onClick={()=>this.handleClick('keyboardShortcuts')}
-                    on={p.prefs.keyboardShortcuts} label="Enable keyboard shortcuts"/>
+                    on={p.prefs.keyboardShortcuts} label="Enable keyboard shortcuts"
+                    hoverBg={p.theme.settingsItemHover}/>
             <Toggle onMouseEnter={()=>this.handleToggle('blacklist')} 
                       onClick={()=>this.handleClick('blacklist')} 
-                      on={p.prefs.blacklist} label="Enable website blacklist">
+                      on={p.prefs.blacklist} label="Enable website blacklist"
+                      hoverBg={p.theme.settingsItemHover}>
                 {p.prefs.blacklist ? <Blacklist /> : null} 
             </Toggle>
           </Col>

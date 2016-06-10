@@ -38,7 +38,6 @@ var ColorPickerContainer = React.createClass({
     this.convertColor(nP.color);
   },
   handleColorChange(color){
-    console.log(color);
     var rgb = cf.hexToRgb(color.color);
     var p = this.props;
     var theme = {};
@@ -63,7 +62,6 @@ var ColorPickerContainer = React.createClass({
   render:function(){
     var s = this.state;
     var p = this.props;
-    console.log('color: ',s);
     return (
       <Row onMouseEnter={()=>this.setState({hover: true})} onMouseLeave={()=>this.setState({hover: false})} style={s.hover ? {cursor: 'pointer', backgroundColor: 'rgb(249, 249, 249)', borderRadius: '3px'} : {cursor: 'pointer'}}>
         <Row onMouseEnter={p.onMouseEnter}>
@@ -91,16 +89,16 @@ var Theming = React.createClass({
   componentDidMount(){
     v('body > div.ReactModalPortal > div > div').css({
       transition: 'background .2s ease-in', 
-      background: 'rgba(255, 255, 255, 0.89)',
       width: '100%',
-      height: '30%',
+      height: '37%',
       top: 'initial',
       left: 'initial',
       right: 'initial',
-      bottom: '0'
+      bottom: '0',
+      borderRadius: '0px'
     });
     v('body > div.ReactModalPortal > div > div > div > div.row.ntg-tabs > div:nth-child(2)').css({
-      top: '71%',
+      top: '64%',
       right: '1%'
     });
     if (this.props.prefs.animations) {
@@ -111,13 +109,13 @@ var Theming = React.createClass({
   },
   componentWillUnmount(){
     v('body > div.ReactModalPortal > div > div').css({
-      background: '#FFF',
       width: 'initial',
       height: 'initial',
       top: '15%',
       left: '15%',
       right: '15%',
-      bottom: '15%'
+      bottom: '15%',
+      borderRadius: '4px'
     });
     v('body > div.ReactModalPortal > div > div > div > div.row.ntg-tabs > div:nth-child(2)').css({
       top: '16%',
@@ -139,14 +137,47 @@ var Theming = React.createClass({
     return (
       <div className="preferences">
         <Row>
-          <Col size="6">
-            <ColorPickerContainer color={p.theme.headerBg} themeKey="headerBg" label="Header Background"/>
-            <ColorPickerContainer color={p.theme.bodyBg} themeKey="bodyBg" label="Body Background"/>
+          <Col size="3" style={{maxHeight: '37%'}}>
+            <h4>Themes</h4>
+            <Btn className="ntg-setting-btn">Save Theme</Btn>
+          </Col>
+          <Col size="3">
             <ColorPickerContainer color={p.theme.bodyText} themeKey="bodyText" label="Body Text"/>
-            <ColorPickerContainer color={p.theme.darkBtnBg} themeKey="darkBtnBg" label="Dark Button Background"/>
-            <ColorPickerContainer color={p.theme.darkBtnBgHover} themeKey="darkBtnBgHover" label="Dark Button Background On Hover"/>
-            <ColorPickerContainer color={p.theme.lightBtnBg} themeKey="lightBtnBg" label="Light Button Background"/>
-            <ColorPickerContainer color={p.theme.lightBtnBgHover} themeKey="lightBtnBgHover" label="Light Button Background On Hover"/>
+            <ColorPickerContainer color={p.theme.bodyBg} themeKey="bodyBg" label="Body BG"/>
+            <ColorPickerContainer color={p.theme.headerBg} themeKey="headerBg" label="Header BG"/>
+            <ColorPickerContainer color={p.theme.settingsBg} themeKey="settingsBg" label="Settings BG"/>
+            <ColorPickerContainer color={p.theme.settingsItemHover} themeKey="settingsItemHover" label="Settings Item (Hover)"/>
+            <ColorPickerContainer color={p.theme.darkBtnText} themeKey="darkBtnText" label="Dark Button Text"/>
+            <ColorPickerContainer color={p.theme.darkBtnBg} themeKey="darkBtnBg" label="Dark Button BG"/>
+            <ColorPickerContainer color={p.theme.darkBtnBgHover} themeKey="darkBtnBgHover" label="Dark Button BG (Hover)"/>
+            <ColorPickerContainer color={p.theme.lightBtnText} themeKey="lightBtnText" label="Light Button Text"/>
+            <ColorPickerContainer color={p.theme.lightBtnBg} themeKey="lightBtnBg" label="Light Button BG"/>
+            <ColorPickerContainer color={p.theme.lightBtnBgHover} themeKey="lightBtnBgHover" label="Light Button BG (Hover)"/>
+          </Col>
+          <Col size="3">
+            <ColorPickerContainer color={p.theme.textFieldsText} themeKey="textFieldsText" label="Field Text"/>
+            <ColorPickerContainer color={p.theme.textFieldsPlaceholder} themeKey="textFieldsPlaceholder" label="Field Placeholder Text"/>
+            <ColorPickerContainer color={p.theme.textFieldsBg} themeKey="textFieldsBg" label="Field BG"/>
+            <ColorPickerContainer color={p.theme.textFieldsBorder} themeKey="textFieldsBorder" label="Field Border"/>
+            <ColorPickerContainer color={p.theme.tileBg} themeKey="tileBg" label="Tile BG"/>
+            <ColorPickerContainer color={p.theme.tileBgHover} themeKey="tileBgHover" label="Tile BG (Hover)"/>
+            <ColorPickerContainer color={p.theme.tileText} themeKey="tileText" label="Tile Text"/>
+            <ColorPickerContainer color={p.theme.tileTextShadow} themeKey="tileTextShadow" label="Tile Text Shadow"/>
+            <ColorPickerContainer color={p.theme.tileShadow} themeKey="tileShadow" label="Tile Shadow"/>
+            <ColorPickerContainer color={p.theme.tileX} themeKey="tileX" label="Tile Close Button"/>
+            <ColorPickerContainer color={p.theme.tileXHover} themeKey="tileXHover" label="Tile Close Button (Hover)"/>
+          </Col>
+          <Col size="3">
+            <ColorPickerContainer color={p.theme.tilePin} themeKey="tilePin" label="Tile Pin Button"/>
+            <ColorPickerContainer color={p.theme.tilePinHover} themeKey="tilePinHover" label="Tile Pin Button (Hover)"/>
+            <ColorPickerContainer color={p.theme.tilePinned} themeKey="tilePinned" label="Tile Pinned Button"/>
+            <ColorPickerContainer color={p.theme.tileMute} themeKey="tileMute" label="Tile Mute Button"/>
+            <ColorPickerContainer color={p.theme.tileMuteHover} themeKey="tileMuteHover" label="Tile Mute Button (Hover)"/>
+            <ColorPickerContainer color={p.theme.tileMuteAudible} themeKey="tileMuteAudible" label="Tile Audible Button"/>
+            <ColorPickerContainer color={p.theme.tileMuteAudibleHover} themeKey="tileMuteAudibleHover" label="Tile Audible Button (Hover)"/>
+            <ColorPickerContainer color={p.theme.tileMove} themeKey="tileMove" label="Tile Move Button"/>
+            <ColorPickerContainer color={p.theme.tileMoveHover} themeKey="tileMoveHover" label="Tile Move Button (Hover)"/>
+            <ColorPickerContainer color={p.theme.tileButtonBg} themeKey="tileButtonBg" label="Tile Button BG"/>
           </Col>
         </Row>
       </div>
@@ -419,33 +450,33 @@ var Settings = React.createClass({
     return (
       <Container fluid={true}>
         <Row className="ntg-tabs">
-            <div role="tabpanel"> 
-                <ul className="nav nav-tabs">
-                  <li className={sessions ? "active" : null}>
-                      <a href="#" onClick={()=>this.handleTabClick('sessions')}><i className="settings-fa fa fa-book"/>  Sessions</a>
-                  </li>
-                  <li className={preferences ? "active" : null}>
-                      <a href="#" onClick={()=>this.handleTabClick('preferences')}><i className="settings-fa fa fa-dashboard"/>  Preferences</a>
-                  </li>
-                  <li className={theming ? "active" : null}>
-                      <a href="#" onClick={()=>this.handleTabClick('theming')}><i className="settings-fa fa fa-paint-brush"/>  Theming</a>
-                  </li>
-                  <li className={about ? "active" : null}>
-                      <a href="#" onClick={()=>this.handleTabClick('about')}><i className="settings-fa fa fa-info-circle"/>  About</a>
-                  </li>
-                </ul>
-            </div>
-            <div style={s.settingsMax ? {position: 'fixed', top: '1%', right: '1%'} : {position: 'fixed', top: '16%', right: '16%'}}>
-              <Btn className="ntg-modal-btn-close" fa={s.settingsMax ? "clone" : "square-o"} onClick={this.handleMaxBtn} />
-              <Btn className="ntg-modal-btn-close" fa="close" onClick={this.handleCloseBtn} />
-            </div>
-          </Row>
-          <Row className="ntg-settings-pane">
-            {sessions ? <Sessions settingsMax={s.settingsMax} sessions={p.sessions} tabs={p.tabs} prefs={p.prefs} favicons={p.favicons} collapse={p.collapse} /> : null}
-            {preferences ? <Preferences settingsMax={s.settingsMax} prefs={p.prefs} tabs={p.tabs} /> : null}
-            {theming ? <Theming settingsMax={s.settingsMax} prefs={p.prefs} tabs={p.tabs} theme={p.theme} modal={p.modal}/> : null}
-            {about ? <About settingsMax={s.settingsMax} /> : null}
-          </Row>
+          <div role="tabpanel"> 
+            <ul className="nav nav-tabs">
+              <li className={sessions ? "active" : null}>
+                  <a href="#" onClick={()=>this.handleTabClick('sessions')}><i className="settings-fa fa fa-book"/>  Sessions</a>
+              </li>
+              <li className={preferences ? "active" : null}>
+                  <a href="#" onClick={()=>this.handleTabClick('preferences')}><i className="settings-fa fa fa-dashboard"/>  Preferences</a>
+              </li>
+              <li className={theming ? "active" : null}>
+                  <a href="#" onClick={()=>this.handleTabClick('theming')}><i className="settings-fa fa fa-paint-brush"/>  Theming</a>
+              </li>
+              <li className={about ? "active" : null}>
+                  <a href="#" onClick={()=>this.handleTabClick('about')}><i className="settings-fa fa fa-info-circle"/>  About</a>
+              </li>
+            </ul>
+          </div>
+          <div style={s.settingsMax ? {position: 'fixed', top: '1%', right: '1%'} : {position: 'fixed', top: '16%', right: '16%'}}>
+            {settings !== 'theming' ? <Btn className="ntg-modal-btn-close" fa={s.settingsMax ? "clone" : "square-o"} onClick={this.handleMaxBtn} /> : null}
+            <Btn className="ntg-modal-btn-close" fa="close" onClick={this.handleCloseBtn} />
+          </div>
+        </Row>
+        <Row className="ntg-settings-pane">
+          {sessions ? <Sessions settingsMax={s.settingsMax} sessions={p.sessions} tabs={p.tabs} prefs={p.prefs} favicons={p.favicons} collapse={p.collapse} /> : null}
+          {preferences ? <Preferences settingsMax={s.settingsMax} prefs={p.prefs} tabs={p.tabs} theme={p.theme} /> : null}
+          {theming ? <Theming settingsMax={s.settingsMax} prefs={p.prefs} theme={p.theme} modal={p.modal}/> : null}
+          {about ? <About settingsMax={s.settingsMax} /> : null}
+        </Row>
       </Container>
     );
   }

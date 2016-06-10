@@ -533,12 +533,24 @@ var Tile = React.createClass({
     var s = this.state;
     var p = this.props;
     var tileStyle = {height: p.stores.prefs.tabSizeHeight, width: p.stores.prefs.tabSizeHeight+80};
+    var mainTileStyle = s.screenshot ? s.hover ? style.tileHovered(s.screenshot, p.stores.prefs.tabSizeHeight) : style.tile(s.screenshot, p.stores.prefs.tabSizeHeight) : tileStyle;
+    _.merge(mainTileStyle, {
+      backgroundColor: s.hover ? p.theme.tileBgHover : p.theme.tileBg, 
+      boxShadow: `${p.theme.tileShadow} 1px 1px 3px -1px`
+    });
+    _.merge(style.ssIconBg, {
+      backgroundColor: p.theme.tileButtonBg
+    });
+    _.merge(style.ssPinnedIconBg, {
+      color: p.theme.tilePinned,
+      backgroundColor: p.theme.tileButtonBg
+    });
     var titleLimit = s.bookmarks || s.history ? 70 : 83;
     var drag = dragStore.get_drag();
     var remove = p.stores.prefs.mode !== 'tabs' && !s.openTab;
     var lowerLeft = p.stores.prefs.tabSizeHeight >= 205 ? -40 : -40;
     var lowerTop = p.stores.prefs.tabSizeHeight - 25;
-    var lowerStyle = s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px', left: lowerLeft.toString()+'px', top: lowerTop.toString()+'px'} : {top: lowerTop.toString()+'px'};
+    var lowerStyle = s.screenshot ? {backgroundColor: s.hover ? p.theme.tileBgHover : p.theme.tileBg, borderRadius: '3px', left: lowerLeft.toString()+'px', top: lowerTop.toString()+'px'} : {top: lowerTop.toString()+'px'};
     var appHomepage = p.stores.prefs.tabSizeHeight >= 170 ? p.stores.prefs.tabSizeHeight + 5 : 170;
     var appOfflineEnabled = p.stores.prefs.tabSizeHeight >= 170 ? p.stores.prefs.tabSizeHeight - 10 : 158;
     return (
@@ -554,7 +566,7 @@ var Tile = React.createClass({
                       onStop={this.handleStop}>
             <div ref="tile" style={s.drag ? {position: 'absolute', left: drag.left-200, top: drag.top} : null}>
             {p.render && s.render && p.tab.title !== 'New Tab' ? <Row fluid={true} id={'subTile-'+s.i} style={s.duplicate && s.focus && !s.hover ? {WebkitAnimationIterationCount: 'infinite', WebkitAnimationDuration: '5s'} : null} onContextMenu={this.handleContextClick} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "animated zoomOut" : s.pinning ? "animated pulse" : s.duplicate && s.focus ? "animated flash" : ''}>
-                { true ? <div id={'innerTile-'+p.tab.id} className={s.apps && !p.tab.enabled ? "ntg-tile-disabled" : s.hover ? "ntg-tile-hover" : "ntg-tile"} style={s.screenshot ? s.hover ? style.tileHovered(s.screenshot, p.stores.prefs.tabSizeHeight) : style.tile(s.screenshot, p.stores.prefs.tabSizeHeight) : tileStyle}>
+                { true ? <div id={'innerTile-'+p.tab.id} className={s.apps && !p.tab.enabled ? "ntg-tile-disabled" : s.hover ? "ntg-tile-hover" : "ntg-tile"} style={mainTileStyle}>
                   <Row className="ntg-tile-row-top">
                     <Col size="3">
                       {p.stores.chromeVersion >= 46 && s.openTab || p.stores.chromeVersion >= 46 && p.stores.prefs.mode === 'tabs' ? <div onMouseEnter={this.handleTabMuteHoverIn} onMouseLeave={this.handleTabMuteHoverOut} onClick={() => this.handleMuting(p.tab)}>
@@ -569,7 +581,7 @@ var Tile = React.createClass({
                       </div>
                       <div onMouseEnter={this.handlePinHoverIn} onMouseLeave={this.handlePinHoverOut} onClick={() => this.handlePinning(p.tab)}>
                       {p.tab.pinned && p.stores.prefs.mode === 'tabs' || s.hover && s.openTab || s.hover && !s.bookmarks && !s.history && !s.sessions && !s.apps ? 
-                        <i className={s.pHover ? "fa fa-map-pin ntg-pinned-hover" : "fa fa-map-pin ntg-pinned"} style={p.tab.pinned ? s.screenshot && s.hover ? style.ssPinnedIconBg : s.screenshot ? style.ssPinnedIconBg : {color: '#B67777'} : s.screenshot ? style.ssIconBg : null} />
+                        <i className={s.pHover ? "fa fa-map-pin ntg-pinned-hover" : "fa fa-map-pin ntg-pinned"} style={p.tab.pinned ? s.screenshot && s.hover ? style.ssPinnedIconBg : s.screenshot ? style.ssPinnedIconBg : {color: p.theme.tilePinned} : s.screenshot ? style.ssIconBg : null} />
                         : null}
                       </div>
                       <Row>
@@ -578,7 +590,7 @@ var Tile = React.createClass({
                     </Col>
                     <Col size="9" onClick={!s.bookmarks && !s.apps ? ()=>this.handleClick(p.tab.id) : null} className="ntg-title-container">
                       <span title={s.apps ? p.tab.description : null}>
-                        <h5 style={s.screenshot ? {backgroundColor: 'rgba(237, 237, 237, 0.97)', borderRadius: '3px'} : null} className="ntg-title">
+                        <h5 style={s.screenshot ? {backgroundColor: p.theme.tileBg, borderRadius: '3px', color: p.theme.tileText} : {color: p.theme.tileText, textShadow: `2px 2px ${p.theme.tileTextShadow}`}} className="ntg-title">
                         {_.truncate(p.tab.title, {length: titleLimit})}
                         </h5>
                       </span>
@@ -748,7 +760,7 @@ var TileGrid = React.createClass({
                     faviconStore.set_favicon(data, s.data.length, i);
                   }
                   return (
-                    <Tile sessions={p.sessions} stores={p.stores} render={p.render} i={i} key={data.id} tab={data} tileLimit={p.tileLimit} init={p.init} />
+                    <Tile sessions={p.sessions} stores={p.stores} render={p.render} i={i} key={data.id} tab={data} tileLimit={p.tileLimit} init={p.init} theme={p.theme}  />
                   );
                 }
               })}

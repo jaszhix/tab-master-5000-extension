@@ -162,6 +162,9 @@ var ModalHandler = React.createClass({
   render: function() {
     var s = this.state;
     var p = this.props;
+    _.merge(style.modal.content, {
+      background: p.theme.settingsBg
+    });
     return (
       <Modal
         id="modal"

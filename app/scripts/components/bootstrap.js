@@ -11,14 +11,18 @@ export var Btn = React.createClass({
   },
   componentDidMount(){
     this.listenTo(themeStore, this.themeChange);
+    this.themeChange(this.state.theme);
   },
-  themeChange(e){
+  themeChange(e){//backgroundColor: s.hover ? p.theme.tileBgHover : p.theme.tileBg, boxShadow: `${p.theme.tileShadow} 1px 1px 5px -1px`
     var p = this.props;
     if (p.className === 'ntg-btn' || p.className === 'ntg-top-btn') {
       this.refs.btn.style.backgroundColor = e.darkBtnBg;
+      this.refs.btn.style.color = e.darkBtnText;
     } else {
       this.refs.btn.style.backgroundColor = e.lightBtnBg;
+      this.refs.btn.style.color = e.lightBtnText;
     }
+    this.refs.btn.style.boxShadow = `${e.tileShadow} 1px 1px 5px -1px`;
     this.setState({theme: e});
 
   },
