@@ -590,7 +590,7 @@ var Tile = React.createClass({
                     </Col>
                     <Col size="9" onClick={!s.bookmarks && !s.apps ? ()=>this.handleClick(p.tab.id) : null} className="ntg-title-container">
                       <span title={s.apps ? p.tab.description : null}>
-                        <h5 style={s.screenshot ? {backgroundColor: p.theme.tileBg, borderRadius: '3px', color: p.theme.tileText} : {color: p.theme.tileText, textShadow: `2px 2px ${p.theme.tileTextShadow}`}} className="ntg-title">
+                        <h5 style={s.screenshot ? {backgroundColor: p.theme.tileBg, borderRadius: '3px', color: p.theme.tileText, textShadow: `2px 2px ${p.theme.tileTextShadow}`} : {color: p.theme.tileText, textShadow: `2px 2px ${p.theme.tileTextShadow}`}} className="ntg-title">
                         {_.truncate(p.tab.title, {length: titleLimit})}
                         </h5>
                       </span>

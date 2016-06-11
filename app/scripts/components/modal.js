@@ -45,72 +45,6 @@ var ResolutionWarning = React.createClass({
   }
 });
 
-var Contribute = React.createClass({
-  getInitialState(){
-    return {
-      contribute: false
-    };
-  },
-  componentDidMount(){
-    style.modal.content.top = '25%';
-    style.modal.content.left = '25%';
-    style.modal.content.right = '25%';
-    style.modal.content.bottom = '35%';
-  },
-  handleContribution(opt){
-    clickStore.set_click(true, false);
-    if (opt === 'later') {
-      prefsStore.set_prefs('installTime', Date.now());
-      modalStore.set_modal(false);
-    } else if (opt === 'no' || opt === 'contributed') {
-      prefsStore.set_prefs('installTime', 'disable');
-      modalStore.set_modal(false);
-    } else if (opt === 'yes') {
-      prefsStore.set_prefs('installTime', Date.now());
-      modalStore.set_modal(false);
-    }
-  },
-  handleCloseBtn(){
-    clickStore.set_click(true, false);
-    modalStore.set_modal(false);
-  },
-  openPrefs(){
-    keepContributeModalOpen = true;
-    modalStore.set_modal(false);
-    _.defer(()=>{
-      settingsStore.set_settings('preferences');
-      modalStore.set_modal(true, 'settings', 'contribute');
-    });
-  },
-  render: function() {
-    var p = this.props;
-    return (
-      <Col size="12" style={{marginLeft: '2px'}} className="about">
-        <Btn style={{position: 'fixed', top: '26%', right: '26%'}} className="ntg-modal-btn-close" fa="close" onClick={this.handleCloseBtn} />
-        <form  action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank">
-          <input type="hidden" name="cmd" value="_s-xclick" />
-          <input type="hidden" name="hosted_button_id" value="8VL34HHRFN3LS" />
-          <Btn onClick={()=>this.handleContribution('yes')} className="ntg-setting-btn" name="submit" style={{top: '60%'}} fa="paypal">Yes</Btn>
-        </form>
-        <Btn onClick={()=>this.handleContribution('later')} className="ntg-setting-btn" style={{top: '60%', marginLeft: '70px'}}>Maybe Later</Btn>
-        <Btn onClick={()=>this.handleContribution('no')} className="ntg-setting-btn" style={{top: '60%', marginLeft: '173px'}}>No Thanks</Btn>
-        <Btn onClick={()=>this.handleContribution('contributed')} className="ntg-setting-btn" style={{top: '60%', marginLeft: '266px'}}>I Already Contributed</Btn>
-        <img src="../../images/icon-128-54.png" className="ntg-about"/>
-        <div className="ntg-about">
-          {p.collapse ? <br /> : null}
-          <h3 className="ntg-about">Thank you for using Tab Master 5000.</h3>
-          {p.collapse ? <br /> : null}
-          <div>
-            <p>Hi, I am Jason Hicks and I am the author of TM5K. I build and maintain TM5K during my free hours. If you like using this extension, a contribution would help me continue fixing bugs, and adding new features.</p>
-            <p>You can also contribute to this project by submitting <a href="https://github.com/jaszhix/tab-master-5000-chrome-extension/issues" target="_blank">issues</a> on Github if you come across a bug, or have a suggestion. When submitting a bug report, please tell me which options are enabled in your <a onClick={this.openPrefs} href="#">Preferences</a>.</p>
-            <p>Thank you for your support.</p>
-          </div>
-        </div>
-      </Col>
-    );
-  }
-});
-
 var ModalHandler = React.createClass({
   mixins: [Reflux.ListenerMixin],
   getInitialState(){
@@ -163,7 +97,9 @@ var ModalHandler = React.createClass({
     var s = this.state;
     var p = this.props;
     _.merge(style.modal.content, {
-      background: p.theme.settingsBg
+      background: p.theme.settingsBg,
+      border: `1px solid ${p.theme.textFieldsPlaceholderText}`,
+      WebkitBoxShadow: `2px 2px 15px -2px ${p.theme.tileShadow}`
     });
     return (
       <Modal
@@ -171,8 +107,7 @@ var ModalHandler = React.createClass({
         isOpen={s.modal.state}
         onRequestClose={this.handleClosing}
         style={style.modal}>
-          {s.modal.type === 'settings' ? <Settings sessions={p.sessions} modal={s.modal} tabs={p.tabs} prefs={p.prefs} favicons={p.favicons} collapse={p.collapse} theme={p.theme} /> : null}
-          {s.modal.type === 'contribute' ? <Contribute collapse={p.collapse} /> : null}
+          {s.modal.type === 'settings' ? <Settings sessions={p.sessions} modal={s.modal} tabs={p.tabs} prefs={p.prefs} favicons={p.favicons} collapse={p.collapse} theme={p.theme} savedThemes={p.savedThemes} /> : null}
           {s.modal.type === 'resolutionWarning' ? <ResolutionWarning /> : null}
       </Modal>
     );

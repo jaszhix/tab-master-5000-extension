@@ -149,7 +149,8 @@ var Root = React.createClass({
       chromeApps: [],
       duplicateTabs: [],
       sort: 'index',
-      theme: themeStore.get()
+      theme: null,
+      savedThemes: []
     };
   },
   componentWillMount(){
@@ -236,64 +237,90 @@ var Root = React.createClass({
     this.setState({sort: e});
   },
   themeChange(e){
-    v('style').n.innerHTML += `
-    .form-control::-webkit-input-placeholder {
-      color: ${e.textFieldsPlaceholder};
+    e = _.cloneDeep(e);
+    if (typeof e.bodyBg === 'undefined') {
+      this.setState({savedThemes: e});
+    } else {
+      v('style').n.innerHTML += `
+      a, a:focus, a:hover {
+        color: ${themeStore.opacify(e.bodyText, 0.9)};
+      }
+      .form-control::-webkit-input-placeholder {
+        color: ${e.textFieldsPlaceholder};
+      }
+      .form-control {
+        color: ${e.textFieldsText};
+        background-color: ${e.textFieldsBg};
+        border: 1px solid ${e.textFieldsBorder};
+      }
+      .nav-tabs>li {
+        background-color: ${e.lightBtnBg};
+      }
+      .nav-tabs>li>a {
+         color: ${e.lightBtnText};
+      }
+      .nav-tabs>li.active {
+        background-color: ${e.settingsBg};
+      }
+      .nav-tabs>li.active>a {
+        color: ${e.lightBtnText}
+      }
+      .nav-tabs>li:hover {
+        background-color: ${e.lightBtnBgHover};
+      }
+      .ntg-tile-disabled, .ntg-tile-hover, .ntg-tile-moving { 
+        color: ${e.tileText};
+        background-color: ${e.tileBg};
+        box-shadow: ${e.tileShadow} 1px 1px 3px -1px;
+      }
+      .ntg-x {
+        color: ${e.tileX};
+      }
+      .ntg-x-hover {
+        color: ${e.tileXHover};
+      }
+      .ntg-pinned {
+        color: ${e.tilePin};
+      }
+      .ntg-pinned-hover {
+        color: ${e.tilePinHover};
+      }
+      .ntg-mute {
+        color: ${e.tileMute};
+      }
+      .ntg-mute-hover {
+        color: ${e.tileMuteHover};
+      }
+      .ntg-mute-audible {
+        color: ${e.tileMuteAudible};
+      }
+      .ntg-mute-audible-hover {
+        color: ${e.tileMuteAudibleHover};
+      }
+      .ntg-move {
+        color: ${e.tileMove};
+      }
+      .ntg-move-hover {
+        color: ${e.tileMoveHover};
+      }
+      .ntg-session-text {
+        color: ${e.bodyText};
+        backgroundColor:
+      }
+      .sk-cube-grid .sk-cube {
+        background-color: ${e.darkBtnBg};
+      }
+      body > div.ReactModalPortal > div > div {
+        border: 
+      }
+      `;
+      v(document.body).css({
+        color: e.bodyText,
+        backgroundColor: e.bodyBg,
+      });
+      v('#bgImg').css({backgroundColor: e.bodyBg});
+      this.setState({theme: e});
     }
-    .form-control {
-      color: ${e.textFieldsText};
-      background-color: ${e.textFieldsBg};
-      border: 1px solid ${e.textFieldsBorder};
-    }
-    .nav-tabs>li {
-      color: ${e.lightBtnText};
-      background-color: ${e.lightBtnBg};
-    }
-    .nav-tabs>li:hover {
-      background-color: ${e.lightBtnBgHover};
-    }
-    .ntg-tile-disabled, .ntg-tile-hover, .ntg-tile-moving { 
-      color: ${e.tileText};
-      background-color: ${e.tileBg};
-      box-shadow: ${e.tileShadow} 1px 1px 3px -1px;
-    }
-    .ntg-x {
-      color: ${e.tileX};
-    }
-    .ntg-x-hover {
-      color: ${e.tileXHover};
-    }
-    .ntg-pinned {
-      color: ${e.tilePin};
-    }
-    .ntg-pinned-hover {
-      color: ${e.tilePinHover};
-    }
-    .ntg-mute {
-      color: ${e.tileMute};
-    }
-    .ntg-mute-hover {
-      color: ${e.tileMuteHover};
-    }
-    .ntg-mute-audible {
-      color: ${e.tileMuteAudible};
-    }
-    .ntg-mute-audible-hover {
-      color: ${e.tileMuteAudibleHover};
-    }
-    .ntg-move {
-      color: ${e.tileMove}
-    }
-    .ntg-move-hover {
-      color: ${e.tileMoveHover}
-    }
-    `;
-    v(document.body).css({
-      color: e.bodyText,
-      backgroundColor: e.bodyBg,
-    });
-    v('#bgImg').css({backgroundColor: e.bodyBg});
-    this.setState({theme: e});
   },
   createSingleItem(e){
     var s = this.state;
@@ -721,19 +748,24 @@ var Root = React.createClass({
       windowId: windowId,
       sort: s.sort
     };
-    return (
-      <div className="container-main">
-        {v('#options').n ? <Preferences options={true} settingsMax={true} prefs={s.prefs} tabs={s.tabs} /> : s.load ? <Loading /> : <div>
-          {s.context ? <ContextMenu search={stores.search} actions={s.actions} tabs={s.tabs} prefs={s.prefs} cursor={cursor} context={context} chromeVersion={s.chromeVersion} duplicateTabs={s.duplicateTabs}/> : null}
-          <ModalHandler tabs={s.prefs.mode === 'tabs' ? s.tabs : tabStore.get_altTab()} sessions={s.sessions} prefs={s.prefs} favicons={s.favicons} collapse={s.collapse} theme={s.theme} />
-            {s.tabs ? <div className="tile-container">
-                {s.settings ? <Search event={s.event} prefs={s.prefs} topLoad={s.topLoad} theme={s.theme}/> : null}
-                <div style={{marginTop: '67px'}} className="tile-child-container">
-                  {s.grid ? this.tileGrid(stores) : <Loading />}
-              </div></div> : null}
-          </div>}
-      </div>
-    );
+    console.log('ROOT STATE: ', s);
+    if (s.theme) {
+      return (
+        <div className="container-main">
+          {v('#options').n ? <Preferences options={true} settingsMax={true} prefs={s.prefs} tabs={s.tabs} /> : s.load ? <Loading /> : <div>
+            {s.context ? <ContextMenu search={stores.search} actions={s.actions} tabs={s.tabs} prefs={s.prefs} cursor={cursor} context={context} chromeVersion={s.chromeVersion} duplicateTabs={s.duplicateTabs}/> : null}
+            <ModalHandler tabs={s.prefs.mode === 'tabs' ? s.tabs : tabStore.get_altTab()} sessions={s.sessions} prefs={s.prefs} favicons={s.favicons} collapse={s.collapse} theme={s.theme} savedThemes={s.savedThemes} />
+              {s.tabs ? <div className="tile-container">
+                  {s.settings ? <Search event={s.event} prefs={s.prefs} topLoad={s.topLoad} theme={s.theme}/> : null}
+                  <div style={{marginTop: '67px'}} className="tile-child-container">
+                    {s.grid ? this.tileGrid(stores) : <Loading />}
+                </div></div> : null}
+            </div>}
+        </div>
+      );
+    } else {
+      return <Loading />;
+    }
   }
 });
 v(document).ready(()=>{

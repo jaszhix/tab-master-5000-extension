@@ -354,7 +354,10 @@ export var utilityStore = Reflux.createStore({
     this.reloadBg();
     prefsStore.set_prefs('mode', mode);
     sortStore.set('index');
-  }
+  },
+  now(){
+    return new Date(Date.now()).getTime();
+  },
 });
 
 export var contextStore = Reflux.createStore({
@@ -854,7 +857,7 @@ export var sessionsStore = Reflux.createStore({
       timeStamp = sess.timeStamp;
     } else {
       tabs = tabsState;
-      timeStamp = Date.now();
+      timeStamp = utilityStore.now()
     }
     // Default session object
     var tabData = {
@@ -937,7 +940,7 @@ export var sessionsStore = Reflux.createStore({
   exportSessions(){
     // Stringify sessionData and export as JSON.
     var json = JSON.stringify(this.sessions);
-    var filename = 'TM5K-Session-'+Date.now();
+    var filename = 'TM5K-Session-'+utilityStore.now();
     console.log(json);
     var blob = new Blob([json], {type: "application/json;charset=utf-8"});
     saveAs(blob, filename+'.json');
@@ -977,7 +980,7 @@ export var sessionsStore = Reflux.createStore({
             mutedInfo: openTabObj ? {muted: openTabObj.mutedInfo.muted} : {muted: false},
             audible: openTabObj ? openTabObj.audible : false,
             windowId: utilityStore.get_window(),
-            id: openTabObj ? openTabObj.id : Date.now() / Math.random(),
+            id: openTabObj ? openTabObj.id : utilityStore.now() / Math.random(),
             tabId: this.sessions[i].tabs[y].id,
             label: this.sessions[i].label,
             sTimeStamp: this.sessions[i].timeStamp
@@ -1052,47 +1055,219 @@ export var sortStore = Reflux.createStore({
 
 export var themeStore = Reflux.createStore({
   init(){
-    this.theme = {
-      textFieldsBg: 'rgba(255, 255, 255, 1)',
-      textFieldsPlaceholder: 'rgba(204, 204, 204, 1)',
-      textFieldsText: 'rgba(85, 85, 85, 1)',
-      textFieldsBorder: 'rgba(204, 204, 204, 1)',
-      settingsBg: 'rgba(255, 255, 255, 1)',
-      settingsItemHover: 'rgba(249, 249, 249, 1)',
-      headerBg: 'rgba(237, 237, 237, 0.8)',
-      bodyBg: 'rgba(255, 255, 255, 0.75)',
-      bodyText: 'rgba(51, 51, 51, 1)',
-      darkBtnBg: 'rgba(168, 168, 168, 1)',
-      darkBtnBgHover: 'rgba(175, 175, 175, 1)',
-      darkBtnText: 'rgba(255, 255, 255, 1)',
-      lightBtnBg: 'rgba(237, 237, 237, 1)',
-      lightBtnBgHover: 'rgba(240, 240, 240, 1)',
-      lightBtnText: 'rgba(0, 0, 0, 1)',
-      tileBg: 'rgba(237, 237, 237, 0.97)',
-      tileBgHover: 'rgba(247, 247, 247, 0.97)',
-      tileText: 'rgba(51, 51, 51, 1)',
-      tileTextShadow: 'rgba(255, 255, 255, 1)',
-      tileShadow: 'rgba(133, 132, 132, 1)',
-      tileX: 'rgba(51, 51, 51, 1)',
-      tileXHover: 'rgba(0, 0, 0, 1)',
-      tilePin: 'rgba(51, 51, 51, 1)',
-      tilePinHover: 'rgba(0, 0, 0, 1)',
-      tilePinned: 'rgba(182, 119, 119, 1)',
-      tileMute: 'rgba(51, 51, 51, 1)',
-      tileMuteHover: 'rgba(0, 0, 0, 1)',
-      tileMuteAudible: 'rgba(182, 119, 119, 1)',
-      tileMuteAudibleHover: 'rgba(182, 119, 119, 1)',
-      tileMove: 'rgba(51, 51, 51, 1)',
-      tileMoveHover: 'rgba(0, 0, 0, 1)',
-      tileButtonBg: 'rgba(255, 255, 255, 1)'
-    };
+    bgPrefs.then((prefs)=>{
+      if (typeof prefs.theme === 'undefined') {
+        prefs.theme = 0;
+      }
+      this.defaultTheme = {
+        textFieldsBg: 'rgba(255, 255, 255, 1)',
+        textFieldsPlaceholder: 'rgba(204, 204, 204, 1)',
+        textFieldsText: 'rgba(85, 85, 85, 1)',
+        textFieldsBorder: 'rgba(204, 204, 204, 1)',
+        settingsBg: 'rgba(255, 255, 255, 1)',
+        settingsItemHover: 'rgba(249, 249, 249, 1)',
+        headerBg: 'rgba(237, 237, 237, 0.8)',
+        bodyBg: 'rgba(255, 255, 255, 0.75)',
+        bodyText: 'rgba(51, 51, 51, 1)',
+        darkBtnBg: 'rgba(168, 168, 168, 1)',
+        darkBtnBgHover: 'rgba(175, 175, 175, 1)',
+        darkBtnText: 'rgba(255, 255, 255, 1)',
+        darkBtnTextShadow: 'rgba(0, 0, 0, 1)',
+        lightBtnBg: 'rgba(237, 237, 237, 1)',
+        lightBtnBgHover: 'rgba(240, 240, 240, 1)',
+        lightBtnText: 'rgba(0, 0, 0, 1)',
+        lightBtnTextShadow: 'rgba(255, 255, 255, 1)',
+        tileBg: 'rgba(237, 237, 237, 0.97)',
+        tileBgHover: 'rgba(247, 247, 247, 0.97)',
+        tileText: 'rgba(51, 51, 51, 1)',
+        tileTextShadow: 'rgba(255, 255, 255, 1)',
+        tileShadow: 'rgba(133, 132, 132, 1)',
+        tileX: 'rgba(51, 51, 51, 1)',
+        tileXHover: 'rgba(0, 0, 0, 1)',
+        tilePin: 'rgba(51, 51, 51, 1)',
+        tilePinHover: 'rgba(0, 0, 0, 1)',
+        tilePinned: 'rgba(182, 119, 119, 1)',
+        tileMute: 'rgba(51, 51, 51, 1)',
+        tileMuteHover: 'rgba(0, 0, 0, 1)',
+        tileMuteAudible: 'rgba(182, 119, 119, 1)',
+        tileMuteAudibleHover: 'rgba(182, 119, 119, 1)',
+        tileMove: 'rgba(51, 51, 51, 1)',
+        tileMoveHover: 'rgba(0, 0, 0, 1)',
+        tileButtonBg: 'rgba(255, 255, 255, 1)'
+      };
+      this.mellowDark = {
+        bodyBg: 'rgba(40, 41, 35, 0.91)',
+        bodyText: 'rgba(239, 245, 223, 1)',
+        darkBtnBg: 'rgba(64, 66, 59, 0.78)',
+        darkBtnBgHover: 'rgba(109, 112, 92, 1)',
+        darkBtnText: 'rgba(239, 245, 223, 1)',
+        darkBtnTextShadow: 'rgba(72, 74, 67, 1)',
+        headerBg: 'rgba(72, 74, 67, 0.8)',
+        lightBtnBg: 'rgba(168, 173, 156, 0.84)',
+        lightBtnBgHover: 'rgba(143, 148, 133, 1)',
+        lightBtnText: 'rgba(40, 41, 35, 1)',
+        lightBtnTextShadow: 'rgba(40, 41, 35, 0.18)',
+        settingsBg: 'rgba(69, 71, 64, 1)',
+        settingsItemHover: 'rgba(124, 128, 115, 0.64)',
+        textFieldsBg: 'rgba(124, 128, 116, 0.58)',
+        textFieldsBorder: 'rgba(98, 102, 88, 0.5)',
+        textFieldsPlaceholder: 'rgba(204, 204, 204, 1)',
+        textFieldsText: 'rgba(239, 245, 223, 1)',
+        tileBg: 'rgba(72, 74, 67, 0.92)',
+        tileBgHover: 'rgba(82, 84, 77, 0.97)',
+        tileButtonBg: 'rgba(72, 74, 67, 1)',
+        tileMove: 'rgba(239, 245, 223, 1)',
+        tileMoveHover: 'rgba(224, 230, 209, 1)',
+        tileMute: 'rgba(239, 245, 223, 1)',
+        tileMuteAudible: 'rgba(173, 186, 136, 1)',
+        tileMuteAudibleHover: 'rgba(173, 186, 136, 1)',
+        tileMuteHover: 'rgba(224, 230, 209, 1)',
+        tilePin: 'rgba(239, 245, 223, 0.88)',
+        tilePinHover: 'rgba(224, 230, 209, 1)',
+        tilePinned: 'rgba(173, 186, 136, 1)',
+        tileShadow: 'rgba(147, 150, 137, 0.71)',
+        tileText: 'rgba(239, 245, 223, 0.89)',
+        tileTextShadow: 'rgba(30, 31, 27, 0.41)',
+        tileX: 'rgba(239, 245, 223, 0.86)',
+        tileXHover: 'rgba(224, 230, 209, 0.83)'
+      };
+      var now = utilityStore.now();
+      this.standardThemes = [
+        {
+          standard: true,
+          selected: false,
+          created: -1,
+          modified: now,
+          label: 'Tab Master Vanilla',
+          theme: this.defaultTheme
+        },
+        {
+          standard: true,
+          selected: false,
+          created: -1,
+          modified: now,
+          label: 'Mellow Dark',
+          theme: this.mellowDark
+        }
+      ];
+      this.standardThemes[prefs.theme].selected = true;
+      this.getSavedThemes().then((themes)=>{
+        if (themes.themes !== 'undefined') {
+          var selectedTheme = _.find(themes.themes, {selected: true});
+          this.theme = selectedTheme ? selectedTheme.theme : this.defaultTheme;
+          this.savedThemes = typeof themes.themes !== 'undefined' ? themes.themes : [];
+        } else {
+          this.theme = _.cloneDeep(this.standardThemes[prefs.theme].theme);
+          this.savedThemes = [];
+        }
+        console.log('init current theme: ', this.theme);
+        console.log('init saved themes: ', this.savedThemes);
+        this.trigger(this.theme);
+        this.trigger(this.savedThemes);
+      });
+    });
   },
   set(obj){
     _.merge(this.theme, obj);
     this.trigger(this.theme);
   },
-  get(){
+  getStandardThemes(){
+    return this.standardThemes;
+  },
+  getSavedThemes(){
+    return new Promise((resolve, reject)=>{
+      chrome.storage.local.get('themes', (themes)=>{
+        if (themes) {
+          resolve(themes);
+        } else {
+          resolve([]);
+        }
+      });
+    });
+  },
+  getSelectedTheme(){
     return this.theme;
+  },
+  save(){
+    var now = utilityStore.now();
+    this.deselectAll();
+    this.savedThemes.push({
+      standard: false,
+      selected: true,
+      created: now,
+      modified: now,
+      label: 'Custom Theme',
+      theme: _.cloneDeep(this.theme)
+    });
+    console.log('savedThemes: ', this.savedThemes);
+    chrome.storage.local.set({themes: this.savedThemes}, (t)=>{
+      console.log('theme saved: ', t);
+    });
+    this.trigger(this.theme);
+    this.trigger(this.savedThemes);
+  },
+  newTheme(){
+    this.theme = _.cloneDeep(this.defaultTheme);
+    this.trigger(this.theme);
+  },
+  deselectAll(){
+    for (let i = this.savedThemes.length - 1; i >= 0; i--) {
+      if (this.savedThemes[i].selected) {
+        this.savedThemes[i].selected = false;
+      }
+    }
+  },
+  selectTheme(themeIndex, standard){
+    if (standard) {
+      var selectedCustomIndex = _.findIndex(this.savedThemes, {selected: true});
+      this.deselectAll();
+      this.theme = this.standardThemes[themeIndex].theme;
+      this.trigger(this.theme);
+      prefsStore.set_prefs('theme', themeIndex);
+      this.update(selectedCustomIndex, standard);
+    } else {
+      if (this.savedThemes.length > 1) {
+        this.deselectAll();
+        this.savedThemes[themeIndex].selected = true;
+        this.theme = this.savedThemes[themeIndex].theme;
+        this.trigger(this.theme);
+        this.update(themeIndex, standard);
+      }
+    }
+  },
+  update(themeIndex, standard){
+    if (!standard) {
+      _.merge(this.savedThemes[themeIndex], {
+        theme: this.theme,
+        modified: utilityStore.now()
+      });
+    }
+    chrome.storage.local.set({themes: this.savedThemes}, (t)=>{
+      console.log('theme updated: ', t);
+    });
+    this.trigger(this.savedThemes);
+  },
+  remove(themeIndex){
+    if (_.isEqual(this.savedThemes[themeIndex].theme, this.theme)) {
+      if (themeIndex > 0) {
+        var nextThemeSelected = themeIndex - 1;
+        this.savedThemes[nextThemeSelected].selected = true;
+        this.theme = this.savedThemes[nextThemeSelected].theme;
+      } else {
+        this.theme = _.cloneDeep(this.defaultTheme);
+      }
+    }
+    this.savedThemes = _.without(this.savedThemes, _.remove(this.savedThemes, this.savedThemes[themeIndex]));
+    chrome.storage.local.set({themes: this.savedThemes}, (t)=>{
+      console.log('theme removed: ', t);
+    });
+    this.trigger(this.theme);
+    this.trigger(this.savedThemes);
+  },
+  opacify(rgba, opacity){
+    var _rgba = rgba.split(', ');
+    _rgba[3] = `${opacity})`;
+    return _rgba.join(', ');
   },
 });
 

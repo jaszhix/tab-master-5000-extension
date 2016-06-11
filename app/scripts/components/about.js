@@ -2,7 +2,7 @@ import React from 'react';
 
 import {utilityStore} from './stores/main';
 
-import {Btn, Col, Row, Container} from './bootstrap';
+import {Btn, Col, Row} from './bootstrap';
 
 import changelog from 'html!markdown!../../../changelog.md';
 
