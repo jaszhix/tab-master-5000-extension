@@ -244,7 +244,11 @@ var Tile = React.createClass({
       document.getElementById('bgImg').style.backgroundImage = `url("${s.screenshot}")`;
       document.getElementById('bgImg').style.WebkitFilter = `blur(${p.stores.prefs.screenshotBgBlur}px)`;
     } else {
-      document.getElementById('bgImg').style.backgroundImage = '';
+      if (p.wallpaper) {
+        document.getElementById('bgImg').style.backgroundImage = `url("${p.wallpaper}")`;
+      } else {
+        document.getElementById('bgImg').style.backgroundImage = '';
+      }
     }
   },
   handleHoverOut(e) {
@@ -681,20 +685,23 @@ var TileGrid = React.createClass({
   },
   prefsInit(type){
     var p = type;
-    if (!p.stores.prefs.screenshotBg || !p.stores.prefs.screenshot) {
-      v('#main').css({position: ''});
-      v('#bgImg').css({
-        display: 'none',
-        backgroundImage: 'none',
-        backgroundBlendMode: 'normal',
-        WebkitFilter: `blur(${p.stores.prefs.screenshotBgBlur}px)`
-      });
-    } else {
+    if (p.stores.prefs.screenshotBg || p.stores.prefs.screenshot || p.wallpaper) {
       v('#main').css({position: 'absolute'});
       v('#bgImg').css({
         display: 'block',
         width: window.innerWidth + 30,
-        height: window.innerHeight + 5
+        height: window.innerHeight + 5,
+        WebkitFilter: `blur(${p.stores.prefs.screenshotBgBlur}px)`,
+        opacity: 0.1 * p.stores.prefs.screenshotBgOpacity
+      });
+    } else {
+      v('#main').css({position: p.wallpaper ? 'absolute' : ''});
+      v('#bgImg').css({
+        display: 'none',
+        backgroundImage: 'none',
+        backgroundBlendMode: 'normal',
+        WebkitFilter: `blur(${p.stores.prefs.screenshotBgBlur}px)`,
+        opacity: 1
       });
     }
   },
@@ -760,7 +767,16 @@ var TileGrid = React.createClass({
                     faviconStore.set_favicon(data, s.data.length, i);
                   }
                   return (
-                    <Tile sessions={p.sessions} stores={p.stores} render={p.render} i={i} key={data.id} tab={data} tileLimit={p.tileLimit} init={p.init} theme={p.theme}  />
+                    <Tile 
+                    sessions={p.sessions} 
+                    stores={p.stores} 
+                    render={p.render} 
+                    i={i} key={data.id} 
+                    tab={data} 
+                    tileLimit={p.tileLimit} 
+                    init={p.init} 
+                    theme={p.theme}
+                    wallpaper={p.wallpaper}  />
                   );
                 }
               })}

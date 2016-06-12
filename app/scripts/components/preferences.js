@@ -197,15 +197,6 @@ var Preferences = React.createClass({
                           child={true} 
                           label="Enable screenshots in the background on hover"
                           hoverBg={p.theme.settingsItemHover}>
-                    <Slide 
-                      className="prefs-row-last" 
-                      label={`Set screenshot background blur strength: ${p.prefs.screenshotBgBlur}`}
-                      min={0} max={15}
-                      defaultValue={p.prefs.screenshotBgBlur}
-                      value={p.prefs.screenshotBgBlur}
-                      onChange={(e)=>prefsStore.set_prefs('screenshotBgBlur',e)} 
-                      onMouseEnter={()=>this.handleToggle('screenshotBgBlur')}
-                      hoverBg={p.theme.settingsItemHover}/>  
                   </Toggle>
                   <Btn onClick={()=>screenshotStore.clear()} style={p.settingsMax ? {top: '95%', marginLeft: '125px'} : {marginLeft: '125px'}} className="ntg-setting-btn" fa="trash">Clear Screenshot Cache</Btn>
                 </div>
@@ -213,17 +204,38 @@ var Preferences = React.createClass({
             </Toggle>
           </Col>
           <Col size="6">
-            {!p.options ? <Slide  className="prefs-row" 
-                              label={`Set tile size: ${p.prefs.tabSizeHeight}x${p.prefs.tabSizeHeight+80}`}
-                              min={120} max={300}
-                              defaultValue={p.prefs.tabSizeHeight}
-                              value={p.prefs.tabSizeHeight}
-                              onChange={(e)=>this.handleSlide(e, 'tabSizeHeight')}
-                              onAfterChange={()=>reRenderStore.set_reRender(true, 'cycle', this.props.tabs[0].id)}
-                              onMouseEnter={()=>this.handleToggle('tabSizeHeight')}
-                              step={20}
-                              dots={true}
-                              hoverBg={p.theme.settingsItemHover}/> : null}
+            {!p.options ?
+              <div>
+                <Slide 
+                className="prefs-row-last" 
+                label={`Set background image opacity: ${p.prefs.screenshotBgOpacity}`}
+                min={0} max={10}
+                defaultValue={p.prefs.screenshotBgOpacity}
+                value={p.prefs.screenshotBgOpacity}
+                onChange={(e)=>prefsStore.set_prefs('screenshotBgOpacity',e)} 
+                onMouseEnter={()=>this.handleToggle('screenshotBgOpacity')}
+                hoverBg={p.theme.settingsItemHover}/> 
+                <Slide 
+                className="prefs-row-last" 
+                label={`Set background image blur strength: ${p.prefs.screenshotBgBlur}`}
+                min={0} max={15}
+                defaultValue={p.prefs.screenshotBgBlur}
+                value={p.prefs.screenshotBgBlur}
+                onChange={(e)=>prefsStore.set_prefs('screenshotBgBlur',e)} 
+                onMouseEnter={()=>this.handleToggle('screenshotBgBlur')}
+                hoverBg={p.theme.settingsItemHover}/> 
+                <Slide  className="prefs-row" 
+                label={`Set tile size: ${p.prefs.tabSizeHeight}x${p.prefs.tabSizeHeight+80}`}
+                min={120} max={300}
+                defaultValue={p.prefs.tabSizeHeight}
+                value={p.prefs.tabSizeHeight}
+                onChange={(e)=>this.handleSlide(e, 'tabSizeHeight')}
+                onAfterChange={()=>reRenderStore.set_reRender(true, 'cycle', this.props.tabs[0].id)}
+                onMouseEnter={()=>this.handleToggle('tabSizeHeight')}
+                step={20}
+                dots={true}
+                hoverBg={p.theme.settingsItemHover}/>
+              </div>  : null}
             <Toggle onMouseEnter={()=>this.handleToggle('sessionsSync')}
                     onClick={()=>this.handleClick('sessionsSync')} 
                     on={p.prefs.sessionsSync} label="Enable session synchronization"

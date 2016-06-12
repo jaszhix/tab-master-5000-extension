@@ -14,6 +14,7 @@ var prefsStore = Reflux.createStore({
       screenshot: false, 
       screenshotBg: false,
       screenshotBgBlur: 5,
+      screenshotBgOpacity: 5,
       blacklist: true, 
       sidebar: false, 
       sort: false, 
@@ -68,6 +69,7 @@ var prefsStore = Reflux.createStore({
         screenshot: prefs.preferences.screenshot,
         screenshotBg: prefs.preferences.screenshotBg,
         screenshotBgBlur: prefs.preferences.screenshotBgBlur,
+        screenshotBgOpacity: prefs.preferences.screenshotBgOpacity,
         blacklist: prefs.preferences.blacklist,
         sidebar: prefs.preferences.sidebar,
         sort: prefs.preferences.sort,
@@ -93,6 +95,9 @@ var prefsStore = Reflux.createStore({
       }
       if (typeof this.prefs.screenshotBgBlur === 'undefined') {
         this.prefs.screenshotBgBlur = 5;
+      }
+      if (typeof this.prefs.screenshotBgOpacity === 'undefined') {
+        this.prefs.screenshotBgOpacity = 5;
       }
       if (typeof this.prefs.keyboardShortcuts === 'undefined') {
         this.prefs.keyboardShortcuts = true;

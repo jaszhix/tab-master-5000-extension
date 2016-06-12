@@ -1099,7 +1099,7 @@ export var themeStore = Reflux.createStore({
         bodyBg: 'rgba(40, 41, 35, 0.91)',
         bodyText: 'rgba(239, 245, 223, 1)',
         darkBtnBg: 'rgba(64, 66, 59, 0.78)',
-        darkBtnBgHover: 'rgba(109, 112, 92, 1)',
+        darkBtnBgHover: 'rgba(69, 71, 60, 1)',
         darkBtnText: 'rgba(239, 245, 223, 1)',
         darkBtnTextShadow: 'rgba(72, 74, 67, 1)',
         headerBg: 'rgba(72, 74, 67, 0.8)',
@@ -1108,7 +1108,7 @@ export var themeStore = Reflux.createStore({
         lightBtnText: 'rgba(40, 41, 35, 1)',
         lightBtnTextShadow: 'rgba(40, 41, 35, 0.18)',
         settingsBg: 'rgba(69, 71, 64, 1)',
-        settingsItemHover: 'rgba(124, 128, 115, 0.64)',
+        settingsItemHover: 'rgba(124, 128, 115, 0.10)',
         textFieldsBg: 'rgba(124, 128, 116, 0.58)',
         textFieldsBorder: 'rgba(98, 102, 88, 0.5)',
         textFieldsPlaceholder: 'rgba(204, 204, 204, 1)',
@@ -1131,7 +1131,80 @@ export var themeStore = Reflux.createStore({
         tileX: 'rgba(239, 245, 223, 0.86)',
         tileXHover: 'rgba(224, 230, 209, 0.83)'
       };
+      this.pastelSummer = {
+        bodyBg: 'rgba(163, 87, 78, 0.06)',
+        bodyText: 'rgba(56, 32, 32, 1)',
+        darkBtnBg: 'rgba(140, 81, 80, 0.59)',
+        darkBtnBgHover: 'rgba(150, 91, 90, 0.56)',
+        darkBtnText: 'rgba(247, 238, 220, 1)',
+        darkBtnTextShadow: 'rgba(82, 62, 24, 0.6)',
+        headerBg: 'rgba(163, 87, 78, 0.4)',
+        lightBtnBg: 'rgba(206, 214, 186, 0.89)',
+        lightBtnBgHover: 'rgba(209, 219, 184, 0.87)',
+        lightBtnText: 'rgba(56, 32, 32, 1)',
+        lightBtnTextShadow: 'rgba(255, 255, 255, 0.28)',
+        settingsBg: 'rgba(237, 212, 180, 0.73)',
+        settingsItemHover: 'rgba(227, 199, 148, 0.35)',
+        textFieldsBg: 'rgba(255, 255, 255, 0.58)',
+        textFieldsBorder: 'rgba(140, 81, 80, 0.58)',
+        textFieldsPlaceholder: 'rgba(140, 81, 80, 0.52)',
+        textFieldsText: 'rgba(56, 32, 32, 1)',
+        tileBg: 'rgba(222, 193, 135, 0.66)',
+        tileBgHover: 'rgba(232, 206, 158, 0.71)',
+        tileButtonBg: 'rgba(222, 184, 184, 0.7)',
+        tileMove: 'rgba(56, 32, 32, 1)',
+        tileMoveHover: 'rgba(56, 32, 32, 1)',
+        tileMute: 'rgba(56, 32, 32, 1)',
+        tileMuteAudible: 'rgba(182, 119, 119, 1)',
+        tileMuteAudibleHover: 'rgba(182, 119, 119, 1)',
+        tileMuteHover: 'rgba(56, 32, 32, 1)',
+        tilePin: 'rgba(56, 32, 32, 1)',
+        tilePinHover: 'rgba(56, 32, 32, 1)',
+        tilePinned: 'rgba(182, 119, 119, 1)',
+        tileShadow: 'rgba(140, 81, 80, 0.56)',
+        tileText: 'rgba(51, 51, 51, 1)',
+        tileTextShadow: 'rgba(181, 154, 101, 0.56)',
+        tileX: 'rgba(56, 32, 32, 1)',
+        tileXHover: 'rgba(56, 32, 32, 1)'
+      };
+      this.leafy = {
+        textFieldsBg: 'rgba(167, 189, 108, 0.36)',
+        textFieldsPlaceholder: 'rgba(198, 224, 177, 0.63)',
+        textFieldsText: 'rgba(39, 51, 28, 1)',
+        textFieldsBorder: 'rgba(167, 189, 108, 0.31)',
+        settingsBg: 'rgba(158, 189, 134, 1)',
+        settingsItemHover: 'rgba(192, 219, 167, 0.29)',
+        headerBg: 'rgba(58, 92, 32, 0.8)',
+        bodyBg: 'rgba(50, 94, 43, 0.75)',
+        bodyText: 'rgba(39, 51, 28, 1)',
+        darkBtnBg: 'rgba(126, 158, 96, 1)',
+        darkBtnBgHover: 'rgba(133, 166, 106, 1)',
+        darkBtnText: 'rgba(222, 240, 206, 1)',
+        darkBtnTextShadow: 'rgba(51, 66, 37, 1)',
+        lightBtnBg: 'rgba(175, 196, 118, 0.9)',
+        lightBtnBgHover: 'rgba(168, 189, 111, 0.92)',
+        lightBtnText: 'rgba(23, 31, 15, 1)',
+        lightBtnTextShadow: 'rgba(255, 255, 255, 0.23)',
+        tileBg: 'rgba(148, 184, 114, 0.94)',
+        tileBgHover: 'rgba(155, 189, 123, 0.97)',
+        tileText: 'rgba(32, 61, 4, 1)',
+        tileTextShadow: 'rgba(167, 189, 108, 0.16)',
+        tileShadow: 'rgba(167, 189, 108, 0.56)',
+        tileX: 'rgba(51, 66, 37, 1)',
+        tileXHover: 'rgba(51, 66, 37, 1)',
+        tilePin: 'rgba(51, 66, 37, 1)',
+        tilePinHover: 'rgba(51, 66, 37, 1)',
+        tilePinned: 'rgba(50, 94, 43, 1)',
+        tileMute: 'rgba(51, 66, 37, 1)',
+        tileMuteHover: 'rgba(51, 66, 37, 1)',
+        tileMuteAudible: 'rgba(50, 94, 43, 1)',
+        tileMuteAudibleHover: 'rgba(50, 94, 43, 1)',
+        tileMove: 'rgba(51, 66, 37, 1)',
+        tileMoveHover: 'rgba(51, 66, 37, 1)',
+        tileButtonBg: 'rgba(255, 255, 255, 1)'
+      };
       var now = utilityStore.now();
+      this.standardWallpapers = [];
       this.standardThemes = [
         {
           standard: true,
@@ -1139,7 +1212,8 @@ export var themeStore = Reflux.createStore({
           created: -1,
           modified: now,
           label: 'Tab Master Vanilla',
-          theme: this.defaultTheme
+          theme: this.defaultTheme,
+          wallpapers: []
         },
         {
           standard: true,
@@ -1147,21 +1221,77 @@ export var themeStore = Reflux.createStore({
           created: -1,
           modified: now,
           label: 'Mellow Dark',
-          theme: this.mellowDark
+          theme: this.mellowDark,
+          wallpapers: [
+            {
+              data: '../../../images/wallpaper1.jpg',
+              selected: true
+            },
+            {
+              data: '../../../images/wallpaper2.jpg',
+              selected: false
+            }
+          ]
+        },
+        {
+          standard: true,
+          selected: false,
+          created: -1,
+          modified: now,
+          label: 'Pastel Summer',
+          theme: this.pastelSummer,
+          wallpapers: [
+            {
+              data: '../../../images/wallpaper3.jpg',
+              selected: true
+            },
+          ]
+        },
+        {
+          standard: true,
+          selected: false,
+          created: -1,
+          modified: now,
+          label: 'Leafy',
+          theme: this.leafy,
+          wallpapers: [
+            {
+              data: '../../../images/wallpaper4.jpg',
+              selected: true
+            },
+          ]
         }
       ];
+      this.wallpapers = [];
+      this.currentWallpaper = {data: null};
+      console.log('init.prefs.theme', prefs.theme);
       this.standardThemes[prefs.theme].selected = true;
       this.getSavedThemes().then((themes)=>{
         if (themes.themes !== 'undefined') {
           var selectedTheme = _.find(themes.themes, {selected: true});
-          this.theme = selectedTheme ? selectedTheme.theme : this.defaultTheme;
+          this.theme = selectedTheme ? selectedTheme.theme : _.cloneDeep(this.standardThemes[prefs.theme].theme);
           this.savedThemes = typeof themes.themes !== 'undefined' ? themes.themes : [];
         } else {
           this.theme = _.cloneDeep(this.standardThemes[prefs.theme].theme);
           this.savedThemes = [];
         }
+        if (this.savedThemes.length > 0 && _.find(this.savedThemes, {selected: true})) {
+          for (let i = this.savedThemes.length - 1; i >= 0; i--) {
+            if (this.savedThemes[i].wallpapers.length > 0) {
+              var selectedWallpaper = _.find(this.savedThemes[i].wallpapers, {selected: true});
+              if (selectedWallpaper && typeof selectedWallpaper.data !== 'undefined') {
+                this.currentWallpaper = selectedWallpaper;
+                break;
+              }
+            }
+          }
+        } else {
+          var selectedStandardWallpaper = _.find(this.standardThemes[prefs.theme].wallpapers, {selected: true});
+          this.currentWallpaper = selectedStandardWallpaper ? selectedStandardWallpaper : {data: null};
+        }
         console.log('init current theme: ', this.theme);
         console.log('init saved themes: ', this.savedThemes);
+        this.trigger(this.currentWallpaper);
         this.trigger(this.theme);
         this.trigger(this.savedThemes);
       });
@@ -1190,14 +1320,15 @@ export var themeStore = Reflux.createStore({
   },
   save(){
     var now = utilityStore.now();
-    this.deselectAll();
+    this.deselectAll(false);
     this.savedThemes.push({
       standard: false,
       selected: true,
       created: now,
       modified: now,
       label: 'Custom Theme',
-      theme: _.cloneDeep(this.theme)
+      theme: _.cloneDeep(this.theme),
+      wallpapers: this.wallpapers
     });
     console.log('savedThemes: ', this.savedThemes);
     chrome.storage.local.set({themes: this.savedThemes}, (t)=>{
@@ -1207,33 +1338,74 @@ export var themeStore = Reflux.createStore({
     this.trigger(this.savedThemes);
   },
   newTheme(){
-    this.theme = _.cloneDeep(this.defaultTheme);
+    this.wallpapers = [];
+    this.theme = _.cloneDeep(this.standardThemes[0].theme);
+    this.currentWallpaper = null;
     this.trigger(this.theme);
+    this.trigger(this.currentWallpaper);
   },
-  deselectAll(){
-    for (let i = this.savedThemes.length - 1; i >= 0; i--) {
-      if (this.savedThemes[i].selected) {
-        this.savedThemes[i].selected = false;
+  deselectAll(standard){
+
+      for (let i = this.standardThemes.length - 1; i >= 0; i--) {
+        if (this.standardThemes[i].selected) {
+          this.standardThemes[i].selected = false;
+        }
       }
-    }
+
+      for (let i = this.savedThemes.length - 1; i >= 0; i--) {
+        if (this.savedThemes[i].selected) {
+          this.savedThemes[i].selected = false;
+        }
+      }
   },
   selectTheme(themeIndex, standard){
     if (standard) {
-      var selectedCustomIndex = _.findIndex(this.savedThemes, {selected: true});
-      this.deselectAll();
+      this.deselectAll(true);
+      this.standardThemes[themeIndex].selected = true;
+      var selectedStandardWallpaper = _.findIndex(this.standardThemes[themeIndex].wallpapers, {selected: true});
+      if (selectedStandardWallpaper !== -1) {
+        this.currentWallpaper = this.standardThemes[themeIndex].wallpapers[selectedStandardWallpaper];
+      } else {
+        this.currentWallpaper = null;
+      }
       this.theme = this.standardThemes[themeIndex].theme;
       this.trigger(this.theme);
+      this.trigger(this.currentWallpaper);
       prefsStore.set_prefs('theme', themeIndex);
-      this.update(selectedCustomIndex, standard);
+      this.update(themeIndex, standard);
     } else {
-      if (this.savedThemes.length > 1) {
-        this.deselectAll();
+      if (this.savedThemes.length >= 0) {
+        this.deselectAll(false);
         this.savedThemes[themeIndex].selected = true;
+        var selectedWallpaper = _.findIndex(this.savedThemes[themeIndex].wallpapers, {selected: true});
+        if (selectedWallpaper !== -1) {
+          this.currentWallpaper = this.savedThemes[themeIndex].wallpapers[selectedWallpaper];
+        } else {
+          this.currentWallpaper = null;
+        }
         this.theme = this.savedThemes[themeIndex].theme;
         this.trigger(this.theme);
+        this.trigger(this.currentWallpaper);
         this.update(themeIndex, standard);
       }
     }
+  },
+  selectWallpaper(themeIndex, wallpaperIndex, standard){
+    if (standard) {
+      for (let i = this.standardThemes[themeIndex].wallpapers.length - 1; i >= 0; i--) {
+        this.standardThemes[themeIndex].wallpapers[i].selected = false;
+      }
+      this.standardThemes[themeIndex].wallpapers[wallpaperIndex].selected = true;
+      this.currentWallpaper = this.standardThemes[themeIndex].wallpapers[wallpaperIndex];
+    } else {
+      for (let i = this.savedThemes[themeIndex].wallpapers.length - 1; i >= 0; i--) {
+        this.savedThemes[themeIndex].wallpapers[i].selected = false;
+      }
+      this.savedThemes[themeIndex].wallpapers[wallpaperIndex].selected = true;
+      this.currentWallpaper = this.savedThemes[themeIndex].wallpapers[wallpaperIndex];
+      }
+    this.trigger(this.currentWallpaper);
+    this.trigger(this.savedThemes);
   },
   update(themeIndex, standard){
     if (!standard) {
@@ -1263,6 +1435,30 @@ export var themeStore = Reflux.createStore({
     });
     this.trigger(this.theme);
     this.trigger(this.savedThemes);
+  },
+  export(){
+    var json = JSON.stringify(this.theme);
+    var filename = 'TM5K-Theme-'+utilityStore.now();
+    console.log(json);
+    var blob = new Blob([json], {type: "application/json;charset=utf-8"});
+    saveAs(blob, filename+'.json');
+  },
+  importWallpaper(e){
+    var selectedThemeIndex = _.findIndex(this.savedThemes, {selected: true});
+    console.log('importWallpaper selectedThemeIndex: ', selectedThemeIndex);
+    console.log(selectedThemeIndex);
+    if (this.savedThemes[selectedThemeIndex].wallpapers.length <= 5) {
+      var reader = new FileReader();
+      reader.onload = (e)=> {
+        this.savedThemes[selectedThemeIndex].wallpapers.push({
+          selected: true,
+          data: reader.result
+        });
+        console.log(this.savedThemes[selectedThemeIndex].wallpapers.length);
+        this.selectWallpaper(selectedThemeIndex, this.savedThemes[selectedThemeIndex].wallpapers.length - 1, false);
+      };
+      reader.readAsDataURL(e.target.files[0]);
+    }
   },
   opacify(rgba, opacity){
     var _rgba = rgba.split(', ');

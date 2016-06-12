@@ -107,7 +107,7 @@ var ModalHandler = React.createClass({
         isOpen={s.modal.state}
         onRequestClose={this.handleClosing}
         style={style.modal}>
-          {s.modal.type === 'settings' ? <Settings sessions={p.sessions} modal={s.modal} tabs={p.tabs} prefs={p.prefs} favicons={p.favicons} collapse={p.collapse} theme={p.theme} savedThemes={p.savedThemes} /> : null}
+          {s.modal.type === 'settings' ? <Settings sessions={p.sessions} modal={s.modal} tabs={p.tabs} prefs={p.prefs} favicons={p.favicons} collapse={p.collapse} theme={p.theme} savedThemes={p.savedThemes} standardThemes={p.standardThemes}/> : null}
           {s.modal.type === 'resolutionWarning' ? <ResolutionWarning /> : null}
       </Modal>
     );

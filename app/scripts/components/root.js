@@ -150,7 +150,9 @@ var Root = React.createClass({
       duplicateTabs: [],
       sort: 'index',
       theme: null,
-      savedThemes: []
+      savedThemes: [],
+      standardThemes: [],
+      wallpaper: null
     };
   },
   componentWillMount(){
@@ -238,7 +240,17 @@ var Root = React.createClass({
   },
   themeChange(e){
     e = _.cloneDeep(e);
-    if (typeof e.bodyBg === 'undefined') {
+    this.setState({standardThemes: themeStore.getStandardThemes()});
+    if (!e) {
+      return;
+    }
+    if (typeof e.data !== 'undefined' && e.data) {
+      v('#bgImg').css({
+        backgroundImage: `url('${e.data}')`,
+        backgroundSize: 'cover'
+      });
+      this.setState({wallpaper: e.data});
+    } else if (typeof e.bodyBg === 'undefined') {
       this.setState({savedThemes: e});
     } else {
       v('style').n.innerHTML += `
@@ -262,8 +274,14 @@ var Root = React.createClass({
       .nav-tabs>li.active {
         background-color: ${e.settingsBg};
       }
-      .nav-tabs>li.active>a {
-        color: ${e.lightBtnText}
+      .nav-tabs>li.active>a, .nav-tabs>li.active>a:focus {
+        color: ${e.darkBtnText};
+        background-color: ${e.darkBtnBg};
+        border: 1px solid ${e.tileShadow};
+      }
+      .nav-tabs>li.active>a:hover {
+        color: ${e.darkBtnText};
+        background-color: ${e.darkBtnBgHover};
       }
       .nav-tabs>li:hover {
         background-color: ${e.lightBtnBgHover};
@@ -307,11 +325,44 @@ var Root = React.createClass({
         color: ${e.bodyText};
         backgroundColor:
       }
+      .ntg-folder {
+        text-shadow: 2px 2px ${e.tileTextShadow};
+      }
       .sk-cube-grid .sk-cube {
         background-color: ${e.darkBtnBg};
       }
       body > div.ReactModalPortal > div > div {
-        border: 
+        border: ${e.tileShadow};
+      }
+      .rc-color-picker-panel {
+        background-color: ${e.settingsBg};
+      }
+      .rc-color-picker-panel-inner {
+        background-color: ${e.settingsBg};
+        border: 1px solid ${e.tileShadow};
+        box-shadow: ${e.tileShadow} 1px 1px 3px -1px;
+      }
+      .rc-color-picker-panel-params input {
+        color: ${e.textFieldsText};
+        background-color: ${e.textFieldsBg};
+        border: 0.5px solid ${e.textFieldsBorder};
+      };
+      .rc-slider {
+        background-color: ${themeStore.opacify(e.darkBtnBg, 0.5)};
+      }
+      .rc-slider-step {
+        background: ${themeStore.opacify(e.settingsBg, 0.35)};
+      }
+      .rc-slider-track {
+        background-color: ${themeStore.opacify(e.lightBtnBg, 0.85)};
+      }
+      .rc-slider-handle {
+        background-color: ${themeStore.opacify(e.darkBtnBg, 0.9)};
+        border: solid 2px ${themeStore.opacify(e.lightBtnBg, 0.85)};
+      }
+      .rc-slider-handle:hover {
+        background-color: ${themeStore.opacify(e.darkBtnBgHover, 0.9)};
+        border: solid 2px ${themeStore.opacify(e.lightBtnBgHover, 0.85)}; 
       }
       `;
       v(document.body).css({
@@ -706,6 +757,7 @@ var Root = React.createClass({
         sessions={s.sessions}
         init={s.init}
         theme={s.theme}
+        wallpaper={s.wallpaper}
       />
     );
   },
@@ -754,7 +806,7 @@ var Root = React.createClass({
         <div className="container-main">
           {v('#options').n ? <Preferences options={true} settingsMax={true} prefs={s.prefs} tabs={s.tabs} /> : s.load ? <Loading /> : <div>
             {s.context ? <ContextMenu search={stores.search} actions={s.actions} tabs={s.tabs} prefs={s.prefs} cursor={cursor} context={context} chromeVersion={s.chromeVersion} duplicateTabs={s.duplicateTabs}/> : null}
-            <ModalHandler tabs={s.prefs.mode === 'tabs' ? s.tabs : tabStore.get_altTab()} sessions={s.sessions} prefs={s.prefs} favicons={s.favicons} collapse={s.collapse} theme={s.theme} savedThemes={s.savedThemes} />
+            <ModalHandler tabs={s.prefs.mode === 'tabs' ? s.tabs : tabStore.get_altTab()} sessions={s.sessions} prefs={s.prefs} favicons={s.favicons} collapse={s.collapse} theme={s.theme} savedThemes={s.savedThemes} standardThemes={s.standardThemes} />
               {s.tabs ? <div className="tile-container">
                   {s.settings ? <Search event={s.event} prefs={s.prefs} topLoad={s.topLoad} theme={s.theme}/> : null}
                   <div style={{marginTop: '67px'}} className="tile-child-container">

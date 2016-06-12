@@ -16,6 +16,9 @@ export var Btn = React.createClass({
     this.themeChange(selectedTheme);
   },
   themeChange(e){
+    if (!e) {
+      return;
+    }
     if (typeof e.darkBtnBg !== 'undefined') {
       var p = this.props;
       if (p.className === 'ntg-btn' || p.className === 'ntg-top-btn') {

@@ -88,15 +88,16 @@ var ColorPickerContainer = React.createClass({
 var Theming = React.createClass({
   getInitialState(){
     return {
-      standardThemes: themeStore.getStandardThemes(),
       selectedTheme: -1,
       themeHover: null,
-      leftTab: 'custom'
+      leftTab: 'custom',
+      rightTab: 'color'
     };
   },
   componentDidMount(){
+    var p = this.props;
     v('body > div.ReactModalPortal > div > div').css({
-      backgroundColor: themeStore.opacify(this.props.theme.settingsBg, 0.95),
+      backgroundColor: themeStore.opacify(p.theme.settingsBg, 0.95),
       transition: 'background .2s ease-in', 
       width: '100%',
       height: '40%',
@@ -111,26 +112,17 @@ var Theming = React.createClass({
       right: '1%'
     });
     v('.ntg-settings-pane').css({height: '100%'});
-    if (this.props.prefs.animations) {
+    if (p.prefs.animations) {
       v('#main').css({WebkitFilter: 'none'});
     } else {
       v('body > div.ReactModalPortal > div').css({backgroundColor: 'rgba(216, 216, 216, 0)'});
     }
-    //this.handleSelectTheme(null, this.props);
+    this.findSelectedTheme(p);
   },
   componentWillReceiveProps(nP){
-    if (!_.isEqual(nP.savedThemes, this.props.savedThemes)) {
-      /*this.setState({
-        savedThemes: nP.savedThemes
-      });*/
-      //this.handleSelectTheme(null, nP);
-      if (this.props.savedThemes.length === 0) {
-        themeStore.init();
-      }
-    }
-    if (nP.theme.settingsBg !== this.props.settingsBg) {
+    if (nP.theme.settingsBg !== this.props.theme.settingsBg) {
       v('body > div.ReactModalPortal > div > div').css({
-        backgroundColor: themeStore.opacify(this.props.theme.settingsBg, 0.8)
+        backgroundColor: themeStore.opacify(nP.theme.settingsBg, 0.8)
       });
     }
   },
@@ -161,10 +153,15 @@ var Theming = React.createClass({
       }
     }
   },
-  handleOnClose(){
-    /*if () {
-
-    }*/
+  findSelectedTheme(props){
+    var selectedTheme;
+    var selectedCustomTheme = _.findIndex(props.savedThemes, {selected: true});
+    if (selectedCustomTheme !== -1) {
+      selectedTheme = selectedCustomTheme;
+    } else {
+      selectedTheme = _.findIndex(props.standardThemes, {selected: true});
+    }
+    this.setState({selectedTheme: selectedTheme});
   },
   handleSelectTheme(i, standard){
     if (!standard) {
@@ -182,16 +179,18 @@ var Theming = React.createClass({
     var isNewTheme = s.selectedTheme && s.selectedTheme.created === 0 || p.savedThemes.length === 0;
     console.log('Theming STATE', s);
     console.log('Theming PROPS', p);
+    var theme = s.leftTab === 'custom' ? typeof p.savedThemes[s.selectedTheme] !== 'undefined' ? p.savedThemes[s.selectedTheme] : p.standardThemes[s.selectedTheme] : typeof p.standardThemes[s.selectedTheme] !== 'undefined' ? p.standardThemes[s.selectedTheme] : p.savedThemes[s.selectedTheme];
+    
     return (
       <div className="theming">
         <Row className="ntg-tabs" style={{borderBottom: 'initial', position: 'fixed', zIndex: '9999'}}>
           <div role="tabpanel"> 
             <ul className="nav nav-tabs">
               <li style={{padding: '0px'}} className={`${s.leftTab === 'custom' ? 'active' : ''}`}>
-                  <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({leftTab: 'custom'})}><i className="settings-fa fa fa-sticky-note-o"/>  Custom</a>
+                <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({leftTab: 'custom'})}><i className="settings-fa fa fa-sticky-note-o"/>  Custom</a>
               </li>
               <li style={{padding: '0px'}} className={`${s.leftTab === 'tm5k' ? 'active' : ''}`}>
-                  <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({leftTab: 'tm5k'})}><i className="settings-fa fa fa-star-o"/>  TM5K</a>
+                <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({leftTab: 'tm5k'})}><i className="settings-fa fa fa-star-o"/>  TM5K</a>
               </li>
             </ul>
           </div>
@@ -206,7 +205,7 @@ var Theming = React.createClass({
                     <Row 
                     key={i}
                     className="ntg-session-row"
-                    style={theme.selected ? {backgroundColor: p.theme.tileBg} : i % 2 ? null : {backgroundColor: p.theme.settingsItemHover}} 
+                    style={theme.selected ? {backgroundColor: themeStore.opacify(p.theme.settingsItemHover, 0.5)} : i % 2 ? null : {backgroundColor: p.theme.settingsItemHover}} 
                     onMouseEnter={()=>this.setState({themeHover: i})}>
                       <div 
                       className="ntg-session-text" 
@@ -224,18 +223,21 @@ var Theming = React.createClass({
                   onClick={isNewTheme ? ()=>themeStore.save() : ()=>themeStore.update()} 
                   className="ntg-setting-btn" 
                   style={{position: 'fixed', top: '96%'}}>
-                    {`${isNewTheme ? 'Save' : 'Update'} Theme`}
+                    {`${isNewTheme ? 'Save' : 'Update'}${p.collapse ? ' Theme' : ''}`}
                 </Btn>
-                <Btn onClick={this.handleNewTheme} className="ntg-setting-btn" style={{position: 'fixed', top: '96%', marginLeft: isNewTheme ? '108px' : '122px'}}>New Theme</Btn>
+                <Btn onClick={this.handleNewTheme} className="ntg-setting-btn" style={{position: 'fixed', top: '96%', marginLeft: isNewTheme ? p.collapse ? '108px' : '61px' : p.collapse ? '122px' : '74px'}}>{`New ${p.collapse ? 'Theme' : ''}`}</Btn>
+                <Btn onClick={()=>themeStore.export()} style={{position: 'fixed', top: '96%', marginLeft: isNewTheme ? p.collapse ? '208px' : '113px' : p.collapse ? '222px' : '126px'}} className="ntg-setting-btn" fa="arrow-circle-o-down">Export</Btn>
+                {/*<input {...this.props} children={undefined} type="file" onChange={(e)=>themeStore.export()} ref="fileInput" style={style.hiddenInput} />*/}
+                {/*<Btn onClick={this.triggerInput} style={p.settingsMax ? {top: '95%', marginLeft: '86px'} : {marginLeft: '86px'}} className="ntg-setting-btn" fa="arrow-circle-o-up">Import</Btn>*/}
               </Row> : null}
               {s.leftTab === 'tm5k' ?
               <Row>
-                {s.standardThemes.map((theme, i)=>{
+                {p.standardThemes.map((theme, i)=>{
                   return (
                     <Row 
                     key={i}
                     className="ntg-session-row"
-                    style={p.prefs.theme === i ? {backgroundColor: p.theme.tileBg} : i % 2 ? null : {backgroundColor: p.theme.settingsItemHover}} 
+                    style={p.prefs.theme === i ? {backgroundColor: themeStore.opacify(p.theme.settingsItemHover, 0.5)} : i % 2 ? null : {backgroundColor: p.theme.settingsItemHover}} 
                     onMouseEnter={()=>this.setState({themeHover: i})}>
                       <div 
                       className="ntg-session-text" 
@@ -253,61 +255,75 @@ var Theming = React.createClass({
             <Row className="ntg-tabs" style={{borderBottom: 'initial', position: 'fixed', zIndex: '9999', marginTop: '-8px'}}>
               <div role="tabpanel"> 
                 <ul className="nav nav-tabs">
-                  <li style={{padding: '0px'}} className={`${s.leftTab === 'custom' ? 'active' : ''}`}>
-                      <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({leftTab: 'custom'})}><i className="settings-fa fa fa-sticky-note-o"/>  Color Scheme</a>
+                  <li style={{padding: '0px'}} className={`${s.rightTab === 'color' ? 'active' : ''}`}>
+                    <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({rightTab: 'color'})}><i className="settings-fa fa fa-sticky-note-o"/>  Color Scheme</a>
                   </li>
-                  <li style={{padding: '0px'}} className={`${s.leftTab === 'tm5k' ? 'active' : ''}`}>
-                      <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({leftTab: 'tm5k'})}><i className="settings-fa fa fa-star-o"/>  Wallpaper</a>
-                  </li>
+                  {!isNewTheme || typeof theme !== 'undefined' ? 
+                  <li style={{padding: '0px'}} className={`${s.rightTab === 'wallpaper' ? 'active' : ''}`}>
+                    <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({rightTab: 'wallpaper'})}><i className="settings-fa fa fa-star-o"/>  Wallpaper</a>
+                  </li> : null}
                 </ul>
               </div>
             </Row>
-            <Col size="4" style={{marginTop: '28px'}}>
-              <Row>
-                <ColorPickerContainer onClose={this.handleOnClose} hoverBg={p.theme.settingsItemHover} color={p.theme.bodyText} themeKey="bodyText" label="Body Text"/>
-                <ColorPickerContainer onClose={this.handleOnClose} hoverBg={p.theme.settingsItemHover} color={p.theme.bodyBg} themeKey="bodyBg" label="Body BG"/>
-                <ColorPickerContainer onClose={this.handleOnClose} hoverBg={p.theme.settingsItemHover} color={p.theme.headerBg} themeKey="headerBg" label="Header BG"/>
-                <ColorPickerContainer onClose={this.handleOnClose} hoverBg={p.theme.settingsItemHover} color={p.theme.textFieldsText} themeKey="textFieldsText" label="Field Text"/>
-                <ColorPickerContainer onClose={this.handleOnClose} hoverBg={p.theme.settingsItemHover} color={p.theme.textFieldsPlaceholder} themeKey="textFieldsPlaceholder" label="Field Placeholder Text"/>
-                <ColorPickerContainer onClose={this.handleOnClose} hoverBg={p.theme.settingsItemHover} color={p.theme.textFieldsBg} themeKey="textFieldsBg" label="Field BG"/>
-                <ColorPickerContainer onClose={this.handleOnClose} hoverBg={p.theme.settingsItemHover} color={p.theme.textFieldsBorder} themeKey="textFieldsBorder" label="Field Border"/>
-                <ColorPickerContainer onClose={this.handleOnClose} hoverBg={p.theme.settingsItemHover} color={p.theme.settingsBg} themeKey="settingsBg" label="Settings BG"/>
-                <ColorPickerContainer onClose={this.handleOnClose} hoverBg={p.theme.settingsItemHover} color={p.theme.settingsItemHover} themeKey="settingsItemHover" label="Settings Item (Hover)"/>
-                <ColorPickerContainer onClose={this.handleOnClose} hoverBg={p.theme.settingsItemHover} color={p.theme.darkBtnText} themeKey="darkBtnText" label="Dark Button Text"/>
-                <ColorPickerContainer onClose={this.handleOnClose} hoverBg={p.theme.settingsItemHover} color={p.theme.darkBtnTextShadow} themeKey="darkBtnTextShadow" label="Dark Button Text Shadow"/>
-              </Row>
-            </Col>
-            <Col size="4" style={{marginTop: '28px'}}>
-              <Row>
-                <ColorPickerContainer onClose={this.handleOnClose} hoverBg={p.theme.settingsItemHover} color={p.theme.darkBtnBg} themeKey="darkBtnBg" label="Dark Button BG"/>
-                <ColorPickerContainer onClose={this.handleOnClose} hoverBg={p.theme.settingsItemHover} color={p.theme.darkBtnBgHover} themeKey="darkBtnBgHover" label="Dark Button BG (Hover)"/>
-                <ColorPickerContainer onClose={this.handleOnClose} hoverBg={p.theme.settingsItemHover} color={p.theme.lightBtnText} themeKey="lightBtnText" label="Light Button Text"/>
-                <ColorPickerContainer onClose={this.handleOnClose} hoverBg={p.theme.settingsItemHover} color={p.theme.lightBtnTextShadow} themeKey="lightBtnTextShadow" label="Light Button Text Shadow"/>
-                <ColorPickerContainer onClose={this.handleOnClose} hoverBg={p.theme.settingsItemHover} color={p.theme.lightBtnBg} themeKey="lightBtnBg" label="Light Button BG"/>
-                <ColorPickerContainer onClose={this.handleOnClose} hoverBg={p.theme.settingsItemHover} color={p.theme.lightBtnBgHover} themeKey="lightBtnBgHover" label="Light Button BG (Hover)"/>
-                <ColorPickerContainer onClose={this.handleOnClose} hoverBg={p.theme.settingsItemHover} color={p.theme.tileBg} themeKey="tileBg" label="Tile BG"/>
-                <ColorPickerContainer onClose={this.handleOnClose} hoverBg={p.theme.settingsItemHover} color={p.theme.tileBgHover} themeKey="tileBgHover" label="Tile BG (Hover)"/>
-                <ColorPickerContainer onClose={this.handleOnClose} hoverBg={p.theme.settingsItemHover} color={p.theme.tileText} themeKey="tileText" label="Tile Text"/>
-                <ColorPickerContainer onClose={this.handleOnClose} hoverBg={p.theme.settingsItemHover} color={p.theme.tileTextShadow} themeKey="tileTextShadow" label="Tile Text Shadow"/>
-                <ColorPickerContainer onClose={this.handleOnClose} hoverBg={p.theme.settingsItemHover} color={p.theme.tileShadow} themeKey="tileShadow" label="Tile Shadow"/>
-              </Row>
-            </Col>
-            <Col size="4" style={{marginTop: '28px'}}>
-              <Row>
-                <ColorPickerContainer onClose={this.handleOnClose} hoverBg={p.theme.settingsItemHover} color={p.theme.tileX} themeKey="tileX" label="Tile Close Button"/>
-                <ColorPickerContainer onClose={this.handleOnClose} hoverBg={p.theme.settingsItemHover} color={p.theme.tileXHover} themeKey="tileXHover" label="Tile Close Button (Hover)"/>
-                <ColorPickerContainer onClose={this.handleOnClose} hoverBg={p.theme.settingsItemHover} color={p.theme.tilePin} themeKey="tilePin" label="Tile Pin Button"/>
-                <ColorPickerContainer onClose={this.handleOnClose} hoverBg={p.theme.settingsItemHover} color={p.theme.tilePinHover} themeKey="tilePinHover" label="Tile Pin Button (Hover)"/>
-                <ColorPickerContainer onClose={this.handleOnClose} hoverBg={p.theme.settingsItemHover} color={p.theme.tilePinned} themeKey="tilePinned" label="Tile Pinned Button"/>
-                <ColorPickerContainer onClose={this.handleOnClose} hoverBg={p.theme.settingsItemHover} color={p.theme.tileMute} themeKey="tileMute" label="Tile Mute Button"/>
-                <ColorPickerContainer onClose={this.handleOnClose} hoverBg={p.theme.settingsItemHover} color={p.theme.tileMuteHover} themeKey="tileMuteHover" label="Tile Mute Button (Hover)"/>
-                <ColorPickerContainer onClose={this.handleOnClose} hoverBg={p.theme.settingsItemHover} color={p.theme.tileMuteAudible} themeKey="tileMuteAudible" label="Tile Audible Button"/>
-                <ColorPickerContainer onClose={this.handleOnClose} hoverBg={p.theme.settingsItemHover} color={p.theme.tileMuteAudibleHover} themeKey="tileMuteAudibleHover" label="Tile Audible Button (Hover)"/>
-                <ColorPickerContainer onClose={this.handleOnClose} hoverBg={p.theme.settingsItemHover} color={p.theme.tileMove} themeKey="tileMove" label="Tile Move Button"/>
-                <ColorPickerContainer onClose={this.handleOnClose} hoverBg={p.theme.settingsItemHover} color={p.theme.tileMoveHover} themeKey="tileMoveHover" label="Tile Move Button (Hover)"/>
-                <ColorPickerContainer onClose={this.handleOnClose} hoverBg={p.theme.settingsItemHover} color={p.theme.tileButtonBg} themeKey="tileButtonBg" label="Tile Button BG"/>
-              </Row>
-            </Col>
+            {s.rightTab === 'color' ?
+            <Row>
+              <Col size="4" style={{marginTop: '28px'}}>
+                <Row>
+                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.bodyText} themeKey="bodyText" label="Body Text"/>
+                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.bodyBg} themeKey="bodyBg" label="Body BG"/>
+                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.headerBg} themeKey="headerBg" label="Header BG"/>
+                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.textFieldsText} themeKey="textFieldsText" label="Field Text"/>
+                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.textFieldsPlaceholder} themeKey="textFieldsPlaceholder" label="Field Placeholder Text"/>
+                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.textFieldsBg} themeKey="textFieldsBg" label="Field BG"/>
+                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.textFieldsBorder} themeKey="textFieldsBorder" label="Field Border"/>
+                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.settingsBg} themeKey="settingsBg" label="Settings BG"/>
+                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.settingsItemHover} themeKey="settingsItemHover" label="Settings Item (Hover)"/>
+                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.darkBtnText} themeKey="darkBtnText" label="Dark Button Text"/>
+                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.darkBtnTextShadow} themeKey="darkBtnTextShadow" label="Dark Button Text Shadow"/>
+                </Row>
+              </Col>
+              <Col size="4" style={{marginTop: '28px'}}>
+                <Row>
+                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.darkBtnBg} themeKey="darkBtnBg" label="Dark Button BG"/>
+                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.darkBtnBgHover} themeKey="darkBtnBgHover" label="Dark Button BG (Hover)"/>
+                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.lightBtnText} themeKey="lightBtnText" label="Light Button Text"/>
+                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.lightBtnTextShadow} themeKey="lightBtnTextShadow" label="Light Button Text Shadow"/>
+                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.lightBtnBg} themeKey="lightBtnBg" label="Light Button BG"/>
+                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.lightBtnBgHover} themeKey="lightBtnBgHover" label="Light Button BG (Hover)"/>
+                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.tileBg} themeKey="tileBg" label="Tile BG"/>
+                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.tileBgHover} themeKey="tileBgHover" label="Tile BG (Hover)"/>
+                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.tileText} themeKey="tileText" label="Tile Text"/>
+                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.tileTextShadow} themeKey="tileTextShadow" label="Tile Text Shadow"/>
+                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.tileShadow} themeKey="tileShadow" label="Tile Shadow"/>
+                </Row>
+              </Col>
+              <Col size="4" style={{marginTop: '28px'}}>
+                <Row>
+                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.tileX} themeKey="tileX" label="Tile Close Button"/>
+                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.tileXHover} themeKey="tileXHover" label="Tile Close Button (Hover)"/>
+                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.tilePin} themeKey="tilePin" label="Tile Pin Button"/>
+                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.tilePinHover} themeKey="tilePinHover" label="Tile Pin Button (Hover)"/>
+                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.tilePinned} themeKey="tilePinned" label="Tile Pinned Button"/>
+                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.tileMute} themeKey="tileMute" label="Tile Mute Button"/>
+                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.tileMuteHover} themeKey="tileMuteHover" label="Tile Mute Button (Hover)"/>
+                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.tileMuteAudible} themeKey="tileMuteAudible" label="Tile Audible Button"/>
+                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.tileMuteAudibleHover} themeKey="tileMuteAudibleHover" label="Tile Audible Button (Hover)"/>
+                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.tileMove} themeKey="tileMove" label="Tile Move Button"/>
+                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.tileMoveHover} themeKey="tileMoveHover" label="Tile Move Button (Hover)"/>
+                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.tileButtonBg} themeKey="tileButtonBg" label="Tile Button BG"/>
+                </Row>
+              </Col>
+            </Row> : null}
+            {s.rightTab === 'wallpaper' ?
+            <Row fluid={true} style={{marginTop: '28px'}}>
+              <Col size="12">
+                {typeof theme.wallpapers.length !== 'undefined' && theme.wallpapers.length > 0 ? theme.wallpapers.map((wp, i)=>{
+                  return <div key={i} onClick={()=>themeStore.selectWallpaper(s.selectedTheme, i, s.leftTab === 'tm5k')} className="wallpaper-tile" style={{backgroundColor: p.theme.lightBtnBg, backgroundImage: `url('${wp.data}')`, backgroundSize: 'cover', height: '90px', width: '160px', padding: '6px', display: 'inline-block', margin: '8px', border: wp.selected ? `2px solid ${p.theme.lightBtnBg}` : 'initial', cursor: !wp.selected ? 'pointer' : null}}></div>;
+                }) : null}
+                {s.leftTab === 'custom' ? <Btn onClick={()=>this.refs.wallpaper.click()} className="ntg-setting-btn" style={{position: 'fixed', top: '96%', left: '27%'}}>Import Wallpaper</Btn> : null}
+                <input {...this.props} children={undefined} type="file" onChange={(e)=>themeStore.importWallpaper(e)} ref="wallpaper" style={style.hiddenInput} />
+              </Col>
+            </Row> : null}
           </Col>
         </Row>
       </div>
@@ -604,7 +620,7 @@ var Settings = React.createClass({
         <Row className="ntg-settings-pane">
           {sessions ? <Sessions settingsMax={s.settingsMax} sessions={p.sessions} tabs={p.tabs} prefs={p.prefs} favicons={p.favicons} collapse={p.collapse} theme={p.theme} /> : null}
           {preferences ? <Preferences settingsMax={s.settingsMax} prefs={p.prefs} tabs={p.tabs} theme={p.theme} /> : null}
-          {theming ? <Theming settingsMax={s.settingsMax} prefs={p.prefs} theme={p.theme} modal={p.modal} savedThemes={p.savedThemes} collapse={p.collapse}/> : null}
+          {theming ? <Theming settingsMax={s.settingsMax} prefs={p.prefs} theme={p.theme} modal={p.modal} savedThemes={p.savedThemes} standardThemes={p.standardThemes} collapse={p.collapse}/> : null}
           {about ? <About settingsMax={s.settingsMax} /> : null}
         </Row>
       </Container>
