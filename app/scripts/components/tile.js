@@ -538,17 +538,17 @@ var Tile = React.createClass({
     var p = this.props;
     var tileStyle = {height: p.stores.prefs.tabSizeHeight, width: p.stores.prefs.tabSizeHeight+80};
     var mainTileStyle = s.screenshot ? s.hover ? style.tileHovered(s.screenshot, p.stores.prefs.tabSizeHeight) : style.tile(s.screenshot, p.stores.prefs.tabSizeHeight) : tileStyle;
-    _.merge(mainTileStyle, {
+    mainTileStyle = _.cloneDeep(_.merge(mainTileStyle, {
       backgroundColor: s.hover ? p.theme.tileBgHover : p.theme.tileBg, 
       boxShadow: `${p.theme.tileShadow} 1px 1px 3px -1px`
-    });
-    _.merge(style.ssIconBg, {
+    }));
+    style.ssIconBg = _.cloneDeep(_.merge(style.ssIconBg, {
       backgroundColor: p.theme.tileButtonBg
-    });
-    _.merge(style.ssPinnedIconBg, {
+    }));
+    style.ssPinnedIconBg = _.cloneDeep(_.merge(style.ssPinnedIconBg, {
       color: p.theme.tilePinned,
       backgroundColor: p.theme.tileButtonBg
-    });
+    }));
     var titleLimit = s.bookmarks || s.history ? 70 : 83;
     var drag = dragStore.get_drag();
     var remove = p.stores.prefs.mode !== 'tabs' && !s.openTab;

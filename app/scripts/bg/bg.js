@@ -19,15 +19,6 @@ var getPrefs = new Promise((resolve, reject)=>{
   chrome.storage.sync.get('preferences', (prefs)=>{
     if (prefs && prefs.preferences) {
       resolve(prefs);
-    } else {
-      // Temporary local storage import for users upgrading from previous versions.
-      chrome.storage.local.get('preferences', (prefs)=>{
-        if (prefs && prefs.preferences) {
-          resolve(prefs.preferences);
-        } else {
-          reject();
-        }
-      });
     }
   });
 });

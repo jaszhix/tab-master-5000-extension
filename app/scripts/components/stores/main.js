@@ -1055,10 +1055,6 @@ export var sortStore = Reflux.createStore({
 
 export var themeStore = Reflux.createStore({
   init(){
-    bgPrefs.then((prefs)=>{
-      if (typeof prefs.theme === 'undefined') {
-        prefs.theme = 0;
-      }
       this.defaultTheme = {
         textFieldsBg: 'rgba(255, 255, 255, 1)',
         textFieldsPlaceholder: 'rgba(204, 204, 204, 1)',
@@ -1204,6 +1200,7 @@ export var themeStore = Reflux.createStore({
         tileButtonBg: 'rgba(255, 255, 255, 1)'
       };
       var now = utilityStore.now();
+      this.wallpapers = [];
       this.standardWallpapers = [];
       this.standardThemes = [
         {
@@ -1262,39 +1259,40 @@ export var themeStore = Reflux.createStore({
           ]
         }
       ];
-      this.wallpapers = [];
       this.currentWallpaper = {data: null};
-      console.log('init.prefs.theme', prefs.theme);
-      this.standardThemes[prefs.theme].selected = true;
-      this.getSavedThemes().then((themes)=>{
-        if (themes.themes !== 'undefined') {
-          var selectedTheme = _.find(themes.themes, {selected: true});
-          this.theme = selectedTheme ? selectedTheme.theme : _.cloneDeep(this.standardThemes[prefs.theme].theme);
-          this.savedThemes = typeof themes.themes !== 'undefined' ? themes.themes : [];
-        } else {
-          this.theme = _.cloneDeep(this.standardThemes[prefs.theme].theme);
-          this.savedThemes = [];
-        }
-        if (this.savedThemes.length > 0 && _.find(this.savedThemes, {selected: true})) {
-          for (let i = this.savedThemes.length - 1; i >= 0; i--) {
-            if (this.savedThemes[i].wallpapers.length > 0) {
-              var selectedWallpaper = _.find(this.savedThemes[i].wallpapers, {selected: true});
-              if (selectedWallpaper && typeof selectedWallpaper.data !== 'undefined') {
-                this.currentWallpaper = selectedWallpaper;
-                break;
-              }
+      
+  },
+  load(prefs){
+    console.log('init.prefs.theme', prefs.theme);
+    this.standardThemes[prefs.theme].selected = true;
+    this.getSavedThemes(false).then((themes)=>{
+      if (themes.themes !== 'undefined') {
+        var selectedTheme = _.find(themes.themes, {selected: true});
+        this.theme = prefs.theme === 0 && selectedTheme ? selectedTheme.theme : _.cloneDeep(this.standardThemes[prefs.theme].theme);
+        this.savedThemes = typeof themes.themes !== 'undefined' ? themes.themes : [];
+      } else {
+        this.theme = _.cloneDeep(this.standardThemes[prefs.theme].theme);
+        this.savedThemes = [];
+      }
+      if (this.savedThemes.length > 0 && _.find(this.savedThemes, {selected: true})) {
+        for (let i = this.savedThemes.length - 1; i >= 0; i--) {
+          if (this.savedThemes[i].wallpapers.length > 0) {
+            var selectedWallpaper = _.find(this.savedThemes[i].wallpapers, {selected: true});
+            if (selectedWallpaper && typeof selectedWallpaper.data !== 'undefined') {
+              this.currentWallpaper = selectedWallpaper;
+              break;
             }
           }
-        } else {
-          var selectedStandardWallpaper = _.find(this.standardThemes[prefs.theme].wallpapers, {selected: true});
-          this.currentWallpaper = selectedStandardWallpaper ? selectedStandardWallpaper : {data: null};
         }
-        console.log('init current theme: ', this.theme);
-        console.log('init saved themes: ', this.savedThemes);
-        this.trigger(this.currentWallpaper);
-        this.trigger(this.theme);
-        this.trigger(this.savedThemes);
-      });
+      } else {
+        var selectedStandardWallpaper = _.find(this.standardThemes[prefs.theme].wallpapers, {selected: true});
+        this.currentWallpaper = selectedStandardWallpaper ? selectedStandardWallpaper : {data: null};
+      }
+      console.log('themeStore init current theme: ', this.theme);
+      console.log('themeStore init saved themes: ', this.savedThemes);
+      this.trigger(this.currentWallpaper);
+      this.trigger(this.theme);
+      this.trigger(this.savedThemes);
     });
   },
   set(obj){
@@ -1304,23 +1302,35 @@ export var themeStore = Reflux.createStore({
   getStandardThemes(){
     return this.standardThemes;
   },
-  getSavedThemes(){
-    return new Promise((resolve, reject)=>{
-      chrome.storage.local.get('themes', (themes)=>{
-        if (themes) {
-          resolve(themes);
-        } else {
-          resolve([]);
-        }
+  getSavedThemes(standard){
+    if (standard) {
+      return new Promise((resolve, reject)=>{
+        chrome.storage.local.get('standardThemes', (themes)=>{
+          if (themes) {
+            resolve(themes);
+          } else {
+            resolve([]);
+          }
+        });
       });
-    });
+    } else {
+      return new Promise((resolve, reject)=>{
+        chrome.storage.local.get('themes', (themes)=>{
+          if (themes) {
+            resolve(themes);
+          } else {
+            resolve([]);
+          }
+        });
+      });
+    }
   },
   getSelectedTheme(){
     return this.theme;
   },
   save(){
     var now = utilityStore.now();
-    this.deselectAll(false);
+    this.deselectAll();
     this.savedThemes.push({
       standard: false,
       selected: true,
@@ -1330,12 +1340,13 @@ export var themeStore = Reflux.createStore({
       theme: _.cloneDeep(this.theme),
       wallpapers: this.wallpapers
     });
-    console.log('savedThemes: ', this.savedThemes);
+    console.log('themeStore savedThemes: ', this.savedThemes);
     chrome.storage.local.set({themes: this.savedThemes}, (t)=>{
-      console.log('theme saved: ', t);
+      console.log('themeStore theme saved: ', t);
     });
-    this.trigger(this.theme);
-    this.trigger(this.savedThemes);
+    prefsStore.set_prefs('theme', 0);
+    this.selectTheme(_.findIndex(this.savedThemes, {created: now}), false);
+
   },
   newTheme(){
     this.wallpapers = [];
@@ -1344,23 +1355,26 @@ export var themeStore = Reflux.createStore({
     this.trigger(this.theme);
     this.trigger(this.currentWallpaper);
   },
-  deselectAll(standard){
-
-      for (let i = this.standardThemes.length - 1; i >= 0; i--) {
-        if (this.standardThemes[i].selected) {
-          this.standardThemes[i].selected = false;
-        }
+  deselectAll(){
+    console.log('themeStore deselectAll');
+    for (let i = this.standardThemes.length - 1; i >= 0; i--) {
+      if (this.standardThemes[i].selected) {
+        this.standardThemes[i].selected = false;
+        break;
       }
-
-      for (let i = this.savedThemes.length - 1; i >= 0; i--) {
-        if (this.savedThemes[i].selected) {
-          this.savedThemes[i].selected = false;
-        }
+    }
+    for (let i = this.savedThemes.length - 1; i >= 0; i--) {
+      if (this.savedThemes[i].selected) {
+        this.savedThemes[i].selected = false;
+        break;
       }
+    }
+    return;
   },
   selectTheme(themeIndex, standard){
-    if (standard) {
-      this.deselectAll(true);
+    console.log('themeStore selectTheme: ', themeIndex, standard);
+    this.deselectAll();
+    if (standard) {  
       this.standardThemes[themeIndex].selected = true;
       var selectedStandardWallpaper = _.findIndex(this.standardThemes[themeIndex].wallpapers, {selected: true});
       if (selectedStandardWallpaper !== -1) {
@@ -1372,10 +1386,8 @@ export var themeStore = Reflux.createStore({
       this.trigger(this.theme);
       this.trigger(this.currentWallpaper);
       prefsStore.set_prefs('theme', themeIndex);
-      this.update(themeIndex, standard);
     } else {
       if (this.savedThemes.length >= 0) {
-        this.deselectAll(false);
         this.savedThemes[themeIndex].selected = true;
         var selectedWallpaper = _.findIndex(this.savedThemes[themeIndex].wallpapers, {selected: true});
         if (selectedWallpaper !== -1) {
@@ -1383,12 +1395,28 @@ export var themeStore = Reflux.createStore({
         } else {
           this.currentWallpaper = null;
         }
+        prefsStore.set_prefs('theme', 0);
         this.theme = this.savedThemes[themeIndex].theme;
         this.trigger(this.theme);
         this.trigger(this.currentWallpaper);
         this.update(themeIndex, standard);
       }
     }
+  },
+  deselectWallpaper(themeIndex, standard){
+    console.log('themeStore deselectWallpaper: ', themeIndex, standard);
+    if (standard) {
+      var selectedWallpaper = _.findIndex(this.standardThemes[themeIndex].wallpapers, {selected: true});
+      if (selectedWallpaper !== -1) {
+        this.standardThemes[themeIndex].wallpapers[selectedWallpaper].selected = false;
+      }
+    } else {
+      var selectedCustomWallpaper = _.findIndex(this.savedThemes[themeIndex].wallpapers, {selected: true});
+      this.savedThemes[themeIndex].wallpapers[selectedCustomWallpaper].selected = false;
+      this.update(themeIndex, false);
+    }
+    this.currentWallpaper = {data: null};
+    this.trigger(this.currentWallpaper);
   },
   selectWallpaper(themeIndex, wallpaperIndex, standard){
     if (standard) {
@@ -1403,21 +1431,22 @@ export var themeStore = Reflux.createStore({
       }
       this.savedThemes[themeIndex].wallpapers[wallpaperIndex].selected = true;
       this.currentWallpaper = this.savedThemes[themeIndex].wallpapers[wallpaperIndex];
-      }
+    }
     this.trigger(this.currentWallpaper);
-    this.trigger(this.savedThemes);
+    this.update(themeIndex, standard);
   },
   update(themeIndex, standard){
     if (!standard) {
       _.merge(this.savedThemes[themeIndex], {
         theme: this.theme,
-        modified: utilityStore.now()
+        modified: utilityStore.now(),
       });
+      chrome.storage.local.set({themes: this.savedThemes}, (t)=>{
+        console.log('themeStore theme updated: ', themeIndex, standard);
+      });
+      console.log('themeStore themes: ');
+      this.trigger(this.savedThemes);
     }
-    chrome.storage.local.set({themes: this.savedThemes}, (t)=>{
-      console.log('theme updated: ', t);
-    });
-    this.trigger(this.savedThemes);
   },
   remove(themeIndex){
     if (_.isEqual(this.savedThemes[themeIndex].theme, this.theme)) {
@@ -1431,21 +1460,37 @@ export var themeStore = Reflux.createStore({
     }
     this.savedThemes = _.without(this.savedThemes, _.remove(this.savedThemes, this.savedThemes[themeIndex]));
     chrome.storage.local.set({themes: this.savedThemes}, (t)=>{
-      console.log('theme removed: ', t);
+      console.log('themeStore theme removed: ', themeIndex);
     });
     this.trigger(this.theme);
     this.trigger(this.savedThemes);
   },
+  removeWallpaper(themeIndex){
+    this.savedThemes[themeIndex].wallpapers = _.without(this.savedThemes[themeIndex].wallpapers, _.remove(this.savedThemes[themeIndex].wallpapers, _.find(this.savedThemes[themeIndex].wallpapers, {selected: true})));
+    this.update(themeIndex, false);
+  },
   export(){
-    var json = JSON.stringify(this.theme);
-    var filename = 'TM5K-Theme-'+utilityStore.now();
-    console.log(json);
+    var json = JSON.stringify(this.savedThemes);
+    var filename = 'TM5K-Themes-'+utilityStore.now();
     var blob = new Blob([json], {type: "application/json;charset=utf-8"});
     saveAs(blob, filename+'.json');
   },
+  import(e){
+    if (e.target.files[0].name.split('-')[1] === 'Themes') {
+      var reader = new FileReader();
+        reader.onload = (e)=> {
+        this.savedThemes = _.cloneDeep(JSON.parse(reader.result));
+        chrome.storage.local.set({themes: this.savedThemes}, (t)=>{
+          console.log('themeStore themes imported');
+        });
+        this.trigger(this.savedThemes);
+      };
+      reader.readAsText(e.target.files[0]);
+    }
+  },
   importWallpaper(e){
     var selectedThemeIndex = _.findIndex(this.savedThemes, {selected: true});
-    console.log('importWallpaper selectedThemeIndex: ', selectedThemeIndex);
+    console.log('themeStore importWallpaper selectedThemeIndex: ', selectedThemeIndex);
     console.log(selectedThemeIndex);
     if (this.savedThemes[selectedThemeIndex].wallpapers.length <= 5) {
       var reader = new FileReader();

@@ -91,7 +91,9 @@ var Theming = React.createClass({
       selectedTheme: -1,
       themeHover: null,
       leftTab: 'custom',
-      rightTab: 'color'
+      rightTab: 'color',
+      isNewTheme: true,
+      selectedWallpaper: null
     };
   },
   componentDidMount(){
@@ -100,7 +102,7 @@ var Theming = React.createClass({
       backgroundColor: themeStore.opacify(p.theme.settingsBg, 0.95),
       transition: 'background .2s ease-in', 
       width: '100%',
-      height: '40%',
+      height: '42%',
       top: 'initial',
       left: 'initial',
       right: 'initial',
@@ -108,7 +110,7 @@ var Theming = React.createClass({
       borderRadius: '0px'
     });
     v('body > div.ReactModalPortal > div > div > div > div.row.ntg-tabs > div:nth-child(2)').css({
-      top: '61%',
+      top: '59%',
       right: '1%'
     });
     v('.ntg-settings-pane').css({height: '100%'});
@@ -120,6 +122,10 @@ var Theming = React.createClass({
     this.findSelectedTheme(p);
   },
   componentWillReceiveProps(nP){
+    var p = this.props;
+    if (!_.isEqual(nP.savedThemes, p.savedThemes) || !_.isEqual(nP.standardThemes, p.standardThemes)) {
+      this.findSelectedTheme(nP);
+    }
     if (nP.theme.settingsBg !== this.props.theme.settingsBg) {
       v('body > div.ReactModalPortal > div > div').css({
         backgroundColor: themeStore.opacify(nP.theme.settingsBg, 0.8)
@@ -161,25 +167,43 @@ var Theming = React.createClass({
     } else {
       selectedTheme = _.findIndex(props.standardThemes, {selected: true});
     }
-    this.setState({selectedTheme: selectedTheme});
+    this.setState({
+      selectedTheme: selectedTheme,
+      selectedWallpaper: _.find(props.savedThemes[selectedTheme].wallpapers, {selected: true}),
+      isNewTheme: selectedTheme && selectedTheme === -1 || props.savedThemes.length === 0
+    });
   },
   handleSelectTheme(i, standard){
-    if (!standard) {
-      this.setState({selectedTheme: i});
-    }
+    console.log('handleSelectTheme: ', i, standard);
+    this.setState({selectedTheme: i, rightTab: 'color'});
     themeStore.selectTheme(i, standard);
   },
   handleNewTheme(){
+    this.setState({
+      selectedTheme: -1,
+      isNewTheme: true
+    });
     themeStore.newTheme();
-    this.setState({selectedTheme: {created: 0}});
+  },
+  handleSaveTheme(){
+    this.setState({isNewTheme: false});
+    themeStore.save();
+
+
+    /*
+
+    1. Save button needs to switch to update on click since new theme is in state
+    2. deselecting wallpaper should trigger selection method
+    3. add labelling UI to theme items
+    4. Add theme importing
+
+    */
   },
   render: function(){
     var p = this.props;
     var s = this.state;//mtop 32px
-    var isNewTheme = s.selectedTheme && s.selectedTheme.created === 0 || p.savedThemes.length === 0;
     console.log('Theming STATE', s);
     console.log('Theming PROPS', p);
-    var theme = s.leftTab === 'custom' ? typeof p.savedThemes[s.selectedTheme] !== 'undefined' ? p.savedThemes[s.selectedTheme] : p.standardThemes[s.selectedTheme] : typeof p.standardThemes[s.selectedTheme] !== 'undefined' ? p.standardThemes[s.selectedTheme] : p.savedThemes[s.selectedTheme];
     
     return (
       <div className="theming">
@@ -197,7 +221,7 @@ var Theming = React.createClass({
         </Row>
         <Row>
           <Col size="3">
-            <Col size="12" style={{height: '25%', width: '24%', overflowY: 'auto', position: 'fixed', top: '70%', left: '2%'}} onMouseLeave={()=>this.setState({themeHover: -1})}>
+            <Col size="12" style={{height: '27%', width: '24%', overflowY: 'auto', position: 'fixed', top: '67.9%', left: '2%'}} onMouseLeave={()=>this.setState({themeHover: -1})}>
               {s.leftTab === 'custom' ?
               <Row>
                 {p.savedThemes.length > 0 ? p.savedThemes.map((theme, i)=>{
@@ -220,15 +244,15 @@ var Theming = React.createClass({
                   );
                 }) : null}
                 <Btn 
-                  onClick={isNewTheme ? ()=>themeStore.save() : ()=>themeStore.update()} 
+                  onClick={s.isNewTheme ? ()=>this.handleSaveTheme() : ()=>themeStore.update()} 
                   className="ntg-setting-btn" 
                   style={{position: 'fixed', top: '96%'}}>
-                    {`${isNewTheme ? 'Save' : 'Update'}${p.collapse ? ' Theme' : ''}`}
+                    {`${s.isNewTheme ? 'Save' : 'Update'}${p.collapse ? ' Theme' : ''}`}
                 </Btn>
-                <Btn onClick={this.handleNewTheme} className="ntg-setting-btn" style={{position: 'fixed', top: '96%', marginLeft: isNewTheme ? p.collapse ? '108px' : '61px' : p.collapse ? '122px' : '74px'}}>{`New ${p.collapse ? 'Theme' : ''}`}</Btn>
-                <Btn onClick={()=>themeStore.export()} style={{position: 'fixed', top: '96%', marginLeft: isNewTheme ? p.collapse ? '208px' : '113px' : p.collapse ? '222px' : '126px'}} className="ntg-setting-btn" fa="arrow-circle-o-down">Export</Btn>
-                {/*<input {...this.props} children={undefined} type="file" onChange={(e)=>themeStore.export()} ref="fileInput" style={style.hiddenInput} />*/}
-                {/*<Btn onClick={this.triggerInput} style={p.settingsMax ? {top: '95%', marginLeft: '86px'} : {marginLeft: '86px'}} className="ntg-setting-btn" fa="arrow-circle-o-up">Import</Btn>*/}
+                <Btn onClick={this.handleNewTheme} className="ntg-setting-btn" style={{position: 'fixed', top: '96%', marginLeft: s.isNewTheme ? p.collapse ? '108px' : '61px' : p.collapse ? '122px' : '74px'}}>{`New ${p.collapse ? 'Theme' : ''}`}</Btn>
+                <Btn onClick={()=>themeStore.export()} style={{position: 'fixed', top: '96%', marginLeft: s.isNewTheme ? p.collapse ? '208px' : '113px' : p.collapse ? '222px' : '126px'}} className="ntg-setting-btn" fa="arrow-circle-o-down">Export</Btn>
+                <input {...this.props} children={undefined} type="file" onChange={(e)=>themeStore.import(e)} ref="import" style={style.hiddenInput} />
+                <Btn onClick={()=>this.refs.import.click()} style={{position: 'fixed', top: '96%', marginLeft: s.isNewTheme ? p.collapse ? '288px' : '193px' : p.collapse ? '303px' : '206px'}} className="ntg-setting-btn" fa="arrow-circle-o-down">Import</Btn>
               </Row> : null}
               {s.leftTab === 'tm5k' ?
               <Row>
@@ -258,7 +282,7 @@ var Theming = React.createClass({
                   <li style={{padding: '0px'}} className={`${s.rightTab === 'color' ? 'active' : ''}`}>
                     <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({rightTab: 'color'})}><i className="settings-fa fa fa-sticky-note-o"/>  Color Scheme</a>
                   </li>
-                  {!isNewTheme || typeof theme !== 'undefined' ? 
+                  {!s.isNewTheme || typeof theme !== 'undefined' ? 
                   <li style={{padding: '0px'}} className={`${s.rightTab === 'wallpaper' ? 'active' : ''}`}>
                     <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({rightTab: 'wallpaper'})}><i className="settings-fa fa fa-star-o"/>  Wallpaper</a>
                   </li> : null}
@@ -316,13 +340,25 @@ var Theming = React.createClass({
             </Row> : null}
             {s.rightTab === 'wallpaper' ?
             <Row fluid={true} style={{marginTop: '28px'}}>
-              <Col size="12">
-                {typeof theme.wallpapers.length !== 'undefined' && theme.wallpapers.length > 0 ? theme.wallpapers.map((wp, i)=>{
-                  return <div key={i} onClick={()=>themeStore.selectWallpaper(s.selectedTheme, i, s.leftTab === 'tm5k')} className="wallpaper-tile" style={{backgroundColor: p.theme.lightBtnBg, backgroundImage: `url('${wp.data}')`, backgroundSize: 'cover', height: '90px', width: '160px', padding: '6px', display: 'inline-block', margin: '8px', border: wp.selected ? `2px solid ${p.theme.lightBtnBg}` : 'initial', cursor: !wp.selected ? 'pointer' : null}}></div>;
+              <Col size="6">
+                {s.leftTab === 'custom' && typeof p.savedThemes[s.selectedTheme] !== 'undefined' ? p.savedThemes[s.selectedTheme].wallpapers.map((wp, i)=>{
+                  return <div key={i} onClick={()=>themeStore.selectWallpaper(s.selectedTheme, i, false)} className="wallpaper-tile" style={{backgroundColor: p.theme.lightBtnBg, backgroundImage: `url('${wp.data}')`, backgroundSize: 'cover', height: '90px', width: '160px', padding: '6px', display: 'inline-block', margin: '8px', border: wp.selected ? `2px solid ${p.theme.lightBtnBg}` : 'initial', cursor: !wp.selected ? 'pointer' : null}}></div>;
                 }) : null}
+                {s.leftTab === 'tm5k' && typeof p.standardThemes[s.selectedTheme] !== 'undefined' ? p.standardThemes[s.selectedTheme].wallpapers.map((wp, i)=>{
+                  return <div key={i} onClick={()=>themeStore.selectWallpaper(s.selectedTheme, i, true)} className="wallpaper-tile" style={{backgroundColor: p.theme.lightBtnBg, backgroundImage: `url('${wp.data}')`, backgroundSize: 'cover', height: '90px', width: '160px', padding: '6px', display: 'inline-block', margin: '8px', border: wp.selected ? `2px solid ${p.theme.lightBtnBg}` : 'initial', cursor: !wp.selected ? 'pointer' : null}}></div>;
+                }) : null}
+                {s.leftTab === 'custom' && p.savedThemes[s.selectedTheme].wallpapers.length > 0 ?
+                <div onClick={()=>themeStore.deselectWallpaper(s.selectedTheme, s.leftTab === 'tm5k')} className="wallpaper-tile" style={{backgroundColor: p.theme.darkBtnBg, height: '90px', width: '160px', padding: '6px', display: 'inline-block', margin: '8px', cursor: 'pointer'}}>
+                  <i className="fa fa-minus-circle" style={{fontSize: '72px', position: 'fixed', marginLeft: '41px', marginTop: '2px', color: p.theme.lightBtnBg}}/>
+                </div> : null}
                 {s.leftTab === 'custom' ? <Btn onClick={()=>this.refs.wallpaper.click()} className="ntg-setting-btn" style={{position: 'fixed', top: '96%', left: '27%'}}>Import Wallpaper</Btn> : null}
                 <input {...this.props} children={undefined} type="file" onChange={(e)=>themeStore.importWallpaper(e)} ref="wallpaper" style={style.hiddenInput} />
               </Col>
+              {s.leftTab === 'custom' ? p.savedThemes[s.selectedTheme].wallpapers.length > 0 && s.selectedWallpaper ? 
+              <Col size="6">
+                <div className="wallpaper-tile" style={{backgroundColor: p.theme.lightBtnBg, backgroundImage: s.selectedWallpaper ? `url('${s.selectedWallpaper.data}')` : 'initial', backgroundSize: 'cover', height: '180px', width: '320px', padding: '6px', display: 'inline-block'}}></div>
+                <Btn onClick={()=>themeStore.removeWallpaper(s.selectedTheme)} className="ntg-setting-btn" style={{position: 'fixed', top: '96%', left: '62%'}}>Remove</Btn> 
+              </Col> : null : null}
             </Row> : null}
           </Col>
         </Row>

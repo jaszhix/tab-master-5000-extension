@@ -203,6 +203,7 @@ var Root = React.createClass({
       sidebar: e.sidebar
     });
     if (s.init) {
+      themeStore.load(e);
       // Init methods called here after prefs are loaded from Chrome storage.
       if (e.mode !== 'tabs') {
         _.defer(()=>utilityStore.handleMode(e.mode));
