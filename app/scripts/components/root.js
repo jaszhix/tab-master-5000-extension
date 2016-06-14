@@ -18,6 +18,9 @@ import TileGrid from './tile';
 import ModalHandler from './modal';
 import ContextMenu from './context';
 import Preferences from './preferences';
+if (module.hot) {
+  module.hot.accept();
+}
 
 var Loading = React.createClass({
   render: function() {
@@ -102,7 +105,7 @@ var Search = React.createClass({
           </Col>
           <Col size="6">
             {searchStore.get_search().length > 3 ? <span className="search-msg ntg-search-google-text">Press Enter to Search Google</span> : null}
-            <Btn style={{float: 'left'}} onClick={()=>modalStore.set_modal(true, 'settings')} className="ntg-top-btn" fa="cogs">Settings</Btn>
+            <Btn style={{float: 'left'}} onClick={()=>modalStore.set_modal(true, 'settings')} className="ntg-top-btn" fa="cogs">Settings...</Btn>
             {p.event === 'newVersion' ? <Btn onClick={()=>chrome.runtime.reload()} style={{float: 'left'}} className="ntg-top-btn" fa="rocket">New Version Available</Btn> : null}
             {p.event === 'versionUpdate' ? <Btn onClick={this.openAbout} style={{float: 'left'}} className="ntg-top-btn" fa="info-circle">Updated to {utilityStore.get_manifest().version}</Btn> : null}
             {p.event === 'installed' ? <Btn onClick={this.openAbout} style={{float: 'left'}} className="ntg-top-btn" fa="thumbs-o-up">Thank you for installing TM5K</Btn> : null}

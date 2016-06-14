@@ -1,15 +1,15 @@
 var fs = require('fs');
 var gulp = require('gulp');
 var webpack = require('webpack');
-var path = require('path');
 var webpackStream = require('webpack-stream');
-var autoprefixer = require('autoprefixer');
 var imagemin = require('gulp-imagemin');
 var htmlclean = require('gulp-htmlclean');
 var del = require('del');
 var zip = require('gulp-zip');
 var runSequence = require('run-sequence');
 var clear = require('clear');
+var rename = require('gulp-rename');
+var config = require('./webpack.config');
 //var exec = require('child_process').exec;
 
 var manifest = JSON.parse(fs.readFileSync('./app/manifest.json', 'utf8'));
@@ -52,7 +52,7 @@ var plugins = [];
 var env = {production: false};
 var uglify = function(){
   if (env.production) {
-    plugins.push(new webpack.optimize.UglifyJsPlugin({
+    config.plugins.push(new webpack.optimize.UglifyJsPlugin({
       compress: {
         warnings: false,
         drop_console: true,
@@ -76,54 +76,14 @@ var uglify = function(){
     plugins.push(new webpack.optimize.OccurenceOrderPlugin(true));
   }
 };
-var scssIncludePaths = [
-  path.join(__dirname, './node_modules')
-];
-var autoprefixerOptions = {
-  browsers: [
-    'chrome >= 34'
-  ]
-};
-var config = {
-  entry: '',
-  module: {
-    loaders: [{
-      test: /\.js$/,
-      loader: 'babel'
-    },{
-      test: /\.css$/,
-      loader: 'style-loader!css-loader'
-    },{
-      test: /\.scss$/,
-      loader: 'style-loader!css-loader!sass-loader?outputStyle=compressed&sourceComments=false&' + scssIncludePaths.join('&includePaths[]=')
-    },{
-      test: /\.(png|jpg|gif)$/,
-      loader: 'file-loader?name=[name].[ext]'
-    },{
-      test: /\.(ttf|eot|svg|woff(2)?)(\S+)?$/,
-      loader: 'file-loader?name=[name].[ext]'
-    }],
-  },
-  plugins: plugins,
-  postcss: function () {
-    return [autoprefixer(autoprefixerOptions)];
-  },
-  output: {
-    filename: '',
-  }
-};
-/*gulp.task('reload', ['build-bg'],function(cb) {
-    console.log('Pausing watch during ES6 formatting.');
-    exec('chrome-extensions-reloader --single-run', function(err, stdout, stderr) {
-        console.log(stdout);
-        console.log(stderr);
-        cb(err);
-    });
-});*/
+
 gulp.task('build', ['build-bg'], function() {
-  uglify();
-  config.entry = './app/scripts/components/root.js';
-  config.output.filename = 'app.js';
+  if (env.production) {
+    uglify();
+    config.entry = './app/scripts/components/root.js';
+    config.output.filename = 'app.js';
+    config.output.publicPath = 'chrome-extension://phnleeijfhkmlpeljljklabcmjijdoli/';
+  }
   return gulp.src('./app/scripts/components/root.js')
     .pipe(webpackStream(config))
     .pipe(gulp.dest('./app/scripts/'));
@@ -150,8 +110,10 @@ gulp.task('copy', function() {
     .pipe(gulp.dest('./dist/'));
 });
 gulp.task('htmlmin', function() {
-  return gulp.src('./dist/newtab.html')
+  del.sync('./dist/newtab.html');
+  return gulp.src('./dist/newtab_prod.html')
     .pipe(htmlclean())
+    .pipe(rename('newtab.html'))
     .pipe(gulp.dest('./dist'));
 });
 gulp.task('imgmin', function() {
@@ -167,7 +129,8 @@ gulp.task('package', function() {
     './dist/scripts/components/', 
     './dist/scripts/bg/', 
     './dist/scripts/content/',
-    './dist/styles/*.scss'
+    './dist/styles/*.scss',
+    './dist/newtab_prod.html'
     ]);
   return gulp.src('./dist/**/**/*')
     .pipe(zip('tm5k-dist-' + Date.now() + '.zip'))
@@ -190,7 +153,7 @@ gulp.task('dist',  function (callback) {
   runSequence('build', 'copy', 'htmlmin', 'imgmin', 'package', callback);
 });
 gulp.task('watch', function() {
-  gulp.watch('./app/scripts/components/**/*.{js,jsx,es6}', ['build']);
+  //gulp.watch('./app/scripts/components/**/*.{js,jsx,es6}', ['build']);
   gulp.watch('./app/scripts/bg/*.{js,jsx,es6}', ['build-bg']);
   gulp.watch('./app/scripts/content/*.{js,jsx,es6}', ['build-content']);
   gulp.watch('./app/styles/*.scss', ['build']);

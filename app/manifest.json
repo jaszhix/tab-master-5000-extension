@@ -57,5 +57,6 @@
     "management",
     "bookmarks",
     "history"
-  ]
+  ],
+  "content_security_policy": "script-src http://127.0.0.1:8009 'unsafe-eval'; connect-src http://127.0.0.1:8009 https://127.0.0.1:8009 ws://127.0.0.1:8009/; object-src 'self'; style-src * 'unsafe-inline' 'self' blob:;"
 }
