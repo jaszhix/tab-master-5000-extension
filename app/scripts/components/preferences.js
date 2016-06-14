@@ -5,6 +5,7 @@ import _ from 'lodash';
 import utils from './utils';
 
 import Slider from 'rc-slider';
+import ReactTooltip from './tooltip/tooltip';
 import {reRenderStore, utilityStore, blacklistStore} from './stores/main';
 import prefsStore from './stores/prefs';
 import screenshotStore from './stores/screenshot';
@@ -21,7 +22,7 @@ var Slide = React.createClass({
     var p = this.props;
     var s = this.state;
     return (
-      <div onMouseEnter={()=>this.setState({hover: true})} onMouseLeave={()=>this.setState({hover: false})} style={s.hover ? {backgroundColor: p.hoverBg, borderRadius: '3px'} : null}>
+      <div onMouseEnter={()=>this.setState({hover: true})} onMouseLeave={()=>this.setState({hover: false})} style={s.hover ? {backgroundColor: p.hoverBg, borderRadius: '3px'} : null} data-place="bottom" data-tip={`<div style="max-width: 350px;">${p['data-tip']}</div>`}>
         <Row className={p.className} onMouseEnter={p.onMouseEnter}>
           <span>{p.label}</span>
           <Slider min={p.min} max={p.max} defaultValue={p.defaultValue} value={p.value} onChange={p.onChange} />
@@ -37,11 +38,17 @@ var Toggle = React.createClass({
       hover: false
     };
   },
+  componentDidMount(){
+    ReactTooltip.rebuild();
+  },
+  componentWillUnmount(){
+    ReactTooltip.hide();
+  },
   render: function() {
     var p = this.props;
     var s = this.state;
     return (
-      <Row onMouseEnter={()=>this.setState({hover: true})} onMouseLeave={()=>this.setState({hover: false})} style={s.hover ? {cursor: 'pointer', backgroundColor: p.hoverBg, borderRadius: '3px'} : {cursor: 'pointer'}}>
+      <Row onMouseEnter={()=>this.setState({hover: true})} onMouseLeave={()=>this.setState({hover: false})} style={s.hover ? {cursor: 'pointer', backgroundColor: p.hoverBg, borderRadius: '3px'} : {cursor: 'pointer'}} data-place="bottom" data-tip={p['data-tip']}>
         <Row onMouseEnter={p.onMouseEnter} className={p.child ? "prefs-row-child" : "prefs-row"}>
           <span onClick={p.onClick}><i className={p.on ? "fa fa-toggle-on" : "fa fa-toggle-off"} style={{fontSize: '18px'}}/> {p.label}</span>
           <Col size="12">
@@ -57,7 +64,7 @@ var Blacklist = React.createClass({
   mixins: [Reflux.ListenerMixin],
   getInitialState(){
     return {
-      blacklistValue: null,
+      blacklistValue: '',
       blacklist: blacklistStore.get_blacklist(),
       formatError: null
     };
@@ -108,12 +115,9 @@ var Blacklist = React.createClass({
     var s = this.state;
     return (
       <Col size="12" style={{marginTop: '3px'}}>
-        <Col size="6" style={{width: '350px'}}>
           {s.formatError ? <span style={{width: '350px', color: 'A94442'}}>{s.formatError.join(', ')}</span> : null}
-          <textarea value={s.blacklistValue} onChange={this.setBlacklist} name="" id="input" className="form-control blacklist" rows="3" required="required" />
+          <textarea value={s.blacklistValue} onChange={this.setBlacklist} name="" id="input" className="form-control blacklist" rows="3" style={{width: '100%'}} />
           <Btn style={{marginTop: '7px'}} onClick={this.blacklistSubmit} className="ntg-apply-btn" fa="plus">Save</Btn>
-        </Col>
-        <Col size="6" />
       </Col>
     );
   }
@@ -162,33 +166,39 @@ var Preferences = React.createClass({
             <Toggle onMouseEnter={()=>this.handleToggle('context')} 
                     onClick={()=>this.handleClick('context')} 
                     on={p.prefs.context} label="Enable context menu"
-                    hoverBg={p.theme.settingsItemHover} />
+                    hoverBg={p.theme.settingsItemHover}
+                    data-tip="This option toggles the right-click context menu on and off. If you disable it, some tab control features will not be accessible." />
             <Toggle onMouseEnter={()=>this.handleToggle('drag')}
                     onClick={()=>this.handleClick('drag')} 
                     on={p.prefs.drag} label="Enable draggable tab re-ordering"
-                    hoverBg={p.theme.settingsItemHover}/>
+                    hoverBg={p.theme.settingsItemHover}
+                    data-tip="This features adds a hand icon to the top right corner of your tab tiles. Clicking the icon and dragging a tab will allow you to re-order your tabs from the grid." />
             <Toggle onMouseEnter={()=>this.handleToggle('singleNewTab')} 
                     onClick={()=>this.handleClick('singleNewTab')} 
                     on={p.prefs.singleNewTab} label="Allow only one New Tab to be open at any time"
-                    hoverBg={p.theme.settingsItemHover}/>
+                    hoverBg={p.theme.settingsItemHover}
+                    data-tip="Enabling this option enforces the closing of all New Tabs except the one that is currently focused. This is useful on older computers." />
             <Toggle onMouseEnter={()=>this.handleToggle('animations')} 
                     onClick={()=>this.handleClick('animations')} 
                     on={p.prefs.animations} label="Enable animations"
-                    hoverBg={p.theme.settingsItemHover}>
+                    hoverBg={p.theme.settingsItemHover}
+                    data-tip="This option toggles tab action animations as well as the blur effects. Disabling this is useful on lower end computers with limited hardware acceleration.">
               {p.prefs.animations ? 
                 <Toggle onMouseEnter={()=>this.handleToggle('duplicate')}
                       onClick={()=>this.handleClick('duplicate')} 
                       on={p.prefs.duplicate} child={true} label="Enable pulsing duplicate tabs"
-                      hoverBg={p.theme.settingsItemHover}>
+                      hoverBg={p.theme.settingsItemHover}
+                      data-tip="This option will make all duplicates tabs pulsate except the first tab. This makes it easier to see how many duplicate tabs you have open.">
               </Toggle> : null}
             </Toggle>
             <Toggle onMouseEnter={()=>this.handleToggle('screenshot')}
                     onClick={()=>this.handleClick('screenshot')}
                     on={p.prefs.screenshot} label="Enable tab screenshots"
-                    hoverBg={p.theme.settingsItemHover}>
+                    hoverBg={p.theme.settingsItemHover}
+                    data-tip="Enabling this feature adds a screen shot of a tab in the tab tile's background once its been clicked. After a screenshot is active, it is stored in Chrome until the page is active again.">
               {p.prefs.screenshot ?
                 <div>
-                  <Row className="prefs-row-first">
+                  <Row className="prefs-row-first" data-place="bottom" data-tip={`<div style="max-width: 350px;">If you notice performance issues, clearing the screenshot cache occassionally can help. Screenshots older than three days will start being purged once the cache reaches 50MB.</div>`}>
                     {s.bytesInUse ? `Screenshot disk usage: ${utils.formatBytes(s.bytesInUse, 2)}` : null}
                   </Row>
                   <Toggle onMouseEnter={()=>this.handleToggle('screenshotBg')} 
@@ -196,12 +206,18 @@ var Preferences = React.createClass({
                           on={p.prefs.screenshotBg} 
                           child={true} 
                           label="Enable screenshots in the background on hover"
-                          hoverBg={p.theme.settingsItemHover}>
+                          hoverBg={p.theme.settingsItemHover}
+                          data-tip="This setting enables full-size tab screenshots to fill the background of the New Tab page, while you are hovering over a tab with a screenshot. Screenshots are blurred and blended into the background.">
                   </Toggle>
                   <Btn onClick={()=>screenshotStore.clear()} style={p.settingsMax ? {top: '95%', marginLeft: '125px'} : {marginLeft: '125px'}} className="ntg-setting-btn" fa="trash">Clear Screenshot Cache</Btn>
                 </div>
               : null}
             </Toggle>
+            <Toggle onMouseEnter={()=>this.handleToggle('tooltip')}
+                    onClick={()=>this.handleClick('tooltip')}
+                    on={p.prefs.tooltip} label="Enable tooltips"
+                    hoverBg={p.theme.settingsItemHover}
+                    data-tip="Toggles the tooltip you are reading now." />
           </Col>
           <Col size="6">
             {!p.options ?
@@ -214,7 +230,8 @@ var Preferences = React.createClass({
                 value={p.prefs.screenshotBgOpacity}
                 onChange={(e)=>prefsStore.set_prefs('screenshotBgOpacity',e)} 
                 onMouseEnter={()=>this.handleToggle('screenshotBgOpacity')}
-                hoverBg={p.theme.settingsItemHover}/> 
+                hoverBg={p.theme.settingsItemHover}
+                data-tip="Controls the strength of the opacity of background screenshots and wallpaper." /> 
                 <Slide 
                 className="prefs-row-last" 
                 label={`Set background image blur strength: ${p.prefs.screenshotBgBlur}`}
@@ -223,7 +240,8 @@ var Preferences = React.createClass({
                 value={p.prefs.screenshotBgBlur}
                 onChange={(e)=>prefsStore.set_prefs('screenshotBgBlur',e)} 
                 onMouseEnter={()=>this.handleToggle('screenshotBgBlur')}
-                hoverBg={p.theme.settingsItemHover}/> 
+                hoverBg={p.theme.settingsItemHover}
+                data-tip="Controls the strength of the blur of background screenshots and wallpaper."/> 
                 <Slide  className="prefs-row" 
                 label={`Set tile size: ${p.prefs.tabSizeHeight}x${p.prefs.tabSizeHeight+80}`}
                 min={120} max={300}
@@ -234,47 +252,55 @@ var Preferences = React.createClass({
                 onMouseEnter={()=>this.handleToggle('tabSizeHeight')}
                 step={20}
                 dots={true}
-                hoverBg={p.theme.settingsItemHover}/>
+                hoverBg={p.theme.settingsItemHover}
+                data-tip="Controls the size of the tiles." />
               </div>  : null}
             <Toggle onMouseEnter={()=>this.handleToggle('sessionsSync')}
                     onClick={()=>this.handleClick('sessionsSync')} 
                     on={p.prefs.sessionsSync} label="Enable session synchronization"
-                    hoverBg={p.theme.settingsItemHover}/>
+                    hoverBg={p.theme.settingsItemHover}
+                    data-tip="Enabling session synchronization allows you to keep a saved session persistently up to date with the current Chrome window. Synchronization occurs at a max interval of fifteen seconds." />
             <Toggle onMouseEnter={()=>this.handleToggle('actions')}
                     onClick={()=>this.handleClick('actions')}
                     on={p.prefs.actions} label="Enable undoing of tab actions"
-                    hoverBg={p.theme.settingsItemHover}/>
+                    hoverBg={p.theme.settingsItemHover}
+                    data-tip="This option allows you to undo a tab action by pressing CTRL+Z, or using the right-click context menu on a tab tile while in the tabs view." />
             <Toggle onMouseEnter={()=>this.handleToggle('keyboardShortcuts')}
                     onClick={()=>this.handleClick('keyboardShortcuts')}
                     on={p.prefs.keyboardShortcuts} label="Enable keyboard shortcuts"
-                    hoverBg={p.theme.settingsItemHover}/>
+                    hoverBg={p.theme.settingsItemHover}
+                    data-tip={`
+                      <div><strong>CTRL+F</strong>: Search</div>
+                      <div><strong>CTRL+SHIFT+S</strong>: Sessions</div>
+                      <div><strong>CTRL+SHIFT+P</strong>: Preferences</div>
+                      <div><strong>CTRL+SHIFT+T</strong>: Theming</div>
+                      <div><strong>CTRL+SHIFT+A</strong>: About</div>
+                      <div><strong>CTRL+S</strong>: Save Session</div>
+                      <div><strong>CTRL+M</strong>: Maximize</div>
+                      <div><strong>CTRL+ALT+SHIFT+S</strong>: Sort</div>
+                      <div><strong>CTRL+ALT+SHIFT+SPACE</strong>: Sidebar</div>
+                      <div><strong>ALT+T</strong>: Tabs</div>
+                      <div><strong>ALT+B</strong>: Bookmarks</div>
+                      <div><strong>ALT+H</strong>: History</div>
+                      <div><strong>ALT+S</strong>: Sessions</div>
+                      <div><strong>ALT+A</strong>: Apps</div>
+                      <div><strong>ALT+E</strong>: Extensions</div>
+                      `}/>
             <Toggle onMouseEnter={()=>this.handleToggle('blacklist')} 
                       onClick={()=>this.handleClick('blacklist')} 
                       on={p.prefs.blacklist} label="Enable website blacklist"
-                      hoverBg={p.theme.settingsItemHover}>
+                      hoverBg={p.theme.settingsItemHover}
+                      data-tip="Enter a comma separated list of domains, and they will be automatically closed under any circumstance. This is useful for blocking websites which may inhibit productivity, or you simply don't like.">
                 {p.prefs.blacklist ? <Blacklist /> : null} 
             </Toggle>
           </Col>
         </Row>
-        <Row className="prefs-row prefs-info">
-          {!s.hover ? <p>Preferences change the way the extension behaves. Options marked as experimental may have bugs, or have performance issues on older computers.</p> : null}
-          {s.hover === 'drag' ? <p>This features adds a hand icon to the top right corner of your tab tiles. Clicking the icon and dragging a tab will allow you to re-order your tabs from the grid.</p> : null}
-          {s.hover === 'context' ? <p>This option toggles the right-click context menu on and off. If you disable it, some tab control features will not be accessible.</p> : null}
-          {s.hover === 'duplicate' ? <p>This option will make all duplicates tabs pulsate except the first tab. This makes it easier to see how many duplicate tabs you have open.</p> : null}
-          {s.hover === 'screenshot' ? <p>Enabling this feature adds a screen shot of a tab in the tab tile's background once its been clicked. After a screenshot is active, it is stored in Chrome until the page is active again.</p> : null}
-          {s.hover === 'screenshotBg' ? <p>This setting enables full-size tab screenshots to fill the background of the New Tab page, while you are hovering over a tab with a screenshot. Screenshots are blurred and blended into the background.</p> : null}
-          {s.hover === 'blacklist' ? <p>Enter a comma separated list of domains, and they will be automatically closed under any circumstance. This is useful for blocking websites which may inhibit productivity, or you simply don't like.</p> : null}
-          {s.hover === 'animations' ? <p>This option toggles tab action animations as well as the blur effects. Disabling this is useful on lower end computers with limited hardware acceleration.</p> : null}
-          {s.hover === 'actions' ? <p>This option allows you to undo a tab action by pressing CTRL+Z, or using the right-click context menu on a tab tile while in the tabs view.</p> : null}
-          {s.hover === 'sessionsSync' ? <p>Enabling session synchronization allows you to keep a saved session persistently up to date with the current Chrome window. Synchronization occurs at a max interval of fifteen seconds.</p> : null}
-          {s.hover === 'singleNewTab' ? <p>Enabling this option enforces the closing of all New Tabs except the one that is currently focused. This is useful on older computers.</p> : null}
-          {s.hover === 'tabSizeHeight' ? <p>This setting controls the size of the tiles.</p> : null}
-          {s.hover === 'keyboardShortcuts' ?
-            <span>
-              <p><strong>CTRL+F</strong>: Search, <strong>CTRL+ALT+S</strong>: Sessions, <strong>CTRL+ALT+P</strong>: Preferences, <strong>CTRL+ALT+A</strong>: About, <strong>CTRL+S</strong>: Save Session, <strong>CTRL+M</strong>: Maximize, <strong>CTRL+ALT+SHIFT+S</strong>: Sort, <strong>CTRL+ALT+SHIFT+SPACE</strong>: Sidebar, <strong>ALT+T</strong>: Tabs, <strong>ALT+B</strong>: Bookmarks, <strong>ALT+H</strong>: History, <strong>ALT+S</strong>: Sessions, <strong>ALT+A</strong>: Apps, <strong>ALT+E</strong>: Extensions</p> 
-            </span>
-          : null}
-        </Row>
+        {p.options && p.prefs.tooltip ?
+          <ReactTooltip 
+          effect="solid"
+          place="bottom"
+          multiline={true}
+          html={true} /> : null}
       </div>
     );
   }

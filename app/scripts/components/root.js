@@ -5,6 +5,7 @@ import _ from 'lodash';
 import v from 'vquery';
 import kmp from 'kmp';
 import ReactUtils from 'react-utils';
+import ReactTooltip from './tooltip/tooltip';
 import '../../styles/app.scss';
 window.v = v;
 import {themeStore, createStore, removeStore, updateStore, keyboardStore, sortStore, chromeAppStore, faviconStore, sessionsStore, actionStore, historyStore, bookmarksStore, relayStore, sidebarStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore, applyTabOrderStore} from './stores/main';
@@ -128,10 +129,11 @@ var Root = React.createClass({
       grid: true,
       search: '',
       window: true,
-      settings: true,
+      settings: 'sessions',
       collapse: true,
       width: window.innerWidth,
       context: false,
+      modal: null,
       event: '',
       chromeVersion: utilityStore.chromeVersion(),
       prefs: [],
@@ -180,6 +182,7 @@ var Root = React.createClass({
     this.listenTo(relayStore, this.relayChange);
     this.listenTo(applyTabOrderStore, this.applyTabOrderChange);
     this.listenTo(sortStore, this.sortChange);
+    this.listenTo(modalStore, this.modalChange);
     
     console.log('Chrome Version: ',utilityStore.chromeVersion());
     console.log('Manifest: ', utilityStore.get_manifest());
@@ -200,7 +203,8 @@ var Root = React.createClass({
     this.setState({
       prefs: e, 
       tileLimit: 100, 
-      sidebar: e.sidebar
+      sidebar: e.sidebar,
+      modal: modalStore.get_modal()
     });
     if (s.init) {
       themeStore.load(e);
@@ -324,7 +328,6 @@ var Root = React.createClass({
       }
       .ntg-session-text {
         color: ${e.bodyText};
-        backgroundColor:
       }
       .ntg-folder {
         text-shadow: 2px 2px ${e.tileTextShadow};
@@ -365,6 +368,19 @@ var Root = React.createClass({
         background-color: ${themeStore.opacify(e.darkBtnBgHover, 0.9)};
         border: solid 2px ${themeStore.opacify(e.lightBtnBgHover, 0.85)}; 
       }
+      .__react_component_tooltip.type-dark {
+        color: ${e.darkBtnText};
+        background-color: ${themeStore.opacify(e.darkBtnBg, 1)};
+      }
+      .__react_component_tooltip.type-dark.place-bottom:after {
+        border-bottom: 6px solid ${themeStore.opacify(e.darkBtnBg, 1)};
+      }
+      .__react_component_tooltip.type-dark.place-top:after {
+        border-top: 6px solid ${themeStore.opacify(e.darkBtnBg, 1)};
+      }
+      .__react_component_tooltip.type-dark.place-right:after {
+        border-right: 6px solid ${themeStore.opacify(e.darkBtnBg, 1)};
+      }
       `;
       v(document.body).css({
         color: e.bodyText,
@@ -373,6 +389,46 @@ var Root = React.createClass({
       v('#bgImg').css({backgroundColor: e.bodyBg});
       this.setState({theme: e});
     }
+  },
+  modalChange(e){
+    this.setState({modal: e});
+    if (this.state.prefs.animations) {
+      if (e.state) {
+        v('#main').css({
+          transition: '-webkit-filter .2s ease-in',
+          WebkitFilter: 'blur(5px)'
+        });
+      } else {
+        v('#main').css({WebkitFilter: 'none'});
+      }
+    } else {
+      v('#main').css({WebkitFilter: 'none'});
+    }
+  },
+  settingsChange(e){
+    this.setState({settings: e});
+  },
+  searchChanged(e, update) {
+    this.setState({search: e});
+    var search = e;
+    var s = this.state;
+    var tabs = update ? update : s.tabs;
+    this.setState({topLoad: true});
+    // Mutate the tabs array and reroute all event methods to searchChanged while search length > 0
+    if (search.length > 0) {
+      for (var i = tabs.length - 1; i >= 0; i--) {
+        if (kmp(tabs[i].title.toLowerCase(), search) !== -1 || kmp(tabs[i].url, search) !== -1) {
+          tabs.push(tabs[i]);
+        } else {
+          tabs = _.without(tabs, tabs[i]);
+        }
+      }
+      this.setState({tabs: _.uniq(tabs)});
+      tabStore.set_tab(tabs);
+    } else {
+      prefsStore.set_prefs('mode', s.prefs.mode);
+    }
+    _.defer(()=>this.setState({topLoad: false}));
   },
   createSingleItem(e){
     var s = this.state;
@@ -610,31 +666,6 @@ var Root = React.createClass({
       this.setState({duplicateTabs: utils.getDuplicates(tabUrls)});
     } 
   },
-  searchChanged(e, update) {
-    this.setState({search: e});
-    var search = e;
-    var s = this.state;
-    var tabs = update ? update : s.tabs;
-    this.setState({topLoad: true});
-    // Mutate the tabs array and reroute all event methods to searchChanged while search length > 0
-    if (search.length > 0) {
-      for (var i = tabs.length - 1; i >= 0; i--) {
-        if (kmp(tabs[i].title.toLowerCase(), search) !== -1 || kmp(tabs[i].url, search) !== -1) {
-          tabs.push(tabs[i]);
-        } else {
-          tabs = _.without(tabs, tabs[i]);
-        }
-      }
-      this.setState({tabs: _.uniq(tabs)});
-      tabStore.set_tab(tabs);
-    } else {
-      prefsStore.set_prefs('mode', s.prefs.mode);
-    }
-    _.defer(()=>this.setState({topLoad: false}));
-  },
-  settingsChange(){
-    this.setState({settings: true});
-  },
   reRender(e) {
     // Method triggered by Chrome event listeners.
     var s = this.state;
@@ -663,7 +694,7 @@ var Root = React.createClass({
       } else {
         this.setState({collapse: false});
       }
-      if (window.outerWidth < 1280 && window.outerHeight < 720) {
+      if (window.outerWidth < 1024 || window.outerHeight < 768) {
         this.setState({resolutionWarning: true});
       } else {
         this.setState({resolutionWarning: false});
@@ -801,18 +832,40 @@ var Root = React.createClass({
       windowId: windowId,
       sort: s.sort
     };
+    var options = v('#options').n;
     console.log('ROOT STATE: ', s);
     if (s.theme) {
       return (
         <div className="container-main">
-          {v('#options').n ? <Preferences options={true} settingsMax={true} prefs={s.prefs} tabs={s.tabs} /> : s.load ? <Loading /> : <div>
+          {options ? <Preferences options={true} settingsMax={true} prefs={s.prefs} tabs={s.tabs} theme={s.theme} /> : s.load ? <Loading /> 
+          : 
+          <div>
             {s.context ? <ContextMenu search={stores.search} actions={s.actions} tabs={s.tabs} prefs={s.prefs} cursor={cursor} context={context} chromeVersion={s.chromeVersion} duplicateTabs={s.duplicateTabs}/> : null}
-            <ModalHandler tabs={s.prefs.mode === 'tabs' ? s.tabs : tabStore.get_altTab()} sessions={s.sessions} prefs={s.prefs} favicons={s.favicons} collapse={s.collapse} theme={s.theme} savedThemes={s.savedThemes} standardThemes={s.standardThemes} />
-              {s.tabs ? <div className="tile-container">
-                  {s.settings ? <Search event={s.event} prefs={s.prefs} topLoad={s.topLoad} theme={s.theme}/> : null}
-                  <div style={{marginTop: '67px'}} className="tile-child-container">
-                    {s.grid ? this.tileGrid(stores) : <Loading />}
-                </div></div> : null}
+            {s.modal ? <ModalHandler 
+                        modal={s.modal} 
+                        tabs={s.prefs.mode === 'tabs' ? s.tabs : stores.altTabs} 
+                        sessions={s.sessions} prefs={s.prefs} 
+                        favicons={s.favicons} 
+                        collapse={s.collapse} 
+                        theme={s.theme} 
+                        savedThemes={s.savedThemes} 
+                        standardThemes={s.standardThemes}
+                        wallpaper={s.wallpaper}
+                        settings={s.settings} /> : null}
+              {s.tabs ? 
+              <div className="tile-container">
+                <Search event={s.event} prefs={s.prefs} topLoad={s.topLoad} theme={s.theme}/>
+                <div style={{marginTop: '67px'}} className="tile-child-container">
+                  {s.grid ? this.tileGrid(stores) : <Loading />}
+                </div>
+                {s.modal && !s.modal.state && s.prefs.tooltip ? 
+                <ReactTooltip 
+                effect="solid" 
+                place="top"
+                multiline={true}
+                html={true}
+                offset={{top: 0, left: 6}} /> : null}
+              </div> : null}
             </div>}
         </div>
       );

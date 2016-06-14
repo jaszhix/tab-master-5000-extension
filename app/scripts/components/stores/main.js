@@ -1469,6 +1469,10 @@ export var themeStore = Reflux.createStore({
     this.savedThemes[themeIndex].wallpapers = _.without(this.savedThemes[themeIndex].wallpapers, _.remove(this.savedThemes[themeIndex].wallpapers, _.find(this.savedThemes[themeIndex].wallpapers, {selected: true})));
     this.update(themeIndex, false);
   },
+  label(themeIndex, label){
+    this.savedThemes[themeIndex].label = label;
+    this.update(themeIndex, false);
+  },
   export(){
     var json = JSON.stringify(this.savedThemes);
     var filename = 'TM5K-Themes-'+utilityStore.now();
@@ -1538,22 +1542,28 @@ export var keyboardStore = Reflux.createStore({
     });
     mouseTrap.bind('ctrl+f', (e)=>{
       e.preventDefault();
+      modalStore.set_modal(false, 'settings');
       v('#search > input').n.focus();
     });
-    mouseTrap.bind('ctrl+alt+s', (e)=>{
+    mouseTrap.bind('ctrl+shift+s', (e)=>{
       e.preventDefault();
       settingsStore.set_settings('sessions');
-      modalStore.set_modal(this.state('ctrl+alt+s'), 'settings');
+      modalStore.set_modal(this.state('ctrl+shift+s'), 'settings');
     });
-    mouseTrap.bind('ctrl+alt+p', (e)=>{
+    mouseTrap.bind('ctrl+shift+p', (e)=>{
       e.preventDefault();
       settingsStore.set_settings('preferences');
-      modalStore.set_modal(this.state('ctrl+alt+p'), 'settings');
+      modalStore.set_modal(this.state('ctrl+shift+p'), 'settings');
     });
-    mouseTrap.bind('ctrl+alt+a', (e)=>{
+    mouseTrap.bind('ctrl+shift+t', (e)=>{
+      e.preventDefault();
+      settingsStore.set_settings('theming');
+      modalStore.set_modal(this.state('ctrl+shift+t'), 'settings');
+    });
+    mouseTrap.bind('ctrl+shift+a', (e)=>{
       e.preventDefault();
       settingsStore.set_settings('about');
-      modalStore.set_modal(this.state('ctrl+alt+a'), 'settings');
+      modalStore.set_modal(this.state('ctrl+shift+a'), 'settings');
     });
     mouseTrap.bind('ctrl+s', (e)=>{
       e.preventDefault();
@@ -1563,7 +1573,7 @@ export var keyboardStore = Reflux.createStore({
     });
     mouseTrap.bind('ctrl+m', (e)=>{
       e.preventDefault();
-      v('body > div.ReactModalPortal > div > div > div > div.row.ntg-tabs > button:nth-child(3)').click();
+      v('body > div.ReactModalPortal > div > div > div.container-fluid > div.row.ntg-tabs > div:nth-child(2) > button:nth-child(1)').click();
     });
     mouseTrap.bind('ctrl+alt+shift+s', (e)=>{
       e.preventDefault();

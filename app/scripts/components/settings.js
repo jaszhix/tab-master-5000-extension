@@ -7,6 +7,7 @@ import kmp from 'kmp';
 import cf from 'colorformat';
 
 import ColorPicker from 'rc-color-picker';
+import ReactTooltip from './tooltip/tooltip';
 
 import {themeStore, faviconStore, sessionsStore, clickStore, modalStore, settingsStore, utilityStore} from './stores/main';
 import prefsStore from './stores/prefs';
@@ -90,10 +91,13 @@ var Theming = React.createClass({
     return {
       selectedTheme: -1,
       themeHover: null,
+      themeLabel: -1,
+      themeLabelValue: '',
       leftTab: 'custom',
       rightTab: 'color',
       isNewTheme: true,
-      selectedWallpaper: null
+      selectedWallpaper: null,
+      boldUpdate: false
     };
   },
   componentDidMount(){
@@ -121,6 +125,9 @@ var Theming = React.createClass({
     }
     this.findSelectedTheme(p);
   },
+  componentDidUpdate(){
+    ReactTooltip.rebuild();
+  },
   componentWillReceiveProps(nP){
     var p = this.props;
     if (!_.isEqual(nP.savedThemes, p.savedThemes) || !_.isEqual(nP.standardThemes, p.standardThemes)) {
@@ -130,6 +137,12 @@ var Theming = React.createClass({
       v('body > div.ReactModalPortal > div > div').css({
         backgroundColor: themeStore.opacify(nP.theme.settingsBg, 0.8)
       });
+    }
+    var selectedWallpaper = _.findIndex(nP.savedThemes[this.state.selectedTheme].wallpapers, {selected: true});
+    if (!this.state.isNewTheme && !_.isEqual(nP.savedThemes[this.state.selectedTheme].theme, p.theme) || !this.state.isNewTheme && !_.isEqual(nP.savedThemes[this.state.selectedTheme].wallpapers[selectedWallpaper].data, p.wallpaper)) {
+      this.setState({boldUpdate: true});
+    } else {
+      this.setState({boldUpdate: false});
     }
   },
   componentWillUnmount(){
@@ -162,20 +175,23 @@ var Theming = React.createClass({
   findSelectedTheme(props){
     var selectedTheme;
     var selectedCustomTheme = _.findIndex(props.savedThemes, {selected: true});
+    var selectedWallpaper = -1;
     if (selectedCustomTheme !== -1) {
       selectedTheme = selectedCustomTheme;
+      selectedWallpaper = _.findIndex(props.savedThemes[selectedTheme].wallpapers, {selected: true});
     } else {
       selectedTheme = _.findIndex(props.standardThemes, {selected: true});
     }
+    
     this.setState({
       selectedTheme: selectedTheme,
-      selectedWallpaper: _.find(props.savedThemes[selectedTheme].wallpapers, {selected: true}),
+      selectedWallpaper: selectedWallpaper !== -1 ? props.savedThemes[selectedTheme].wallpapers[selectedWallpaper] : null,
       isNewTheme: selectedTheme && selectedTheme === -1 || props.savedThemes.length === 0
     });
   },
   handleSelectTheme(i, standard){
     console.log('handleSelectTheme: ', i, standard);
-    this.setState({selectedTheme: i, rightTab: 'color'});
+    this.setState({selectedTheme: i});
     themeStore.selectTheme(i, standard);
   },
   handleNewTheme(){
@@ -194,10 +210,18 @@ var Theming = React.createClass({
 
     1. Save button needs to switch to update on click since new theme is in state
     2. deselecting wallpaper should trigger selection method
-    3. add labelling UI to theme items
-    4. Add theme importing
 
     */
+  },
+  handleEnter(e){
+    if (e.keyCode === 13) {
+      this.handleLabel();
+    }
+  },
+  handleLabel(){
+    var s = this.state;
+    this.setState({themeLabel: -1});
+    themeStore.label(s.selectedTheme, s.themeLabelValue);
   },
   render: function(){
     var p = this.props;
@@ -233,12 +257,23 @@ var Theming = React.createClass({
                     onMouseEnter={()=>this.setState({themeHover: i})}>
                       <div 
                       className="ntg-session-text" 
-                      style={{width: 'auto', display: 'inline', cursor: !theme.selected ? 'pointer' : null}} 
-                      onClick={()=>this.handleSelectTheme(i, false)}>
-                        {theme.label}
+                      style={{width: 'auto', display: 'inline', cursor: !theme.selected ? 'pointer' : null, fontWeight: theme.selected ? '600' : 'initial'}} 
+                      onClick={s.themeLabel !== i ? ()=>this.handleSelectTheme(i, false) : null}>
+                        {s.themeLabel === i ? 
+                        <input 
+                        children={undefined} 
+                        type="text"
+                        value={s.themeLabelValue}
+                        className="form-control"
+                        style={{position: 'absolute', display: 'inline-block', height: '24px', width: '66%'}}
+                        placeholder={theme.label !== 'Custom Theme' ? theme.label : 'Label...'}
+                        onChange={(e)=>this.setState({themeLabelValue: e.target.value})}
+                        onKeyDown={this.handleEnter} />
+                        : theme.label}
                       </div>
                       <div style={{width: 'auto', float: 'right', display: 'inline', marginRight: '4px'}}>
-                        {s.themeHover === i ? <Btn onClick={()=>themeStore.remove(i)} className="ntg-session-btn" fa="times">{p.collapse ? 'Remove' : null}</Btn> : null}
+                        {s.themeHover === i ? <Btn onClick={()=>themeStore.remove(i)} className="ntg-session-btn" fa="times" data-tip="Remove Theme" /> : null}
+                        {s.themeHover === i ? <Btn onClick={()=>this.setState({themeLabel: i})} className="ntg-session-btn" fa="pencil" data-tip="Edit Label" /> : null}
                       </div>
                     </Row>
                   );
@@ -246,13 +281,13 @@ var Theming = React.createClass({
                 <Btn 
                   onClick={s.isNewTheme ? ()=>this.handleSaveTheme() : ()=>themeStore.update()} 
                   className="ntg-setting-btn" 
-                  style={{position: 'fixed', top: '96%'}}>
+                  style={{position: 'fixed', top: '96%', fontWeight: s.boldUpdate ? '600' : 'initial'}}>
                     {`${s.isNewTheme ? 'Save' : 'Update'}${p.collapse ? ' Theme' : ''}`}
                 </Btn>
                 <Btn onClick={this.handleNewTheme} className="ntg-setting-btn" style={{position: 'fixed', top: '96%', marginLeft: s.isNewTheme ? p.collapse ? '108px' : '61px' : p.collapse ? '122px' : '74px'}}>{`New ${p.collapse ? 'Theme' : ''}`}</Btn>
                 <Btn onClick={()=>themeStore.export()} style={{position: 'fixed', top: '96%', marginLeft: s.isNewTheme ? p.collapse ? '208px' : '113px' : p.collapse ? '222px' : '126px'}} className="ntg-setting-btn" fa="arrow-circle-o-down">Export</Btn>
                 <input {...this.props} children={undefined} type="file" onChange={(e)=>themeStore.import(e)} ref="import" style={style.hiddenInput} />
-                <Btn onClick={()=>this.refs.import.click()} style={{position: 'fixed', top: '96%', marginLeft: s.isNewTheme ? p.collapse ? '288px' : '193px' : p.collapse ? '303px' : '206px'}} className="ntg-setting-btn" fa="arrow-circle-o-down">Import</Btn>
+                <Btn onClick={()=>this.refs.import.click()} style={{position: 'fixed', top: '96%', marginLeft: s.isNewTheme ? p.collapse ? '288px' : '193px' : p.collapse ? '303px' : '208px'}} className="ntg-setting-btn" fa="arrow-circle-o-up">Import</Btn>
               </Row> : null}
               {s.leftTab === 'tm5k' ?
               <Row>
@@ -265,7 +300,7 @@ var Theming = React.createClass({
                     onMouseEnter={()=>this.setState({themeHover: i})}>
                       <div 
                       className="ntg-session-text" 
-                      style={{width: 'auto', display: 'inline', cursor: p.prefs.theme === i ? 'pointer' : null}} 
+                      style={{width: 'auto', display: 'inline', cursor: p.prefs.theme === i ? 'pointer' : null, fontWeight: theme.selected ? '600' : 'initial'}} 
                       onClick={()=>this.handleSelectTheme(i, true)}>
                         {theme.label}
                       </div>
@@ -393,6 +428,9 @@ var Sessions = React.createClass({
   componentDidMount(){
     this.setTabSource();
   },
+  componentDidUpdate(){
+    ReactTooltip.rebuild();
+  },
   setTabSource(){
     var p = this.props;
     if (p.prefs.mode !== 'tabs') {
@@ -451,7 +489,7 @@ var Sessions = React.createClass({
     var tm20 = tabs.length - 24;
     return (
       <div className="sessions">
-        <Col size="7" className="session-col">
+        <Col size="6" className="session-col">
           <h4>Saved Sessions {p.sessions.length > 0 ? `(${p.sessions.length})` : null}</h4>
           {p.sessions ? p.sessions.map((session, i)=>{
             var time = _.capitalize(moment(session.timeStamp).fromNow());
@@ -464,14 +502,15 @@ var Sessions = React.createClass({
                 </div>
               </div>
               <div style={{width: 'auto', float: 'right', display: 'inline'}}>
-                {s.sessionHover === i ? <Btn onClick={()=>sessionsStore.remove(session, p.sessions)} className="ntg-session-btn" fa="times">{p.collapse ? 'Remove' : null}</Btn> : null}
-                {s.sessionHover === i ? <Btn onClick={()=>sessionsStore.restore(session, p.prefs.screenshot)} className="ntg-session-btn" fa="folder-open-o">{p.collapse ? 'Restore' : null}</Btn> : null}
-                {s.sessionHover === i && p.prefs.sessionsSync ? <Btn onClick={()=>sessionsStore.save('update', session, session.label, s.tabs, null, !session.sync)} className="ntg-session-btn" fa={session.sync ? 'circle-o' : 'circle-o-notch'}>{p.collapse ? 'Sync' : null}</Btn> : null}
-                {s.sessionHover === i ? <Btn onClick={()=>this.setState({searchField: i, expandedSession: i})} className="ntg-session-btn" fa="search">{p.collapse ? 'Search' : null}</Btn> : null}
-                {!s.labelSession ? s.sessionHover === i && s.labelSession !== i ? <Btn onClick={()=>this.setState({labelSession: i, expandedSession: i})} className="ntg-session-btn" fa="pencil">{p.collapse ? 'Label' : null}</Btn> : null : null}
+                {s.sessionHover === i ? <Btn onClick={()=>sessionsStore.remove(session, p.sessions)} className="ntg-session-btn" fa="times" data-tip="Remove Session" /> : null}
+                {s.sessionHover === i ? <Btn onClick={()=>sessionsStore.restore(session, p.prefs.screenshot)} className="ntg-session-btn" fa="folder-open-o" data-tip="Restore Session"/> : null}
+                {s.sessionHover === i && p.prefs.sessionsSync ? <Btn onClick={()=>sessionsStore.save('update', session, session.label, s.tabs, null, !session.sync)} className="ntg-session-btn" fa={session.sync ? 'circle-o' : 'circle-o-notch'} data-tip="Synchronize Session"/> : null}
+                {s.sessionHover === i ? <Btn onClick={()=>this.setState({searchField: i, expandedSession: i})} className="ntg-session-btn" fa="search" data-tip="Search Session"/> : null}
+                {!s.labelSession ? s.sessionHover === i && s.labelSession !== i ? <Btn onClick={()=>this.setState({labelSession: i, expandedSession: i})} className="ntg-session-btn" fa="pencil" data-tip="Edit Label" /> : null : null}
               </div>
               <Row>
-                {s.expandedSession === i ? <Row className="ntg-session-expanded">
+                {s.expandedSession === i ? 
+                  <Row className="ntg-session-expanded" style={{backgroundColor: p.theme.settingsBg, color: p.theme.bodyText}}>
                     {s.labelSession === i ? 
                       <div>
                         <Col size="6">
@@ -487,8 +526,8 @@ var Sessions = React.createClass({
                           </form>
                         </Col>
                         <Col size="6">
-                          <Btn style={{float: 'left', marginTop: '2px'}} onClick={()=>this.labelSession(session)} className="ntg-session-btn" fa="plus">{p.collapse ? 'Update' : null}</Btn>
-                          <Btn style={{float: 'left', marginTop: '2px'}} onClick={()=>this.setState({labelSession: null})} className="ntg-session-btn" fa="times">{p.collapse ? 'Cancel' : null}</Btn>
+                          <Btn style={{float: 'left', marginTop: '2px'}} onClick={()=>this.labelSession(session)} className="ntg-session-btn" fa="plus" data-tip="Update Label" />
+                          <Btn style={{float: 'left', marginTop: '2px'}} onClick={()=>this.setState({labelSession: null})} className="ntg-session-btn" fa="times" data-tip="Cancel" />
                         </Col>
                       </div> : null}
                     {s.searchField === i ? 
@@ -513,8 +552,8 @@ var Sessions = React.createClass({
                               </span>
                             </Col>
                             <Col size="4">
-                              {s.selectedSessionTabHover === i ? <Btn onClick={()=>sessionsStore.removeTabFromSession(t.id, session, s.tabs, this.setState({sessionLabelValue: ''}))} className="ntg-session-btn" fa="times">{p.collapse ? 'Remove' : null}</Btn> : null}
-                              {s.selectedSessionTabHover === i ? <Btn onClick={()=>utilityStore.createTab(t.url)} className="ntg-session-btn" fa="external-link">{p.collapse ? 'Open' : null}</Btn> : null}
+                              {s.selectedSessionTabHover === i ? <Btn onClick={()=>sessionsStore.removeTabFromSession(t.id, session, s.tabs, this.setState({sessionLabelValue: ''}))} className="ntg-session-btn" fa="times" data-tip="Remove Tab" />: null}
+                              {s.selectedSessionTabHover === i ? <Btn onClick={()=>utilityStore.createTab(t.url)} className="ntg-session-btn" fa="external-link" data-tip="Open Tab" /> : null}
                             </Col>
                         </Row>;
                       }
@@ -527,7 +566,7 @@ var Sessions = React.createClass({
           <input {...this.props} children={undefined} type="file" onChange={(e)=>sessionsStore.importSessions(e)} ref="fileInput" style={style.hiddenInput} />
           <Btn onClick={this.triggerInput} style={p.settingsMax ? {top: '95%', marginLeft: '86px'} : {marginLeft: '86px'}} className="ntg-setting-btn" fa="arrow-circle-o-up">Import</Btn>
         </Col>
-        <Col size="5" className="session-col">
+        <Col size="6" className="session-col">
           <h4>Current Session</h4>
           {tabs.map((t, i)=>{
             if (!_.find(p.favicons, {domain: t.url.split('/')[2]})) {
@@ -539,7 +578,7 @@ var Sessions = React.createClass({
                 return <Row onClick={()=>chrome.tabs.update(t.id, {active: true})} className="ntg-session-text" key={i} style={i % 2 ? null : {backgroundColor: p.theme.settingsItemHover}}>
                   <span title={t.title}>
                   <img className="ntg-small-favicon" src={fvData ? fvData : '../images/file_paper_blank_document.png' } />  
-                    {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {_.truncate(t.title, {length: 50})}
+                    {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {t.title}
                   </span>
                 </Row>;
               }
@@ -547,7 +586,7 @@ var Sessions = React.createClass({
               return <Row onClick={()=>chrome.tabs.update(t.id, {active: true})} className="ntg-session-text" key={i} style={i % 2 ? null : {backgroundColor: p.theme.settingsItemHover}}>
                 <span title={t.title}>
                   <img className="ntg-small-favicon" src={fvData ? fvData : '../images/file_paper_blank_document.png' } />  
-                  {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {p.settingsMax ? t.title : _.truncate(t.title, {length: 50})}
+                  {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {t.title}
                 </span>
               </Row>;
             } 
@@ -565,7 +604,7 @@ var Settings = React.createClass({
   mixins: [Reflux.ListenerMixin],
   getInitialState(){
     return {
-      currentTab: 'sessions',
+      settings: this.props.settings,
       settingsMax: false
     };
   },
@@ -578,9 +617,13 @@ var Settings = React.createClass({
     };
   },
   componentDidMount(){
-    this.listenTo(modalStore, this.settingsChange);
     this.listenTo(prefsStore, this.prefsChange);
     this.prefsChange();
+  },
+  componentWillReceiveProps(nP){
+    if (nP.settings !== this.props.settings) {
+      this.setState({settings: nP.settings});
+    }
   },
   prefsChange(e){
     this.setState({settingsMax: this.props.prefs.settingsMax});
@@ -595,10 +638,6 @@ var Settings = React.createClass({
       style.modal.content.right = '15%';
       style.modal.content.bottom = '15%';
     }
-  },
-  settingsChange(tab){
-    this.setState({currentTab: tab});
-    console.log(this.state.currentTab);
   },
   handleTabClick(opt){
     settingsStore.set_settings(opt);
@@ -624,40 +663,35 @@ var Settings = React.createClass({
   render: function() {
     var p = this.props;
     var s = this.state;
-    var settings = settingsStore.get_settings();
-    var sessions = settings === 'sessions';
-    var preferences = settings === 'preferences';
-    var theming = settings === 'theming';
-    var about = settings === 'about';
     return (
       <Container fluid={true}>
         <Row className="ntg-tabs">
           <div role="tabpanel"> 
             <ul className="nav nav-tabs">
-              <li className={sessions ? "active" : null}>
+              <li className={s.settings === 'sessions' ? "active" : null}>
                   <a href="#" onClick={()=>this.handleTabClick('sessions')}><i className="settings-fa fa fa-book"/>  Sessions</a>
               </li>
-              <li className={preferences ? "active" : null}>
+              <li className={s.settings === 'preferences' ? "active" : null}>
                   <a href="#" onClick={()=>this.handleTabClick('preferences')}><i className="settings-fa fa fa-dashboard"/>  Preferences</a>
               </li>
-              <li className={theming ? "active" : null}>
+              <li className={s.settings === 'theming' ? "active" : null}>
                   <a href="#" onClick={()=>this.handleTabClick('theming')}><i className="settings-fa fa fa-paint-brush"/>  Theming</a>
               </li>
-              <li className={about ? "active" : null}>
+              <li className={s.settings === 'about' ? "active" : null}>
                   <a href="#" onClick={()=>this.handleTabClick('about')}><i className="settings-fa fa fa-info-circle"/>  About</a>
               </li>
             </ul>
           </div>
           <div style={s.settingsMax ? {position: 'fixed', top: '1%', right: '1%'} : {position: 'fixed', top: '16%', right: '16%'}}>
-            {settings !== 'theming' ? <Btn className="ntg-modal-btn-close" fa={s.settingsMax ? "clone" : "square-o"} onClick={this.handleMaxBtn} /> : null}
-            <Btn className="ntg-modal-btn-close" fa="close" onClick={this.handleCloseBtn} />
+            {s.settings !== 'theming' ? <Btn className="ntg-modal-btn-close" fa={s.settingsMax ? "clone" : "square-o"} onClick={this.handleMaxBtn} data-tip="Maximize"/> : null}
+            <Btn className="ntg-modal-btn-close" fa="close" onClick={this.handleCloseBtn} data-tip="Close"/>
           </div>
         </Row>
         <Row className="ntg-settings-pane">
-          {sessions ? <Sessions settingsMax={s.settingsMax} sessions={p.sessions} tabs={p.tabs} prefs={p.prefs} favicons={p.favicons} collapse={p.collapse} theme={p.theme} /> : null}
-          {preferences ? <Preferences settingsMax={s.settingsMax} prefs={p.prefs} tabs={p.tabs} theme={p.theme} /> : null}
-          {theming ? <Theming settingsMax={s.settingsMax} prefs={p.prefs} theme={p.theme} modal={p.modal} savedThemes={p.savedThemes} standardThemes={p.standardThemes} collapse={p.collapse}/> : null}
-          {about ? <About settingsMax={s.settingsMax} /> : null}
+          {s.settings === 'sessions' ? <Sessions settingsMax={s.settingsMax} sessions={p.sessions} tabs={p.tabs} prefs={p.prefs} favicons={p.favicons} collapse={p.collapse} theme={p.theme} /> : null}
+          {s.settings === 'preferences' ? <Preferences settingsMax={s.settingsMax} prefs={p.prefs} tabs={p.tabs} theme={p.theme} /> : null}
+          {s.settings === 'theming' ? <Theming settingsMax={s.settingsMax} prefs={p.prefs} theme={p.theme} modal={p.modal} savedThemes={p.savedThemes} standardThemes={p.standardThemes} wallpaper={p.wallpaper} collapse={p.collapse}/> : null}
+          {s.settings === 'about' ? <About settingsMax={s.settingsMax} /> : null}
         </Row>
       </Container>
     );
