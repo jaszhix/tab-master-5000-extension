@@ -1,4 +1,5 @@
 import Reflux from 'reflux';
+import _ from 'lodash';
 
 import {utilityStore, reRenderStore} from './main';
 
@@ -25,7 +26,8 @@ var prefsStore = Reflux.createStore({
       singleNewTab: false,
       keyboardShortcuts: true,
       resolutionWarning: true,
-      theme: 0,
+      theme: 9000,
+      wallpaper: null,
       tooltip: true
     };
     var getPrefs = new Promise((resolve, reject)=>{
@@ -84,6 +86,7 @@ var prefsStore = Reflux.createStore({
         keyboardShortcuts: prefs.preferences.keyboardShortcuts,
         resolutionWarning: prefs.preferences.resolutionWarning,
         theme: prefs.preferences.theme,
+        wallpaper: prefs.preferences.wallpaper,
         tooltip: prefs.preferences.tooltip
       };
       if (typeof this.prefs.tabSizeHeight === 'undefined') {
@@ -108,7 +111,10 @@ var prefsStore = Reflux.createStore({
         this.prefs.resolutionWarning = true;
       }
       if (typeof this.prefs.theme === 'undefined') {
-        this.prefs.theme = 0;
+        this.prefs.theme = 9000;
+      }
+      if (typeof this.prefs.wallpaper === 'undefined') {
+        this.prefs.wallpaper = null;
       }
       if (typeof this.prefs.tooltip === 'undefined') {
         this.prefs.tooltip = true;
@@ -121,13 +127,13 @@ var prefsStore = Reflux.createStore({
     });
     
   },
-  set_prefs(opt, value, skip) {
-    this.prefs[opt] = value;
-    console.log('Preferences: ',this.prefs);
-    if (!skip) {
-      this.trigger(this.prefs);
-    }
-    this.savePrefs(opt, value);
+  set_prefs(obj) {
+    _.merge(this.prefs, obj);
+    this.trigger(this.prefs);
+    chrome.storage.sync.set({preferences: this.prefs}, (result)=> {
+      console.log('Preferences saved: ', this.prefs);
+      reRenderStore.set_reRender(true, 'create', null);
+    }); 
   },
   get_prefs() {
     return this.prefs;
@@ -136,8 +142,13 @@ var prefsStore = Reflux.createStore({
     var newPrefs = null;
     chrome.storage.sync.get('preferences', (prefs)=>{
       if (prefs && prefs.preferences) {
-        newPrefs = prefs;
-        newPrefs.preferences[opt] = value;
+        if (_.isString(opt)) {
+          newPrefs = prefs;
+          newPrefs.preferences[opt] = value;
+        } else {
+          _.merge(prefs.preferences, opt);
+          newPrefs = prefs.preferences;
+        }
       } else {
         newPrefs = {preferences: {}};
         newPrefs.preferences[opt] = value;

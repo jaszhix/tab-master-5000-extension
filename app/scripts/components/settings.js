@@ -44,6 +44,7 @@ var ColorPickerContainer = React.createClass({
     var theme = {};
     theme[p.themeKey] = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${color.alpha / 100})`;
     themeStore.set(theme);
+    p.onChange();
   },
   convertColor(color){
     if (kmp(color, '#') !== -1) {
@@ -89,7 +90,8 @@ var ColorPickerContainer = React.createClass({
 var Theming = React.createClass({
   getInitialState(){
     return {
-      selectedTheme: -1,
+      savedThemes: this.props.savedThemes,
+      selectedTheme: null,
       themeHover: null,
       themeLabel: -1,
       themeLabelValue: '',
@@ -97,16 +99,17 @@ var Theming = React.createClass({
       rightTab: 'color',
       isNewTheme: true,
       selectedWallpaper: null,
-      boldUpdate: false
+      boldUpdate: false,
+      colorGroup: 'general',
+      notifySave: false
     };
   },
   componentDidMount(){
     var p = this.props;
     v('body > div.ReactModalPortal > div > div').css({
       backgroundColor: themeStore.opacify(p.theme.settingsBg, 0.95),
-      transition: 'background .2s ease-in', 
       width: '100%',
-      height: '42%',
+      height: '32%',
       top: 'initial',
       left: 'initial',
       right: 'initial',
@@ -114,35 +117,59 @@ var Theming = React.createClass({
       borderRadius: '0px'
     });
     v('body > div.ReactModalPortal > div > div > div > div.row.ntg-tabs > div:nth-child(2)').css({
-      top: '59%',
+      top: '69%',
       right: '1%'
     });
-    v('.ntg-settings-pane').css({height: '100%'});
+    v('.ntg-settings-pane').css({height: this.props.height <= 968 ? '72%' : '76%'});
     if (p.prefs.animations) {
       v('#main').css({WebkitFilter: 'none'});
     } else {
       v('body > div.ReactModalPortal > div').css({backgroundColor: 'rgba(216, 216, 216, 0)'});
     }
-    this.findSelectedTheme(p);
+    var refTheme;
+    var isNewTheme = true;
+    if (p.prefs.theme < 9000) {
+      refTheme = _.find(p.savedThemes, {id: p.prefs.theme});
+      isNewTheme = false;
+    } else {
+      refTheme = _.find(p.standardThemes, {id: p.prefs.theme});
+    }
+    this.setState({
+      selectedTheme: refTheme,
+      isNewTheme: isNewTheme
+    });
   },
   componentDidUpdate(){
     ReactTooltip.rebuild();
   },
   componentWillReceiveProps(nP){
     var p = this.props;
-    if (!_.isEqual(nP.savedThemes, p.savedThemes) || !_.isEqual(nP.standardThemes, p.standardThemes)) {
-      this.findSelectedTheme(nP);
+    var s = this.state;
+    var refTheme;
+    if (nP.prefs.theme < 9000) {
+      refTheme = _.find(nP.savedThemes, {id: nP.prefs.theme});
+    } else {
+      refTheme = _.find(nP.standardThemes, {id: nP.prefs.theme});
+    }
+    if (!_.isEqual(nP.prefs, p.prefs)) {
+      this.setState({
+        selectedTheme: refTheme
+      });
+    }
+    if (!_.isEqual(nP.savedThemes, p.savedThemes)) {
+      this.setState({
+        savedThemes: nP.savedThemes,
+        selectedTheme: refTheme,
+        isNewTheme: nP.savedThemes.length === 0
+      });
     }
     if (nP.theme.settingsBg !== this.props.theme.settingsBg) {
       v('body > div.ReactModalPortal > div > div').css({
         backgroundColor: themeStore.opacify(nP.theme.settingsBg, 0.8)
       });
     }
-    var selectedWallpaper = _.findIndex(nP.savedThemes[this.state.selectedTheme].wallpapers, {selected: true});
-    if (!this.state.isNewTheme && !_.isEqual(nP.savedThemes[this.state.selectedTheme].theme, p.theme) || !this.state.isNewTheme && !_.isEqual(nP.savedThemes[this.state.selectedTheme].wallpapers[selectedWallpaper].data, p.wallpaper)) {
-      this.setState({boldUpdate: true});
-    } else {
-      this.setState({boldUpdate: false});
+    if (nP.height !== p.height) {
+      v('.ntg-settings-pane').css({height: nP.height <= 968 ? '72%' : '76%'});
     }
   },
   componentWillUnmount(){
@@ -172,122 +199,150 @@ var Theming = React.createClass({
       }
     }
   },
-  findSelectedTheme(props){
-    var selectedTheme;
-    var selectedCustomTheme = _.findIndex(props.savedThemes, {selected: true});
-    var selectedWallpaper = -1;
-    if (selectedCustomTheme !== -1) {
-      selectedTheme = selectedCustomTheme;
-      selectedWallpaper = _.findIndex(props.savedThemes[selectedTheme].wallpapers, {selected: true});
-    } else {
-      selectedTheme = _.findIndex(props.standardThemes, {selected: true});
-    }
-    
-    this.setState({
-      selectedTheme: selectedTheme,
-      selectedWallpaper: selectedWallpaper !== -1 ? props.savedThemes[selectedTheme].wallpapers[selectedWallpaper] : null,
-      isNewTheme: selectedTheme && selectedTheme === -1 || props.savedThemes.length === 0
-    });
-  },
-  handleSelectTheme(i, standard){
-    console.log('handleSelectTheme: ', i, standard);
-    this.setState({selectedTheme: i});
-    themeStore.selectTheme(i, standard);
+  handleSelectTheme(theme){
+    console.log('handleSelectTheme: ', theme);
+    this.setState({selectedTheme: _.cloneDeep(theme)});
+    themeStore.selectTheme(theme.id, this.props.prefs);
   },
   handleNewTheme(){
     this.setState({
-      selectedTheme: -1,
       isNewTheme: true
     });
     themeStore.newTheme();
   },
   handleSaveTheme(){
-    this.setState({isNewTheme: false});
+    this.setState({
+      isNewTheme: false,
+      rightTab: 'color',
+      notifySave: true
+    });
     themeStore.save();
-
-
-    /*
-
-    1. Save button needs to switch to update on click since new theme is in state
-    2. deselecting wallpaper should trigger selection method
-
-    */
+    _.delay(()=>{
+      this.setState({notifySave: false});
+    },3000);
   },
-  handleEnter(e){
+  handleUpdateTheme(){
+    themeStore.update(this.state.selectedTheme.id);
+    this.setState({
+      boldUpdate: false,
+      notifySave: true
+    });
+    _.delay(()=>{
+      this.setState({notifySave: false});
+    },3000);
+  },
+  handleEnter(e, id){
     if (e.keyCode === 13) {
-      this.handleLabel();
+      this.handleLabel(id);
     }
   },
-  handleLabel(){
+  handleLabel(id){
+    ReactTooltip.hide();
     var s = this.state;
     this.setState({themeLabel: -1});
-    themeStore.label(s.selectedTheme, s.themeLabelValue);
+    themeStore.label(id, s.themeLabelValue);
   },
   render: function(){
     var p = this.props;
     var s = this.state;//mtop 32px
-    console.log('Theming STATE', s);
+    //console.log('Theming STATE', s);
     console.log('Theming PROPS', p);
-    
+    var btmBtnStyle = {
+      marginRight: '5px'
+    };
+    var themeFields = _.filter(themeStore.getThemeFields(), {group: s.colorGroup});
+    var themeFieldsSlice = Math.ceil(themeFields.length / 3);
+    var themeFields1 = themeFields.slice(0, themeFieldsSlice);
+    var themeFields2 = themeFields.slice(themeFieldsSlice, _.round(themeFields.length * 0.66));
+    var themeFields3 = themeFields.slice(_.round(themeFields.length * 0.66), themeFields.length);
+    console.log('1',themeFields1, '2',themeFields2, '3',themeFields3);
+    var themeListTop;
+    var themeListHeight;
+    if (p.height <= 768) {
+      themeListTop = '80.9%';
+      themeListHeight = '14%';
+    }
+    if (p.height > 768 && p.height <= 868) {
+      themeListTop = '79.9%';
+      themeListHeight = '15%';
+    }
+    if (p.height > 868 && p.height <= 968) {
+      themeListTop = '78.9%';
+      themeListHeight = '16%';
+    }
+    if (p.height > 968) {
+      themeListTop = '77.9%';
+      themeListHeight = '17%';
+    }
     return (
       <div className="theming">
         <Row className="ntg-tabs" style={{borderBottom: 'initial', position: 'fixed', zIndex: '9999'}}>
           <div role="tabpanel"> 
             <ul className="nav nav-tabs">
               <li style={{padding: '0px'}} className={`${s.leftTab === 'custom' ? 'active' : ''}`}>
-                <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({leftTab: 'custom'})}><i className="settings-fa fa fa-sticky-note-o"/>  Custom</a>
+                <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({leftTab: 'custom'})}><i className="settings-fa fa fa-mouse-pointer"/>  Custom</a>
               </li>
               <li style={{padding: '0px'}} className={`${s.leftTab === 'tm5k' ? 'active' : ''}`}>
-                <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({leftTab: 'tm5k'})}><i className="settings-fa fa fa-star-o"/>  TM5K</a>
+                <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({leftTab: 'tm5k'})}><i className="settings-fa fa fa-flash"/>  TM5K</a>
               </li>
             </ul>
           </div>
         </Row>
         <Row>
           <Col size="3">
-            <Col size="12" style={{height: '27%', width: '24%', overflowY: 'auto', position: 'fixed', top: '67.9%', left: '2%'}} onMouseLeave={()=>this.setState({themeHover: -1})}>
+            <Col size="12" style={{height: themeListHeight, width: '24%', overflowY: 'auto', position: 'fixed', top: themeListTop, left: '2%'}} onMouseLeave={()=>this.setState({themeHover: -1})}>
               {s.leftTab === 'custom' ?
               <Row>
-                {p.savedThemes.length > 0 ? p.savedThemes.map((theme, i)=>{
+                {s.savedThemes.length > 0 ? s.savedThemes.map((theme, i)=>{
                   return (
                     <Row 
                     key={i}
                     className="ntg-session-row"
-                    style={theme.selected ? {backgroundColor: themeStore.opacify(p.theme.settingsItemHover, 0.5)} : i % 2 ? null : {backgroundColor: p.theme.settingsItemHover}} 
+                    style={p.prefs.theme === theme.id ? {backgroundColor: themeStore.opacify(p.theme.settingsItemHover, 0.5)} : i % 2 ? null : {backgroundColor: p.theme.settingsItemHover}} 
                     onMouseEnter={()=>this.setState({themeHover: i})}>
                       <div 
                       className="ntg-session-text" 
-                      style={{width: 'auto', display: 'inline', cursor: !theme.selected ? 'pointer' : null, fontWeight: theme.selected ? '600' : 'initial'}} 
-                      onClick={s.themeLabel !== i ? ()=>this.handleSelectTheme(i, false) : null}>
+                      style={{width: 'auto', display: 'inline', cursor: p.prefs.theme !== theme.id ? 'pointer' : null, fontWeight: p.prefs.theme === theme.id ? '600' : 'initial'}} 
+                      onClick={s.themeLabel !== i ? ()=>this.handleSelectTheme(theme) : null}>
                         {s.themeLabel === i ? 
                         <input 
                         children={undefined} 
                         type="text"
                         value={s.themeLabelValue}
                         className="form-control"
-                        style={{position: 'absolute', display: 'inline-block', height: '24px', width: '66%'}}
+                        style={{position: 'absolute', display: 'block', height: '24px', width: '66%', top: '2px', left: '17px'}}
                         placeholder={theme.label !== 'Custom Theme' ? theme.label : 'Label...'}
                         onChange={(e)=>this.setState({themeLabelValue: e.target.value})}
-                        onKeyDown={this.handleEnter} />
+                        onKeyDown={(e)=>this.handleEnter(e, theme.id)} />
                         : theme.label}
                       </div>
                       <div style={{width: 'auto', float: 'right', display: 'inline', marginRight: '4px'}}>
-                        {s.themeHover === i ? <Btn onClick={()=>themeStore.remove(i)} className="ntg-session-btn" fa="times" data-tip="Remove Theme" /> : null}
+                        {s.themeHover === i ? <Btn onClick={()=>themeStore.remove(theme.id)} className="ntg-session-btn" fa="times" data-tip="Remove Theme" /> : null}
                         {s.themeHover === i ? <Btn onClick={()=>this.setState({themeLabel: i})} className="ntg-session-btn" fa="pencil" data-tip="Edit Label" /> : null}
                       </div>
                     </Row>
                   );
                 }) : null}
-                <Btn 
-                  onClick={s.isNewTheme ? ()=>this.handleSaveTheme() : ()=>themeStore.update()} 
-                  className="ntg-setting-btn" 
-                  style={{position: 'fixed', top: '96%', fontWeight: s.boldUpdate ? '600' : 'initial'}}>
-                    {`${s.isNewTheme ? 'Save' : 'Update'}${p.collapse ? ' Theme' : ''}`}
-                </Btn>
-                <Btn onClick={this.handleNewTheme} className="ntg-setting-btn" style={{position: 'fixed', top: '96%', marginLeft: s.isNewTheme ? p.collapse ? '108px' : '61px' : p.collapse ? '122px' : '74px'}}>{`New ${p.collapse ? 'Theme' : ''}`}</Btn>
-                <Btn onClick={()=>themeStore.export()} style={{position: 'fixed', top: '96%', marginLeft: s.isNewTheme ? p.collapse ? '208px' : '113px' : p.collapse ? '222px' : '126px'}} className="ntg-setting-btn" fa="arrow-circle-o-down">Export</Btn>
-                <input {...this.props} children={undefined} type="file" onChange={(e)=>themeStore.import(e)} ref="import" style={style.hiddenInput} />
-                <Btn onClick={()=>this.refs.import.click()} style={{position: 'fixed', top: '96%', marginLeft: s.isNewTheme ? p.collapse ? '288px' : '193px' : p.collapse ? '303px' : '208px'}} className="ntg-setting-btn" fa="arrow-circle-o-up">Import</Btn>
+                <div style={{position: 'fixed', top: '96%'}}>
+                  <Btn 
+                    onClick={s.isNewTheme || !s.selectedTheme ? ()=>this.handleSaveTheme() : ()=>this.handleUpdateTheme()} 
+                    style={_.merge(_.clone(btmBtnStyle), {fontWeight: s.boldUpdate ? '600' : '400'})}
+                    className="ntg-sort-btn">
+                      {`${s.isNewTheme ? 'Save' : 'Update'}${p.collapse ? ' Theme' : ''}`}
+                  </Btn>
+                  <Btn onClick={this.handleNewTheme} style={btmBtnStyle} className="ntg-sort-btn" >{`New ${p.collapse ? 'Theme' : ''}`}</Btn>
+                  <Btn onClick={()=>themeStore.export()} style={btmBtnStyle} className="ntg-sort-btn" fa="arrow-circle-o-down">Export</Btn>
+                  <input {...this.props} children={undefined} type="file" onChange={(e)=>themeStore.import(e)} ref="import" style={style.hiddenInput} />
+                  <Btn onClick={()=>this.refs.import.click()} style={btmBtnStyle} className="ntg-sort-btn" fa="arrow-circle-o-up">Import</Btn>
+                  {s.rightTab === 'wallpaper' && s.selectedTheme && s.selectedTheme.id < 9000 ? 
+                  <Btn onClick={()=>this.refs.wallpaper.click()} style={btmBtnStyle} className="ntg-sort-btn">Import Wallpaper</Btn> : null}
+                  <input {...this.props} children={undefined} type="file" onChange={(e)=>themeStore.importWallpaper(e, s.selectedTheme.id)} ref="wallpaper" style={style.hiddenInput} />
+                  
+                    {s.rightTab === 'color' ? <Btn onClick={()=>this.setState({colorGroup: 'general'})} style={btmBtnStyle} className="ntg-sort-btn">Body, Header, and Fields</Btn> : null}
+                    {s.rightTab === 'color' ? <Btn onClick={()=>this.setState({colorGroup: 'buttons'})} style={btmBtnStyle} className="ntg-sort-btn">Buttons</Btn> : null}
+                    {s.rightTab === 'color' ? <Btn onClick={()=>this.setState({colorGroup: 'tiles'})} style={btmBtnStyle} className="ntg-sort-btn">Tiles</Btn> : null}
+                    {s.notifySave ? <span style={{left: '6px', bottom: '7px', position: 'relative'}}>{`Theme ${s.isNewTheme ? 'saved' : 'updated'}.`}</span> : null}
+                </div>
               </Row> : null}
               {s.leftTab === 'tm5k' ?
               <Row>
@@ -296,12 +351,12 @@ var Theming = React.createClass({
                     <Row 
                     key={i}
                     className="ntg-session-row"
-                    style={p.prefs.theme === i ? {backgroundColor: themeStore.opacify(p.theme.settingsItemHover, 0.5)} : i % 2 ? null : {backgroundColor: p.theme.settingsItemHover}} 
+                    style={p.prefs.theme === theme.id ? {backgroundColor: themeStore.opacify(p.theme.settingsItemHover, 0.5)} : i % 2 ? null : {backgroundColor: p.theme.settingsItemHover}} 
                     onMouseEnter={()=>this.setState({themeHover: i})}>
                       <div 
                       className="ntg-session-text" 
-                      style={{width: 'auto', display: 'inline', cursor: p.prefs.theme === i ? 'pointer' : null, fontWeight: theme.selected ? '600' : 'initial'}} 
-                      onClick={()=>this.handleSelectTheme(i, true)}>
+                      style={{width: 'auto', display: 'inline', cursor: p.prefs.theme !== theme.id ? 'pointer' : null, fontWeight: p.prefs.theme === theme.id ? '600' : 'initial'}} 
+                      onClick={()=>this.handleSelectTheme(theme)}>
                         {theme.label}
                       </div>
                     </Row>
@@ -315,11 +370,11 @@ var Theming = React.createClass({
               <div role="tabpanel"> 
                 <ul className="nav nav-tabs">
                   <li style={{padding: '0px'}} className={`${s.rightTab === 'color' ? 'active' : ''}`}>
-                    <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({rightTab: 'color'})}><i className="settings-fa fa fa-sticky-note-o"/>  Color Scheme</a>
+                    <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({rightTab: 'color'})}><i className="settings-fa fa fa-eye"/>  Color Scheme</a>
                   </li>
-                  {!s.isNewTheme || typeof theme !== 'undefined' ? 
+                  {!s.isNewTheme && s.leftTab === 'custom' || s.leftTab === 'tm5k' && s.selectedTheme.id !== 9000 ? 
                   <li style={{padding: '0px'}} className={`${s.rightTab === 'wallpaper' ? 'active' : ''}`}>
-                    <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({rightTab: 'wallpaper'})}><i className="settings-fa fa fa-star-o"/>  Wallpaper</a>
+                    <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({rightTab: 'wallpaper'})}><i className="settings-fa fa fa-image"/>  Wallpaper</a>
                   </li> : null}
                 </ul>
               </div>
@@ -328,72 +383,55 @@ var Theming = React.createClass({
             <Row>
               <Col size="4" style={{marginTop: '28px'}}>
                 <Row>
-                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.bodyText} themeKey="bodyText" label="Body Text"/>
-                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.bodyBg} themeKey="bodyBg" label="Body BG"/>
-                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.headerBg} themeKey="headerBg" label="Header BG"/>
-                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.textFieldsText} themeKey="textFieldsText" label="Field Text"/>
-                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.textFieldsPlaceholder} themeKey="textFieldsPlaceholder" label="Field Placeholder Text"/>
-                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.textFieldsBg} themeKey="textFieldsBg" label="Field BG"/>
-                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.textFieldsBorder} themeKey="textFieldsBorder" label="Field Border"/>
-                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.settingsBg} themeKey="settingsBg" label="Settings BG"/>
-                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.settingsItemHover} themeKey="settingsItemHover" label="Settings Item (Hover)"/>
-                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.darkBtnText} themeKey="darkBtnText" label="Dark Button Text"/>
-                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.darkBtnTextShadow} themeKey="darkBtnTextShadow" label="Dark Button Text Shadow"/>
+                  {themeFields1.map((field, i)=>{
+                    return <ColorPickerContainer key={field.themeKey} onChange={()=>this.setState({boldUpdate: true})} hoverBg={p.theme.settingsItemHover} color={p.theme[field.themeKey]} themeKey={field.themeKey} label={field.label}/>;
+                  })}
                 </Row>
               </Col>
               <Col size="4" style={{marginTop: '28px'}}>
                 <Row>
-                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.darkBtnBg} themeKey="darkBtnBg" label="Dark Button BG"/>
-                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.darkBtnBgHover} themeKey="darkBtnBgHover" label="Dark Button BG (Hover)"/>
-                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.lightBtnText} themeKey="lightBtnText" label="Light Button Text"/>
-                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.lightBtnTextShadow} themeKey="lightBtnTextShadow" label="Light Button Text Shadow"/>
-                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.lightBtnBg} themeKey="lightBtnBg" label="Light Button BG"/>
-                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.lightBtnBgHover} themeKey="lightBtnBgHover" label="Light Button BG (Hover)"/>
-                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.tileBg} themeKey="tileBg" label="Tile BG"/>
-                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.tileBgHover} themeKey="tileBgHover" label="Tile BG (Hover)"/>
-                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.tileText} themeKey="tileText" label="Tile Text"/>
-                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.tileTextShadow} themeKey="tileTextShadow" label="Tile Text Shadow"/>
-                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.tileShadow} themeKey="tileShadow" label="Tile Shadow"/>
+                  {themeFields2.map((field, i)=>{
+                    return <ColorPickerContainer key={field.themeKey} onChange={()=>this.setState({boldUpdate: true})} hoverBg={p.theme.settingsItemHover} color={p.theme[field.themeKey]} themeKey={field.themeKey} label={field.label}/>;
+                  })}
                 </Row>
               </Col>
               <Col size="4" style={{marginTop: '28px'}}>
                 <Row>
-                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.tileX} themeKey="tileX" label="Tile Close Button"/>
-                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.tileXHover} themeKey="tileXHover" label="Tile Close Button (Hover)"/>
-                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.tilePin} themeKey="tilePin" label="Tile Pin Button"/>
-                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.tilePinHover} themeKey="tilePinHover" label="Tile Pin Button (Hover)"/>
-                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.tilePinned} themeKey="tilePinned" label="Tile Pinned Button"/>
-                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.tileMute} themeKey="tileMute" label="Tile Mute Button"/>
-                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.tileMuteHover} themeKey="tileMuteHover" label="Tile Mute Button (Hover)"/>
-                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.tileMuteAudible} themeKey="tileMuteAudible" label="Tile Audible Button"/>
-                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.tileMuteAudibleHover} themeKey="tileMuteAudibleHover" label="Tile Audible Button (Hover)"/>
-                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.tileMove} themeKey="tileMove" label="Tile Move Button"/>
-                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.tileMoveHover} themeKey="tileMoveHover" label="Tile Move Button (Hover)"/>
-                  <ColorPickerContainer hoverBg={p.theme.settingsItemHover} color={p.theme.tileButtonBg} themeKey="tileButtonBg" label="Tile Button BG"/>
+                  {themeFields3.map((field, i)=>{
+                    return <ColorPickerContainer key={field.themeKey} onChange={()=>this.setState({boldUpdate: true})} hoverBg={p.theme.settingsItemHover} color={p.theme[field.themeKey]} themeKey={field.themeKey} label={field.label}/>;
+                  })}
                 </Row>
               </Col>
             </Row> : null}
             {s.rightTab === 'wallpaper' ?
             <Row fluid={true} style={{marginTop: '28px'}}>
-              <Col size="6">
-                {s.leftTab === 'custom' && typeof p.savedThemes[s.selectedTheme] !== 'undefined' ? p.savedThemes[s.selectedTheme].wallpapers.map((wp, i)=>{
-                  return <div key={i} onClick={()=>themeStore.selectWallpaper(s.selectedTheme, i, false)} className="wallpaper-tile" style={{backgroundColor: p.theme.lightBtnBg, backgroundImage: `url('${wp.data}')`, backgroundSize: 'cover', height: '90px', width: '160px', padding: '6px', display: 'inline-block', margin: '8px', border: wp.selected ? `2px solid ${p.theme.lightBtnBg}` : 'initial', cursor: !wp.selected ? 'pointer' : null}}></div>;
+              <Col size={p.wallpaper && p.wallpaper.data === -1 || !p.wallpaper || p.wallpaper.id >= 9000 ? '12' : '6'}>
+                {p.wallpapers.length > 0 ? _.orderBy(p.wallpapers, ['desc'], ['created']).map((wp, i)=>{
+                  var selectedWallpaper = p.wallpaper && wp.id === p.wallpaper.id;
+                  return (
+                    <div 
+                    key={i} 
+                    onClick={()=>themeStore.selectWallpaper(s.selectedTheme.id, wp.id, true)} 
+                    className="wallpaper-tile" 
+                    style={{
+                      backgroundColor: p.theme.lightBtnBg, 
+                      backgroundImage: `url('${wp.data}')`, 
+                      backgroundSize: 'cover', 
+                      height: '73px', 
+                      width: '130px', 
+                      padding: '6px', 
+                      display: 'inline-block', 
+                      margin: '8px', 
+                      border: selectedWallpaper ? `2px solid ${p.theme.lightBtnBg}` : 'initial', 
+                      cursor: selectedWallpaper ? null : 'pointer'}} />
+                  );
                 }) : null}
-                {s.leftTab === 'tm5k' && typeof p.standardThemes[s.selectedTheme] !== 'undefined' ? p.standardThemes[s.selectedTheme].wallpapers.map((wp, i)=>{
-                  return <div key={i} onClick={()=>themeStore.selectWallpaper(s.selectedTheme, i, true)} className="wallpaper-tile" style={{backgroundColor: p.theme.lightBtnBg, backgroundImage: `url('${wp.data}')`, backgroundSize: 'cover', height: '90px', width: '160px', padding: '6px', display: 'inline-block', margin: '8px', border: wp.selected ? `2px solid ${p.theme.lightBtnBg}` : 'initial', cursor: !wp.selected ? 'pointer' : null}}></div>;
-                }) : null}
-                {s.leftTab === 'custom' && p.savedThemes[s.selectedTheme].wallpapers.length > 0 ?
-                <div onClick={()=>themeStore.deselectWallpaper(s.selectedTheme, s.leftTab === 'tm5k')} className="wallpaper-tile" style={{backgroundColor: p.theme.darkBtnBg, height: '90px', width: '160px', padding: '6px', display: 'inline-block', margin: '8px', cursor: 'pointer'}}>
-                  <i className="fa fa-minus-circle" style={{fontSize: '72px', position: 'fixed', marginLeft: '41px', marginTop: '2px', color: p.theme.lightBtnBg}}/>
-                </div> : null}
-                {s.leftTab === 'custom' ? <Btn onClick={()=>this.refs.wallpaper.click()} className="ntg-setting-btn" style={{position: 'fixed', top: '96%', left: '27%'}}>Import Wallpaper</Btn> : null}
-                <input {...this.props} children={undefined} type="file" onChange={(e)=>themeStore.importWallpaper(e)} ref="wallpaper" style={style.hiddenInput} />
               </Col>
-              {s.leftTab === 'custom' ? p.savedThemes[s.selectedTheme].wallpapers.length > 0 && s.selectedWallpaper ? 
+              {p.wallpaper && p.wallpaper.data !== -1 && p.wallpaper.id < 9000 ? 
               <Col size="6">
-                <div className="wallpaper-tile" style={{backgroundColor: p.theme.lightBtnBg, backgroundImage: s.selectedWallpaper ? `url('${s.selectedWallpaper.data}')` : 'initial', backgroundSize: 'cover', height: '180px', width: '320px', padding: '6px', display: 'inline-block'}}></div>
-                <Btn onClick={()=>themeStore.removeWallpaper(s.selectedTheme)} className="ntg-setting-btn" style={{position: 'fixed', top: '96%', left: '62%'}}>Remove</Btn> 
-              </Col> : null : null}
+                <div className="wallpaper-tile" style={{backgroundColor: p.theme.lightBtnBg, backgroundImage: `url('${p.wallpaper.data}')`, backgroundSize: 'cover', height: '180px', width: '320px', padding: '6px', display: 'inline-block'}}></div>
+                <Btn onClick={()=>themeStore.removeWallpaper(p.prefs.wallpaper)} className="ntg-setting-btn" style={{position: 'fixed', top: '96%', left: '62%'}}>Remove</Btn> 
+              </Col> : null}
             </Row> : null}
           </Col>
         </Row>
@@ -658,7 +696,7 @@ var Settings = React.createClass({
   },
   handleMaxBtn(){
     clickStore.set_click(true, false);
-    prefsStore.set_prefs('settingsMax', !this.state.settingsMax);
+    prefsStore.set_prefs({settingsMax: !this.state.settingsMax});
   },
   render: function() {
     var p = this.props;
@@ -690,7 +728,7 @@ var Settings = React.createClass({
         <Row className="ntg-settings-pane">
           {s.settings === 'sessions' ? <Sessions settingsMax={s.settingsMax} sessions={p.sessions} tabs={p.tabs} prefs={p.prefs} favicons={p.favicons} collapse={p.collapse} theme={p.theme} /> : null}
           {s.settings === 'preferences' ? <Preferences settingsMax={s.settingsMax} prefs={p.prefs} tabs={p.tabs} theme={p.theme} /> : null}
-          {s.settings === 'theming' ? <Theming settingsMax={s.settingsMax} prefs={p.prefs} theme={p.theme} modal={p.modal} savedThemes={p.savedThemes} standardThemes={p.standardThemes} wallpaper={p.wallpaper} collapse={p.collapse}/> : null}
+          {s.settings === 'theming' ? <Theming settingsMax={s.settingsMax} prefs={p.prefs} theme={p.theme} modal={p.modal} savedThemes={p.savedThemes} standardThemes={p.standardThemes} wallpaper={p.wallpaper} wallpapers={p.wallpapers} collapse={p.collapse} height={p.height}/> : null}
           {s.settings === 'about' ? <About settingsMax={s.settingsMax} /> : null}
         </Row>
       </Container>

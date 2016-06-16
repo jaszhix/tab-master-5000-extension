@@ -73,6 +73,7 @@ var Attribution = React.createClass({
             }) : null}
           </ul>
         </Col>
+        Included wallpapers are licensed under the <a href="https://creativecommons.org/publicdomain/zero/1.0/">Creative Commons Zero (CC0)</a> license.
       </div>
     );
   }

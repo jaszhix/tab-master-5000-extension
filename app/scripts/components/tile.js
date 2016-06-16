@@ -244,8 +244,8 @@ var Tile = React.createClass({
       document.getElementById('bgImg').style.backgroundImage = `url("${s.screenshot}")`;
       document.getElementById('bgImg').style.WebkitFilter = `blur(${p.stores.prefs.screenshotBgBlur}px)`;
     } else {
-      if (p.wallpaper) {
-        document.getElementById('bgImg').style.backgroundImage = `url("${p.wallpaper}")`;
+      if (p.wallpaper && p.wallpaper.data !== -1) {
+        document.getElementById('bgImg').style.backgroundImage = `url("${p.wallpaper.data}")`;
       } else {
         document.getElementById('bgImg').style.backgroundImage = '';
       }
@@ -399,18 +399,21 @@ var Tile = React.createClass({
     var s = this.state;
     var p = this.props;
     var tabs = _.orderBy(p.stores.tabs, ['index'], ['desc']);
-      if (tabs.length > 0) {
-        if (p.tab.title === 'New Tab') {
-          chrome.tabs.move(p.tab.id, {
-            index: -1
-          });
-          _.defer(()=>sortStore.set('index'));
-        } else {
-          chrome.tabs.move(p.tab.id, {
-            index: s.i
-          });
-        }
+    if (tabs.length > 0) {
+      if (p.tab.title === 'New Tab') {
+        chrome.tabs.move(p.tab.id, {
+          index: -1
+        });
+        _.defer(()=>sortStore.set('index'));
+      } else {
+        chrome.tabs.move(p.tab.id, {
+          index: s.i
+        });
       }
+    }
+    if (p.tab.id === 0) {
+      p.onApply();
+    }
   },
   handleContextClick(e){
     if (this.props.stores.prefs.context) {
@@ -469,28 +472,30 @@ var Tile = React.createClass({
   },
   handleStart(e, ui) {
     var s = this.state;
-    var p = this.props;
-    // Temporarily move tile element to the parent div, so the drag position stays in sync with the cursor.
-    var clone = v(ReactDOM.findDOMNode(this.refs.tileMain)).clone().n;
-    v(clone).allChildren().removeAttr('data-reactid');
-    clone.removeAttribute('id');
-    console.log('drag clone',clone.attributes);
-    clone.classList.add('tileClone');
-    console.log('clone: ',clone);
-    var original = v('#tileMain-'+s.i).n;
-    v('#grid').insertBefore(clone, original);
-    v('#main').append(original);
-    console.log('Event: ', e, ui);
-    console.log('Start Position: ', ui.position);
-    // tileDrag will store the state outside of the component's lifecycle.
-    tileDrag = true;
-    this.setState({drag: tileDrag});
-    draggedStore.set_dragged(this.props.tab);
-    this.getPos(p.stores.cursor.page.x, p.stores.cursor.page.y);
+    if (!s.drag) {
+      var p = this.props;
+      // Temporarily move tile element to the parent div, so the drag position stays in sync with the cursor.
+      var clone = v(ReactDOM.findDOMNode(this.refs.tileMain)).clone().n;
+      v(clone).allChildren().removeAttr('data-reactid');
+      clone.removeAttribute('id');
+      console.log('drag clone',clone.attributes);
+      clone.classList.add('tileClone');
+      console.log('clone: ',clone);
+      var original = v('#tileMain-'+s.i).n;
+      v('#grid').insertBefore(clone, original);
+      v('#main').append(original);
+      console.log('Event: ', e, ui);
+      console.log('Start Position: ', ui.position);
+      // tileDrag will store the state outside of the component's lifecycle.
+      tileDrag = true;
+      this.setState({drag: tileDrag});
+      draggedStore.set_dragged(this.props.tab);
+      this.getPos(p.stores.cursor.page.x, p.stores.cursor.page.y, ui);
+    }
   },
   handleDrag(e, ui) {
     var p = this.props;
-    this.getPos(p.stores.cursor.page.x, p.stores.cursor.page.y);
+    this.getPos(p.stores.cursor.page.x, p.stores.cursor.page.y, ui);
   },
   handleStop(e, ui) {
     var s = this.state;
@@ -502,7 +507,7 @@ var Tile = React.createClass({
     console.log('Stop Position: ', ui.position);
     tileDrag = false;
     this.setState({drag: tileDrag});
-    this.getPos(p.stores.cursor.page.x, p.stores.cursor.page.y);
+    this.getPos(p.stores.cursor.page.x, p.stores.cursor.page.y, ui);
     var dragged = draggedStore.get_dragged();
     var draggedOver = dragStore.get_tabIndex();
     chrome.tabs.move(dragged.id, {index: draggedOver.index}, (t)=>{
@@ -511,11 +516,11 @@ var Tile = React.createClass({
       v('.tileClone').remove();
     });
   },
-  getPos(left, top){
+  getPos(left, top, ui){
     var p = this.props;
-    var oLeft = left - p.stores.cursor.offset.x;
-    var oRight = top - p.stores.cursor.offset.y;
-    dragStore.set_drag(oLeft, oRight);
+    var oLeft = left - ui.x - v('#tileMain-'+p.i).width() / 4;
+    var oTop = top - ui.y + p.stores.prefs.tabSizeHeight / 10;
+    dragStore.set_drag(oLeft, oTop);
   },
   currentlyDraggedOver(tab){
     if (tileDrag) {
@@ -564,11 +569,12 @@ var Tile = React.createClass({
                       handle=".handle"
                       moveOnStartChange={true}
                       grid={[1, 1]}
-                      zIndex={100}
+                      
+                      zIndex={999}
                       onStart={this.handleStart}
                       onDrag={this.handleDrag}
                       onStop={this.handleStop}>
-            <div ref="tile" style={s.drag ? {position: 'absolute', left: drag.left-200, top: drag.top} : null}>
+            <div ref="tile" style={s.drag ? {position: 'absolute', left: drag.left, top: drag.top} : null}>
             {p.render && s.render && p.tab.title !== 'New Tab' ? <Row fluid={true} id={'subTile-'+s.i} style={s.duplicate && s.focus && !s.hover ? {WebkitAnimationIterationCount: 'infinite', WebkitAnimationDuration: '5s'} : null} onContextMenu={this.handleContextClick} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "animated zoomOut" : s.pinning ? "animated pulse" : s.duplicate && s.focus ? "animated flash" : ''}>
                 { true ? <div id={'innerTile-'+p.tab.id} className={s.apps && !p.tab.enabled ? "ntg-tile-disabled" : s.hover ? "ntg-tile-hover" : "ntg-tile"} style={mainTileStyle}>
                   <Row className="ntg-tile-row-top">
@@ -632,7 +638,7 @@ var Sidebar = React.createClass({
     ReactTooltip.rebuild();
   },
   handleSort(){
-    prefsStore.set_prefs('sort', !this.props.prefs.sort);
+    prefsStore.set_prefs({sort: !this.props.prefs.sort});
   },
   render: function() {
     var p = this.props;
@@ -688,7 +694,7 @@ var TileGrid = React.createClass({
   },
   prefsInit(type){
     var p = type;
-    if (p.stores.prefs.screenshotBg || p.stores.prefs.screenshot || p.wallpaper) {
+    if (p.stores.prefs.screenshotBg || p.stores.prefs.screenshot || p.wallpaper && p.wallpaper.data !== -1) {
       v('#main').css({position: 'absolute'});
       v('#bgImg').css({
         display: 'block',
@@ -700,7 +706,6 @@ var TileGrid = React.createClass({
     } else {
       v('#main').css({position: p.wallpaper ? 'absolute' : ''});
       v('#bgImg').css({
-        display: 'none',
         backgroundImage: 'none',
         backgroundBlendMode: 'normal',
         WebkitFilter: `blur(${p.stores.prefs.screenshotBgBlur}px)`,
@@ -719,15 +724,23 @@ var TileGrid = React.createClass({
     this.sort(nextProps.stores.sort, nextProps);
   },
   sort(key, props) {
-    var result = _.orderBy(props.data, key, 'asc');
-    this.setState({
-      data: key === 'offlineEnabled' 
+    var order = 'asc';
+    if (key === 'offlineEnabled' 
       || key === 'sTimeStamp' 
       || key === 'dateAdded' 
       || key === 'visitCount' 
       || key === 'audible'
       || key === 'timeStamp'  
-      || key === 'lastVisitTime' ? _.reverse(result) : result
+      || key === 'lastVisitTime') {
+      order = 'desc';
+    }
+    var pinned = _.orderBy(_.filter(props.data, {pinned: true}), key, order);
+    var unpinned = _.orderBy(_.filter(props.data, {pinned: false}), key, order);
+    var concat = _.concat(pinned, unpinned);
+
+    var result = _.orderBy(concat, ['pinned', key], ['desc', order]);
+    this.setState({
+      data: result
     });
   },
   handleTitleIcon(){
@@ -780,7 +793,8 @@ var TileGrid = React.createClass({
                     tileLimit={p.tileLimit} 
                     init={p.init} 
                     theme={p.theme}
-                    wallpaper={p.wallpaper}  />
+                    wallpaper={p.wallpaper}
+                    onApply={()=>this.sort('index', p)} />
                   );
                 }
               })}

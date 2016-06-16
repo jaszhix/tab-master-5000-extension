@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Reflux from 'reflux';
 import _ from 'lodash';
-import v from 'vquery';
+import v from './v';
 import kmp from 'kmp';
 import ReactUtils from 'react-utils';
 import ReactTooltip from './tooltip/tooltip';
@@ -104,8 +104,8 @@ var Search = React.createClass({
             </Col>
           </Col>
           <Col size="6">
-            {searchStore.get_search().length > 3 ? <span className="search-msg ntg-search-google-text">Press Enter to Search Google</span> : null}
-            <Btn style={{float: 'left'}} onClick={()=>modalStore.set_modal(true, 'settings')} className="ntg-top-btn" fa="cogs">Settings...</Btn>
+            {searchStore.get_search().length > 3 ? <span style={{color: p.theme.textFieldsPlaceholder}} className="search-msg ntg-search-google-text">Press Enter to Search Google</span> : null}
+            <Btn style={{float: 'left'}} onClick={()=>modalStore.set_modal(true, 'settings')} className="ntg-top-btn" fa="cogs">Settings</Btn>
             {p.event === 'newVersion' ? <Btn onClick={()=>chrome.runtime.reload()} style={{float: 'left'}} className="ntg-top-btn" fa="rocket">New Version Available</Btn> : null}
             {p.event === 'versionUpdate' ? <Btn onClick={this.openAbout} style={{float: 'left'}} className="ntg-top-btn" fa="info-circle">Updated to {utilityStore.get_manifest().version}</Btn> : null}
             {p.event === 'installed' ? <Btn onClick={this.openAbout} style={{float: 'left'}} className="ntg-top-btn" fa="thumbs-o-up">Thank you for installing TM5K</Btn> : null}
@@ -135,6 +135,7 @@ var Root = React.createClass({
       settings: 'sessions',
       collapse: true,
       width: window.innerWidth,
+      height: window.innerHeight,
       context: false,
       modal: null,
       event: '',
@@ -157,7 +158,8 @@ var Root = React.createClass({
       theme: null,
       savedThemes: [],
       standardThemes: [],
-      wallpaper: null
+      wallpaper: null,
+      wallpapers: []
     };
   },
   componentWillMount(){
@@ -246,159 +248,182 @@ var Root = React.createClass({
   sortChange(e){
     this.setState({sort: e});
   },
-  themeChange(e){
-    e = _.cloneDeep(e);
-    this.setState({standardThemes: themeStore.getStandardThemes()});
-    if (!e) {
-      return;
+  componentDidUpdate(pP, pS){
+    if (!_.isEqual(pS.theme, this.state.theme)) {
+      this.themeChange({theme: this.state.theme});
     }
-    if (typeof e.data !== 'undefined' && e.data) {
-      v('#bgImg').css({
-        backgroundImage: `url('${e.data}')`,
-        backgroundSize: 'cover'
-      });
-      this.setState({wallpaper: e.data});
-    } else if (typeof e.bodyBg === 'undefined') {
-      this.setState({savedThemes: e});
-    } else {
+  },
+  themeChange(e){
+    var s = this.state;
+    s.standardThemes = themeStore.getStandardThemes();
+    if (e.savedThemes) {
+      s.savedThemes = e.savedThemes;
+    }
+    if (e.theme) {
       v('style').n.innerHTML += `
       a, a:focus, a:hover {
-        color: ${themeStore.opacify(e.bodyText, 0.9)};
+        color: ${themeStore.opacify(e.theme.bodyText, 0.9)};
       }
       .form-control::-webkit-input-placeholder {
-        color: ${e.textFieldsPlaceholder};
+        color: ${e.theme.textFieldsPlaceholder};
       }
       .form-control {
-        color: ${e.textFieldsText};
-        background-color: ${e.textFieldsBg};
-        border: 1px solid ${e.textFieldsBorder};
+        color: ${e.theme.textFieldsText};
+        background-color: ${e.theme.textFieldsBg};
+        border: 1px solid ${e.theme.textFieldsBorder};
       }
       .nav-tabs>li {
-        background-color: ${e.lightBtnBg};
+        background-color: ${e.theme.lightBtnBg};
       }
       .nav-tabs>li>a {
-         color: ${e.lightBtnText};
+         color: ${e.theme.lightBtnText};
       }
       .nav-tabs>li.active {
-        background-color: ${e.settingsBg};
+        background-color: ${e.theme.settingsBg};
       }
       .nav-tabs>li.active>a, .nav-tabs>li.active>a:focus {
-        color: ${e.darkBtnText};
-        background-color: ${e.darkBtnBg};
-        border: 1px solid ${e.tileShadow};
+        color: ${e.theme.darkBtnText};
+        background-color: ${e.theme.darkBtnBg};
+        border: 1px solid ${e.theme.tileShadow};
       }
       .nav-tabs>li.active>a:hover {
-        color: ${e.darkBtnText};
-        background-color: ${e.darkBtnBgHover};
+        color: ${e.theme.darkBtnText};
+        background-color: ${e.theme.darkBtnBgHover};
       }
       .nav-tabs>li:hover {
-        background-color: ${e.lightBtnBgHover};
+        background-color: ${e.theme.lightBtnBgHover};
       }
       .ntg-tile-disabled, .ntg-tile-hover, .ntg-tile-moving { 
-        color: ${e.tileText};
-        background-color: ${e.tileBg};
-        box-shadow: ${e.tileShadow} 1px 1px 3px -1px;
+        color: ${e.theme.tileText};
+        background-color: ${e.theme.tileBg};
+        box-shadow: ${e.theme.tileShadow} 1px 1px 3px -1px;
       }
       .ntg-x {
-        color: ${e.tileX};
+        color: ${e.theme.tileX};
       }
       .ntg-x-hover {
-        color: ${e.tileXHover};
+        color: ${e.theme.tileXHover};
       }
       .ntg-pinned {
-        color: ${e.tilePin};
+        color: ${e.theme.tilePin};
       }
       .ntg-pinned-hover {
-        color: ${e.tilePinHover};
+        color: ${e.theme.tilePinHover};
       }
       .ntg-mute {
-        color: ${e.tileMute};
+        color: ${e.theme.tileMute};
       }
       .ntg-mute-hover {
-        color: ${e.tileMuteHover};
+        color: ${e.theme.tileMuteHover};
       }
       .ntg-mute-audible {
-        color: ${e.tileMuteAudible};
+        color: ${e.theme.tileMuteAudible};
       }
       .ntg-mute-audible-hover {
-        color: ${e.tileMuteAudibleHover};
+        color: ${e.theme.tileMuteAudibleHover};
       }
       .ntg-move {
-        color: ${e.tileMove};
+        color: ${e.theme.tileMove};
       }
       .ntg-move-hover {
-        color: ${e.tileMoveHover};
+        color: ${e.theme.tileMoveHover};
       }
       .ntg-session-text {
-        color: ${e.bodyText};
+        color: ${e.theme.bodyText};
       }
       .ntg-folder {
-        text-shadow: 2px 2px ${e.tileTextShadow};
+        text-shadow: 2px 2px ${e.theme.tileTextShadow};
       }
       .sk-cube-grid .sk-cube {
-        background-color: ${e.darkBtnBg};
+        background-color: ${e.theme.darkBtnBg};
       }
       body > div.ReactModalPortal > div > div {
-        border: ${e.tileShadow};
+        -webkit-transition: ${s.prefs.animations ? 'background 0.5s ease-in, height 0.2s, width 0.2s, top 0.2s, left 0.2s, right 0.2s, bottom 0.2s' : 'initial'};
+        border: ${e.theme.tileShadow};
+      }
+      body > div.ReactModalPortal > div > div > div > div.row.ntg-tabs > div:nth-child(2) {
+        -webkit-transition: ${s.prefs.animations ? 'background 0.5s ease-in, top 0.2s, left 0.2s' : 'initial'};
       }
       .rc-color-picker-panel {
-        background-color: ${e.settingsBg};
+        background-color: ${e.theme.settingsBg};
       }
       .rc-color-picker-panel-inner {
-        background-color: ${e.settingsBg};
-        border: 1px solid ${e.tileShadow};
-        box-shadow: ${e.tileShadow} 1px 1px 3px -1px;
+        background-color: ${e.theme.settingsBg};
+        border: 1px solid ${e.theme.tileShadow};
+        box-shadow: ${e.theme.tileShadow} 1px 1px 3px -1px;
       }
       .rc-color-picker-panel-params input {
-        color: ${e.textFieldsText};
-        background-color: ${e.textFieldsBg};
-        border: 0.5px solid ${e.textFieldsBorder};
+        color: ${e.theme.textFieldsText};
+        background-color: ${e.theme.textFieldsBg};
+        border: 0.5px solid ${e.theme.textFieldsBorder};
       };
       .rc-slider {
-        background-color: ${themeStore.opacify(e.darkBtnBg, 0.5)};
+        background-color: ${themeStore.opacify(e.theme.darkBtnBg, 0.5)};
       }
       .rc-slider-step {
-        background: ${themeStore.opacify(e.settingsBg, 0.35)};
+        background: ${themeStore.opacify(e.theme.settingsBg, 0.35)};
       }
       .rc-slider-track {
-        background-color: ${themeStore.opacify(e.lightBtnBg, 0.85)};
+        background-color: ${themeStore.opacify(e.theme.lightBtnBg, 0.85)};
       }
       .rc-slider-handle {
-        background-color: ${themeStore.opacify(e.darkBtnBg, 0.9)};
-        border: solid 2px ${themeStore.opacify(e.lightBtnBg, 0.85)};
+        background-color: ${themeStore.opacify(e.theme.darkBtnBg, 0.9)};
+        border: solid 2px ${themeStore.opacify(e.theme.lightBtnBg, 0.85)};
       }
       .rc-slider-handle:hover {
-        background-color: ${themeStore.opacify(e.darkBtnBgHover, 0.9)};
-        border: solid 2px ${themeStore.opacify(e.lightBtnBgHover, 0.85)}; 
+        background-color: ${themeStore.opacify(e.theme.darkBtnBgHover, 0.9)};
+        border: solid 2px ${themeStore.opacify(e.theme.lightBtnBgHover, 0.85)}; 
       }
       .__react_component_tooltip.type-dark {
-        color: ${e.darkBtnText};
-        background-color: ${themeStore.opacify(e.darkBtnBg, 1)};
+        color: ${e.theme.darkBtnText};
+        background-color: ${themeStore.opacify(e.theme.darkBtnBg, 1)};
       }
       .__react_component_tooltip.type-dark.place-bottom:after {
-        border-bottom: 6px solid ${themeStore.opacify(e.darkBtnBg, 1)};
+        border-bottom: 6px solid ${themeStore.opacify(e.theme.darkBtnBg, 1)};
       }
       .__react_component_tooltip.type-dark.place-top:after {
-        border-top: 6px solid ${themeStore.opacify(e.darkBtnBg, 1)};
+        border-top: 6px solid ${themeStore.opacify(e.theme.darkBtnBg, 1)};
       }
       .__react_component_tooltip.type-dark.place-right:after {
-        border-right: 6px solid ${themeStore.opacify(e.darkBtnBg, 1)};
+        border-right: 6px solid ${themeStore.opacify(e.theme.darkBtnBg, 1)};
+      }
+      #main {
+        -webkit-transition: ${s.prefs.animations ? '-webkit-filter 0.2s ease-in' : 'initial'};
       }
       `;
       v(document.body).css({
-        color: e.bodyText,
-        backgroundColor: e.bodyBg,
+        color: e.theme.bodyText,
+        backgroundColor: e.theme.bodyBg,
       });
-      v('#bgImg').css({backgroundColor: e.bodyBg});
-      this.setState({theme: e});
+      v('#bgImg').css({backgroundColor: e.theme.bodyBg});
+      s.theme = e.theme;
     }
+    console.log('e.currentWallpaper',e.currentWallpaper)
+    if (e.currentWallpaper && typeof e.currentWallpaper.data !== 'undefined') {
+      if (e.currentWallpaper.data !== -1) {
+        v('#bgImg').css({
+          backgroundImage: `url('${e.currentWallpaper.data}')`,
+          backgroundSize: 'cover'
+        });
+        s.wallpaper = e.currentWallpaper;
+      } else {
+        v('#bgImg').css({
+          backgroundImage: 'none'
+        });
+        s.wallpaper = null;
+      }
+    }
+    if (e.wallpapers) {
+      s.wallpapers = e.wallpapers;
+    }
+    this.setState(s);
   },
   modalChange(e){
     this.setState({modal: e});
     if (this.state.prefs.animations) {
       if (e.state) {
         v('#main').css({
-          transition: '-webkit-filter .2s ease-in',
+          WebkitTransition: '-webkit-filter .0.5s ease-in',
           WebkitFilter: 'blur(5px)'
         });
       } else {
@@ -429,7 +454,7 @@ var Root = React.createClass({
       this.setState({tabs: _.uniq(tabs)});
       tabStore.set_tab(tabs);
     } else {
-      prefsStore.set_prefs('mode', s.prefs.mode);
+      prefsStore.set_prefs({mode: s.prefs.mode});
     }
     _.defer(()=>this.setState({topLoad: false}));
   },
@@ -594,6 +619,7 @@ var Root = React.createClass({
         } else {
           this.searchChanged(s.search, tab);
         }
+        themeStore.setTriggers();
         this.checkDuplicateTabs(Tab);
       }
       console.log('Tabs: ',Tab);
@@ -703,7 +729,7 @@ var Root = React.createClass({
         this.setState({resolutionWarning: false});
       }
     } else {
-      this.setState({width: event.width});
+      this.setState({width: event.width, height: event.height});
       if (event.width >= 1565) {
         this.setState({collapse: true});
       } else {
@@ -854,7 +880,9 @@ var Root = React.createClass({
                         savedThemes={s.savedThemes} 
                         standardThemes={s.standardThemes}
                         wallpaper={s.wallpaper}
-                        settings={s.settings} /> : null}
+                        wallpapers={s.wallpapers}
+                        settings={s.settings}
+                        height={s.height} /> : null}
               {s.tabs ? 
               <div className="tile-container">
                 <Search event={s.event} prefs={s.prefs} topLoad={s.topLoad} theme={s.theme}/>

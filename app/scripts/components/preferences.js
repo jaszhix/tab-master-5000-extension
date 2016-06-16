@@ -6,7 +6,7 @@ import utils from './utils';
 
 import Slider from 'rc-slider';
 import ReactTooltip from './tooltip/tooltip';
-import {reRenderStore, utilityStore, blacklistStore} from './stores/main';
+import {reRenderStore, utilityStore, blacklistStore, themeStore} from './stores/main';
 import prefsStore from './stores/prefs';
 import screenshotStore from './stores/screenshot';
 
@@ -40,9 +40,6 @@ var Toggle = React.createClass({
   },
   componentDidMount(){
     ReactTooltip.rebuild();
-  },
-  componentWillUnmount(){
-    ReactTooltip.hide();
   },
   render: function() {
     var p = this.props;
@@ -147,13 +144,20 @@ var Preferences = React.createClass({
   },
   handleClick(opt){
     var p = this.props;
-    prefsStore.set_prefs(opt,!p.prefs[opt]);
+    var obj = {};
+    obj[opt] = !p.prefs[opt];
+    prefsStore.set_prefs(obj);
     if (opt === 'screenshot') {
       reRenderStore.set_reRender(true, 'cycle', null);
     }
+    if (opt === 'animations') {
+      themeStore.set(p.theme);
+    }
   },
   handleSlide(e, opt){
-    prefsStore.set_prefs(opt,e);
+    var obj = {};
+    obj[opt] = e;
+    prefsStore.set_prefs(obj);
   },
   render: function() {
     var s = this.state;
@@ -228,7 +232,7 @@ var Preferences = React.createClass({
                 min={0} max={10}
                 defaultValue={p.prefs.screenshotBgOpacity}
                 value={p.prefs.screenshotBgOpacity}
-                onChange={(e)=>prefsStore.set_prefs('screenshotBgOpacity',e)} 
+                onChange={(e)=>prefsStore.set_prefs({screenshotBgOpacity: e})} 
                 onMouseEnter={()=>this.handleToggle('screenshotBgOpacity')}
                 hoverBg={p.theme.settingsItemHover}
                 data-tip="Controls the strength of the opacity of background screenshots and wallpaper." /> 
@@ -238,7 +242,7 @@ var Preferences = React.createClass({
                 min={0} max={15}
                 defaultValue={p.prefs.screenshotBgBlur}
                 value={p.prefs.screenshotBgBlur}
-                onChange={(e)=>prefsStore.set_prefs('screenshotBgBlur',e)} 
+                onChange={(e)=>prefsStore.set_prefs({screenshotBgBlur: e})} 
                 onMouseEnter={()=>this.handleToggle('screenshotBgBlur')}
                 hoverBg={p.theme.settingsItemHover}
                 data-tip="Controls the strength of the blur of background screenshots and wallpaper."/> 

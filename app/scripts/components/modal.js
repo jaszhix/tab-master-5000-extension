@@ -20,7 +20,7 @@ var ResolutionWarning = React.createClass({
     style.modal.content.bottom = '40%';
   },
   handleCloseBtn(){
-    prefsStore.set_prefs('resolutionWarning', false);
+    prefsStore.set_prefs({resolutionWarning: false});
     clickStore.set_click(true, false);
     modalStore.set_modal(false);
   },
@@ -65,10 +65,14 @@ var ModalHandler = React.createClass({
     if (!_.isEqual(nP.modal, this.props.modal) && mount) {
       this.setState({modal: nP.modal});
     }
-    if (nP.prefs.animations) {
-      style.modal.overlay.backgroundColor = 'rgba(216, 216, 216, 0.21)';
+    if (nP.settings !== 'theming') {
+      if (nP.prefs.animations) {
+        style.modal.overlay.backgroundColor = 'rgba(216, 216, 216, 0.21)';
+      } else {
+        style.modal.overlay.backgroundColor = 'rgba(216, 216, 216, 0.59)';
+      }
     } else {
-      style.modal.overlay.backgroundColor = 'rgba(216, 216, 216, 0.59)';
+      style.modal.overlay.backgroundColor = 'initial';
     }
   },
   componentWillUnmount(){
@@ -90,7 +94,7 @@ var ModalHandler = React.createClass({
     var s = this.state;
     var p = this.props;
     _.merge(style.modal.content, {
-      background: p.theme.settingsBg,
+      background: s.modal.type !== 'theming' ? p.theme.settingsBg : 'initial',
       border: `1px solid ${p.theme.textFieldsPlaceholderText}`,
       WebkitBoxShadow: `2px 2px 15px -2px ${p.theme.tileShadow}`
     });
@@ -112,7 +116,9 @@ var ModalHandler = React.createClass({
           savedThemes={p.savedThemes} 
           standardThemes={p.standardThemes}
           wallpaper={p.wallpaper}
-          settings={p.settings} /> : null}
+          wallpapers={p.wallpapers}
+          settings={p.settings}
+          height={p.height} /> : null}
           {s.modal.type === 'resolutionWarning' ? <ResolutionWarning /> : null}
           {p.prefs.tooltip ?
           <ReactTooltip 
