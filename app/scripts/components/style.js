@@ -34,10 +34,10 @@ var style = {
       right: 0,
       bottom: 0,
       zIndex: '9995',
-      backgroundColor: 'rgba(216, 216, 216, 0.21)',
       transition: 'background-color .9s ease-in'
     },
     content: {
+      opacity: '0',
       position: 'absolute',
       top: '15%',
       left: '15%',

@@ -4,7 +4,6 @@ import _ from 'lodash';
 import v from 'vquery';
 import {saveAs} from 'filesaver.js';
 import mouseTrap from 'mousetrap';
-import ReactTooltip from 'react-tooltip';
 
 import prefsStore from './prefs';
 import tabStore from './tab';
@@ -69,7 +68,7 @@ var throttled = {
   update: _.throttle(reRender, 1, {leading: true}),
   history: _.throttle(reRender, 4000, {leading: true})
 };
-bgPrefs.then((prefs)=>{
+export var chromeRuntime = (prefs)=>{
   chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     console.log('msg: ',msg);
     if (msg.type === 'create') {
@@ -132,7 +131,7 @@ bgPrefs.then((prefs)=>{
       sendResponse(screenshotStore.tabHasScreenshot(sender.tab.url));
     }
   });
-});
+};
 export var updateStore = Reflux.createStore({
   init(){
     this.update = null;
@@ -719,6 +718,7 @@ export var actionStore = Reflux.createStore({
 
 export var faviconStore = Reflux.createStore({
   init: function() {
+    this.favicons = [];
     var getFavicons = new Promise((resolve, reject)=>{
       chrome.storage.local.get('favicons', (fv)=>{
         if (fv && fv.favicons) {
@@ -734,11 +734,11 @@ export var faviconStore = Reflux.createStore({
       this.trigger(this.favicons);
     }).catch(()=>{
       console.log('init favicons');
-      this.favicons = [];
       chrome.storage.local.set({favicons: this.favicons}, (result)=> {
         console.log('Init favicons saved: ',result);
       });
       this.trigger(this.favicons);
+      prefsStore.set_prefs({});
     });
   },
   set_favicon: function(tab, queryLength, i) {
@@ -789,8 +789,8 @@ export var faviconStore = Reflux.createStore({
           _.defer(()=>{
             chrome.storage.local.set({favicons: this.favicons}, (result)=> {
               console.log('favicons saved: ',result);
-              this.trigger(this.favicons);
             });
+            this.trigger(this.favicons);
           });
         }
       });
@@ -858,7 +858,7 @@ export var sessionsStore = Reflux.createStore({
       timeStamp = sess.timeStamp;
     } else {
       tabs = tabsState;
-      timeStamp = utilityStore.now()
+      timeStamp = utilityStore.now();
     }
     // Default session object
     var tabData = {
@@ -1092,6 +1092,42 @@ export var themeStore = Reflux.createStore({
         tileMoveHover: 'rgba(0, 0, 0, 1)',
         tileButtonBg: 'rgba(255, 255, 255, 1)'
       };
+      this.chromesque = {
+        textFieldsBg: 'rgba(255, 255, 255, 0.93)',
+        textFieldsPlaceholder: 'rgba(156, 156, 156, 0.71)',
+        textFieldsText: 'rgba(103, 112, 115, 1)',
+        textFieldsBorder: 'rgba(52, 73, 94, 0.37)',
+        settingsBg: 'rgba(237, 240, 242, 1)',
+        settingsItemHover: 'rgba(250, 250, 250, 0.48)',
+        headerBg: 'rgba(52, 73, 94, 0.86)',
+        bodyBg: 'rgba(237, 240, 242, 0.75)',
+        bodyText: 'rgba(103, 112, 115, 1)',
+        darkBtnBg: 'rgba(52, 73, 94, 0.57)',
+        darkBtnBgHover: 'rgba(52, 73, 94, 0.46)',
+        darkBtnText: 'rgba(225, 230, 232, 1)',
+        darkBtnTextShadow: 'rgba(0, 0, 0, 0)',
+        lightBtnBg: 'rgba(237, 237, 237, 1)',
+        lightBtnBgHover: 'rgba(237, 237, 237, 0.96)',
+        lightBtnText: 'rgba(103, 112, 115, 1)',
+        lightBtnTextShadow: 'rgba(255, 255, 255, 0.02)',
+        tileBg: 'rgba(255, 255, 255, 0.97)',
+        tileBgHover: 'rgba(252, 252, 252, 0.98)',
+        tileText: 'rgba(103, 112, 115, 1)',
+        tileTextShadow: 'rgba(255, 255, 255, 1)',
+        tileShadow: 'rgba(185, 187, 189, 1)',
+        tileX: 'rgba(51, 51, 51, 1)',
+        tileXHover: 'rgba(150, 150, 150, 1)',
+        tilePin: 'rgba(150, 150, 150, 1)',
+        tilePinHover: 'rgba(150, 150, 150, 1)',
+        tilePinned: 'rgba(103, 112, 115, 1)',
+        tileMute: 'rgba(150, 150, 150, 1)',
+        tileMuteHover: 'rgba(150, 150, 150, 1)',
+        tileMuteAudible: 'rgba(103, 112, 115, 1)',
+        tileMuteAudibleHover: 'rgba(103, 112, 115, 1)',
+        tileMove: 'rgba(150, 150, 150, 1)',
+        tileMoveHover: 'rgba(150, 150, 150, 1)',
+        tileButtonBg: 'rgba(255, 255, 255, 1)'
+      };
       this.mellowDark = {
         bodyBg: 'rgba(40, 41, 35, 0.91)',
         bodyText: 'rgba(239, 245, 223, 1)',
@@ -1272,12 +1308,20 @@ export var themeStore = Reflux.createStore({
           id: 9001,
           created: -1,
           modified: now,
+          label: 'Chromesque',
+          theme: this.chromesque,
+          wallpaper: -1
+        },
+        {
+          id: 9002,
+          created: -1,
+          modified: now,
           label: 'Mellow Dark',
           theme: this.mellowDark,
           wallpaper: 9000
         },
         {
-          id: 9002,
+          id: 9003,
           created: -1,
           modified: now,
           label: 'Mightnight Purple',
@@ -1285,7 +1329,7 @@ export var themeStore = Reflux.createStore({
           wallpaper: 9002
         },
         {
-          id: 9003,
+          id: 9004,
           created: -1,
           modified: now,
           label: 'Pastel Summer',
@@ -1293,7 +1337,7 @@ export var themeStore = Reflux.createStore({
           wallpaper: 9003
         },
         {
-          id: 9004,
+          id: 9005,
           created: -1,
           modified: now,
           label: 'Leafy',
@@ -1352,9 +1396,7 @@ export var themeStore = Reflux.createStore({
         } else {
           this.wallpapers = this.standardWallpapers;
         }
-        if (refTheme.id === 9000) {
-          this.currentWallpaper = {data: -1};
-        } else {
+        if (refTheme.id !== 9000 || refTheme.id !== 9001) {
           this.currentWallpaper = _.find(this.wallpapers, {id: prefs.wallpaper});
         }
 
@@ -1438,7 +1480,7 @@ export var themeStore = Reflux.createStore({
   },
   save(){
     var now = utilityStore.now();
-    var currentWallpaper = typeof this.currentWallpaper.id !== 'undefined' ? this.currentWallpaper.id : null;
+    var currentWallpaper = typeof this.currentWallpaper !== 'undefined' && typeof this.currentWallpaper.id !== 'undefined' ? this.currentWallpaper.id : null;
     var newTheme = {
       id: ++this.themeId,
       created: now,
@@ -1448,6 +1490,7 @@ export var themeStore = Reflux.createStore({
       wallpaper: currentWallpaper
     };
     this.savedThemes.push(newTheme);
+    console.log('newTheme: ', newTheme);
     console.log('themeStore savedThemes: ', this.savedThemes);
     chrome.storage.local.set({themes: this.savedThemes}, (t)=>{
       console.log('themeStore theme saved: ', t);
@@ -1462,19 +1505,21 @@ export var themeStore = Reflux.createStore({
     this.setTriggers();
   },
   selectTheme(id){
+    //debugger;
     console.log('themeStore selectTheme: ', id);
     var standard = id >= 9000;
     var refTheme = standard ? _.find(this.standardThemes, {id: id}) : _.find(this.savedThemes, {id: id});
-
-    var selectedWallpaperId = refTheme.wallpaper ? refTheme.wallpaper : this.standardThemes[0].wallpaper;
     
     this.theme = refTheme.theme;
-    this.currentWallpaper = _.find(this.wallpapers, {id: selectedWallpaperId});
+    if (refTheme.id !== 9000 || refTheme.id !== 9001) {
+      this.currentWallpaper = _.find(this.wallpapers, {id: refTheme.wallpaper});
+    }
+    
     this.trigger({theme: this.theme});
     this.trigger({currentWallpaper: this.currentWallpaper});
     prefsStore.set_prefs({
       theme: id,
-      wallpaper: selectedWallpaperId
+      wallpaper: refTheme.wallpaper
     });
   },
   selectWallpaper(themeId, wpId){
@@ -1499,7 +1544,11 @@ export var themeStore = Reflux.createStore({
       themeCollectionKey = 'standardThemes';
       refTheme = _.findIndex(this.standardThemes, {id: themeId});
     }
-    this[themeCollectionKey][refTheme].wallpaper = refWallpaper;
+    if (refWallpaper && refWallpaper.data) {
+      this[themeCollectionKey][refTheme].wallpaper = refWallpaper.id;
+    } else {
+      this[themeCollectionKey][refTheme].wallpaper = -1;
+    }
     this.trigger({currentWallpaper: this.currentWallpaper});
     if (setPrefs) {
       prefsStore.set_prefs({wallpaper: wpId});
@@ -1522,7 +1571,6 @@ export var themeStore = Reflux.createStore({
     }
   },
   remove(id){
-    ReactTooltip.hide();
     var refTheme = _.find(this.savedThemes, {id: id});
     if (_.isEqual(refTheme.theme, this.theme)) {
       this.theme = this.standardThemes[0].theme;

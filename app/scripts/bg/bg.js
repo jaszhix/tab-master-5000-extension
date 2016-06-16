@@ -1,3 +1,10 @@
+import React from 'react';
+import ReactDOM from 'react-dom';
+import Reflux from 'reflux';
+import _ from 'lodash';
+import prefsStore from '../components/stores/prefs';
+import {reRenderStore} from '../components/stores/main';
+
 var sendMsg = (msg) => {
   chrome.runtime.sendMessage(chrome.runtime.id, msg, (response)=>{});
 };
@@ -15,153 +22,236 @@ var close = (id)=>{
     }
   });
 };
-var getPrefs = new Promise((resolve, reject)=>{
-  chrome.storage.sync.get('preferences', (prefs)=>{
-    if (prefs && prefs.preferences) {
-      resolve(prefs);
-    }
-  });
-});
-
-getPrefs.then((prefs)=>{
-  if (prefs.mode !== 'tabs') {
-    chrome.tabs.onUpdated.removeListener(()=>{
-      console.log('Update listener removed');
-    });
-  }
-  chrome.tabs.onCreated.addListener((e, info) => {
-    sendMsg({e: e, type: 'create'});
-  });
-  chrome.tabs.onRemoved.addListener((e, info) => {
-    sendMsg({e: e, type: 'remove'});
-  });
-  chrome.tabs.onActivated.addListener((e, info) => {
-    sendMsg({e: e, type: 'activate'});
-  });
-  chrome.tabs.onUpdated.addListener((e, info) => {
-    sendMsg({e: e, type: 'update'});
-  });
-  chrome.tabs.onMoved.addListener((e, info) => {
-    sendMsg({e: e, type: 'move'});
-  });
-  chrome.tabs.onAttached.addListener((e, info) => {
-    sendMsg({e: e, type: 'attach'});
-  });
-  chrome.tabs.onDetached.addListener((e, info) => {
-    sendMsg({e: e, type: 'detach'});
-  });
-  chrome.bookmarks.onCreated.addListener((e, info) => {
-    sendMsg({e: e, type: 'bookmarks'});
-  });
-  chrome.bookmarks.onRemoved.addListener((e, info) => {
-    sendMsg({e: e, type: 'bookmarks'});
-  });
-  chrome.bookmarks.onChanged.addListener((e, info) => {
-    sendMsg({e: e, type: 'bookmarks'});
-  });
-  chrome.bookmarks.onMoved.addListener((e, info) => {
-    sendMsg({e: e, type: 'bookmarks'});
-  });
-  chrome.history.onVisited.addListener((e, info) => {
-    sendMsg({e: e, type: 'history'});
-  });
-  chrome.history.onVisitRemoved.addListener((e, info) => {
-    sendMsg({e: e, type: 'history'});
-  });
-  chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-    // requests from front-end javascripts
-    if (msg.method === 'captureTabs') {
-      var capture = new Promise((resolve, reject)=>{
-        chrome.tabs.captureVisibleTab({format: 'jpeg', quality: 10}, (image)=> {
-          if (image) {
-            resolve(image);
-          } else {
-            reject();
-          }
-        });
-      });
-      capture.then((image)=>{
-        sendResponse({'image': image});
-      }).catch(()=>{
-        if (prefs.mode !== 'tabs') {
-          chrome.tabs.update(msg.id, {active: true});
-          reload('Screenshot capture error.');
-        } else {
-          sendMsg({e: sender.id, type: 'error'});
-        }
-      });
-    } else if (msg.method === 'close') {
-      close(sender.tab.id);
-    } else if (msg.method === 'reload') {
-      reload('Messaged by front-end script to reload...');
-    } else if (msg.method === 'restoreWindow') {
-      for (var i = msg.tabs.length - 1; i >= 0; i--) {
-        chrome.tabs.create({
-          windowId: msg.windowId,
-          index: msg.tabs[i].index,
-          url: msg.tabs[i].url,
-          active: msg.tabs[i].active,
-          selected: msg.tabs[i].selected,
-          pinned: msg.tabs[i].pinned
-        },(t)=>{
-          console.log('restored: ',t);
-        });
-      }
-      sendResponse({'reload': true});
-    } else if (msg.method === 'prefs') {
-      sendResponse({'prefs': prefs.preferences});
-    } else if (msg.method === 'tabs') {
-      chrome.tabs.query({
-        windowId: chrome.windows.WINDOW_ID_CURRENT,
-        currentWindow: true
-      }, (Tab) => {
-        if (Tab) {
-          sendResponse({'tabs': Tab});
-        }
-      });
-    }
-    return true;
-  });
-}).catch(()=>{
-  reload();
+const eventState = {
+  onStartup: null,
+  onUpdateAvailable: null,
+  onInstalled: null,
+  onUninstalled: null,
+  onEnabled: null,
+  onDisabled: null
+};
+chrome.runtime.onStartup.addListener(()=>{
+  eventState.onStartup = {type: 'startup'};
 });
 chrome.runtime.onUpdateAvailable.addListener((details)=>{
-  console.log('onUpdateAvailable: ',details);
-  setTimeout(()=>{
-    sendMsg({e: details, type: 'newVersion'});
-  },500);
+  eventState.onUpdateAvailable = details;
 });
 chrome.runtime.onInstalled.addListener((details)=>{
-  console.log('onInstalled: ', details);
-  if (details.reason === 'update' || details.reason === 'install') {
-    chrome.tabs.query({title: 'New Tab'},(tabs)=>{
-      for (var i = 0; i < tabs.length; i++) {
-        close(tabs[i].id);
-      }
-    });
-    chrome.tabs.create({active: true}, (tab)=>{
-      setTimeout(()=>{
-        if (details.reason === 'install') {
-          sendMsg({e: details, type: 'installed'});
-        } else if (details.reason === 'update') {
-          sendMsg({e: details, type: 'versionUpdate'});
-        }
-      },500);
-    });
-  }
-});
-chrome.runtime.onStartup.addListener(()=>{
-  sendMsg({type: 'startup'});
-});
-chrome.management.onInstalled.addListener((details)=>{
-  sendMsg({e: details, type: 'app'});
+  eventState.onInstalled = details;
 });
 chrome.management.onUninstalled.addListener((details)=>{
-  sendMsg({e: details, type: 'app'});
+  eventState.onUninstalled = details;
 });
 chrome.management.onEnabled.addListener((details)=>{
-  sendMsg({e: details, type: 'app'});
+  eventState.onEnabled = {e: details, type: 'app'};
 });
 chrome.management.onDisabled.addListener((details)=>{
-  sendMsg({e: details, type: 'app'});
+  eventState.onDisabled = {e: details, type: 'app'};
 });
+
+var Bg = React.createClass({
+  mixins: [Reflux.ListenerMixin],
+  getInitialState(){
+    return {
+      eventState: eventState,
+      prefs: null,
+      init: true
+    };
+  },
+  componentDidMount(){
+    this.listenTo(prefsStore, this.prefsChange);
+  },
+  prefsChange(e){
+    var s = this.state;
+    console.log('prefsChange');
+    s.prefs = e;
+    this.setState(s);
+    if (s.init) {
+      this.attachListeners(s);
+    }
+  },
+  attachListeners(state){
+    var s = this.state.init ? state : s;
+    //chrome.tabs.create({active: true}, (tab)=>{});
+    if (eventState.onStartup) {
+      _.defer(()=>{
+        this.setState({eventState: eventState});
+        sendMsg(eventState.onStartup);
+      });
+    }
+    if (eventState.onInstalled) {
+      this.setState({eventState: eventState});
+      if (eventState.onInstalled.reason === 'update' || eventState.onInstalled.reason === 'install') {
+        chrome.tabs.query({title: 'New Tab'},(tabs)=>{
+          for (var i = 0; i < tabs.length; i++) {
+            close(tabs[i].id);
+          }
+        });
+        chrome.tabs.create({active: true}, (tab)=>{
+          setTimeout(()=>{
+            if (eventState.onInstalled.reason === 'install') {
+              sendMsg({e: eventState.onInstalled, type: 'installed'});
+              reRenderStore.set_reRender(true, 'create', null);
+            } else if (eventState.onInstalled.reason === 'update') {
+              sendMsg({e: eventState.onInstalled, type: 'versionUpdate'});
+            }
+          },500);
+        });
+      }
+    }
+    if (eventState.onUpdateAvailable) {
+      this.setState({eventState: eventState});
+      sendMsg({e: eventState.onUpdateAvailable, type: 'newVersion'});
+    }
+    if (eventState.onUninstalled) {
+      this.setState({eventState: eventState});
+      sendMsg({e: eventState.onUninstalled, type: 'app'});
+    }
+    if (eventState.onEnabled) {
+      this.setState({eventState: eventState});
+      sendMsg({e: eventState.onEnabled, type: 'app'});
+    }
+    if (eventState.onDisabled) {
+      this.setState({eventState: eventState});
+      sendMsg({e: eventState.onDisabled, type: 'app'});
+    }
+    chrome.tabs.onCreated.addListener((e, info) => {
+      eventState.onCreated = e;
+      this.setState({eventState: eventState});
+      sendMsg({e: e, type: 'create'});
+    });
+    chrome.tabs.onRemoved.addListener((e, info) => {
+      eventState.onRemoved = e;
+      this.setState({eventState: eventState});
+      sendMsg({e: e, type: 'remove'});
+    });
+    chrome.tabs.onActivated.addListener((e, info) => {
+      eventState.onActivated = e;
+      this.setState({eventState: eventState});
+      sendMsg({e: e, type: 'activate'});
+    });
+    chrome.tabs.onUpdated.addListener((e, info) => {
+      eventState.onUpdated = e;
+      this.setState({eventState: eventState});
+      sendMsg({e: e, type: 'update'});
+    });
+    chrome.tabs.onMoved.addListener((e, info) => {
+      eventState.onMoved = e;
+      this.setState({eventState: eventState});
+      console.log('onMoved', e, info);
+      sendMsg({e: e, type: 'move'});
+    });
+    chrome.tabs.onAttached.addListener((e, info) => {
+      eventState.onAttached = e;
+      this.setState({eventState: eventState});
+      console.log('onAttached', e, info);
+      sendMsg({e: e, type: 'attach'});
+    });
+    chrome.tabs.onDetached.addListener((e, info) => {
+      eventState.onDetached = e;
+      this.setState({eventState: eventState});
+      console.log('onDetached', e, info);
+      sendMsg({e: e, type: 'detach'});
+    });
+    chrome.bookmarks.onCreated.addListener((e, info) => {
+      eventState.bookmarksOnCreated = e;
+      this.setState({eventState: eventState});
+      console.log('bookmarks onCreated', e, info);
+      sendMsg({e: e, type: 'bookmarks'});
+    });
+    chrome.bookmarks.onRemoved.addListener((e, info) => {
+      eventState.bookmarksOnRemoved = e;
+      this.setState({eventState: eventState});
+      console.log('bookmarks onRemoved', e, info);
+      sendMsg({e: e, type: 'bookmarks'});
+    });
+    chrome.bookmarks.onChanged.addListener((e, info) => {
+      eventState.bookmarksOnChanged= e;
+      this.setState({eventState: eventState});
+      console.log('bookmarks onChanged', e, info);
+      sendMsg({e: e, type: 'bookmarks'});
+    });
+    chrome.bookmarks.onMoved.addListener((e, info) => {
+      eventState.bookmarksOnMoved= e;
+      this.setState({eventState: eventState});
+      console.log('bookmarks onMoved', e, info);
+      sendMsg({e: e, type: 'bookmarks'});
+    });
+    chrome.history.onVisited.addListener((e, info) => {
+      eventState.historyOnVisited = e;
+      this.setState({eventState: eventState});
+      console.log('history onVisited', e, info);
+      sendMsg({e: e, type: 'history'});
+    });
+    chrome.history.onVisitRemoved.addListener((e, info) => {
+      eventState.historyOnVisitRemoved = e;
+      this.setState({eventState: eventState});
+      console.log('history onVisited', e, info);
+      sendMsg({e: e, type: 'history'});
+    });
+    this.attachMessageListener(s);
+    this.setState({init: false});
+  },
+  attachMessageListener(s){
+    chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+      // requests from front-end javascripts
+      if (msg.method === 'captureTabs') {
+        var capture = new Promise((resolve, reject)=>{
+          chrome.tabs.captureVisibleTab({format: 'jpeg', quality: 10}, (image)=> {
+            if (image) {
+              resolve(image);
+            } else {
+              reject();
+            }
+          });
+        });
+        capture.then((image)=>{
+          sendResponse({'image': image});
+        }).catch(()=>{
+          if (s.prefs.mode !== 'tabs') {
+            chrome.tabs.update(msg.id, {active: true});
+            reload('Screenshot capture error.');
+          } else {
+            sendMsg({e: sender.id, type: 'error'});
+          }
+        });
+      } else if (msg.method === 'close') {
+        close(sender.tab.id);
+      } else if (msg.method === 'reload') {
+        reload('Messaged by front-end script to reload...');
+      } else if (msg.method === 'restoreWindow') {
+        for (var i = msg.tabs.length - 1; i >= 0; i--) {
+          chrome.tabs.create({
+            windowId: msg.windowId,
+            index: msg.tabs[i].index,
+            url: msg.tabs[i].url,
+            active: msg.tabs[i].active,
+            selected: msg.tabs[i].selected,
+            pinned: msg.tabs[i].pinned
+          }, (t)=>{
+            console.log('restored: ',t);
+          });
+        }
+        sendResponse({'reload': true});
+      } else if (msg.method === 'prefs') {
+        sendResponse({'prefs': s.prefs});
+      } else if (msg.method === 'tabs') {
+        chrome.tabs.query({
+          windowId: chrome.windows.WINDOW_ID_CURRENT,
+          currentWindow: true
+        }, (Tab) => {
+          if (Tab) {
+            sendResponse({'tabs': Tab});
+          }
+        });
+      }
+      return true;
+    });
+  },
+  render:function(){
+    var s = this.state;
+    console.log('BG STATE: ',s);
+    return null;
+  }
+});
+ReactDOM.render(<Bg />, document.body);

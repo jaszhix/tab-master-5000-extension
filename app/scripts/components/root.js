@@ -8,7 +8,7 @@ import ReactUtils from 'react-utils';
 import ReactTooltip from './tooltip/tooltip';
 import '../../styles/app.scss';
 window.v = v;
-import {themeStore, createStore, removeStore, updateStore, keyboardStore, sortStore, chromeAppStore, faviconStore, sessionsStore, actionStore, historyStore, bookmarksStore, relayStore, sidebarStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore, applyTabOrderStore} from './stores/main';
+import {chromeRuntime, themeStore, createStore, removeStore, updateStore, keyboardStore, sortStore, chromeAppStore, faviconStore, sessionsStore, actionStore, historyStore, bookmarksStore, relayStore, sidebarStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore, applyTabOrderStore} from './stores/main';
 import prefsStore from './stores/prefs';
 import tabStore from './stores/tab';
 import screenshotStore from './stores/screenshot';
@@ -110,7 +110,7 @@ var Search = React.createClass({
             {p.event === 'versionUpdate' ? <Btn onClick={this.openAbout} style={{float: 'left'}} className="ntg-top-btn" fa="info-circle">Updated to {utilityStore.get_manifest().version}</Btn> : null}
             {p.event === 'installed' ? <Btn onClick={this.openAbout} style={{float: 'left'}} className="ntg-top-btn" fa="thumbs-o-up">Thank you for installing TM5K</Btn> : null}
             {p.topLoad ? <Loading top={true} /> : null}
-            {p.event === 'dlFavicons' && p.topLoad ? <div><p className="tm5k-info"> Downloading and caching favicons...</p></div> : null}
+            {p.event === 'dlFavicons' && p.topLoad ? <div><p className="tm5k-info" style={{color: p.theme.darkBtnText, textShadow: `2px 2px ${p.theme.darkBtnTextShadow}`}}> Downloading and caching favicons...</p></div> : null}
           </Col>  
         </Row>
       </Container>
@@ -146,7 +146,7 @@ var Root = React.createClass({
       tileLimit: 100,
       oldTileLimit: 100,
       sessions: [],
-      favicons: faviconStore.get_favicon(),
+      favicons: [],
       screenshots: [],
       relay: [],
       applyTabOrder: false,
@@ -209,9 +209,11 @@ var Root = React.createClass({
       prefs: e, 
       tileLimit: 100, 
       sidebar: e.sidebar,
-      modal: modalStore.get_modal()
+      modal: modalStore.get_modal(),
+      favicons: faviconStore.get_favicon()
     });
     if (s.init) {
+      chromeRuntime(e);
       themeStore.load(e);
       // Init methods called here after prefs are loaded from Chrome storage.
       if (e.mode !== 'tabs') {
@@ -398,7 +400,6 @@ var Root = React.createClass({
       v('#bgImg').css({backgroundColor: e.theme.bodyBg});
       s.theme = e.theme;
     }
-    console.log('e.currentWallpaper',e.currentWallpaper)
     if (e.currentWallpaper && typeof e.currentWallpaper.data !== 'undefined') {
       if (e.currentWallpaper.data !== -1) {
         v('#bgImg').css({
@@ -619,7 +620,7 @@ var Root = React.createClass({
         } else {
           this.searchChanged(s.search, tab);
         }
-        themeStore.setTriggers();
+        //themeStore.setTriggers();
         this.checkDuplicateTabs(Tab);
       }
       console.log('Tabs: ',Tab);

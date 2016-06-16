@@ -8,7 +8,7 @@ import style from './style';
 
 import Settings from './settings';
 
-import {clickStore, modalStore} from './stores/main';
+import {clickStore, modalStore, themeStore} from './stores/main';
 import prefsStore from './stores/prefs';
 import {Btn, Col} from './bootstrap';
 
@@ -67,9 +67,9 @@ var ModalHandler = React.createClass({
     }
     if (nP.settings !== 'theming') {
       if (nP.prefs.animations) {
-        style.modal.overlay.backgroundColor = 'rgba(216, 216, 216, 0.21)';
+        style.modal.overlay.backgroundColor = themeStore.opacify(this.props.theme.headerBg, 0.21);
       } else {
-        style.modal.overlay.backgroundColor = 'rgba(216, 216, 216, 0.59)';
+        style.modal.overlay.backgroundColor = themeStore.opacify(this.props.theme.headerBg, 0.59);
       }
     } else {
       style.modal.overlay.backgroundColor = 'initial';

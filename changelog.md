@@ -1,5 +1,20 @@
 #### Release Notes
 
+##### v1.5.0 / *6-15-16*
+
+*   New theming editor in the Settings menu allows complete customization of the color scheme of your TM5K installation. You can set any color and save multiple theme profiles. A few preset themes are available by default.
+*   Added attribution and donation tabs to the About tab in Settings. The donate tab will replace the 30 day modal reminder as to be less annoying.
+*   Keyboard shortcuts:
+  *   Fixed CTRL+M shortcut not working.
+  *   CTRL+ALT+S/P/A is now CTRL+SHIFT+S/P/A.
+* Added tooltips and replaced the bottom description area on the Preferences page.
+* Improved sorting behavior: when sorting tabs, pinned tabs are now always at the beginning of the order, with the sorting applied to them separately. Applying the tab order is now accurate.
+* Tile dragging positioning is more consistent.
+* Extension stability has been improved during testing, but please report any bugs if you come across an issue.
+*   Known issues:
+  *   When "Enable pulsing duplicate tabs" is enabled and screenshots are disabled, duplicate tabs are not recognized as duplicates after the New Tab page has loaded.
+  *   History and sessions tiles that are also open tabs do not update their pinned or muted states while in those view modes.
+
 ##### v1.4.0 / *5-7-16*
 
 *   Performance improvements in tabs view mode: Rewrote how tab tiles are updated, created, and removed. TM5K now only queries individual tabs that are updated or created. 

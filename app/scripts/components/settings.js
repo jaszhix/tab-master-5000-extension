@@ -124,7 +124,7 @@ var Theming = React.createClass({
     if (p.prefs.animations) {
       v('#main').css({WebkitFilter: 'none'});
     } else {
-      v('body > div.ReactModalPortal > div').css({backgroundColor: 'rgba(216, 216, 216, 0)'});
+      v('body > div.ReactModalPortal > div').css({backgroundColor: themeStore.opacify(p.theme.headerBg, 0)});
     }
     var refTheme;
     var isNewTheme = true;
@@ -195,13 +195,16 @@ var Theming = React.createClass({
           WebkitFilter: 'blur(5px)'
         });
       } else {
-        v('body > div.ReactModalPortal > div').css({backgroundColor: 'rgba(216, 216, 216, 0.59)'});
+        v('body > div.ReactModalPortal > div').css({backgroundColor: themeStore.opacify(this.props.theme.headerBg, 0.21)});
       }
     }
   },
   handleSelectTheme(theme){
     console.log('handleSelectTheme: ', theme);
-    this.setState({selectedTheme: _.cloneDeep(theme)});
+    this.setState({
+      selectedTheme: _.cloneDeep(theme),
+      isNewTheme: false
+    });
     themeStore.selectTheme(theme.id, this.props.prefs);
   },
   handleNewTheme(){
@@ -231,6 +234,10 @@ var Theming = React.createClass({
       this.setState({notifySave: false});
     },3000);
   },
+  handleRemoveTheme(id){
+    ReactTooltip.hide();
+    themeStore.remove(id);
+  },
   handleEnter(e, id){
     if (e.keyCode === 13) {
       this.handleLabel(id);
@@ -244,7 +251,7 @@ var Theming = React.createClass({
   },
   render: function(){
     var p = this.props;
-    var s = this.state;//mtop 32px
+    var s = this.state;
     //console.log('Theming STATE', s);
     console.log('Theming PROPS', p);
     var btmBtnStyle = {
@@ -317,7 +324,7 @@ var Theming = React.createClass({
                         : theme.label}
                       </div>
                       <div style={{width: 'auto', float: 'right', display: 'inline', marginRight: '4px'}}>
-                        {s.themeHover === i ? <Btn onClick={()=>themeStore.remove(theme.id)} className="ntg-session-btn" fa="times" data-tip="Remove Theme" /> : null}
+                        {s.themeHover === i ? <Btn onClick={()=>this.handleRemoveTheme(theme.id)} className="ntg-session-btn" fa="times" data-tip="Remove Theme" /> : null}
                         {s.themeHover === i ? <Btn onClick={()=>this.setState({themeLabel: i})} className="ntg-session-btn" fa="pencil" data-tip="Edit Label" /> : null}
                       </div>
                     </Row>
@@ -327,21 +334,21 @@ var Theming = React.createClass({
                   <Btn 
                     onClick={s.isNewTheme || !s.selectedTheme ? ()=>this.handleSaveTheme() : ()=>this.handleUpdateTheme()} 
                     style={_.merge(_.clone(btmBtnStyle), {fontWeight: s.boldUpdate ? '600' : '400'})}
+                    fa="save"
                     className="ntg-sort-btn">
                       {`${s.isNewTheme ? 'Save' : 'Update'}${p.collapse ? ' Theme' : ''}`}
                   </Btn>
-                  <Btn onClick={this.handleNewTheme} style={btmBtnStyle} className="ntg-sort-btn" >{`New ${p.collapse ? 'Theme' : ''}`}</Btn>
+                  <Btn onClick={this.handleNewTheme} style={btmBtnStyle} fa="file-image-o" className="ntg-sort-btn" >{`New ${p.collapse ? 'Theme' : ''}`}</Btn>
                   <Btn onClick={()=>themeStore.export()} style={btmBtnStyle} className="ntg-sort-btn" fa="arrow-circle-o-down">Export</Btn>
                   <input {...this.props} children={undefined} type="file" onChange={(e)=>themeStore.import(e)} ref="import" style={style.hiddenInput} />
                   <Btn onClick={()=>this.refs.import.click()} style={btmBtnStyle} className="ntg-sort-btn" fa="arrow-circle-o-up">Import</Btn>
-                  {s.rightTab === 'wallpaper' && s.selectedTheme && s.selectedTheme.id < 9000 ? 
+                  {s.rightTab === 'wallpaper' ? 
                   <Btn onClick={()=>this.refs.wallpaper.click()} style={btmBtnStyle} className="ntg-sort-btn">Import Wallpaper</Btn> : null}
                   <input {...this.props} children={undefined} type="file" onChange={(e)=>themeStore.importWallpaper(e, s.selectedTheme.id)} ref="wallpaper" style={style.hiddenInput} />
-                  
-                    {s.rightTab === 'color' ? <Btn onClick={()=>this.setState({colorGroup: 'general'})} style={btmBtnStyle} className="ntg-sort-btn">Body, Header, and Fields</Btn> : null}
-                    {s.rightTab === 'color' ? <Btn onClick={()=>this.setState({colorGroup: 'buttons'})} style={btmBtnStyle} className="ntg-sort-btn">Buttons</Btn> : null}
-                    {s.rightTab === 'color' ? <Btn onClick={()=>this.setState({colorGroup: 'tiles'})} style={btmBtnStyle} className="ntg-sort-btn">Tiles</Btn> : null}
-                    {s.notifySave ? <span style={{left: '6px', bottom: '7px', position: 'relative'}}>{`Theme ${s.isNewTheme ? 'saved' : 'updated'}.`}</span> : null}
+                  {s.rightTab === 'color' ? <Btn onClick={()=>this.setState({colorGroup: 'general'})} style={btmBtnStyle} className="ntg-sort-btn">Body, Header, and Fields</Btn> : null}
+                  {s.rightTab === 'color' ? <Btn onClick={()=>this.setState({colorGroup: 'buttons'})} style={btmBtnStyle} className="ntg-sort-btn">Buttons</Btn> : null}
+                  {s.rightTab === 'color' ? <Btn onClick={()=>this.setState({colorGroup: 'tiles'})} style={btmBtnStyle} className="ntg-sort-btn">Tiles</Btn> : null}
+                  {s.notifySave ? <span style={{left: '6px', bottom: '7px', position: 'relative'}}>{`Theme ${s.isNewTheme ? 'saved' : 'updated'}.`}</span> : null}
                 </div>
               </Row> : null}
               {s.leftTab === 'tm5k' ?
@@ -657,6 +664,9 @@ var Settings = React.createClass({
   componentDidMount(){
     this.listenTo(prefsStore, this.prefsChange);
     this.prefsChange();
+    _.merge(style.modal.content, {
+      opacity: '1',
+    });
   },
   componentWillReceiveProps(nP){
     if (nP.settings !== this.props.settings) {
@@ -666,15 +676,19 @@ var Settings = React.createClass({
   prefsChange(e){
     this.setState({settingsMax: this.props.prefs.settingsMax});
     if (this.props.prefs.settingsMax) {
-      style.modal.content.top = '0%';
-      style.modal.content.left = '0%';
-      style.modal.content.right = '0%';
-      style.modal.content.bottom = '0%';
+      _.merge(style.modal.content, {
+        top: '0%',
+        left: '0%',
+        right: '0%',
+        bottom: '0%'
+      });
     } else {
-      style.modal.content.top = '15%';
-      style.modal.content.left = '15%';
-      style.modal.content.right = '15%';
-      style.modal.content.bottom = '15%';
+      _.merge(style.modal.content, {
+        top: '15%',
+        left: '15%',
+        right: '15%',
+        bottom: '15%'
+      });
     }
   },
   handleTabClick(opt){
@@ -684,15 +698,21 @@ var Settings = React.createClass({
   handleCloseBtn(){
     clickStore.set_click(true, false);
     var p = this.props;
-    if (p.modal.opt) {
-      var opt = p.modal.opt;
-      _.defer(()=>{
-        modalStore.set_modal(true, opt);
-      });
-      modalStore.set_modal(false);
-    } else {
-      modalStore.set_modal(false);
-    }
+    _.merge(style.modal.content, {
+      WebkitTransition: 'opacity 0.05s',
+      opacity: '0',
+    });
+    _.defer(()=>{
+      if (p.modal.opt) {
+        var opt = p.modal.opt;
+        _.defer(()=>{
+          modalStore.set_modal(true, opt);
+        });
+        modalStore.set_modal(false);
+      } else {
+        modalStore.set_modal(false);
+      }
+    });
   },
   handleMaxBtn(){
     clickStore.set_click(true, false);
@@ -713,7 +733,7 @@ var Settings = React.createClass({
                   <a href="#" onClick={()=>this.handleTabClick('preferences')}><i className="settings-fa fa fa-dashboard"/>  Preferences</a>
               </li>
               <li className={s.settings === 'theming' ? "active" : null}>
-                  <a href="#" onClick={()=>this.handleTabClick('theming')}><i className="settings-fa fa fa-paint-brush"/>  Theming</a>
+                  <a href="#" onClick={()=>this.handleTabClick('theming')}><i className="settings-fa fa fa-paint-brush"/>  Theming (BETA)</a>
               </li>
               <li className={s.settings === 'about' ? "active" : null}>
                   <a href="#" onClick={()=>this.handleTabClick('about')}><i className="settings-fa fa fa-info-circle"/>  About</a>

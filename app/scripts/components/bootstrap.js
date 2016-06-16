@@ -1,12 +1,16 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import Reflux from 'reflux';
+import _ from 'lodash';
+import ReactTooltip from './tooltip/tooltip';
 import {themeStore} from './stores/main';
 
 export var Btn = React.createClass({
   mixins: [Reflux.ListenerMixin],
   getInitialState(){
     return {
-      theme: null
+      theme: null,
+      hover: false
     };
   },
   componentDidMount(){
@@ -15,47 +19,59 @@ export var Btn = React.createClass({
     this.setState({theme: selectedTheme});
     this.themeChange({theme: selectedTheme});
   },
+  componentDidUpdate(pP, pS){
+    if (pS.hover !== this.state.hover && !this.state.hover) {
+      ReactTooltip.hide();
+    }
+  },
+  componentWillUnmount(){
+    v(ReactDOM.findDOMNode(this)).css({display: 'none'});
+  },
   themeChange(e){
     if (e.theme) {
-      var p = this.props;
-      if (p.className === 'ntg-btn' || p.className === 'ntg-top-btn') {
-        this.refs.btn.style.backgroundColor = e.theme.darkBtnBg;
-        this.refs.btn.style.color = e.theme.darkBtnText;
-        this.refs.btn.style.textShadow = `1px 1px ${e.theme.darkBtnTextShadow}`;
-      } else {
-        this.refs.btn.style.backgroundColor = e.theme.lightBtnBg;
-        this.refs.btn.style.color = e.theme.lightBtnText;
-        this.refs.btn.style.textShadow = `2px 2px ${e.theme.lightBtnTextShadow}`;
-      }
-      this.refs.btn.style.boxShadow = `${e.theme.tileShadow} 1px 1px 5px -1px`;
       this.setState({theme: e.theme});
-    }
-  },
-  hoverIn(e){
-    var p = this.props;
-    var s = this.state;
-    if (p.className === 'ntg-btn' || p.className === 'ntg-top-btn') {
-      this.refs.btn.style.backgroundColor = s.theme.darkBtnBgHover;
-    } else {
-      this.refs.btn.style.backgroundColor = s.theme.lightBtnBgHover;
-    }
-  },
-  hoverOut(e){
-    var p = this.props;
-    var s = this.state;
-    if (p.className === 'ntg-btn' || p.className === 'ntg-top-btn') {
-      this.refs.btn.style.backgroundColor = s.theme.darkBtnBg;
-    } else {
-      this.refs.btn.style.backgroundColor = s.theme.lightBtnBg;
+      _.defer(()=>ReactTooltip.rebuild());
     }
   },
   render: function() {
     var p = this.props;
-    return (
-      <button {...p} data-tip={p['data-tip'] ? `<div style="max-width: 350px;">${p['data-tip']}</div>` : null} ref="btn" onMouseEnter={this.hoverIn} onMouseLeave={this.hoverOut} onClick={p.onClick} style={p.style} id={p.id} className={p.className}>
-        <div className="btn-label">{p.fa ? <i className={'fa fa-'+p.fa}></i> : null}{p.fa ? ' ' : null}{p.children}</div>
-      </button>
-    );
+    var s = this.state;
+    var style = {};
+    if (s.theme) {
+      if (p.className === 'ntg-btn' || p.className === 'ntg-top-btn') {
+        style = {
+          backgroundColor: s.hover ? s.theme.darkBtnBgHover : s.theme.darkBtnBg,
+          color: s.theme.darkBtnText,
+          textShadow: `1px 1px ${s.theme.darkBtnTextShadow}`
+        };
+      } else {
+        style = {
+          backgroundColor: s.hover ? s.theme.lightBtnBgHover : s.theme.lightBtnBg,
+          color: s.theme.lightBtnText,
+          textShadow: `1px 1px ${s.theme.lightBtnTextShadow}`
+        };
+      }
+      _.merge(style, {
+        boxShadow: `${s.theme.tileShadow} 1px 1px 5px -1px`,
+        opacity: '1'
+      });
+      _.merge(style, _.cloneDeep(p.style));
+      return (
+        <button {...p} 
+          data-tip={p['data-tip'] ? `<div style="max-width: 350px;">${p['data-tip']}</div>` : null} 
+          ref="btn" 
+          style={style}
+          onMouseEnter={()=>this.setState({hover: true})} 
+          onMouseLeave={()=>this.setState({hover: false})}  
+          onClick={p.onClick}
+          id={p.id} 
+          className={p.className}>
+            <div className="btn-label">{p.fa ? <i className={'fa fa-'+p.fa}></i> : null}{p.fa ? ' ' : null}{p.children}</div>
+          </button>
+      );
+    } else {
+      return null;
+    }
   }
 });
 
