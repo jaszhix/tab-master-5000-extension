@@ -29,7 +29,8 @@ var prefsStore = Reflux.createStore({
       resolutionWarning: true,
       theme: 9001,
       wallpaper: null,
-      tooltip: true
+      tooltip: true,
+      alerts: true
     };
     var getPrefs = new Promise((resolve, reject)=>{
       chrome.storage.sync.get('preferences', (prefs)=>{
@@ -90,7 +91,8 @@ var prefsStore = Reflux.createStore({
         resolutionWarning: prefs.resolutionWarning,
         theme: prefs.theme,
         wallpaper: prefs.wallpaper,
-        tooltip: prefs.tooltip
+        tooltip: prefs.tooltip,
+        alerts: prefs.alerts
       };
       if (typeof this.prefs.tabSizeHeight === 'undefined') {
         this.prefs.tabSizeHeight = 120;
@@ -122,11 +124,13 @@ var prefsStore = Reflux.createStore({
       if (typeof this.prefs.tooltip === 'undefined') {
         this.prefs.tooltip = true;
       }
+      if (typeof this.prefs.alerts === 'undefined') {
+        this.prefs.alerts = true;
+      }
       console.log('load prefs: ', prefs, this.prefs);
       this.trigger(this.prefs);
     }).catch((err)=>{
       console.log('chrome.extension.lastError: ',err);
-      utilityStore.restartNewTab();
     });
   },
   set_prefs(obj, init) {
@@ -134,11 +138,13 @@ var prefsStore = Reflux.createStore({
     this.trigger(this.prefs);
     var themePrefs = {
       wallpaper: this.prefs.wallpaper,
-      theme: this.prefs.theme
+      theme: this.prefs.theme,
+      alerts: this.prefs.alerts
     };
     var parsedPrefs = _.cloneDeep(this.prefs);
     delete parsedPrefs.wallpaper;
     delete parsedPrefs.theme;
+    delete parsedPrefs.alerts;
     chrome.storage.sync.set({preferences: parsedPrefs}, (result)=> {
       chrome.storage.sync.set({themePrefs: themePrefs}, (result)=> {
         console.log('Preferences saved: ', this.prefs, themePrefs);

@@ -222,6 +222,11 @@ var Preferences = React.createClass({
                     on={p.prefs.tooltip} label="Enable tooltips"
                     hoverBg={p.theme.settingsItemHover}
                     data-tip="Toggles the tooltip you are reading now." />
+            <Toggle onMouseEnter={()=>this.handleToggle('alerts')}
+                    onClick={()=>this.handleClick('alerts')}
+                    on={p.prefs.alerts} label="Enable alerts"
+                    hoverBg={p.theme.settingsItemHover}
+                    data-tip="Toggles the notifications appearing in the bottom-right corner of the screen." />
           </Col>
           <Col size="6">
             {!p.options ?

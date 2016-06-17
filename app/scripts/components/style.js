@@ -16,14 +16,12 @@ var style = {
     };
   },
   ssIconBg: {
-    backgroundColor: '#fff', 
-    borderRadius: '3px',
+    backgroundColor: '#fff',
     backgroundBlendMode: 'multiply'
   },
   ssPinnedIconBg: {
     color: '#B67777',
     backgroundColor: '#fff', 
-    borderRadius: '3px',
     backgroundBlendMode: 'multiply'
   },
   modal: {

@@ -1,5 +1,20 @@
 #### Release Notes
 
+##### v1.5.1 / *6-17-16*
+
+*   Added alert notifications.
+*   Minor CSS improvements: tile buttons on screenshot backgrounds and navigation tabs have sharp corners to blend in with the button styles.
+*   Fixed background JS bug that can cause the extension to crash.
+*   Fixed typo of Midnight Purple Theme.
+*   Fixed a bug causing the Update button to show when selecting a default theme.
+*   Added file validation to sessions and themes importing so importing incorrect files doesn't corrupt preferences data.
+*   Known issues:
+  *   When "Enable pulsing duplicate tabs" is enabled and screenshots are disabled, duplicate tabs are not recognized as duplicates after the New Tab page has loaded.
+  *   History and sessions tiles that are also open tabs do not update their pinned or muted states while in those view modes.
+*   Other notes:
+  *   It is recommended to backup your sessions and themes if you use the Theming functionality while it is in beta.
+
+
 ##### v1.5.0 / *6-15-16*
 
 *   New theming editor in the Settings menu allows complete customization of the color scheme of your TM5K installation. You can set any color and save multiple theme profiles. A few preset themes are available by default.
@@ -11,20 +26,11 @@
 * Improved sorting behavior: when sorting tabs, pinned tabs are now always at the beginning of the order, with the sorting applied to them separately. Applying the tab order is now accurate.
 * Tile dragging positioning is more consistent.
 * Extension stability has been improved during testing, but please report any bugs if you come across an issue.
-*   Known issues:
-  *   When "Enable pulsing duplicate tabs" is enabled and screenshots are disabled, duplicate tabs are not recognized as duplicates after the New Tab page has loaded.
-  *   History and sessions tiles that are also open tabs do not update their pinned or muted states while in those view modes.
 
 ##### v1.4.0 / *5-7-16*
 
 *   Performance improvements in tabs view mode: Rewrote how tab tiles are updated, created, and removed. TM5K now only queries individual tabs that are updated or created. 
 *   Added a new sorting option called Updated. It allows you to sort tabs by the last time they were updated by Chrome. Tab update times are only tracked while a New Tab page is open.
-*   Known issues:
-  *   When "Enable pulsing duplicate tabs" is enabled and screenshots are disabled, duplicate tabs are not recognized as duplicates after the New Tab page has loaded.
-  *   The extension will crash while screenshots mode is active in some situations. I have only reproduced this on my main Chrome installation that has 50MB of screenshot data cached. While this is investigated, periodically clearing your screenshot cache, or disabling screenshot mode may help.
-  *   Dragging tiles past the browser window's borders will offset the positioning of the tiles while they are being dragged.
-  *   Sorting bookmarks by open tabs doesn't work anymore. The option has been removed for now.
-  *   History and sessions tiles that are also open tabs do not update their pinned or muted states while in those view modes.
 
 ##### v1.3.2 / *5-1-16*
 

@@ -101,7 +101,7 @@ var Tile = React.createClass({
     var p = this.props;
     var setScreeenshot = ()=>{
       if (chrome.extension.lastError) {
-        utilityStore.restartNewTab();
+        //utilityStore.restartNewTab();
       }
       if (p.stores.prefs.screenshot) {
         var ssData = _.result(_.find(p.stores.screenshots, { url: p.tab.url }), 'data');

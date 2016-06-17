@@ -951,15 +951,28 @@ export var sessionsStore = Reflux.createStore({
     var reader = new FileReader();
     reader.onload = (e)=> {
       var json = JSON.parse(reader.result);
-      var sessions = {sessionData: json};
-      console.log(sessions);
-      chrome.storage.local.remove('sessionData');
-      chrome.storage.local.set(sessions, (result)=> {
-        console.log('sessions imported...',result);
-        this.sessions = json;
-        this.trigger(this.sessions);
-        console.log('sessions...',this.sessions);
-      });
+      if (typeof json[0].sync !== 'undefined') {
+        var sessions = {sessionData: json};
+        console.log(sessions);
+        chrome.storage.local.remove('sessionData');
+        chrome.storage.local.set(sessions, (result)=> {
+          console.log('sessions imported...',result);
+          this.sessions = json;
+          this.trigger(this.sessions);
+          console.log('sessions...',this.sessions);
+          alertStore.set({
+            text: `Successfully imported ${this.sessions.length} sessions.`,
+            tag: 'alert-success',
+            open: true
+          });
+        });
+      } else {
+        alertStore.set({
+          text: 'Please import a valid session file.',
+          tag: 'alert-danger',
+          open: true
+        });
+      }
     };
     reader.readAsText(e.target.files[0], "UTF-8");
   },
@@ -1324,7 +1337,7 @@ export var themeStore = Reflux.createStore({
           id: 9003,
           created: -1,
           modified: now,
-          label: 'Mightnight Purple',
+          label: 'Midnight Purple',
           theme: this.midnightPurple,
           wallpaper: 9002
         },
@@ -1379,12 +1392,19 @@ export var themeStore = Reflux.createStore({
             selectThemeIsCustom = true;
             refTheme = _.find(themes.themes, {id: prefs.theme});
           }
-          this.theme = refTheme.theme;
+          try {
+            this.theme = refTheme.theme;
+          } catch (e) {
+            this.theme = this.standardThemes[1].theme;
+          }
           this.savedThemes = typeof themes.themes !== 'undefined' ? themes.themes : [];
         } else {
           refTheme = _.find(this.standardThemes, {id: prefs.theme});
           this.theme = refTheme.theme;
           this.savedThemes = [];
+        }
+        if (typeof refTheme === 'undefined') {
+          refTheme = this.standardThemes[1];
         }
         if (this.savedThemes.length > 0 && selectThemeIsCustom) {
           this.themeId = _.last(this.savedThemes).id;
@@ -1494,6 +1514,11 @@ export var themeStore = Reflux.createStore({
     console.log('themeStore savedThemes: ', this.savedThemes);
     chrome.storage.local.set({themes: this.savedThemes}, (t)=>{
       console.log('themeStore theme saved: ', t);
+      alertStore.set({
+        text: `Successfully saved new theme.`,
+        tag: 'alert-success',
+        open: true
+      });
     });
     this.setTriggers({savedThemes: this.savedThemes});
     this.selectTheme(newTheme.id);
@@ -1520,6 +1545,11 @@ export var themeStore = Reflux.createStore({
     prefsStore.set_prefs({
       theme: id,
       wallpaper: refTheme.wallpaper
+    });
+    alertStore.set({
+      text: `Successfully applied ${refTheme.label}.`,
+      tag: 'alert-success',
+      open: true
     });
   },
   selectWallpaper(themeId, wpId){
@@ -1564,6 +1594,11 @@ export var themeStore = Reflux.createStore({
       });
       chrome.storage.local.set({themes: this.savedThemes}, (t)=>{
         console.log('themeStore theme updated: ', id);
+        alertStore.set({
+          text: `Successfully updated new theme.`,
+          tag: 'alert-success',
+          open: true
+        });
       });
       console.log('themeStore themes: ');
       this.trigger(this.theme);
@@ -1609,11 +1644,25 @@ export var themeStore = Reflux.createStore({
     if (e.target.files[0].name.split('-')[1] === 'Themes') {
       var reader = new FileReader();
         reader.onload = (e)=> {
-        this.savedThemes = _.cloneDeep(JSON.parse(reader.result));
-        chrome.storage.local.set({themes: this.savedThemes}, (t)=>{
-          console.log('themeStore themes imported');
-        });
-        this.setTriggers();
+          var themeImport = _.cloneDeep(JSON.parse(reader.result));
+          if (typeof themeImport[0].theme !== 'undefined') {
+            this.savedThemes = themeImport;
+            chrome.storage.local.set({themes: this.savedThemes}, (t)=>{
+              console.log('themeStore themes imported');
+              alertStore.set({
+                text: `Successfully imported ${this.savedThemes.length} themes.`,
+                tag: 'alert-success',
+                open: true
+              });
+            });
+            this.setTriggers();
+          } else {
+            alertStore.set({
+              text: `Please import a valid theme file.`,
+              tag: 'alert-danger',
+              open: true
+            });
+          }
       };
       reader.readAsText(e.target.files[0]);
     }
@@ -1754,6 +1803,43 @@ export var keyboardStore = Reflux.createStore({
   },
   reset(){
     mouseTrap.reset();
+  }
+});
+
+export var alertStore = Reflux.createStore({
+  init(){
+    this.alert = {
+      text: '',
+      tag: 'alert-success',
+      open: false
+    };
+    this.alertTimeout = 300;
+  },
+  set(alert){
+    _.merge(this.alert, alert);
+    this.trigger(this.alert);
+    var fadeOut = ()=>{
+      _.delay(()=>{
+        _.assign(this.alert, {
+          class: 'fadeOut'
+        });
+        this.trigger(this.alert);
+      },3000);
+      _.delay(()=>{
+        _.assign(this.alert, {
+          open: false,
+          class: ''
+        });
+        this.trigger(this.alert);
+      },4000);
+    };
+    if (this.alert.tag !== 'alert-success' && typeof alert.tag === 'undefined') {
+      this.alert.tag = 'alert-success';
+    }
+    fadeOut();
+  },
+  get(){
+    return this.alert;
   }
 });
 

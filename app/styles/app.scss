@@ -260,6 +260,9 @@ body {
     padding:1px;
     cursor: move;
 }
+div.row.ntg-tile-row-top > div.col-xs-3 > div > i {
+    font-size: 13px;
+};
 .ntg-tile {
     text-align: center;
     background-color: rgb(237, 237, 237);
@@ -410,4 +413,8 @@ body {
 }
 .nav-tabs {
     border: none;
+}
+.nav-tabs>li>a {
+    border-radius: initial;
+    margin-right: initial;
 }

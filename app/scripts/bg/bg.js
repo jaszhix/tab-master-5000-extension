@@ -71,7 +71,7 @@ var Bg = React.createClass({
     }
   },
   attachListeners(state){
-    var s = this.state.init ? state : s;
+    var s = this.state.init ? state : this.state;
     //chrome.tabs.create({active: true}, (tab)=>{});
     if (eventState.onStartup) {
       _.defer(()=>{

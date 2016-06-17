@@ -8,7 +8,7 @@ import ReactUtils from 'react-utils';
 import ReactTooltip from './tooltip/tooltip';
 import '../../styles/app.scss';
 window.v = v;
-import {chromeRuntime, themeStore, createStore, removeStore, updateStore, keyboardStore, sortStore, chromeAppStore, faviconStore, sessionsStore, actionStore, historyStore, bookmarksStore, relayStore, sidebarStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore, applyTabOrderStore} from './stores/main';
+import {chromeRuntime, alertStore, themeStore, createStore, removeStore, updateStore, keyboardStore, sortStore, chromeAppStore, faviconStore, sessionsStore, actionStore, historyStore, bookmarksStore, relayStore, sidebarStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore, applyTabOrderStore} from './stores/main';
 import prefsStore from './stores/prefs';
 import tabStore from './stores/tab';
 import screenshotStore from './stores/screenshot';
@@ -18,6 +18,7 @@ import TileGrid from './tile';
 import ModalHandler from './modal';
 import ContextMenu from './context';
 import Preferences from './preferences';
+import Alert from './alert';
 if (module.hot) {
   module.hot.accept();
 }
@@ -291,6 +292,7 @@ var Root = React.createClass({
       .nav-tabs>li.active>a:hover {
         color: ${e.theme.darkBtnText};
         background-color: ${e.theme.darkBtnBgHover};
+        border: 1px solid ${e.theme.textFieldsBorder};
       }
       .nav-tabs>li:hover {
         background-color: ${e.theme.lightBtnBgHover};
@@ -391,6 +393,16 @@ var Root = React.createClass({
       }
       #main {
         -webkit-transition: ${s.prefs.animations ? '-webkit-filter 0.2s ease-in' : 'initial'};
+      }
+      .alert-success {
+        color: ${e.theme.lightBtnText};
+        background-color: ${e.theme.lightBtnBg};
+        border-color: ${e.theme.lightBtnBg};
+      }
+      .alert-danger {
+        color: ${e.theme.darkBtnText};
+        background-color: ${e.theme.darkBtnBg};
+        border-color: ${e.theme.darkBtnBg};
       }
       `;
       v(document.body).css({
@@ -899,6 +911,7 @@ var Root = React.createClass({
                 offset={{top: 0, left: 6}} /> : null}
               </div> : null}
             </div>}
+            {s.modal && !s.modal.state && s.prefs.tooltip ? <Alert /> : null}
         </div>
       );
     } else {
