@@ -58,7 +58,7 @@ var prefsStore = Reflux.createStore({
                     this.set_prefs(this.prefs, true);
                     console.log('init prefs: ', this.prefs);
                     this.trigger(this.prefs);
-                    utilityStore.restartNewTab();
+                    //utilityStore.restartNewTab();
                   }
                 }
               });
@@ -131,6 +131,7 @@ var prefsStore = Reflux.createStore({
       this.trigger(this.prefs);
     }).catch((err)=>{
       console.log('chrome.extension.lastError: ',err);
+      //utilityStore.reloadBg();
     });
   },
   set_prefs(obj, init) {

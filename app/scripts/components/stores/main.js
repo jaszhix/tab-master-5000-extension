@@ -64,7 +64,7 @@ var reRender = (type, id, prefs) => {
   }
 };
 var throttled = {
-  screenshot: _.throttle(screenshotStore.capture, 100, {leading: true}),
+  screenshot: _.throttle(screenshotStore.capture, 0, {leading: true}),
   update: _.throttle(reRender, 1, {leading: true}),
   history: _.throttle(reRender, 4000, {leading: true})
 };
@@ -76,31 +76,33 @@ export var chromeRuntime = (prefs)=>{
     } else if (msg.type === 'remove') {
       reRender(msg.type, msg.e, prefs);
     } else if (msg.type === 'activate') {
-      var getImageFromTab = ()=>{
-        if (kmp(msg.e.url, 'chrome://' !== -1)) {
-          throttled.screenshot(msg.e.tabId, msg.e.windowId, false, msg.type);
-        } else {
-          chrome.tabs.sendMessage(msg.e.tabId, {type: msg.type}, (response)=>{});
-        }
-      };
-      if (prefs.screenshot) {
-        // Inject event listener that messages the extension to recapture the image on click.
-        var title = null;
-        if (prefs.mode === 'tabs') {
-          title = _.result(_.find(tabs(), { id: msg.e.tabId }), 'title');
-          if (title !== 'New Tab') {
-            getImageFromTab();
+      if (msg.e.windowId === utilityStore.get_window() && msg.e.title !== 'New Tab') {
+        var getImageFromTab = ()=>{
+          if (kmp(msg.e.url, 'chrome://' !== -1)) {
+            throttled.screenshot(msg.e.tabId, msg.e.windowId, false, msg.type);
+          } else {
+            chrome.tabs.sendMessage(msg.e.tabId, {type: msg.type}, (response)=>{});
           }
-        } else {
-          title = _.result(_.find(tabs('alt'), { id: msg.e.tabId }), 'title');
-          if (title !== 'New Tab') {
-            if (prefs.mode !== 'tabs') {
+        };
+        if (prefs.screenshot) {
+          // Inject event listener that messages the extension to recapture the image on click.
+          var title = null;
+          if (prefs.mode === 'tabs') {
+            title = _.result(_.find(tabs(), { id: msg.e.tabId }), 'title');
+            if (title !== 'New Tab') {
               getImageFromTab();
+            }
+          } else {
+            title = _.result(_.find(tabs('alt'), { id: msg.e.tabId }), 'title');
+            if (title !== 'New Tab') {
+              if (prefs.mode !== 'tabs') {
+                getImageFromTab();
+              }
             }
           }
         }
+        reRender(msg.type, msg.e, prefs);
       }
-      reRender(msg.type, msg.e, prefs);
     } else if (msg.type === 'update') {
       console.log('Update: ',msg);
       reRender(msg.type, msg.e, prefs);
@@ -117,7 +119,7 @@ export var chromeRuntime = (prefs)=>{
     } else if (msg.type === 'app') {
       reRenderStore.set_reRender(true, 'update', null);
     } else if (msg.type === 'error') {
-      utilityStore.restartNewTab();
+      utilityStore.reloadBg();
     } else if (msg.type === 'newVersion') {
       contextStore.set_context(null, 'newVersion');
     } else if (msg.type === 'installed') {
@@ -128,6 +130,7 @@ export var chromeRuntime = (prefs)=>{
       screenshotStore.capture(sender.tab.id, sender.tab.windowId, msg.image, msg.type);
       reRender('activate', sender.tab.id, prefs);
     } else if (msg.type === 'checkSSCapture') {
+      console.log('checkSSCapture: Sending screenshot to '+sender.tab.url);
       sendResponse(screenshotStore.tabHasScreenshot(sender.tab.url));
     }
   });

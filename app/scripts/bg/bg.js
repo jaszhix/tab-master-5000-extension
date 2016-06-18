@@ -197,13 +197,18 @@ var Bg = React.createClass({
       // requests from front-end javascripts
       if (msg.method === 'captureTabs') {
         var capture = new Promise((resolve, reject)=>{
-          chrome.tabs.captureVisibleTab({format: 'jpeg', quality: 10}, (image)=> {
-            if (image) {
-              resolve(image);
-            } else {
-              reject();
-            }
-          });
+          try {
+            chrome.tabs.captureVisibleTab({format: 'jpeg', quality: 10}, (image)=> {
+              if (image) {
+                resolve(image);
+              } else {
+                reject();
+              }
+            });
+          } catch (e) {
+            console.log(e);
+            reject();
+          }
         });
         capture.then((image)=>{
           sendResponse({'image': image});

@@ -83,8 +83,9 @@ var screenshotStore = Reflux.createStore({
             this.index = _.uniqBy(this.index, 'url');
             this.index = _.uniqBy(this.index, 'data');
             chrome.storage.local.set({screenshots: this.index}, ()=>{
-              this.trigger(this.index);
+              console.log(this.index);
             });
+            this.trigger(this.index);
           });
         }).catch(()=>{
           _.defer(()=>chrome.tabs.update(id, {active: true}));

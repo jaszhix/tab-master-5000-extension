@@ -645,7 +645,7 @@ var Sidebar = React.createClass({
     var iconCollapse = p.width <= 1135;
     return (
       <div className="side-div" style={p.collapse ? {width: '11%', position: 'fixed'} : {width: '13%', position: 'fixed'}}>
-        <Btn onClick={this.handleSort} className="ntg-apply-btn" fa="sort-amount-asc">{p.collapse ? 'Sort Tabs' : 'Sort'}</Btn>
+        <Btn onClick={this.handleSort} className="ntg-apply-btn" fa="sort-amount-asc" data-place="bottom" data-tip={p.width <= 767 ? 'Sort Tabs' : null}>{p.collapse ? 'Sort Tabs' : p.width <= 767 ? '' : 'Sort'}</Btn>
           {p.prefs.sort ? <div>
               {p.labels}
               {p.prefs.mode === 'tabs' && p.search.length === 0 ? <Btn onClick={()=>applyTabOrderStore.set_saveTab(true)} className="ntg-apply-btn" fa="sort" data-place="right" data-tip={iconCollapse ? 'Apply' : null}>{iconCollapse ? '' : 'Apply'}</Btn> : null}
@@ -774,10 +774,11 @@ var TileGrid = React.createClass({
         </div>
       );
     });
+    const tileDivStyle = p.sidebar ? p.collapse ? {marginLeft: '11%', width: '89%'} : {marginLeft: '13%', width: '87%'} : {width: '100%'};
     return (
       <div className="tile-body">
         {p.sidebar ? <Sidebar prefs={p.stores.prefs} tabs={p.stores.tabs} labels={labels} width={p.width} collapse={p.collapse} ssBg={ssBg} search={p.stores.search} /> : null}
-        <div className="tile-div" style={p.sidebar ? p.collapse ? {marginLeft: '11%', width: '89%'} : {marginLeft: '13%', width: '87%'} : {width: '100%'}}>
+        <div className="tile-div" style={tileDivStyle}>
           <div id="grid" ref="grid">
               {data.map((data, i)=> {
                 if (i <= p.tileLimit) {

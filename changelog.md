@@ -1,5 +1,15 @@
 #### Release Notes
 
+##### v1.5.2 / *6-18-16*
+
+*   Changed screenshots to only capture the currently active Chrome window.
+*   Removed the low resolution modal, and made various changes so TM5K is more responsive.
+*   Known issues:
+  *   When "Enable pulsing duplicate tabs" is enabled and screenshots are disabled, duplicate tabs are not recognized as duplicates after the New Tab page has loaded.
+  *   History and sessions tiles that are also open tabs do not update their pinned or muted states while in those view modes.
+*   Other notes:
+  *   It is recommended to backup your sessions and themes if you use the Theming functionality while it is in beta.
+
 ##### v1.5.1 / *6-17-16*
 
 *   Added alert notifications.
@@ -8,11 +18,6 @@
 *   Fixed typo of Midnight Purple Theme.
 *   Fixed a bug causing the Update button to show when selecting a default theme.
 *   Added file validation to sessions and themes importing so importing incorrect files doesn't corrupt preferences data.
-*   Known issues:
-  *   When "Enable pulsing duplicate tabs" is enabled and screenshots are disabled, duplicate tabs are not recognized as duplicates after the New Tab page has loaded.
-  *   History and sessions tiles that are also open tabs do not update their pinned or muted states while in those view modes.
-*   Other notes:
-  *   It is recommended to backup your sessions and themes if you use the Theming functionality while it is in beta.
 
 
 ##### v1.5.0 / *6-15-16*

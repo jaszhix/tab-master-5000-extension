@@ -55,6 +55,9 @@ var Search = React.createClass({
     if (nP.theme !== this.props.theme) {
       this.setState({theme: nP.theme});
     }
+    if (nP.width !== this.props.width) {
+      ReactTooltip.rebuild();
+    }
   },
   preventSubmit(e) {
     e.preventDefault();
@@ -79,6 +82,11 @@ var Search = React.createClass({
   handleSidebar(){
     sidebarStore.set_sidebar(!sidebarStore.get_sidebar());
   },
+  handleEnter(e){
+    if (e.keyCode === 13) {
+      this.handleWebSearch(e);
+    }
+  },
   render: function() {
     var p = this.props;
     const headerStyle = p.prefs && p.prefs.screenshot && p.prefs.screenshotBg ? {backgroundColor: this.state.theme.headerBg, position: 'fixed', top: '0px', width: '100%', zIndex: '2', boxShadow: `${p.theme.tileShadow} 1px 1px 3px -1px`} : {backgroundColor: this.state.theme.headerBg, position: 'fixed', top: '0px', width: '100%', zIndex: '2', boxShadow: `${p.theme.tileShadow} 1px 1px 3px -1px`};
@@ -86,32 +94,26 @@ var Search = React.createClass({
     return (
       <Container fluid={true} style={headerStyle} className="ntg-form">
         <Row>
-          <Col size="6">
-            <Col size="1">
-              <Btn onClick={this.handleSidebar} style={{fontSize: '20px'}} className="ntg-top-btn" fa="reorder" />
-            </Col>
-            <Col size="11">
-              <form 
-              role="search"
-              id="search"
-              onSubmit={this.handleWebSearch}>
-                <input 
+          <Col size={p.width <= 825 ? p.width <= 630 ? p.width <= 514 ? '11' : '10' : '8' : '6'}>
+            <div style={{display: 'flex', width: '100%', paddingLeft: '0px', paddingRight: '0px'}}>
+              <Btn onClick={this.handleSidebar} style={{fontSize: '20px', marginRight: '0px'}} className="ntg-top-btn" fa="reorder" />
+              <input 
                 type="text"
                 value={searchStore.get_search()}
                 className="form-control search-tabs" 
                 placeholder={p.prefs.mode === 'bookmarks' ? 'Search bookmarks...' : p.prefs.mode === 'history' ? 'Search history...' : p.prefs.mode === 'sessions' ? 'Search sessions...' : p.prefs.mode === 'apps' ? 'Search apps...' : p.prefs.mode === 'extensions' ? 'Search extensions...' : 'Search tabs...'}
-                onChange={this.handleSearch} />
-              </form>
-            </Col>
+                onChange={this.handleSearch} 
+                onKeyDown={(e)=>this.handleEnter(e)}/>
+            </div>
           </Col>
-          <Col size="6">
+          <Col size={p.width <= 825 ? p.width <= 630 ? p.width <= 514 ? '1' : '2' : '4' : '6'}>
             {searchStore.get_search().length > 3 ? <span style={{color: p.theme.textFieldsPlaceholder}} className="search-msg ntg-search-google-text">Press Enter to Search Google</span> : null}
-            <Btn style={{float: 'left'}} onClick={()=>modalStore.set_modal(true, 'settings')} className="ntg-top-btn" fa="cogs">Settings</Btn>
-            {p.event === 'newVersion' ? <Btn onClick={()=>chrome.runtime.reload()} style={{float: 'left'}} className="ntg-top-btn" fa="rocket">New Version Available</Btn> : null}
-            {p.event === 'versionUpdate' ? <Btn onClick={this.openAbout} style={{float: 'left'}} className="ntg-top-btn" fa="info-circle">Updated to {utilityStore.get_manifest().version}</Btn> : null}
-            {p.event === 'installed' ? <Btn onClick={this.openAbout} style={{float: 'left'}} className="ntg-top-btn" fa="thumbs-o-up">Thank you for installing TM5K</Btn> : null}
+            <Btn style={{marginLeft: '10px', float: 'left', fontSize: p.width <= 646 ? '20px' : '14px'}} onClick={()=>modalStore.set_modal(true, 'settings')} className="ntg-top-btn" fa="cogs" data-place="bottom" data-tip={p.width <= 646 ? 'Settings' : null}>{p.width <= 646 ? '' : 'Settings'}</Btn>
+            {p.event === 'newVersion' ? <Btn onClick={()=>chrome.runtime.reload()} style={{float: 'left', fontSize: p.width <= 841 ? '20px' : '14px'}} className="ntg-top-btn" fa="rocket" data-place="bottom" data-tip={p.width <= 841 ? 'New Version Available' : null}>{p.width <= 841 ? '' : 'New Version Available'}</Btn> : null}
+            {p.event === 'versionUpdate' ? <Btn onClick={this.openAbout} style={{float: 'left', fontSize: p.width <= 841 ? '20px' : '14px'}} className="ntg-top-btn" fa="info-circle" data-place="bottom" data-tip={p.width <= 841 ? `Updated to ${utilityStore.get_manifest().version}` : null}>{p.width <= 841 ? '' : `Updated to ${utilityStore.get_manifest().version}`}</Btn> : null}
+            {p.event === 'installed' ? <Btn onClick={this.openAbout} style={{float: 'left', fontSize: p.width <= 841 ? '20px' : '14px'}} className="ntg-top-btn" fa="thumbs-o-up" data-place="bottom" data-tip={p.width <= 841 ? 'Thank you for installing TM5K' : null}>{p.width <= 841 ? '' : 'Thank you for installing TM5K'}</Btn> : null}
             {p.topLoad ? <Loading top={true} /> : null}
-            {p.event === 'dlFavicons' && p.topLoad ? <div><p className="tm5k-info" style={{color: p.theme.darkBtnText, textShadow: `2px 2px ${p.theme.darkBtnTextShadow}`}}> Downloading and caching favicons...</p></div> : null}
+            {p.event === 'dlFavicons' && p.topLoad ? <div><p className="tm5k-info" style={{color: p.theme.darkBtnText, textShadow: `2px 2px ${p.theme.darkBtnTextShadow}`}}> {p.width <= 841 ? '' : 'Downloading and caching favicons...'}</p></div> : null}
           </Col>  
         </Row>
       </Container>
@@ -192,11 +194,6 @@ var Root = React.createClass({
     
     console.log('Chrome Version: ',utilityStore.chromeVersion());
     console.log('Manifest: ', utilityStore.get_manifest());
-  },
-  handleResolutionWarning(){
-    if (this.state.prefs.resolutionWarning) {
-      modalStore.set_modal(true, 'resolutionWarning');
-    }
   },
   sessionsChange(e){
     this.setState({sessions: e});
@@ -644,9 +641,6 @@ var Root = React.createClass({
         if (opt === 'init') {
           this.setState({load: false});
           actionStore.set_state(false);
-          if (s.resolutionWarning) {
-            this.handleResolutionWarning();
-          }
         }
       } else if (opt === 'cycle') {
         this.setState({grid: true});
@@ -735,11 +729,6 @@ var Root = React.createClass({
         this.setState({collapse: true});
       } else {
         this.setState({collapse: false});
-      }
-      if (window.outerWidth < 1024 || window.outerHeight < 768) {
-        this.setState({resolutionWarning: true});
-      } else {
-        this.setState({resolutionWarning: false});
       }
     } else {
       this.setState({width: event.width, height: event.height});
@@ -898,7 +887,7 @@ var Root = React.createClass({
                         height={s.height} /> : null}
               {s.tabs ? 
               <div className="tile-container">
-                <Search event={s.event} prefs={s.prefs} topLoad={s.topLoad} theme={s.theme}/>
+                <Search event={s.event} prefs={s.prefs} topLoad={s.topLoad} theme={s.theme} width={s.width}/>
                 <div style={{marginTop: '67px'}} className="tile-child-container">
                   {s.grid ? this.tileGrid(stores) : <Loading />}
                 </div>
@@ -911,7 +900,7 @@ var Root = React.createClass({
                 offset={{top: 0, left: 6}} /> : null}
               </div> : null}
             </div>}
-            {s.modal && !s.modal.state && s.prefs.tooltip ? <Alert /> : null}
+            {s.modal && !s.modal.state && s.prefs.tooltip ? <Alert enabled={s.prefs.alerts} /> : null}
         </div>
       );
     } else {
