@@ -42,12 +42,6 @@ chrome.runtime.onInstalled.addListener((details)=>{
 chrome.management.onUninstalled.addListener((details)=>{
   eventState.onUninstalled = details;
 });
-chrome.management.onEnabled.addListener((details)=>{
-  eventState.onEnabled = {e: details, type: 'app'};
-});
-chrome.management.onDisabled.addListener((details)=>{
-  eventState.onDisabled = {e: details, type: 'app'};
-});
 
 var Bg = React.createClass({
   mixins: [Reflux.ListenerMixin],
@@ -200,8 +194,19 @@ var Bg = React.createClass({
       console.log('history onVisited', e, info);
       sendMsg({e: e, type: 'history'});
     });
+    chrome.management.onEnabled.addListener((details)=>{
+      eventState.onEnabled = details;
+      this.setState({eventState: eventState});
+      console.log('app enabled', details);
+      sendMsg({e: details, type: 'app'});
+    });
+    chrome.management.onDisabled.addListener((details)=>{
+      eventState.onDisabled = details;
+      this.setState({eventState: eventState});
+      console.log('app disabled', details);
+      sendMsg({e: details, type: 'app'});
+    });
     this.attachMessageListener(s);
-    //_.delay(()=>sendMsg({e: s.prefs, type: 'prefs'}), 500);
     this.setState({init: false});
   },
   attachMessageListener(s){

@@ -1,14 +1,22 @@
 #### Release Notes
 
+##### v1.5.3 / *6-20-16*
+
+*   Optimizations to how preferences are retrieved from Chrome - moved preferences retrieval to the background script.
+*   Fixed apps and extensions not being able to be enabled or disabled.
+*   Fixed duplicate tabs not being recognized as duplicates after the New Tab page has loaded, while screenshots are disabled.
+*   Fixed history and sessions tiles not updating their pinned or muted states while in those view modes.
+*   Added a failsafe mode during initialization: if the extension data becomes corrupted, options to backup and reset your data becomes available. Hopefully you will never see this.
+*   TBD:
+  *   Turn the sidebar into a dropdown menu.
+  *   Enable session synchronization to include all windows currently open, and have it persist after a new tab page is closed.
+  *   Add customization of the layout, including tiles.
+  *   Optional hotkey triggered tile grid overlay for web pages.
+
 ##### v1.5.2 / *6-18-16*
 
 *   Changed screenshots to only capture the currently active Chrome window.
 *   Removed the low resolution modal, and made various changes so TM5K is more responsive.
-*   Known issues:
-  *   When "Enable pulsing duplicate tabs" is enabled and screenshots are disabled, duplicate tabs are not recognized as duplicates after the New Tab page has loaded.
-  *   History and sessions tiles that are also open tabs do not update their pinned or muted states while in those view modes.
-*   Other notes:
-  *   It is recommended to backup your sessions and themes if you use the Theming functionality while it is in beta.
 
 ##### v1.5.1 / *6-17-16*
 

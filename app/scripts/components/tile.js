@@ -341,6 +341,9 @@ var Tile = React.createClass({
     chrome.tabs.update(id, {
       pinned: !tab.pinned
     });
+    if (p.stores.prefs.mode !== 'tabs') {
+      reRenderStore.set_reRender(true, 'create', null);
+    }
     v('#subTile-'+s.i).on('animationend', function animationEnd(e){
       this.setState({pinning: false});
       v('#subTile-'+s.i).off('animationend', animationEnd);
@@ -348,6 +351,9 @@ var Tile = React.createClass({
   },
   handleMuting(tab){
     chrome.tabs.update(tab.id, {muted: !tab.mutedInfo.muted});
+    if (this.props.stores.prefs.mode !== 'tabs') {
+      reRenderStore.set_reRender(true, 'create', null);
+    }
   },
   handleCloseAll(tab){
     document.getElementById('subTile-'+this.state.i).style.display = '';

@@ -3,7 +3,6 @@ import html2canvas from 'html2canvas';
 
 var getImage = (type)=>{
   chrome.runtime.sendMessage(chrome.runtime.id, {type: 'checkSSCapture'}, (response)=>{
-    console.log('..')
     if (response && response.length === 0 || type === 'activate') {
       try {
         html2canvas(document.body,{
