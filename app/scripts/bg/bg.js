@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import Reflux from 'reflux';
 import _ from 'lodash';
 import prefsStore from '../components/stores/prefs';
-import {reRenderStore} from '../components/stores/main';
+//import {reRenderStore} from '../components/stores/main';
 
 var sendMsg = (msg) => {
   chrome.runtime.sendMessage(chrome.runtime.id, msg, (response)=>{});
@@ -68,6 +68,8 @@ var Bg = React.createClass({
     this.setState(s);
     if (s.init) {
       this.attachListeners(s);
+    } else {
+      sendMsg({e: e, type: 'prefs'});
     }
   },
   attachListeners(state){
@@ -79,7 +81,7 @@ var Bg = React.createClass({
         sendMsg(eventState.onStartup);
       });
     }
-    if (eventState.onInstalled) {
+    if (eventState.onInstalled || eventState.onStartup) {
       this.setState({eventState: eventState});
       if (eventState.onInstalled.reason === 'update' || eventState.onInstalled.reason === 'install') {
         chrome.tabs.query({title: 'New Tab'},(tabs)=>{
@@ -91,7 +93,6 @@ var Bg = React.createClass({
           setTimeout(()=>{
             if (eventState.onInstalled.reason === 'install') {
               sendMsg({e: eventState.onInstalled, type: 'installed'});
-              reRenderStore.set_reRender(true, 'create', null);
             } else if (eventState.onInstalled.reason === 'update') {
               sendMsg({e: eventState.onInstalled, type: 'versionUpdate'});
             }
@@ -104,6 +105,7 @@ var Bg = React.createClass({
       sendMsg({e: eventState.onUpdateAvailable, type: 'newVersion'});
     }
     if (eventState.onUninstalled) {
+
       this.setState({eventState: eventState});
       sendMsg({e: eventState.onUninstalled, type: 'app'});
     }
@@ -116,8 +118,13 @@ var Bg = React.createClass({
       sendMsg({e: eventState.onDisabled, type: 'app'});
     }
     chrome.tabs.onCreated.addListener((e, info) => {
+      console.log('onCreated: ', e, info);
       eventState.onCreated = e;
       this.setState({eventState: eventState});
+      /*if (e.url === 'chrome://newtab/') {
+        console.log('New Tab created...');
+        _.delay(()=>sendMsg({e: s.prefs, type: 'prefs'}), 500);
+      }*/
       sendMsg({e: e, type: 'create'});
     });
     chrome.tabs.onRemoved.addListener((e, info) => {
@@ -133,6 +140,10 @@ var Bg = React.createClass({
     chrome.tabs.onUpdated.addListener((e, info) => {
       eventState.onUpdated = e;
       this.setState({eventState: eventState});
+      if (e.url === 'chrome://newtab/') {
+        console.log('New Tab updated...');
+        //_.delay(()=>sendMsg({e: s.prefs, type: 'prefs'}), 500);
+      }
       sendMsg({e: e, type: 'update'});
     });
     chrome.tabs.onMoved.addListener((e, info) => {
@@ -190,6 +201,7 @@ var Bg = React.createClass({
       sendMsg({e: e, type: 'history'});
     });
     this.attachMessageListener(s);
+    //_.delay(()=>sendMsg({e: s.prefs, type: 'prefs'}), 500);
     this.setState({init: false});
   },
   attachMessageListener(s){
@@ -240,6 +252,9 @@ var Bg = React.createClass({
         sendResponse({'reload': true});
       } else if (msg.method === 'prefs') {
         sendResponse({'prefs': s.prefs});
+      } else if (msg.method === 'setPrefs') {
+        prefsStore.set_prefs(msg.obj);
+        sendResponse({'prefs': prefsStore.get_prefs()});
       } else if (msg.method === 'tabs') {
         chrome.tabs.query({
           windowId: chrome.windows.WINDOW_ID_CURRENT,

@@ -8,7 +8,8 @@ import style from './style';
 
 import Settings from './settings';
 
-import {modalStore, themeStore} from './stores/main';
+import {modalStore} from './stores/main';
+import themeStore from './stores/theme';
 
 import Alert from './alert';
 

@@ -8,8 +8,8 @@ import ReactUtils from 'react-utils';
 import ReactTooltip from './tooltip/tooltip';
 import '../../styles/app.scss';
 window.v = v;
-import {chromeRuntime, alertStore, themeStore, createStore, removeStore, updateStore, keyboardStore, sortStore, chromeAppStore, faviconStore, sessionsStore, actionStore, historyStore, bookmarksStore, relayStore, sidebarStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore, applyTabOrderStore} from './stores/main';
-import prefsStore from './stores/prefs';
+import {chromeRuntime, msgStore, alertStore, createStore, removeStore, updateStore, keyboardStore, sortStore, chromeAppStore, faviconStore, sessionsStore, actionStore, historyStore, bookmarksStore, relayStore, sidebarStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore, applyTabOrderStore} from './stores/main';
+import themeStore from './stores/theme';
 import tabStore from './stores/tab';
 import screenshotStore from './stores/screenshot';
 import utils from './utils';
@@ -24,19 +24,62 @@ if (module.hot) {
 }
 
 var Loading = React.createClass({
+  getInitialState(){
+    return {
+      failSafe: false,
+      error: ''
+    };
+  },
+  componentDidMount(){
+    window.onerror = (err)=>{
+      console.log(err);
+      _.delay(()=>{
+        this.setState({
+          failSafe: true,
+          error: `${err}
+            ${chrome.runtime.lastError ? 'chrome.runtime: '+chrome.runtime.lastError : ''}
+            ${chrome.extension.lastError ? 'chrome.extension: '+chrome.extension.lastError : ''}`
+        });
+      },1000);
+    };
+  },
+  handleReset(){
+    var c = confirm('Resetting will delete all data. Please backup your sessions and themes before you begin.');
+    if (c) {
+      chrome.storage.local.clear();
+      chrome.runtime.reload();
+    }
+  },
   render: function() {
-    var topStyle = {width: '20px', height: '20px', margin: 'inherit', float: 'left', marginRight: '4px', marginTop: '7px'};
+    var s = this.state;
+    var p = this.props;
+    var topStyle = {width: '20px', height: '20px', margin: '0px', float: 'left', marginRight: '4px', marginTop: '7px'};
+    var fullStyle = {marginTop: `${window.innerHeight / 2.4}px`};
+    var errorLink = {color: 'rgba(34, 82, 144, 0.9)'};
     return (
-      <div style={this.props.top ? topStyle : null} className="sk-cube-grid">
-        <div className="sk-cube sk-cube1"></div>
-        <div className="sk-cube sk-cube2"></div>
-        <div className="sk-cube sk-cube3"></div>
-        <div className="sk-cube sk-cube4"></div>
-        <div className="sk-cube sk-cube5"></div>
-        <div className="sk-cube sk-cube6"></div>
-        <div className="sk-cube sk-cube7"></div>
-        <div className="sk-cube sk-cube8"></div>
-        <div className="sk-cube sk-cube9"></div>
+      <div>
+        <div style={p.top ? topStyle : fullStyle} className="sk-cube-grid">
+          <div className="sk-cube sk-cube1"></div>
+          <div className="sk-cube sk-cube2"></div>
+          <div className="sk-cube sk-cube3"></div>
+          <div className="sk-cube sk-cube4"></div>
+          <div className="sk-cube sk-cube5"></div>
+          <div className="sk-cube sk-cube6"></div>
+          <div className="sk-cube sk-cube7"></div>
+          <div className="sk-cube sk-cube8"></div>
+          <div className="sk-cube sk-cube9"></div>
+        </div>
+        {s.failSafe && !p.top ?
+          <div className="container">
+            <div className="row">Tab Master encountered an error and was unable to initialize. Sorry for the inconvenience. Please copy the following error message and submit it to the Support tab in the <a style={errorLink} href="https://chrome.google.com/webstore/detail/tab-master-5000-tab-swiss/mippmhcfjhliihkkdobllhpdnmmciaim/support">Chrome Web Store</a>, or as an issue on <a style={errorLink} href="https://github.com/jaszhix/tab-master-5000-chrome-extension/issues">Github</a>, so this issue can be investigated. Thank you! </div>
+            
+            <div className="row" style={{margin: '0px auto', position: 'fixed', right: '0px', bottom: '0px'}}>
+              <button className="ntg-top-btn" onClick={()=>sessionsStore.exportSessions()}>Backup Sessions</button>
+              <button className="ntg-top-btn" onClick={()=>themeStore.export()}>Backup Themes</button>
+              <button className="ntg-top-btn" onClick={this.handleReset}>Reset Data</button>
+            </div>
+          </div>
+          : null}
       </div>
     );
   }
@@ -182,7 +225,7 @@ var Root = React.createClass({
     this.listenTo(reRenderStore, this.reRender);
     this.listenTo(settingsStore, this.settingsChange);
     this.listenTo(contextStore, this.contextTrigger);
-    this.listenTo(prefsStore, this.prefsChange);
+    this.listenTo(msgStore, this.prefsChange);
     this.listenTo(actionStore, this.actionsChange);
     this.listenTo(sessionsStore, this.sessionsChange);
     this.listenTo(faviconStore, this.faviconsChange);
@@ -191,7 +234,6 @@ var Root = React.createClass({
     this.listenTo(applyTabOrderStore, this.applyTabOrderChange);
     this.listenTo(sortStore, this.sortChange);
     this.listenTo(modalStore, this.modalChange);
-    
     console.log('Chrome Version: ',utilityStore.chromeVersion());
     console.log('Manifest: ', utilityStore.get_manifest());
   },
@@ -202,6 +244,7 @@ var Root = React.createClass({
     }
   },
   prefsChange(e){
+    console.log('prefsChange: ', e);
     var s = this.state;
     this.setState({
       prefs: e, 
@@ -221,7 +264,7 @@ var Root = React.createClass({
       this.captureTabs('init');
     }
     if (e.keyboardShortcuts) {
-      keyboardStore.set();
+      keyboardStore.set(e);
     } else {
       keyboardStore.reset();
     }
@@ -464,7 +507,7 @@ var Root = React.createClass({
       this.setState({tabs: _.uniq(tabs)});
       tabStore.set_tab(tabs);
     } else {
-      prefsStore.set_prefs({mode: s.prefs.mode});
+      msgStore.setPrefs({mode: s.prefs.mode});
     }
     _.defer(()=>this.setState({topLoad: false}));
   },

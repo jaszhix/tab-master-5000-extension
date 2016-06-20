@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import Reflux from 'reflux';
 import _ from 'lodash';
 import ReactTooltip from './tooltip/tooltip';
-import {themeStore} from './stores/main';
+import themeStore from './stores/theme';
 
 export var Btn = React.createClass({
   mixins: [Reflux.ListenerMixin],

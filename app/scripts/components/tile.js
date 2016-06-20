@@ -6,8 +6,7 @@ import v from 'vquery';
 import moment from 'moment';
 import Draggable from 'react-draggable';
 import ReactTooltip from './tooltip/tooltip';
-import {searchStore, sortStore, relayStore, faviconStore, sessionsStore, bookmarksStore, reRenderStore, applyTabOrderStore, utilityStore, contextStore, dragStore, draggedStore} from './stores/main';
-import prefsStore from './stores/prefs';
+import {msgStore, searchStore, sortStore, relayStore, faviconStore, sessionsStore, bookmarksStore, reRenderStore, applyTabOrderStore, utilityStore, contextStore, dragStore, draggedStore} from './stores/main';
 import tabStore from './stores/tab';
 
 import {Btn, Col, Row} from './bootstrap';
@@ -638,7 +637,7 @@ var Sidebar = React.createClass({
     ReactTooltip.rebuild();
   },
   handleSort(){
-    prefsStore.set_prefs({sort: !this.props.prefs.sort});
+    msgStore.setPrefs({sort: !this.props.prefs.sort});
   },
   render: function() {
     var p = this.props;

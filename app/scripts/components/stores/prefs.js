@@ -1,7 +1,7 @@
 import Reflux from 'reflux';
 import _ from 'lodash';
 
-import {utilityStore, reRenderStore} from './main';
+//import {reRenderStore} from './main';
 
 var prefsStore = Reflux.createStore({
   init: function() {
@@ -149,11 +149,11 @@ var prefsStore = Reflux.createStore({
     chrome.storage.sync.set({preferences: parsedPrefs}, (result)=> {
       chrome.storage.sync.set({themePrefs: themePrefs}, (result)=> {
         console.log('Preferences saved: ', this.prefs, themePrefs);
-        reRenderStore.set_reRender(true, 'create', null);
+        //reRenderStore.set_reRender(true, 'create', null);
       }); 
     });
     if (init) {
-      reRenderStore.set_reRender(true, 'cycle', null);
+      //reRenderStore.set_reRender(true, 'cycle', null);
     }
   },
   get_prefs() {

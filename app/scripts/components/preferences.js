@@ -6,8 +6,8 @@ import utils from './utils';
 
 import Slider from 'rc-slider';
 import ReactTooltip from './tooltip/tooltip';
-import {reRenderStore, utilityStore, blacklistStore, themeStore} from './stores/main';
-import prefsStore from './stores/prefs';
+import {msgStore, reRenderStore, utilityStore, blacklistStore} from './stores/main';
+import themeStore from './stores/theme';
 import screenshotStore from './stores/screenshot';
 
 import {Btn, Col, Row} from './bootstrap';
@@ -146,7 +146,7 @@ var Preferences = React.createClass({
     var p = this.props;
     var obj = {};
     obj[opt] = !p.prefs[opt];
-    prefsStore.set_prefs(obj);
+    msgStore.setPrefs(obj);
     if (opt === 'screenshot') {
       reRenderStore.set_reRender(true, 'cycle', null);
     }
@@ -157,7 +157,7 @@ var Preferences = React.createClass({
   handleSlide(e, opt){
     var obj = {};
     obj[opt] = e;
-    prefsStore.set_prefs(obj);
+    msgStore.setPrefs(obj);
   },
   render: function() {
     var s = this.state;
@@ -237,7 +237,7 @@ var Preferences = React.createClass({
                 min={0} max={10}
                 defaultValue={p.prefs.screenshotBgOpacity}
                 value={p.prefs.screenshotBgOpacity}
-                onChange={(e)=>prefsStore.set_prefs({screenshotBgOpacity: e})} 
+                onChange={(e)=>msgStore.setPrefs({screenshotBgOpacity: e})} 
                 onMouseEnter={()=>this.handleToggle('screenshotBgOpacity')}
                 hoverBg={p.theme.settingsItemHover}
                 data-tip="Controls the strength of the opacity of background screenshots and wallpaper." /> 
@@ -247,7 +247,7 @@ var Preferences = React.createClass({
                 min={0} max={15}
                 defaultValue={p.prefs.screenshotBgBlur}
                 value={p.prefs.screenshotBgBlur}
-                onChange={(e)=>prefsStore.set_prefs({screenshotBgBlur: e})} 
+                onChange={(e)=>msgStore.setPrefs({screenshotBgBlur: e})} 
                 onMouseEnter={()=>this.handleToggle('screenshotBgBlur')}
                 hoverBg={p.theme.settingsItemHover}
                 data-tip="Controls the strength of the blur of background screenshots and wallpaper."/> 

@@ -9,8 +9,8 @@ import cf from 'colorformat';
 import ColorPicker from 'rc-color-picker';
 import ReactTooltip from './tooltip/tooltip';
 
-import {themeStore, faviconStore, sessionsStore, clickStore, modalStore, settingsStore, utilityStore} from './stores/main';
-import prefsStore from './stores/prefs';
+import {msgStore, faviconStore, sessionsStore, clickStore, modalStore, settingsStore, utilityStore} from './stores/main';
+import themeStore from './stores/theme';
 import tabStore from './stores/tab';
 
 import Preferences from './preferences';
@@ -661,7 +661,7 @@ var Settings = React.createClass({
     };
   },
   componentDidMount(){
-    this.listenTo(prefsStore, this.prefsChange);
+    this.listenTo(msgStore, this.prefsChange);
     this.prefsChange();
     _.merge(style.modal.content, {
       opacity: '1',
@@ -715,7 +715,7 @@ var Settings = React.createClass({
   },
   handleMaxBtn(){
     clickStore.set_click(true, false);
-    prefsStore.set_prefs({settingsMax: !this.state.settingsMax});
+    msgStore.setPrefs({settingsMax: !this.state.settingsMax});
   },
   render: function() {
     var p = this.props;
