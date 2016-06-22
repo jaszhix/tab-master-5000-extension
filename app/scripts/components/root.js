@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Reflux from 'reflux';
 import _ from 'lodash';
-import v from './v';
+import v from 'vquery';
 import kmp from 'kmp';
 import ReactUtils from 'react-utils';
 import ReactTooltip from './tooltip/tooltip';
