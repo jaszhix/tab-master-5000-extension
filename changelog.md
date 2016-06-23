@@ -1,5 +1,15 @@
 #### Release Notes
 
+##### v1.5.4 / *6-22-16*
+
+*   Fixed a bug that can corrupt wallpaper data when importing wallpaper into a copied version of a standard theme.
+*   Fixed closing history and bookmarks tiles not updating the tile grid.
+*   TBD:
+  *   Turn the sidebar into a dropdown menu.
+  *   Enable session synchronization to include all windows currently open, and have it persist after a new tab page is closed.
+  *   Add customization of the layout, including tiles.
+  *   Optional hotkey triggered tile grid overlay for web pages.
+
 ##### v1.5.3 / *6-20-16*
 
 *   Optimizations to how preferences are retrieved from Chrome - moved preferences retrieval to the background script.
@@ -7,11 +17,6 @@
 *   Fixed duplicate tabs not being recognized as duplicates after the New Tab page has loaded, while screenshots are disabled.
 *   Fixed history and sessions tiles not updating their pinned or muted states while in those view modes.
 *   Added a failsafe mode during initialization: if the extension data becomes corrupted, options to backup and reset your data becomes available. Hopefully you will never see this.
-*   TBD:
-  *   Turn the sidebar into a dropdown menu.
-  *   Enable session synchronization to include all windows currently open, and have it persist after a new tab page is closed.
-  *   Add customization of the layout, including tiles.
-  *   Optional hotkey triggered tile grid overlay for web pages.
 
 ##### v1.5.2 / *6-18-16*
 

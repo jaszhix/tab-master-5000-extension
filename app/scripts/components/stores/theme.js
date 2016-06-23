@@ -1,7 +1,7 @@
 import Reflux from 'reflux';
 import _ from 'lodash';
 import {saveAs} from 'filesaver.js';
-import {utilityStore, alertStore} from './main';
+import {utilityStore, alertStore, msgStore} from './main';
 
 export var themeStore = Reflux.createStore({
   init(){
@@ -348,7 +348,18 @@ export var themeStore = Reflux.createStore({
         console.log('init.ref.theme', refTheme.label);
         if (typeof wallpapers.wallpapers !== 'undefined') {
           this.wallpapers = _.concat(wallpapers.wallpapers, this.standardWallpapers);
-          this.wallpaperId = _.last(wallpapers.wallpapers).id;
+          try {
+            var lastSavedWallpaper = _.last(wallpapers.wallpapers);
+            if (typeof lastSavedWallpaper !== 'undefined' && typeof lastSavedWallpaper.id !== 'undefined' && lastSavedWallpaper) {
+              this.wallpaperId = _.last(wallpapers.wallpapers).id;
+            } else {
+              chrome.storage.local.remove('wallpapers');
+              this.wallpapers = this.standardWallpapers;
+            }
+          } catch (e) {
+            chrome.storage.local.remove('wallpapers');
+            this.wallpapers = this.standardWallpapers;
+          }
         } else {
           this.wallpapers = this.standardWallpapers;
         }
@@ -437,11 +448,12 @@ export var themeStore = Reflux.createStore({
   save(){
     var now = utilityStore.now();
     var currentWallpaper = typeof this.currentWallpaper !== 'undefined' && typeof this.currentWallpaper.id !== 'undefined' ? this.currentWallpaper.id : null;
+    var newThemeId = ++this.themeId;
     var newTheme = {
-      id: ++this.themeId,
+      id: newThemeId,
       created: now,
       modified: now,
-      label: 'Custom Theme',
+      label: `Custom Theme ${newThemeId}`,
       theme: _.cloneDeep(this.theme),
       wallpaper: currentWallpaper
     };
@@ -483,7 +495,7 @@ export var themeStore = Reflux.createStore({
       wallpaper: refTheme.wallpaper
     });
     alertStore.set({
-      text: `Successfully applied ${refTheme.label}.`,
+      text: `Applied ${refTheme.label}.`,
       tag: 'alert-success',
       open: true
     });
@@ -531,7 +543,7 @@ export var themeStore = Reflux.createStore({
       chrome.storage.local.set({themes: this.savedThemes}, (t)=>{
         console.log('themeStore theme updated: ', id);
         alertStore.set({
-          text: `Successfully updated new theme.`,
+          text: `Updated ${this.savedThemes[refTheme].label}.`,
           tag: 'alert-success',
           open: true
         });

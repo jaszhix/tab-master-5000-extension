@@ -325,6 +325,9 @@ var Tile = React.createClass({
       close();
       tabStore.keepNewTabOpen();
     }
+    if (p.stores.prefs.mode !== 'tabs') {
+      reRenderStore.set_reRender(true, 'create', null);
+    }
   },
   handlePinning(tab, opt) {
     var s = this.state;
