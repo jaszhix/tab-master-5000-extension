@@ -14,8 +14,8 @@ var utils = {
     arr.splice(fromIndex, 1);
     arr.splice(toIndex, 0, element);
   },
-  formatBytes(bytes,decimals) {
-    if(bytes === 0) {
+  formatBytes(bytes, decimals) {
+    if (bytes === 0) {
       return '0 Byte';
     }
     var k = 1000;

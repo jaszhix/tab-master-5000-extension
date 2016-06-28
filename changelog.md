@@ -1,5 +1,14 @@
 #### Release Notes
 
+##### v1.5.5 / *6-28-16*
+
+*   Fixed extension getting stuck at the loading screen during initialization.
+*   TBD:
+  *   Turn the sidebar into a dropdown menu.
+  *   Enable session synchronization to include all windows currently open, and have it persist after a new tab page is closed.
+  *   Add customization of the layout, including tiles.
+  *   Optional hotkey triggered tile grid overlay for web pages.
+
 ##### v1.5.4 / *6-22-16*
 
 *   Fixed a bug that can corrupt wallpaper data when importing wallpaper into a copied version of a standard theme.

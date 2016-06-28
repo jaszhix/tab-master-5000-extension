@@ -236,6 +236,12 @@ var Root = React.createClass({
     this.listenTo(modalStore, this.modalChange);
     console.log('Chrome Version: ',utilityStore.chromeVersion());
     console.log('Manifest: ', utilityStore.get_manifest());
+    // Restart the extension if the user prefs aren't loaded after four seconds. Better fix TBD.
+    _.delay(()=>{
+      if (!this.state.prefs || this.state.prefs.length === 0) {
+        chrome.runtime.reload();
+      }
+    },4000);
   },
   sessionsChange(e){
     this.setState({sessions: e});
