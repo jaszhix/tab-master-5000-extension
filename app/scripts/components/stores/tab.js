@@ -50,6 +50,15 @@ var tabStore = Reflux.createStore({
     });
     return this.allTabs;
   },
+  getAllTabsByWindow(){
+    var tabsByWindow = _.groupBy(this.getAllTabs(), 'windowId');
+    var windows = [];
+    _.each(tabsByWindow, (val, key)=>{
+      windows.push(val);
+    });
+    console.log('getAllTabsByWindow', windows)
+    return windows;
+  },
   getAllWindowIds(){
     return new Promise((resolve, reject)=>{
       chrome.windows.getAll({populate: true}, (w)=>{
@@ -140,5 +149,4 @@ var tabStore = Reflux.createStore({
     });
   }
 });
-
 export default tabStore;

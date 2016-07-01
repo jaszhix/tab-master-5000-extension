@@ -33,6 +33,18 @@ export var Btn = React.createClass({
       _.defer(()=>ReactTooltip.rebuild());
     }
   },
+  handleHoverIn(){
+    this.setState({hover: true});
+    if (this.props.onMouseEnter) {
+      this.props.onMouseEnter();
+    }
+  },
+  handleHoverOut(){
+    this.setState({hover: false});
+    if (this.props.onMouseLeave) {
+      this.props.onMouseLeave();
+    }
+  },
   render: function() {
     var p = this.props;
     var s = this.state;
@@ -61,12 +73,12 @@ export var Btn = React.createClass({
           data-tip={p['data-tip'] ? `<div style="max-width: 350px;">${p['data-tip']}</div>` : null} 
           ref="btn" 
           style={style}
-          onMouseEnter={()=>this.setState({hover: true})} 
-          onMouseLeave={()=>this.setState({hover: false})}  
+          onMouseEnter={this.handleHoverIn} 
+          onMouseLeave={this.handleHoverOut}  
           onClick={p.onClick}
           id={p.id} 
           className={p.className}>
-            <div className="btn-label">{p.fa ? <i className={'fa fa-'+p.fa}></i> : null}{p.fa ? ' ' : null}{p.children}</div>
+            <div className="btn-label">{p.fa ? <i className={'fa fa-'+p.fa} style={p.faStyle}></i> : null}{p.fa ? ' ' : null}{p.children}</div>
           </button>
       );
     } else {

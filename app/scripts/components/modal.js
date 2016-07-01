@@ -80,6 +80,7 @@ var ModalHandler = React.createClass({
           sessions={p.sessions} 
           modal={s.modal} 
           tabs={p.tabs} 
+          allTabsByWindow={p.allTabsByWindow}
           prefs={p.prefs} 
           favicons={p.favicons} 
           collapse={p.collapse} 

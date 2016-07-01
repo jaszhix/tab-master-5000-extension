@@ -9,9 +9,10 @@ import cf from 'colorformat';
 import ColorPicker from 'rc-color-picker';
 import ReactTooltip from './tooltip/tooltip';
 
-import {msgStore, faviconStore, sessionsStore, clickStore, modalStore, settingsStore, utilityStore} from './stores/main';
+import {msgStore, faviconStore, clickStore, modalStore, settingsStore, utilityStore} from './stores/main';
 import themeStore from './stores/theme';
 import tabStore from './stores/tab';
+import sessionsStore from './stores/sessions';
 
 import Preferences from './preferences';
 import About from './about';
@@ -458,7 +459,9 @@ var Sessions = React.createClass({
       labelSession: null,
       sessionLabelValue: '',
       searchField: null,
-      search: ''
+      search: '',
+      selectedCurrentSessionWindow: -1,
+      selectedSavedSessionWindow: -1
     };
   },
   propTypes: {
@@ -490,9 +493,13 @@ var Sessions = React.createClass({
     faviconStore.clean();
   },
   labelSession(session){
-    console.log(session);
-    sessionsStore.save('update', session, this.state.sessionLabelValue, null, this.setState({sessionLabelValue: ''}), session.sync);
-    this.setState({labelSession: ''});
+    session.label = this.state.sessionLabelValue;
+    sessionsStore.v2Update(session);
+
+    this.setState({
+      labelSession: '',
+      sessionLabelValue: ''
+    });
   },
   setLabel(e){
     this.setState({sessionLabelValue: e.target.value});
@@ -528,9 +535,7 @@ var Sessions = React.createClass({
   render: function() {
     var p = this.props;
     var s = this.state;
-    var tabs = s.tabs;
-    tabs = _.without(tabs, _.find(tabs, { title: 'New Tab' }));
-    var tm20 = tabs.length - 24;
+    var tabs = p.allTabsByWindow;
     return (
       <div className="sessions">
         <Col size="6" className="session-col">
@@ -538,73 +543,103 @@ var Sessions = React.createClass({
           {p.sessions ? p.sessions.map((session, i)=>{
             var time = _.capitalize(moment(session.timeStamp).fromNow());
             var _time = time === 'A few seconds ago' ? 'Seconds ago' : time;
-            return <Row onMouseEnter={()=>this.handleSessionHoverIn(i)} onMouseLeave={()=>this.handleSessionHoverOut(i)} key={i} className="ntg-session-row" style={i % 2 ? null : {backgroundColor: p.theme.settingsItemHover} }>
-              <div style={{width: 'auto', float: 'left', display: 'inline'}}>
-                <div onClick={(e)=>this.expandSelectedSession(i, e)} className={"ntg-session-text session-text-"+i} style={s.expandedSession === i ? {paddingBottom: '4px'} : null}>
-                  {session.sync ? <span title="Synchronized" style={{paddingRight: '5px', color: 'rgb(168, 168, 168)'}}><i className="fa fa-circle-o"/></span> : null}
-                  {session.label ? session.label+': '+session.tabs.length+' tabs' : _time+': '+session.tabs.length+' tabs'}
+            var getTabsCount = ()=>{
+              var int = 0;
+              for (let i = session.tabs.length - 1; i >= 0; i--) {
+                for (let y = session.tabs[i].length - 1; y >= 0; y--) {
+                  ++int;
+                }
+              }
+              return int;
+            };
+            var tabsCount = getTabsCount();
+            var sessionTitle = `${session.label ? session.label : _time}: ${session.tabs.length} Window${session.tabs.length > 1 ? 's' : ''}, ${tabsCount} Tab${tabsCount > 1 ? 's' : ''}`;
+            return (
+              <Row onMouseEnter={()=>this.handleSessionHoverIn(i)} onMouseLeave={()=>this.handleSessionHoverOut(i)} key={i} className="ntg-session-row" style={i % 2 ? null : {backgroundColor: p.theme.settingsItemHover}}>
+                <Row>
+                <div style={{width: 'auto', float: 'left', display: 'inline'}}>
+                  <div onClick={(e)=>this.expandSelectedSession(i, e)} className={"ntg-session-text session-text-"+i} style={s.expandedSession === i ? {paddingBottom: '4px'} : null}>
+                    {p.prefs.syncedSession === session.id ? <span title="Synchronized" style={{paddingRight: '5px', color: 'rgb(168, 168, 168)'}}><i className="fa fa-circle-o"/></span> : null}
+                    {sessionTitle}
+                  </div>
                 </div>
-              </div>
-              <div style={{width: 'auto', float: 'right', display: 'inline'}}>
-                {s.sessionHover === i ? <Btn onClick={()=>sessionsStore.remove(session, p.sessions)} className="ntg-session-btn" fa="times" data-tip="Remove Session" /> : null}
-                {s.sessionHover === i ? <Btn onClick={()=>sessionsStore.restore(session, p.prefs.screenshot)} className="ntg-session-btn" fa="folder-open-o" data-tip="Restore Session"/> : null}
-                {s.sessionHover === i && p.prefs.sessionsSync ? <Btn onClick={()=>sessionsStore.save('update', session, session.label, s.tabs, null, !session.sync)} className="ntg-session-btn" fa={session.sync ? 'circle-o' : 'circle-o-notch'} data-tip="Synchronize Session"/> : null}
-                {s.sessionHover === i ? <Btn onClick={()=>this.setState({searchField: i, expandedSession: i})} className="ntg-session-btn" fa="search" data-tip="Search Session"/> : null}
-                {!s.labelSession ? s.sessionHover === i && s.labelSession !== i ? <Btn onClick={()=>this.setState({labelSession: i, expandedSession: i})} className="ntg-session-btn" fa="pencil" data-tip="Edit Label" /> : null : null}
-              </div>
-              <Row>
+                <div style={{width: 'auto', float: 'right', display: 'inline'}}>
+                  {s.sessionHover === i ? <Btn onClick={()=>sessionsStore.v2Remove(session)} className="ntg-session-btn" fa="times" data-tip="Remove Session" /> : null}
+                  {s.sessionHover === i ? <Btn onClick={()=>sessionsStore.restore(session, p.prefs.screenshot)} className="ntg-session-btn" fa="folder-open-o" data-tip="Restore Session"/> : null}
+                  {s.sessionHover === i && p.prefs.sessionsSync ? <Btn onClick={()=>msgStore.setPrefs({syncedSession: p.prefs.syncedSession === session.id ? null : session.id})} className="ntg-session-btn" fa={p.prefs.syncedSession === session.id ? 'circle-o' : 'circle-o-notch'} data-tip={p.prefs.syncedSession === session.id ? 'Desynchronize Session' : 'Synchronize Session'}/> : null}
+                  {s.sessionHover === i ? <Btn onClick={()=>this.setState({searchField: i, expandedSession: i})} className="ntg-session-btn" fa="search" data-tip="Search Session"/> : null}
+                  {!s.labelSession ? s.sessionHover === i && s.labelSession !== i ? <Btn onClick={()=>this.setState({labelSession: i, expandedSession: i})} className="ntg-session-btn" fa="pencil" data-tip="Edit Label" /> : null : null}
+                </div>
+                </Row>
                 {s.expandedSession === i ? 
-                  <Row className="ntg-session-expanded" style={{backgroundColor: p.theme.settingsBg, color: p.theme.bodyText}}>
-                    {s.labelSession === i ? 
-                      <div>
-                        <Col size="6">
-                          <form onSubmit={(e)=>{
-                            e.preventDefault();
-                            this.labelSession(session);
-                          }}>
-                            <input children={undefined} type="text"
-                              value={s.sessionLabelValue}
-                              className="form-control label-session-input"
-                              placeholder={session.label ? session.label : 'Label...'}
-                              onChange={this.setLabel} />
-                          </form>
-                        </Col>
-                        <Col size="6">
-                          <Btn style={{float: 'left', marginTop: '2px'}} onClick={()=>this.labelSession(session)} className="ntg-session-btn" fa="plus" data-tip="Update Label" />
-                          <Btn style={{float: 'left', marginTop: '2px'}} onClick={()=>this.setState({labelSession: null})} className="ntg-session-btn" fa="times" data-tip="Cancel" />
-                        </Col>
-                      </div> : null}
-                    {s.searchField === i ? 
-                      <Col size="12">
-                        <input 
-                          type="text" 
-                          value={s.search}
-                          className="form-control session-field" 
-                          placeholder="Search session..."
-                          onChange={(e)=>this.setState({search: e.target.value})} /></Col> : null}
-                    {session.tabs.map((t, i)=>{
-                      if (s.search.length === 0 || kmp(t.title.toLowerCase(), s.search) !== -1) {
-                        if (!_.find(p.favicons, {domain: t.url.split('/')[2]})) {
-                          faviconStore.set_favicon(t, session.tabs.length, i);
-                        }
-                        var fvData = _.result(_.find(p.favicons, { domain: t.url.split('/')[2] }), 'favIconUrl');
-                        return <Row onMouseEnter={()=>this.handleSelectedSessionTabHoverIn(i)} onMouseLeave={()=>this.handleSelectedSessionTabHoverOut(i)} key={i} style={i % 2 ? null : {backgroundColor: p.theme.settingaBg, borderRadius: '3px'}}>
-                            <Col size="8">
-                              <span title={t.title}>
-                                <img className="ntg-small-favicon" src={fvData ? fvData : '../images/file_paper_blank_document.png' } /> 
-                                {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {p.settingsMax ? t.title : _.truncate(t.title, {length: 40})}
-                              </span>
-                            </Col>
-                            <Col size="4">
-                              {s.selectedSessionTabHover === i ? <Btn onClick={()=>sessionsStore.removeTabFromSession(t.id, session, s.tabs, this.setState({sessionLabelValue: ''}))} className="ntg-session-btn" fa="times" data-tip="Remove Tab" />: null}
-                              {s.selectedSessionTabHover === i ? <Btn onClick={()=>utilityStore.createTab(t.url)} className="ntg-session-btn" fa="external-link" data-tip="Open Tab" /> : null}
-                            </Col>
-                        </Row>;
-                      }
-                    })}
-                  </Row> : null}
+                  <Row fluid={true}>
+                    <Row>
+                      {s.labelSession === i ? 
+                        <div>
+                          <Col size="6">
+                            <form onSubmit={(e)=>{
+                              e.preventDefault();
+                              this.labelSession(session);
+                            }}>
+                              <input children={undefined} type="text"
+                                value={s.sessionLabelValue}
+                                className="form-control label-session-input"
+                                placeholder={session.label ? session.label : 'Label...'}
+                                onChange={this.setLabel} />
+                            </form>
+                          </Col>
+                          <Col size="6">
+                            <Btn style={{float: 'left', marginTop: '2px'}} onClick={()=>this.labelSession(session)} className="ntg-session-btn" fa="plus" data-tip="Update Label" />
+                            <Btn style={{float: 'left', marginTop: '2px'}} onClick={()=>this.setState({labelSession: null})} className="ntg-session-btn" fa="times" data-tip="Cancel" />
+                          </Col>
+                        </div> : null}
+                        {s.searchField === i ? 
+                        <Col size="12">
+                          <input 
+                            type="text" 
+                            value={s.search}
+                            className="form-control session-field" 
+                            placeholder="Search session..."
+                            onChange={(e)=>this.setState({search: e.target.value})} />
+                        </Col> : null}
+                    </Row>
+                  {session.tabs.map((_window, w)=>{
+                    var windowTitle = `Window ${w + 1}: ${_window.length} Tabs`;
+                    return (
+                      <Row key={w} className="ntg-session-row" style={i % 2 ? null : {backgroundColor: p.theme.settingsBg}}>
+                        <Row className="ntg-session-text" onClick={()=>this.setState({selectedSavedSessionWindow: s.selectedSavedSessionWindow === w ? -1 : w})}>
+                          <span title={windowTitle} className="ntg-session-text">{windowTitle}</span>
+                        </Row>
+                        {s.selectedSavedSessionWindow === w || s.search.length > 0 ?
+                        <Row className="ntg-session-expanded" style={{backgroundColor: p.theme.settingsBg, color: p.theme.bodyText, height: '200px'}}>
+                        {_window.map((t, x)=>{
+                          if (s.search.length === 0 || kmp(t.title.toLowerCase(), s.search) !== -1) {
+                            if (!_.find(p.favicons, {domain: t.url.split('/')[2]})) {
+                              faviconStore.set_favicon(t, session.tabs.length, x);
+                            }
+                            var fvData = _.result(_.find(p.favicons, { domain: t.url.split('/')[2] }), 'favIconUrl');
+                            return (
+                              <Row onMouseEnter={()=>this.handleSelectedSessionTabHoverIn(x)} onMouseLeave={()=>this.handleSelectedSessionTabHoverOut(x)} key={x} style={x % 2 ? null : {backgroundColor: p.theme.settingsBg}}>
+                                <Col size="8">
+                                  <span title={t.title}>
+                                    <img className="ntg-small-favicon" src={fvData ? fvData : '../images/file_paper_blank_document.png' } /> 
+                                    {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {p.settingsMax ? t.title : _.truncate(t.title, {length: 40})}
+                                  </span>
+                                </Col>
+                                <Col size="4">
+                                  {s.selectedSessionTabHover === x ? <Btn onClick={()=>sessionsStore.v2RemoveTab(i, w, x)} className="ntg-session-btn" fa="times" data-tip="Remove Tab" />: null}
+                                  {s.selectedSessionTabHover === x ? <Btn onClick={()=>utilityStore.createTab(t.url)} className="ntg-session-btn" fa="external-link" data-tip="Open Tab" /> : null}
+                                </Col>
+                              </Row>
+                            );
+                          }
+                        })}
+                        </Row> : null}
+                      </Row>
+                    );
+                  })} </Row> : null}
               </Row>
-            </Row>;
+            );
           }) : null}
           <Btn onClick={()=>sessionsStore.exportSessions()} style={p.settingsMax ? {top: '95%'} : null} className="ntg-setting-btn" fa="arrow-circle-o-down">Export</Btn>
           <input {...this.props} children={undefined} type="file" onChange={(e)=>sessionsStore.importSessions(e)} accept=".json" ref="fileInput" style={style.hiddenInput} />
@@ -612,32 +647,36 @@ var Sessions = React.createClass({
         </Col>
         <Col size="6" className="session-col">
           <h4>Current Session</h4>
-          {tabs.map((t, i)=>{
-            if (!_.find(p.favicons, {domain: t.url.split('/')[2]})) {
-              faviconStore.set_favicon(t, tabs.length, i);
-            }
-            var fvData = _.result(_.find(p.favicons, { domain: t.url.split('/')[2] }), 'favIconUrl');
-            if (!p.settingsMax) {
-              if (i <= 24) {
-                return <Row onClick={()=>chrome.tabs.update(t.id, {active: true})} className="ntg-session-text" key={i} style={i % 2 ? null : {backgroundColor: p.theme.settingsItemHover}}>
-                  <span title={t.title}>
-                  <img className="ntg-small-favicon" src={fvData ? fvData : '../images/file_paper_blank_document.png' } />  
-                    {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {t.title}
-                  </span>
-                </Row>;
-              }
-            } else {
-              return <Row onClick={()=>chrome.tabs.update(t.id, {active: true})} className="ntg-session-text" key={i} style={i % 2 ? null : {backgroundColor: p.theme.settingsItemHover}}>
-                <span title={t.title}>
-                  <img className="ntg-small-favicon" src={fvData ? fvData : '../images/file_paper_blank_document.png' } />  
-                  {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {t.title}
-                </span>
-              </Row>;
-            } 
+          {tabs.map((_window, i)=>{
+            var windowTitle = `Window ${i + 1}: ${_window.length} Tabs`;
+            return (
+              <Row key={i} className="ntg-session-row" style={i % 2 ? null : {backgroundColor: p.theme.settingsItemHover}}>
+                <Row className="ntg-session-text" onClick={()=>this.setState({selectedCurrentSessionWindow: s.selectedCurrentSessionWindow === i ? -1 : i})}>
+                  <span title={windowTitle} className="ntg-session-text">{windowTitle}</span>
+                </Row>
+                {s.selectedCurrentSessionWindow === i ?
+                <Row className="ntg-session-expanded" style={{backgroundColor: p.theme.settingsBg, color: p.theme.bodyText, height: '400px'}}>
+                {_window.map((t, i)=>{
+                  if (!_.find(p.favicons, {domain: t.url.split('/')[2]})) {
+                    faviconStore.set_favicon(t, _window.length, i);
+                  }
+                  var fvData = _.result(_.find(p.favicons, { domain: t.url.split('/')[2] }), 'favIconUrl');
+                  return (
+                    <Row onClick={()=>chrome.tabs.update(t.id, {active: true})} className="ntg-session-text" key={i} style={i % 2 ? null : {backgroundColor: p.theme.settingsItemHover}}>
+                      <span title={t.title}>
+                        <img className="ntg-small-favicon" src={fvData ? fvData : '../images/file_paper_blank_document.png' } />  
+                        {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {t.title}
+                      </span>
+                    </Row>
+                  );
+                })}
+                </Row>
+                : null}
+              </Row>
+            );
           })}
-          {tabs.length >= 22 && !p.settingsMax ? <Row>{tabs.length >= 24 ? '...plus ' +tm20+ ' other tabs.' : null}</Row> : null}
           <p/>
-          <Btn onClick={()=>sessionsStore.save(null, null, null, s.tabs)} style={p.settingsMax ? {top: '95%'} : null} className="ntg-setting-btn" fa="plus">Save Session</Btn>
+          <Btn onClick={()=>sessionsStore.v2Save({tabs: p.allTabsByWindow, label: s.sessionLabelValue})} style={p.settingsMax ? {top: '95%'} : null} className="ntg-setting-btn" fa="plus">Save Session</Btn>
         </Col>
       </div>
     );
@@ -732,7 +771,7 @@ var Settings = React.createClass({
                   <a href="#" onClick={()=>this.handleTabClick('preferences')}><i className="settings-fa fa fa-dashboard"/>  Preferences</a>
               </li>
               <li className={s.settings === 'theming' ? "active" : null}>
-                  <a href="#" onClick={()=>this.handleTabClick('theming')}><i className="settings-fa fa fa-paint-brush"/>  Theming (BETA)</a>
+                  <a href="#" onClick={()=>this.handleTabClick('theming')}><i className="settings-fa fa fa-paint-brush"/>  Theming</a>
               </li>
               <li className={s.settings === 'about' ? "active" : null}>
                   <a href="#" onClick={()=>this.handleTabClick('about')}><i className="settings-fa fa fa-info-circle"/>  About</a>
@@ -745,7 +784,7 @@ var Settings = React.createClass({
           </div>
         </Row>
         <Row className="ntg-settings-pane">
-          {s.settings === 'sessions' ? <Sessions settingsMax={s.settingsMax} sessions={p.sessions} tabs={p.tabs} prefs={p.prefs} favicons={p.favicons} collapse={p.collapse} theme={p.theme} /> : null}
+          {s.settings === 'sessions' ? <Sessions settingsMax={s.settingsMax} sessions={p.sessions} tabs={p.tabs} prefs={p.prefs} favicons={p.favicons} collapse={p.collapse} theme={p.theme} allTabsByWindow={p.allTabsByWindow} /> : null}
           {s.settings === 'preferences' ? <Preferences settingsMax={s.settingsMax} prefs={p.prefs} tabs={p.tabs} theme={p.theme} /> : null}
           {s.settings === 'theming' ? <Theming settingsMax={s.settingsMax} prefs={p.prefs} theme={p.theme} modal={p.modal} savedThemes={p.savedThemes} standardThemes={p.standardThemes} wallpaper={p.wallpaper} wallpapers={p.wallpapers} collapse={p.collapse} height={p.height}/> : null}
           {s.settings === 'about' ? <About settingsMax={s.settingsMax} /> : null}

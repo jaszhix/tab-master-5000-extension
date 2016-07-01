@@ -75,7 +75,7 @@ var Bg = React.createClass({
         sendMsg(eventState.onStartup);
       });
     }
-    if (eventState.onInstalled || eventState.onStartup) {
+    if (eventState.onInstalled) {
       this.setState({eventState: eventState});
       if (eventState.onInstalled.reason === 'update' || eventState.onInstalled.reason === 'install') {
         chrome.tabs.query({title: 'New Tab'},(tabs)=>{
@@ -242,7 +242,7 @@ var Bg = React.createClass({
       } else if (msg.method === 'reload') {
         reload('Messaged by front-end script to reload...');
       } else if (msg.method === 'restoreWindow') {
-        for (var i = msg.tabs.length - 1; i >= 0; i--) {
+        for (var i = 0; i < msg.tabs.length; i++) {
           chrome.tabs.create({
             windowId: msg.windowId,
             index: msg.tabs[i].index,

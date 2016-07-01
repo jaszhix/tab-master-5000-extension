@@ -8,9 +8,10 @@ import ReactUtils from 'react-utils';
 import ReactTooltip from './tooltip/tooltip';
 import '../../styles/app.scss';
 window.v = v;
-import {chromeRuntime, msgStore, alertStore, createStore, removeStore, updateStore, keyboardStore, sortStore, chromeAppStore, faviconStore, sessionsStore, actionStore, historyStore, bookmarksStore, relayStore, sidebarStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore, applyTabOrderStore} from './stores/main';
+import {msgStore, createStore, removeStore, updateStore, keyboardStore, sortStore, chromeAppStore, faviconStore, actionStore, historyStore, bookmarksStore, relayStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore, applyTabOrderStore} from './stores/main';
 import themeStore from './stores/theme';
 import tabStore from './stores/tab';
+import sessionsStore from './stores/sessions';
 import screenshotStore from './stores/screenshot';
 import utils from './utils';
 import {Btn, Col, Row, Container} from './bootstrap';
@@ -123,7 +124,7 @@ var Search = React.createClass({
     modalStore.set_modal(true, 'settings');
   },
   handleSidebar(){
-    sidebarStore.set_sidebar(!sidebarStore.get_sidebar());
+    this.props.onMenuClick();
   },
   handleEnter(e){
     if (e.keyCode === 13) {
@@ -139,7 +140,7 @@ var Search = React.createClass({
         <Row>
           <Col size={p.width <= 825 ? p.width <= 630 ? p.width <= 514 ? '11' : '10' : '8' : '6'}>
             <div style={{display: 'flex', width: '100%', paddingLeft: '0px', paddingRight: '0px'}}>
-              <Btn onClick={this.handleSidebar} style={{fontSize: '20px', marginRight: '0px'}} className="ntg-top-btn" fa="reorder" />
+              <Btn onClick={this.handleSidebar} onMouseEnter={p.onMenuHoverIn} onMouseLeave={p.onMenuHoverOut} style={{fontSize: '20px', marginRight: '0px'}} className="ntg-top-btn" fa="reorder" />
               <input 
                 type="text"
                 value={searchStore.get_search()}
@@ -163,7 +164,7 @@ var Search = React.createClass({
     );
   }
 });
-var synchronizeSession = _.throttle(sessionsStore.save, 15000, {leading: true});
+var synchronizeSession = _.throttle(sessionsStore.syncSession, 1, {leading: true});
 var Root = React.createClass({
   mixins: [
     Reflux.ListenerMixin,
@@ -174,6 +175,7 @@ var Root = React.createClass({
     return {
       init: true,
       tabs: [],
+      allTabsByWindow: [],
       render: false,
       grid: true,
       search: '',
@@ -205,7 +207,9 @@ var Root = React.createClass({
       savedThemes: [],
       standardThemes: [],
       wallpaper: null,
-      wallpapers: []
+      wallpapers: [],
+      sidebar: false,
+      disableSidebarClickOutside: false
     };
   },
   componentWillMount(){
@@ -236,31 +240,31 @@ var Root = React.createClass({
     this.listenTo(modalStore, this.modalChange);
     console.log('Chrome Version: ',utilityStore.chromeVersion());
     console.log('Manifest: ', utilityStore.get_manifest());
-    // Restart the extension if the user prefs aren't loaded after four seconds. Better fix TBD.
     _.delay(()=>{
-      if (!this.state.prefs || this.state.prefs.length === 0) {
-        chrome.runtime.reload();
+      if (this.state.prefs.length === 0) {
+        utilityStore.reloadBg();
       }
-    },4000);
+    },2000);
+    _.delay(()=>{
+      if (this.state.prefs.length === 0) {
+        utilityStore.restartNewTab();
+      }
+    },3000);
   },
   sessionsChange(e){
     this.setState({sessions: e});
-    if (!this.state.init) {
-      this.syncSessions(e, tabStore.get_altTab(), null);
-    }
   },
   prefsChange(e){
     console.log('prefsChange: ', e);
     var s = this.state;
     this.setState({
       prefs: e, 
-      tileLimit: 100, 
-      sidebar: e.sidebar,
+      tileLimit: 100,
       modal: modalStore.get_modal(),
-      favicons: faviconStore.get_favicon()
+      favicons: faviconStore.get_favicon(),
+      allTabsByWindow: tabStore.getAllTabsByWindow()
     });
     if (s.init) {
-      chromeRuntime(e);
       themeStore.load(e);
       // Init methods called here after prefs are loaded from Chrome storage.
       if (e.mode !== 'tabs') {
@@ -540,10 +544,9 @@ var Root = React.createClass({
     tabs = _.orderBy(_.uniqBy(tabs, 'id'), ['pinned'], ['desc']);
     console.log('Single tab to update:', tab);
     if (s.prefs.sessionsSync) {
-      this.syncSessions(s.sessions, tabs, utilityStore.get_window(), null);
+      synchronizeSession(s.prefs, tabs);
     }
     tabStore.set_altTab(tabs);
-    this.syncSessions(s.sessions, tabs, utilityStore.get_window(), null);
     if (s.prefs.mode === 'tabs') {
       tabStore.set_tab(tabs);
       this.setState({
@@ -561,10 +564,9 @@ var Root = React.createClass({
       tabs = _.orderBy(_.uniqBy(tabs, 'id'), ['pinned'], ['desc']);
       console.log('Single tab to remove:', tab);
       if (s.prefs.sessionsSync) {
-        this.syncSessions(s.sessions, tabs, utilityStore.get_window(), null);
+        synchronizeSession(s.prefs, tabs);
       }
       tabStore.set_altTab(tabs);
-      this.syncSessions(s.sessions, tabs, utilityStore.get_window(), null);
       if (s.prefs.mode === 'tabs') {
         tabStore.set_tab(tabs);
         this.setState({
@@ -590,10 +592,9 @@ var Root = React.createClass({
         }
         console.log('Single tab to update:', tab);
         if (s.prefs.sessionsSync) {
-          this.syncSessions(s.sessions, tabs, utilityStore.get_window(), null);
+          synchronizeSession(s.prefs, tabs);
         }
         tabStore.set_altTab(tabs);
-        this.syncSessions(s.sessions, tabs, utilityStore.get_window(), null);
         if (s.prefs.mode === 'tabs') {
           tabStore.set_tab(tabs);
           this.setState({
@@ -627,7 +628,7 @@ var Root = React.createClass({
           this.setState({grid: true});
         }
         if (s.prefs.sessionsSync) {
-          this.syncSessions(s.sessions, Tab, opt);
+          synchronizeSession(s.prefs, Tab);
         }
       });
     }
@@ -646,8 +647,6 @@ var Root = React.createClass({
       chrome.windows.getCurrent((w)=>{
         // Store the Chrome window ID for global reference
         utilityStore.set_window(w.id);
-        // Call the session sync method
-        this.syncSessions(s.sessions, Tab, w.id, opt);
       });
       this.setState({init: false});
       if (opt !== 'init') {
@@ -695,51 +694,6 @@ var Root = React.createClass({
         this.setState({grid: true});
       }
     });
-  },
-  syncSessions(sessions, Tab, windowId, opt){
-    // Ensure new tabs are not a part of the current tabs array.
-    var _newTabs = _.remove(Tab, (tab)=>{
-      return kmp(tab.url, 'chrome://newtab') !== -1;
-    });
-    var _tab = _.without(Tab, _newTabs);
-    var s = this.state;
-    //var altTabs = tabStore.get_altTab();
-    if (s.prefs.sessionsSync) {
-      if (sessions) {
-        var similarToCurrentSession = (sessionUrls, tabUrls, marginOfError)=>{
-          return _.difference(sessionUrls, tabUrls).length < _tab.length * marginOfError;
-        };
-        for (var i = sessions.length - 1; i >= 0; i--) {
-          // Map the current and stored sessions URLs to an array
-          var sessionUrls = _.map(sessions[i].tabs, 'title');
-          var tabUrls = _.map(_tab, 'title');
-          var now = new Date(Date.now()).getTime();
-          // Check if either the window ID matches the session window ID, or create an array of different URLs between them and check if it is less than 10% of the current tab array length.
-          if (sessions[i].id === windowId || similarToCurrentSession(sessionUrls, tabUrls, 0.1)) {
-            if (opt === 'init') {
-              sessionsStore.save('update', sessions[i], sessions[i].label, _tab, null, true);
-            } else {
-              synchronizeSession('sync', sessions[i], null, _tab, null, true); 
-            }
-            // Saved session wasn't similar enough to the current window, so we will check its age and loosen the margin of error.
-          } else if (sessions[i].sync && sessions[i].timeStamp + 172800000 < now) {
-            if (opt === 'init') {
-              if (similarToCurrentSession(sessionUrls, tabUrls, 0.1)) {
-                sessionsStore.save('update', sessions[i], sessions[i].label, _tab, null, true); 
-              } else {
-                sessionsStore.save('update', sessions[i], sessions[i].label, _tab, null, false); 
-              }
-            } else {
-              if (similarToCurrentSession(sessionUrls, tabUrls, 0.5)) {
-                synchronizeSession('sync', sessions[i], null, _tab, null, true);
-              } else {
-                sessionsStore.save('update', sessions[i], sessions[i].label, _tab, null, false); 
-              }
-            }
-          }
-        } 
-      }
-    }
   },
   checkDuplicateTabs(tabs){
     let tabUrls = [];
@@ -798,8 +752,45 @@ var Root = React.createClass({
       this.setState({tileLimit: this.state.tileLimit + 100});
     }
   },
-  tileGrid(stores){
+  contextTrigger(e){
+    if (e[1] === 'newVersion') {
+      this.setState({event: 'newVersion'});
+    } else if (e[1] === 'installed') {
+      this.setState({event: 'installed'});
+    } else if (e[1] === 'versionUpdate') {
+      this.setState({event: 'versionUpdate'});
+    } else {
+      this.setState({context: e[0]});
+    }
+  },
+  render: function() {
     var s = this.state;
+    var tabs = tabStore.get_tab();
+    var altTabs = tabStore.get_altTab();
+    var newTabs = tabStore.getNewTabs();
+    var cursor = utilityStore.get_cursor();
+    var context = contextStore.get_context();
+    var windowId = utilityStore.get_window();
+    var stores = {
+      tabs: tabs,
+      altTabs: altTabs,
+      duplicateTabs: s.duplicateTabs,
+      favicons: s.favicons, 
+      screenshots: s.screenshots, 
+      newTabs: newTabs, 
+      prefs: s.prefs, 
+      search: s.search, 
+      cursor: cursor, 
+      chromeVersion: s.chromeVersion, 
+      relay: s.relay,
+      applyTabOrder: s.applyTabOrder,
+      folder: {
+        name: s.folder, 
+        state: s.folderState
+      },
+      windowId: windowId,
+      sort: s.sort
+    };
     var keys = [];
     var labels = {};
     if (stores.prefs.mode === 'bookmarks') {
@@ -855,63 +846,6 @@ var Root = React.createClass({
         });
       }
     }
-    return (
-      <TileGrid
-        data={s.tabs}
-        keys={keys}
-        labels={labels}
-        render={s.render}
-        collapse={s.collapse}
-        width={s.width}
-        sidebar={s.sidebar}
-        stores={stores}
-        tileLimit={s.tileLimit}
-        sessions={s.sessions}
-        init={s.init}
-        theme={s.theme}
-        wallpaper={s.wallpaper}
-      />
-    );
-  },
-  contextTrigger(e){
-    if (e[1] === 'newVersion') {
-      this.setState({event: 'newVersion'});
-    } else if (e[1] === 'installed') {
-      this.setState({event: 'installed'});
-    } else if (e[1] === 'versionUpdate') {
-      this.setState({event: 'versionUpdate'});
-    } else {
-      this.setState({context: e[0]});
-    }
-  },
-  render: function() {
-    var s = this.state;
-    var tabs = tabStore.get_tab();
-    var altTabs = tabStore.get_altTab();
-    var newTabs = tabStore.getNewTabs();
-    var cursor = utilityStore.get_cursor();
-    var context = contextStore.get_context();
-    var windowId = utilityStore.get_window();
-    var stores = {
-      tabs: tabs,
-      altTabs: altTabs,
-      duplicateTabs: s.duplicateTabs,
-      favicons: s.favicons, 
-      screenshots: s.screenshots, 
-      newTabs: newTabs, 
-      prefs: s.prefs, 
-      search: s.search, 
-      cursor: cursor, 
-      chromeVersion: s.chromeVersion, 
-      relay: s.relay,
-      applyTabOrder: s.applyTabOrder,
-      folder: {
-        name: s.folder, 
-        state: s.folderState
-      },
-      windowId: windowId,
-      sort: s.sort
-    };
     var options = v('#options').n;
     console.log('ROOT STATE: ', s);
     if (s.theme) {
@@ -923,7 +857,8 @@ var Root = React.createClass({
             {s.context ? <ContextMenu search={stores.search} actions={s.actions} tabs={s.tabs} prefs={s.prefs} cursor={cursor} context={context} chromeVersion={s.chromeVersion} duplicateTabs={s.duplicateTabs}/> : null}
             {s.modal ? <ModalHandler 
                         modal={s.modal} 
-                        tabs={s.prefs.mode === 'tabs' ? s.tabs : stores.altTabs} 
+                        tabs={s.prefs.mode === 'tabs' ? s.tabs : stores.altTabs}
+                        allTabsByWindow={s.allTabsByWindow}
                         sessions={s.sessions} prefs={s.prefs} 
                         favicons={s.favicons} 
                         collapse={s.collapse} 
@@ -936,9 +871,35 @@ var Root = React.createClass({
                         height={s.height} /> : null}
               {s.tabs ? 
               <div className="tile-container">
-                <Search event={s.event} prefs={s.prefs} topLoad={s.topLoad} theme={s.theme} width={s.width}/>
+                <Search 
+                event={s.event} 
+                prefs={s.prefs} 
+                topLoad={s.topLoad} 
+                theme={s.theme} 
+                width={s.width}
+                onMenuClick={()=>this.setState({sidebar: !s.sidebar})}
+                onMenuHoverIn={()=>this.setState({disableSidebarClickOutside: true})}
+                onMenuHoverOut={()=>this.setState({disableSidebarClickOutside: false})} />
                 <div style={{marginTop: '67px'}} className="tile-child-container">
-                  {s.grid ? this.tileGrid(stores) : <Loading />}
+                  {s.grid ? 
+                    <TileGrid
+                      data={s.tabs}
+                      keys={keys}
+                      labels={labels}
+                      render={s.render}
+                      collapse={s.collapse}
+                      width={s.width}
+                      sidebar={s.sidebar}
+                      stores={stores}
+                      tileLimit={s.tileLimit}
+                      sessions={s.sessions}
+                      init={s.init}
+                      theme={s.theme}
+                      wallpaper={s.wallpaper}
+                      onSidebarClickOutside={()=>this.setState({sidebar: false})}
+                      disableSidebarClickOutside={s.disableSidebarClickOutside}
+                    />
+                  : <Loading />}
                 </div>
                 {s.modal && !s.modal.state && s.prefs.tooltip ? 
                 <ReactTooltip 

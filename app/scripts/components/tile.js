@@ -5,9 +5,11 @@ import _ from 'lodash';
 import v from 'vquery';
 import moment from 'moment';
 import Draggable from 'react-draggable';
+import OnClickOutside from 'react-onclickoutside';
 import ReactTooltip from './tooltip/tooltip';
-import {msgStore, searchStore, sortStore, relayStore, faviconStore, sessionsStore, bookmarksStore, reRenderStore, applyTabOrderStore, utilityStore, contextStore, dragStore, draggedStore} from './stores/main';
+import {msgStore, searchStore, sortStore, relayStore, faviconStore, bookmarksStore, reRenderStore, applyTabOrderStore, utilityStore, contextStore, dragStore, draggedStore} from './stores/main';
 import tabStore from './stores/tab';
+import sessionsStore from './stores/sessions';
 
 import {Btn, Col, Row} from './bootstrap';
 import style from './style';
@@ -67,11 +69,12 @@ var Tile = React.createClass({
       this.setState({i: nextProps.i});
     }
     if (p.i === 0) {
-      if (nextProps.stores.prefs.mode === 'tabs') {
+      closeNewTabsThrottled();
+      /*if (nextProps.stores.prefs.mode === 'tabs') {
         closeNewTabsOnce();
       } else {
         closeNewTabsThrottled();
-      }
+      }*/
     }
     this.handleRelays(nextProps);
     if (nextProps.stores.applyTabOrder) {
@@ -179,12 +182,10 @@ var Tile = React.createClass({
       if (_.includes(props.stores.duplicateTabs, props.tab.url)) {
         var t = _.filter(props.stores.tabs, {url: props.tab.url});
         first = _.first(t);
-        console.log('t', t, 'first', first)
         var activeTab = _.map(_.find(t, { 'active': true }), 'id');
         for (var i = 0; i < t.length; i++) {
           if (t[i].id !== first.id && t[i].title !== 'New Tab' && t[i].id !== activeTab && t[i].id === props.tab.id) {
             if (opt === 'closeDupes') {
-              console.log(s.i);
               this.handleCloseTab(t[i].id, s.i);
             } else if (props.stores.duplicateTabs.length > 0) {
               this.handleFocus('duplicate',true,props);
@@ -571,7 +572,7 @@ var Tile = React.createClass({
     var appHomepage = p.stores.prefs.tabSizeHeight >= 170 ? p.stores.prefs.tabSizeHeight + 5 : 170;
     var appOfflineEnabled = p.stores.prefs.tabSizeHeight >= 170 ? p.stores.prefs.tabSizeHeight - 10 : 158;
     return (
-      <div ref="tileMain" id={'tileMain-'+s.i} onDragEnter={this.currentlyDraggedOver(p.tab)} style={p.stores.prefs.screenshot && p.stores.prefs.screenshotBg ? {opacity: '0.95'} : null}>
+      <div ref="tileMain" id={'tileMain-'+s.i} className="outerTile" onDragEnter={this.currentlyDraggedOver(p.tab)} style={p.stores.prefs.screenshot && p.stores.prefs.screenshotBg ? {opacity: '0.95'} : null}>
         {p.render ? 
           <Draggable  axis="both"
                       handle=".handle"
@@ -642,8 +643,14 @@ var Tile = React.createClass({
 });
 
 var Sidebar = React.createClass({
+  mixins: [OnClickOutside],
   componentDidUpdate(){
     ReactTooltip.rebuild();
+  },
+  handleClickOutside(){
+    if (!this.props.disableSidebarClickOutside) {
+      this.props.onClickOutside();
+    }
   },
   handleSort(){
     msgStore.setPrefs({sort: !this.props.prefs.sort});
@@ -651,20 +658,40 @@ var Sidebar = React.createClass({
   render: function() {
     var p = this.props;
     var iconCollapse = p.width <= 1135;
+    const sideStyle = {
+      width: iconCollapse ? '66px' : '13%',
+      textAlign: iconCollapse ? 'center' : 'initial',
+      marginRight: !iconCollapse ? '2px' : 'initial',
+      maxWidth: '168px',
+      height: '100%',
+      position: 'fixed',
+      top: '66px',
+      left: '0px',
+      zIndex: '300',
+      backgroundColor: p.theme.headerBg
+    };
+    const faStyle = {
+      width: iconCollapse ? '12px' : 'initial'
+    };
+    _.merge(faStyle, _.cloneDeep(p.faStyle));
+    const sortButton = {
+      marginBottom: p.prefs.sort ? '20px' : '0px'
+    };
+    _.merge(sortButton, _.cloneDeep(p.btnStyle));
     return (
-      <div className="side-div" style={p.collapse ? {width: '11%', position: 'fixed'} : {width: '13%', position: 'fixed'}}>
-        <Btn onClick={this.handleSort} className="ntg-apply-btn" fa="sort-amount-asc" data-place="bottom" data-tip={p.width <= 767 ? 'Sort Tabs' : null}>{p.collapse ? 'Sort Tabs' : p.width <= 767 ? '' : 'Sort'}</Btn>
+      <div className="side-div" style={sideStyle}>
+        <Btn onClick={this.handleSort} className="ntg-apply-btn" style={sortButton} fa="sort-amount-asc" faStyle={faStyle} data-place="bottom" data-tip={p.width <= 767 ? 'Sort Tabs' : null}>{!iconCollapse ? 'Sort Tabs' : ''}</Btn>
           {p.prefs.sort ? <div>
               {p.labels}
-              {p.prefs.mode === 'tabs' && p.search.length === 0 ? <Btn onClick={()=>applyTabOrderStore.set_saveTab(true)} className="ntg-apply-btn" fa="sort" data-place="right" data-tip={iconCollapse ? 'Apply' : null}>{iconCollapse ? '' : 'Apply'}</Btn> : null}
+              {p.prefs.mode === 'tabs' && p.search.length === 0 ? <Btn onClick={()=>applyTabOrderStore.set_saveTab(true)} className="ntg-apply-btn" style={p.btnStyle} fa="sort" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? 'Apply' : null}>{iconCollapse ? '' : 'Apply'}</Btn> : null}
             </div> : null}
           <div className="mode-container">
-            {p.prefs.mode !== 'tabs' ? <Btn onClick={()=>utilityStore.handleMode('tabs')} className="ntg-apply-btn" fa="square" data-place="right" data-tip={iconCollapse ? 'Tabs' : null}>{iconCollapse ? '' : 'Tabs'}</Btn> : null}
-            {p.prefs.mode !== 'bookmarks' ? <Btn onClick={()=>utilityStore.handleMode('bookmarks')} className="ntg-apply-btn" fa="bookmark" data-place="right" data-tip={iconCollapse ? 'Bookmarks' : null}>{iconCollapse ? '' : 'Bookmarks'}</Btn> : null}
-            {p.prefs.mode !== 'history' ? <Btn onClick={()=>utilityStore.handleMode('history')} className="ntg-apply-btn" fa="history" data-place="right" data-tip={iconCollapse ? 'History' : null}>{iconCollapse ? '' : 'History'}</Btn> : null}
-            {p.prefs.mode !== 'sessions' ? <Btn onClick={()=>utilityStore.handleMode('sessions')} className="ntg-apply-btn" fa="book" data-place="right" data-tip={iconCollapse ? 'Sessions' : null}>{iconCollapse ? '' : 'Sessions'}</Btn> : null}
-            {p.prefs.mode !== 'apps' ? <Btn onClick={()=>utilityStore.handleMode('apps')} className="ntg-apply-btn" fa="th" data-place="right" data-tip={iconCollapse ? 'Apps' : null}>{iconCollapse ? '' : 'Apps'}</Btn> : null}
-            {p.prefs.mode !== 'extensions' ? <Btn onClick={()=>utilityStore.handleMode('extensions')} className="ntg-apply-btn" fa="puzzle-piece" data-place="right" data-tip={iconCollapse ? 'Extensions' : null}>{iconCollapse ? '' : 'Extensions'}</Btn> : null}
+            {p.prefs.mode !== 'tabs' ? <Btn onClick={()=>utilityStore.handleMode('tabs')} className="ntg-apply-btn" style={p.btnStyle} fa="square" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? 'Tabs' : null}>{iconCollapse ? '' : 'Tabs'}</Btn> : null}
+            {p.prefs.mode !== 'bookmarks' ? <Btn onClick={()=>utilityStore.handleMode('bookmarks')} className="ntg-apply-btn" style={p.btnStyle} fa="bookmark" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? 'Bookmarks' : null}>{iconCollapse ? '' : 'Bookmarks'}</Btn> : null}
+            {p.prefs.mode !== 'history' ? <Btn onClick={()=>utilityStore.handleMode('history')} className="ntg-apply-btn" style={p.btnStyle} fa="history" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? 'History' : null}>{iconCollapse ? '' : 'History'}</Btn> : null}
+            {p.prefs.mode !== 'sessions' ? <Btn onClick={()=>utilityStore.handleMode('sessions')} className="ntg-apply-btn" style={p.btnStyle} fa="book" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? 'Sessions' : null}>{iconCollapse ? '' : 'Sessions'}</Btn> : null}
+            {p.prefs.mode !== 'apps' ? <Btn onClick={()=>utilityStore.handleMode('apps')} className="ntg-apply-btn" style={p.btnStyle} fa="th" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? 'Apps' : null}>{iconCollapse ? '' : 'Apps'}</Btn> : null}
+            {p.prefs.mode !== 'extensions' ? <Btn onClick={()=>utilityStore.handleMode('extensions')} className="ntg-apply-btn" style={p.btnStyle} fa="puzzle-piece" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? 'Extensions' : null}>{iconCollapse ? '' : 'Extensions'}</Btn> : null}
           </div>
       </div>
     );
@@ -762,30 +789,51 @@ var TileGrid = React.createClass({
     var favicons = faviconStore.get_favicon();
     var ssBg = p.stores.prefs && p.stores.prefs.screenshot && p.stores.prefs.screenshotBg;
     var iconCollapse = p.width <= 1135;
+    const faStyle = {
+      float: 'left',
+      marginTop: !iconCollapse ? '3px' : 'initial'
+    };
+    const btnStyle = {
+      width: iconCollapse ? 'auto' : '100%'
+    };
     var labels = p.keys.map((key, i)=> {
       var label = p.labels[key] || key;
       var cLabel = p.width <= 1135 ? '' : label;
       return (
         <div key={i} onClick={()=>sortStore.set(key)}>
-          {label === 'Tab Order' || label === 'Original Order' ? <Btn className="ntg-btn" fa="history" data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
-          {label === 'Website' ? <Btn className="ntg-btn" fa="external-link" data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
-          {label === 'Title' ? <Btn onClick={this.handleTitleIcon} className="ntg-btn" fa={s.title ? 'sort-alpha-asc' : 'sort-alpha-desc'} data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
-          {label === 'Audible' ? <Btn className="ntg-btn" fa="volume-up" data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
-          {label === 'Updated' ? <Btn className="ntg-btn" fa="hourglass" data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
-          {label === 'Open' ? <Btn className="ntg-btn" fa="folder-open" data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
-          {label === 'Folder' ? <Btn className="ntg-btn" fa="folder" data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
-          {label === 'Label' ? <Btn className="ntg-btn" fa="folder" data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
-          {label === 'Date Added' ? <Btn className="ntg-btn" fa="hourglass" data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
-          {label === 'Last Visit' ? <Btn className="ntg-btn" fa="hourglass" data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
-          {label === 'Most Visited' ? <Btn className="ntg-btn" fa="line-chart" data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
-          {label === 'Offline Enabled' ? <Btn className="ntg-btn" fa="bolt" data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
+          {label === 'Tab Order' || label === 'Original Order' ? <Btn className="ntg-btn" style={btnStyle} fa="history" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
+          {label === 'Website' ? <Btn className="ntg-btn" style={btnStyle} fa="external-link" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
+          {label === 'Title' ? <Btn onClick={this.handleTitleIcon} className="ntg-btn" style={btnStyle} fa={s.title ? 'sort-alpha-asc' : 'sort-alpha-desc'} faStyle={faStyle} data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
+          {label === 'Audible' ? <Btn className="ntg-btn" style={btnStyle} fa="volume-up" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
+          {label === 'Updated' ? <Btn className="ntg-btn" style={btnStyle} fa="hourglass" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
+          {label === 'Open' ? <Btn className="ntg-btn" style={btnStyle} fa="folder-open" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
+          {label === 'Folder' ? <Btn className="ntg-btn" style={btnStyle} fa="folder" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
+          {label === 'Label' ? <Btn className="ntg-btn" style={btnStyle} fa="folder" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
+          {label === 'Date Added' ? <Btn className="ntg-btn" style={btnStyle} fa="hourglass" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
+          {label === 'Last Visit' ? <Btn className="ntg-btn" style={btnStyle} fa="hourglass" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
+          {label === 'Most Visited' ? <Btn className="ntg-btn" style={btnStyle} fa="line-chart" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
+          {label === 'Offline Enabled' ? <Btn className="ntg-btn" style={btnStyle} fa="bolt" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
         </div>
       );
     });
-    const tileDivStyle = p.sidebar ? p.collapse ? {marginLeft: '11%', width: '89%'} : {marginLeft: '13%', width: '87%'} : {width: '100%'};
+    const tileDivStyle = {width: '100%'};
     return (
       <div className="tile-body">
-        {p.sidebar ? <Sidebar prefs={p.stores.prefs} tabs={p.stores.tabs} labels={labels} width={p.width} collapse={p.collapse} ssBg={ssBg} search={p.stores.search} /> : null}
+        {p.sidebar ? 
+        <Sidebar 
+        prefs={p.stores.prefs} 
+        tabs={p.stores.tabs} 
+        labels={labels} 
+        width={p.width} 
+        collapse={p.collapse} 
+        ssBg={ssBg} 
+        search={p.stores.search} 
+        theme={p.theme}
+        onClickOutside={()=>p.onSidebarClickOutside()}
+        disableSidebarClickOutside={p.disableSidebarClickOutside}
+        
+        faStyle={faStyle}
+        btnStyle={btnStyle} /> : null}
         <div className="tile-div" style={tileDivStyle}>
           <div id="grid" ref="grid">
               {data.map((data, i)=> {

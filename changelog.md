@@ -1,13 +1,14 @@
 #### Release Notes
 
+##### v1.6.0 / *7-1-16*
+
+*   Rewrote the session manager, it now tracks all windows in a session, and session synchronization is now faster and lighter.
+   *   Old session backup files will be converted to the new session format. 
+*   The sidebar has been updated and now behaves like a dropdown, along with styling changes.
+
 ##### v1.5.5 / *6-28-16*
 
 *   Fixed extension getting stuck at the loading screen during initialization.
-*   TBD:
-  *   Turn the sidebar into a dropdown menu.
-  *   Enable session synchronization to include all windows currently open, and have it persist after a new tab page is closed.
-  *   Add customization of the layout, including tiles.
-  *   Optional hotkey triggered tile grid overlay for web pages.
 
 ##### v1.5.4 / *6-22-16*
 
