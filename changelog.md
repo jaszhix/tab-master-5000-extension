@@ -1,5 +1,11 @@
 #### Release Notes
 
+##### v1.6.1 / *8-2-16*
+
+*   Miscellaneous stability fixes.
+*   Fixed a bug that can cause the extension to not respond to user input in tabs view mode.
+*   Updated dependencies.
+
 ##### v1.6.0 / *7-1-16*
 
 *   Rewrote the session manager, it now tracks all windows in a session, and session synchronization is now faster and lighter.
