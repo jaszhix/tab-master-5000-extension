@@ -341,11 +341,11 @@ var Theming = React.createClass({
                     <Btn onClick={this.handleNewTheme} style={btmBtnStyle} fa="file-image-o" className="ntg-sort-btn" >{`New ${p.collapse ? 'Theme' : ''}`}</Btn>
                     {s.savedThemes.length > 0 ? 
                       <Btn onClick={()=>themeStore.export()} style={btmBtnStyle} className="ntg-sort-btn" fa="arrow-circle-o-down">Export</Btn> : null}
-                    <input {...this.props} children={undefined} type="file" onChange={(e)=>themeStore.import(e)} accept=".json" ref="import" style={style.hiddenInput} />
+                    <input children={undefined} type="file" onChange={(e)=>themeStore.import(e)} accept=".json" ref="import" style={style.hiddenInput} />
                     <Btn onClick={()=>this.refs.import.click()} style={btmBtnStyle} className="ntg-sort-btn" fa="arrow-circle-o-up">Import</Btn>
                     {s.rightTab === 'wallpaper' ? 
                     <Btn onClick={()=>this.refs.wallpaper.click()} style={btmBtnStyle} className="ntg-sort-btn" fa="file-image-o">Import Wallpaper</Btn> : null}
-                    <input {...this.props} children={undefined} type="file" onChange={(e)=>themeStore.importWallpaper(e, s.selectedTheme.id)} accept=".jpg,.jpeg,.png" ref="wallpaper" style={style.hiddenInput} />
+                    <input children={undefined} type="file" onChange={(e)=>themeStore.importWallpaper(e, s.selectedTheme.id)} accept=".jpg,.jpeg,.png" ref="wallpaper" style={style.hiddenInput} />
                     {s.rightTab === 'color' ? <Btn onClick={()=>this.setState({colorGroup: 'general'})} style={btmBtnStyle} className="ntg-sort-btn">Body, Header, and Fields</Btn> : null}
                     {s.rightTab === 'color' ? <Btn onClick={()=>this.setState({colorGroup: 'buttons'})} style={btmBtnStyle} className="ntg-sort-btn">Buttons</Btn> : null}
                     {s.rightTab === 'color' ? <Btn onClick={()=>this.setState({colorGroup: 'tiles'})} style={btmBtnStyle} className="ntg-sort-btn">Tiles</Btn> : null}
@@ -642,7 +642,7 @@ var Sessions = React.createClass({
             );
           }) : null}
           <Btn onClick={()=>sessionsStore.exportSessions()} style={p.settingsMax ? {top: '95%'} : null} className="ntg-setting-btn" fa="arrow-circle-o-down">Export</Btn>
-          <input {...this.props} children={undefined} type="file" onChange={(e)=>sessionsStore.importSessions(e)} accept=".json" ref="fileInput" style={style.hiddenInput} />
+          <input children={undefined} type="file" onChange={(e)=>sessionsStore.importSessions(e)} accept=".json" ref="fileInput" style={style.hiddenInput} />
           <Btn onClick={this.triggerInput} style={p.settingsMax ? {top: '95%', marginLeft: '86px'} : {marginLeft: '86px'}} className="ntg-setting-btn" fa="arrow-circle-o-up">Import</Btn>
         </Col>
         <Col size="6" className="session-col">
