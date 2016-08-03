@@ -80,6 +80,9 @@ var tabStore = Reflux.createStore({
   getSingleTab(id){
     return new Promise((resolve, reject)=>{
       chrome.tabs.get(id, (tab)=>{
+        if (chrome.runtime.lastError) {
+          reject();
+        }
         if (tab) {
           resolve(tab);
         } else {

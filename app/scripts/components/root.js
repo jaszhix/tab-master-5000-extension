@@ -255,7 +255,6 @@ var Root = React.createClass({
     this.setState({sessions: e});
   },
   prefsChange(e){
-    console.log('prefsChange: ', e);
     var s = this.state;
     this.setState({
       prefs: e, 
@@ -680,7 +679,6 @@ var Root = React.createClass({
         //themeStore.setTriggers();
         this.checkDuplicateTabs(Tab);
       }
-      console.log('Tabs: ',Tab);
       this.setState({topLoad: false});
       v('#main').css({cursor: 'default'});
       // Querying is complete, allow the component to render.

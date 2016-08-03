@@ -295,7 +295,7 @@ var sessionsStore = Reflux.createStore({
   },
   syncSession(prefs, tabs=null){
     console.log('prefs.syncedSession', prefs.syncedSession);
-    if (prefs.syncedSession.length > 0) {
+    if (typeof prefs.syncedSession !== 'undefined' && prefs.syncedSession.length > 0) {
       console.log('session syncing', tabs);
       var refSession = _.findIndex(this.sessions, {id: prefs.syncedSession});
       if (!tabs) {
