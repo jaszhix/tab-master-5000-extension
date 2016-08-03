@@ -5,6 +5,8 @@
 *   Miscellaneous stability fixes.
 *   Fixed a bug that can cause the extension to not respond to user input in tabs view mode.
 *   Updated dependencies.
+*   There is a new community portal to discuss TM5K issues and features, and to get more indepth updates about Tab Master's progress. No registration is required to comment on posts. You can check it out [here](https://neuropuff.com/c/tabmaster5000).
+  *  I am also particularly interested if users would like me to add [Track.js](https://trackjs.com/) to TM5K. This is an API service that will auto-report errors as they occur, so I can get a better sense of the issues people face with the extension.
 
 ##### v1.6.0 / *7-1-16*
 
