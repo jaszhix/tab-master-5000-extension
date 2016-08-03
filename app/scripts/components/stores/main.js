@@ -26,43 +26,45 @@ export var bgSetPrefs = (obj)=>{
 
 // Chrome event listeners set to trigger re-renders.
 var reRender = (type, id, prefs) => {
-  chrome.idle.queryState(900, (idle)=>{
-    utilityStore.set_systemState(idle);
-  });
-  // If 10MB of RAM or less is available to Chrome, disable rendering.
-  chrome.system.memory.getInfo((info)=>{
-    if (info.availableCapacity <= 10000000) {
-      utilityStore.set_systemState('lowRAM');
-    }
-  });
-  var active = null;
-  var item = null;
-  if (type === 'create' || type === 'activate') {
-    actionStore.set_action(type, id);
-    active = id.windowId;
-  } else if (type === 'tile' || prefs.mode !== 'tabs') {
-    active = utilityStore.get_window();
-  } else {
-    item = _.find(tabs(), { id: id });
-    if (item) {
-      actionStore.set_action(type, item);
-    }
-    active = _.result(item, 'windowId');
-  }
-  console.log('window: ', active, utilityStore.get_window(), 'state: ',utilityStore.get_systemState(), 'type: ', type, 'id: ',id);
-  if (active === utilityStore.get_window() && utilityStore.get_systemState() === 'active') {
-    if (type === 'update' || type === 'move') {
-      updateStore.set(id);
-    } else if (type === 'activate') {
-      updateStore.set(id.tabId);
-    } else if (type === 'create' || type === 'attach') {
-      createStore.set(id);
-    } else if (type === 'remove' || type === 'detach') {
-      removeStore.set(id);
+  tabStore.getSingleTab(id).then((targetTab)=>{
+    chrome.idle.queryState(900, (idle)=>{
+      utilityStore.set_systemState(idle);
+    });
+    // If 10MB of RAM or less is available to Chrome, disable rendering.
+    chrome.system.memory.getInfo((info)=>{
+      if (info.availableCapacity <= 10000000) {
+        utilityStore.set_systemState('lowRAM');
+      }
+    });
+    var active = null;
+    if (type === 'create' || type === 'activate') {
+      actionStore.set_action(type, id);
+      active = id.windowId;
+    } else if (type === 'tile' || prefs.mode !== 'tabs') {
+      active = utilityStore.get_window();
     } else {
-      reRenderStore.set_reRender(true, type, id);
+      if (targetTab) {
+        actionStore.set_action(type, targetTab);
+      }
+      active = utilityStore.get_window();
     }
-  }
+    console.log('window: ', active, utilityStore.get_window(), 'state: ',utilityStore.get_systemState(), 'type: ', type, 'id: ',id, 'item: ', targetTab);
+    if (active === utilityStore.get_window() && utilityStore.get_systemState() === 'active') {
+      if (type === 'update' || type === 'move') {
+        updateStore.set(id);
+      } else if (type === 'activate') {
+        updateStore.set(id.tabId);
+      } else if (type === 'create' || type === 'attach') {
+        createStore.set(id);
+      } else if (type === 'remove' || type === 'detach') {
+        removeStore.set(id);
+      } else {
+        reRenderStore.set_reRender(true, type, id);
+      }
+    }
+  }).catch(()=>{
+    reRenderStore.set_reRender(true, type, id);
+  });
 };
 var throttled = {
   screenshot: _.throttle(screenshotStore.capture, 0, {leading: true}),
