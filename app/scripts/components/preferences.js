@@ -148,7 +148,7 @@ var Preferences = React.createClass({
     obj[opt] = !p.prefs[opt];
     msgStore.setPrefs(obj);
     if (opt === 'screenshot') {
-      reRenderStore.set_reRender(true, 'cycle', null);
+      utilityStore.restartNewTab();
     }
     if (opt === 'animations') {
       themeStore.set(p.theme);
