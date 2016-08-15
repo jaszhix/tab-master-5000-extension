@@ -3,6 +3,8 @@
 @import "loading";
 @import "rc";
 @import "buttons";
+@import "core";
+@import "components";
 
 body {
     overflow-x: hidden;
@@ -113,7 +115,7 @@ body {
 }
 .ntg-title {
     font-size: 15px;
-    font-weight: 500;
+    font-weight: 400;
     text-shadow: 2px 2px #fff;
     position: relative;
     margin-top: 5px;
@@ -121,7 +123,7 @@ body {
 }
 .ntg-folder {
     font-size: 15px;
-    font-weight: 500;
+    font-weight: 400;
     text-shadow: 2px 2px #fff;
     position: absolute;
     margin-top: 5px;
@@ -150,7 +152,7 @@ body {
 }
 .ntg-search-google-text {
     position: absolute;
-    left: -212px;
+    left: -160px;
     top: 7px;
     color: #CCC;
 }
