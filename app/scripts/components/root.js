@@ -626,33 +626,31 @@ var Root = React.createClass({
     }
   },
   updateSingleItem(e){
-    tabStore.getSingleTab(e).then((tab)=>{
-      _.merge(tab, {
-        timeStamp: new Date(Date.now()).getTime()
-      });
-      var tabs = tabStore.get_altTab();
-      var tabToUpdate = _.findIndex(tabs, {id: tab.id});
-      if (tabToUpdate > -1) {
-        var s = this.state;
-        tabs[tabToUpdate] = tab;
-        if (tab.pinned) {
-          tabs = _.orderBy(_.uniqBy(tabs, 'id'), ['pinned'], ['desc']);
-        } else {
-          tabs = _.orderBy(tabs, ['pinned'], ['desc']);
-        }
-        console.log('Single tab to update:', tab);
-        if (s.prefs.sessionsSync) {
-          synchronizeSession(s.prefs, tabs);
-        }
-        tabStore.set_altTab(tabs);
-        if (s.prefs.mode === 'tabs') {
-          tabStore.set_tab(tabs);
-          this.setState({
-            tabs: tabs
-          });
-        }
-      }
+    _.merge(e, {
+      timeStamp: new Date(Date.now()).getTime()
     });
+    var tabs = tabStore.get_altTab();
+    var tabToUpdate = _.findIndex(tabs, {id: e.id});
+    if (tabToUpdate > -1) {
+      var s = this.state;
+      tabs[tabToUpdate] = e;
+      if (e.pinned) {
+        tabs = _.orderBy(_.uniqBy(tabs, 'id'), ['pinned'], ['desc']);
+      } else {
+        tabs = _.orderBy(tabs, ['pinned'], ['desc']);
+      }
+      console.log('Single tab to update:', e);
+      if (s.prefs.sessionsSync) {
+        synchronizeSession(s.prefs, tabs);
+      }
+      tabStore.set_altTab(tabs);
+      if (s.prefs.mode === 'tabs') {
+        tabStore.set_tab(tabs);
+        this.setState({
+          tabs: tabs
+        });
+      }
+    }
   },
   updateTabState(e, opt){
     var s = this.state;

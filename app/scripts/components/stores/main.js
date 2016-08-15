@@ -26,7 +26,8 @@ export var bgSetPrefs = (obj)=>{
 
 // Chrome event listeners set to trigger re-renders.
 var reRender = (type, id, prefs) => {
-  tabStore.getSingleTab(id).then((targetTab)=>{
+  var tId = typeof id.tabId !== 'undefined' ? id.tabId : id;
+  tabStore.getSingleTab(tId).then((targetTab)=>{
     chrome.idle.queryState(900, (idle)=>{
       utilityStore.set_systemState(idle);
     });
@@ -38,32 +39,36 @@ var reRender = (type, id, prefs) => {
     });
     var active = null;
     if (type === 'create' || type === 'activate') {
-      actionStore.set_action(type, id);
       active = id.windowId;
     } else if (type === 'tile' || prefs.mode !== 'tabs') {
       active = utilityStore.get_window();
     } else {
-      if (targetTab) {
-        actionStore.set_action(type, targetTab);
-      }
       active = utilityStore.get_window();
     }
-    console.log('window: ', active, utilityStore.get_window(), 'state: ',utilityStore.get_systemState(), 'type: ', type, 'id: ',id, 'item: ', targetTab);
+    if (prefs.actions) {
+      var refOldTab = _.findIndex(tabs('alt'), {id: tId});
+      if (refOldTab !== -1) {
+        actionStore.set_action(type, tabs('alt')[refOldTab]);
+      }
+    }
+    console.log('window: ', active, utilityStore.get_window(), 'state: ',utilityStore.get_systemState(), 'type: ', type, 'id: ',tId, 'item: ', targetTab);
     if (active === utilityStore.get_window() && utilityStore.get_systemState() === 'active') {
       if (type === 'update' || type === 'move') {
-        updateStore.set(id);
+        updateStore.set(targetTab);
       } else if (type === 'activate') {
-        updateStore.set(id.tabId);
-      } else if (type === 'create' || type === 'attach') {
-        createStore.set(id);
-      } else if (type === 'remove' || type === 'detach') {
-        removeStore.set(id);
-      } else {
-        reRenderStore.set_reRender(true, type, id);
+        updateStore.set(targetTab);
+      } else if (prefs.mode !== 'tabs') {
+        reRenderStore.set_reRender(true, type, tId);
       }
     }
   }).catch(()=>{
-    reRenderStore.set_reRender(true, type, id);
+    if (type === 'remove' || type === 'detach') {
+      removeStore.set(tId);
+    } else if (type === 'create' || type === 'attach') {
+      createStore.set(id); // Full tab object
+    } else if (prefs.mode !== 'tabs') {
+      reRenderStore.set_reRender(true, type, tId);
+    }
   });
 };
 var throttled = {
@@ -172,8 +177,8 @@ export var updateStore = Reflux.createStore({
   init(){
     this.update = null;
   },
-  set(id){
-    this.update = id;
+  set(targetTab){
+    this.update = targetTab;
     this.trigger(this.update);
   },
   get(){
