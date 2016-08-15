@@ -166,7 +166,7 @@ var Preferences = React.createClass({
       <div className="preferences">
         <Row>
           <Col size="6">
-            <Btn onClick={()=>this.handleSlide(120, 'tabSizeHeight')} style={p.settingsMax ? {top: '95%'} : null} className="ntg-setting-btn" fa="undo">Reset Tile Size</Btn>
+            <Btn onClick={()=>this.handleSlide(134, 'tabSizeHeight')} style={p.settingsMax ? {top: '95%'} : null} className="ntg-setting-btn" fa="undo">Reset Tile Size</Btn>
             <Toggle onMouseEnter={()=>this.handleToggle('context')} 
                     onClick={()=>this.handleClick('context')} 
                     on={p.prefs.context} label="Enable context menu"
@@ -253,7 +253,7 @@ var Preferences = React.createClass({
                 data-tip="Controls the strength of the blur of background screenshots and wallpaper."/> 
                 <Slide  className="prefs-row" 
                 label={`Set tile size: ${p.prefs.tabSizeHeight}x${p.prefs.tabSizeHeight+80}`}
-                min={120} max={300}
+                min={134} max={300}
                 defaultValue={p.prefs.tabSizeHeight}
                 value={p.prefs.tabSizeHeight}
                 onChange={(e)=>this.handleSlide(e, 'tabSizeHeight')}

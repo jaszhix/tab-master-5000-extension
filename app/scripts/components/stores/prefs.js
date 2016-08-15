@@ -7,7 +7,7 @@ var prefsStore = Reflux.createStore({
   init: function() {
     this.prefs = {};
     this.defaultPrefs = {
-      tabSizeHeight: 120,
+      tabSizeHeight: 134,
       settingsMax: false, 
       drag: true, 
       context: true, 
@@ -96,8 +96,8 @@ var prefsStore = Reflux.createStore({
         tooltip: prefs.tooltip,
         alerts: prefs.alerts
       };
-      if (typeof this.prefs.tabSizeHeight === 'undefined') {
-        this.prefs.tabSizeHeight = 120;
+      if (typeof this.prefs.tabSizeHeight === 'undefined' || this.prefs.tabSizeHeight <= 133) {
+        this.prefs.tabSizeHeight = 134;
       }
       if (typeof this.prefs.installTime === 'undefined') {
         this.prefs.installTime = Date.now();
