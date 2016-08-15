@@ -80,9 +80,6 @@ chrome.runtime.onUpdateAvailable.addListener((details)=>{
 chrome.runtime.onInstalled.addListener((details)=>{
   eventState.onInstalled = details;
 });
-chrome.management.onUninstalled.addListener((details)=>{
-  eventState.onUninstalled = details;
-});
 
 var Bg = React.createClass({
   mixins: [Reflux.ListenerMixin],
@@ -112,12 +109,12 @@ var Bg = React.createClass({
     //chrome.tabs.create({active: true}, (tab)=>{});
     if (eventState.onStartup) {
       _.defer(()=>{
-        this.setState({eventState: eventState});
+    
         sendMsg(eventState.onStartup);
       });
     }
     if (eventState.onInstalled) {
-      this.setState({eventState: eventState});
+  
       if (eventState.onInstalled.reason === 'update' || eventState.onInstalled.reason === 'install') {
         chrome.tabs.query({title: 'New Tab'},(tabs)=>{
           for (var i = 0; i < tabs.length; i++) {
@@ -136,26 +133,13 @@ var Bg = React.createClass({
       }
     }
     if (eventState.onUpdateAvailable) {
-      this.setState({eventState: eventState});
+  
       sendMsg({e: eventState.onUpdateAvailable, type: 'newVersion'});
-    }
-    if (eventState.onUninstalled) {
-
-      this.setState({eventState: eventState});
-      sendMsg({e: eventState.onUninstalled, type: 'app'});
-    }
-    if (eventState.onEnabled) {
-      this.setState({eventState: eventState});
-      sendMsg({e: eventState.onEnabled, type: 'app'});
-    }
-    if (eventState.onDisabled) {
-      this.setState({eventState: eventState});
-      sendMsg({e: eventState.onDisabled, type: 'app'});
     }
     chrome.tabs.onCreated.addListener((e, info) => {
       console.log('onCreated: ', e, info);
       eventState.onCreated = e;
-      this.setState({eventState: eventState});
+  
       /*if (e.url === 'chrome://newtab/') {
         console.log('New Tab created...');
         _.delay(()=>sendMsg({e: s.prefs, type: 'prefs'}), 500);
@@ -164,87 +148,80 @@ var Bg = React.createClass({
     });
     chrome.tabs.onRemoved.addListener((e, info) => {
       eventState.onRemoved = e;
-      this.setState({eventState: eventState});
+  
       sendMsg({e: e, type: 'remove'});
     });
     chrome.tabs.onActivated.addListener((e, info) => {
       eventState.onActivated = e;
-      this.setState({eventState: eventState});
+  
       sendMsg({e: e, type: 'activate'});
     });
     chrome.tabs.onUpdated.addListener((e, info) => {
       eventState.onUpdated = e;
-      this.setState({eventState: eventState});
+  
       if (e.url === 'chrome://newtab/') {
         console.log('New Tab updated...');
-        //_.delay(()=>sendMsg({e: s.prefs, type: 'prefs'}), 500);
       }
       sendMsg({e: e, type: 'update'});
     });
     chrome.tabs.onMoved.addListener((e, info) => {
       eventState.onMoved = e;
-      this.setState({eventState: eventState});
+  
       console.log('onMoved', e, info);
       sendMsg({e: e, type: 'move'});
     });
     chrome.tabs.onAttached.addListener((e, info) => {
       eventState.onAttached = e;
-      this.setState({eventState: eventState});
+  
       console.log('onAttached', e, info);
       sendMsg({e: e, type: 'attach'});
     });
     chrome.tabs.onDetached.addListener((e, info) => {
       eventState.onDetached = e;
-      this.setState({eventState: eventState});
+  
       console.log('onDetached', e, info);
       sendMsg({e: e, type: 'detach'});
     });
     chrome.bookmarks.onCreated.addListener((e, info) => {
       eventState.bookmarksOnCreated = e;
-      this.setState({eventState: eventState});
+  
       console.log('bookmarks onCreated', e, info);
       sendMsg({e: e, type: 'bookmarks'});
     });
     chrome.bookmarks.onRemoved.addListener((e, info) => {
       eventState.bookmarksOnRemoved = e;
-      this.setState({eventState: eventState});
+  
       console.log('bookmarks onRemoved', e, info);
       sendMsg({e: e, type: 'bookmarks'});
     });
     chrome.bookmarks.onChanged.addListener((e, info) => {
       eventState.bookmarksOnChanged= e;
-      this.setState({eventState: eventState});
+  
       console.log('bookmarks onChanged', e, info);
       sendMsg({e: e, type: 'bookmarks'});
     });
     chrome.bookmarks.onMoved.addListener((e, info) => {
       eventState.bookmarksOnMoved= e;
-      this.setState({eventState: eventState});
+  
       console.log('bookmarks onMoved', e, info);
       sendMsg({e: e, type: 'bookmarks'});
     });
     chrome.history.onVisited.addListener((e, info) => {
       eventState.historyOnVisited = e;
-      this.setState({eventState: eventState});
+  
       console.log('history onVisited', e, info);
       sendMsg({e: e, type: 'history'});
     });
     chrome.history.onVisitRemoved.addListener((e, info) => {
       eventState.historyOnVisitRemoved = e;
-      this.setState({eventState: eventState});
+  
       console.log('history onVisited', e, info);
       sendMsg({e: e, type: 'history'});
     });
     chrome.management.onEnabled.addListener((details)=>{
       eventState.onEnabled = details;
-      this.setState({eventState: eventState});
+  
       console.log('app enabled', details);
-      sendMsg({e: details, type: 'app'});
-    });
-    chrome.management.onDisabled.addListener((details)=>{
-      eventState.onDisabled = details;
-      this.setState({eventState: eventState});
-      console.log('app disabled', details);
       sendMsg({e: details, type: 'app'});
     });
     this.attachMessageListener(s);
