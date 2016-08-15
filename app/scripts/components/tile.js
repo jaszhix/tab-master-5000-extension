@@ -519,24 +519,19 @@ var Tile = React.createClass({
   },
   getPos(left, top, ui){
     var p = this.props;
-    var oLeft = left - ui.x - v('#tileMain-'+p.i).width() / 4;
-    var oTop = top - ui.y + p.stores.prefs.tabSizeHeight / 10;
+    var oLeft = left - ui.x - v('#tileMain-'+p.i).width() / 8;
+    var oTop = top - ui.y + p.stores.prefs.tabSizeHeight / 12;
     dragStore.set_drag(oLeft, oTop);
   },
   currentlyDraggedOver(tab){
     if (tileDrag) {
-      console.log('current dragged over: ', tab.title);
-      var setHoveredTab = new Promise((resolve, reject)=>{
-        var drag = dragStore.get_drag();
-        var dragged = draggedStore.get_dragged();
-        if (drag && dragged) {
-          console.log('dragged id: ',dragged.id);
-          resolve(tab);
-        }
-      });
-      setHoveredTab.then((tab)=>{
+      var drag = dragStore.get_drag();
+      var dragged = draggedStore.get_dragged();
+      if (drag && dragged) {
+        console.log('dragged id: ',dragged.id);
         dragStore.set_tabIndex(tab);
-      });
+      }
+      console.log('current dragged over: ', tab.title);
     }
   },
   render: function() {
@@ -571,11 +566,11 @@ var Tile = React.createClass({
                       moveOnStartChange={true}
                       grid={[1, 1]}
                       
-                      zIndex={999}
+                      zIndex={-1}
                       onStart={this.handleStart}
                       onDrag={this.handleDrag}
                       onStop={this.handleStop}>
-            <div ref="tile" style={s.drag ? {position: 'absolute', left: drag.left, top: drag.top} : null}>
+            <div ref="tile" style={s.drag ? {position: 'fixed', left: `${drag.left}px`, top: `${drag.top}px`} : null}>
             {p.render && s.render && p.tab.title !== 'New Tab' ? <Row fluid={true} id={'subTile-'+s.i} style={s.duplicate && s.focus && !s.hover ? {WebkitAnimationIterationCount: 'infinite', WebkitAnimationDuration: '5s'} : null} onContextMenu={this.handleContextClick} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "animated zoomOut" : s.pinning ? "animated pulse" : s.duplicate && s.focus ? "animated flash" : ''}>
                 { true ? <div id={'innerTile-'+p.tab.id} className={s.apps && !p.tab.enabled ? 'ntg-tile-disabled' : s.hover ? 'ntg-tile-hover' : 'ntg-tile'} style={mainTileStyle}>
                   <Row className="ntg-tile-row-top">
@@ -845,7 +840,8 @@ var TileGrid = React.createClass({
                     init={p.init} 
                     theme={p.theme}
                     wallpaper={p.wallpaper}
-                    onApply={()=>this.sort('index', p)} />
+                    onApply={()=>this.sort('index', p)}
+                    width={p.width} />
                   );
                 }
               })}
