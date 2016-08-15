@@ -83,7 +83,7 @@ var Loading = React.createClass({
   render: function() {
     var s = this.state;
     var p = this.props;
-    var topStyle = {width: '20px', height: '20px', margin: '0px', float: 'left', marginRight: '4px', marginTop: '7px'};
+    var topStyle = {width: '20px', height: '20px', margin: '0px', float: 'right', marginRight: '4px', marginTop: '7px'};
     var fullStyle = {marginTop: `${window.innerHeight / 2.4}px`};
     var errorLink = {color: 'rgba(34, 82, 144, 0.9)'};
     return (
@@ -101,12 +101,12 @@ var Loading = React.createClass({
         </div>
         {s.failSafe && !p.top ?
           <div className="container">
-            <div className="row">Tab Master encountered an error and was unable to initialize. Sorry for the inconvenience. Please copy the following error message and submit it to the Support tab in the <a style={errorLink} href="https://chrome.google.com/webstore/detail/tab-master-5000-tab-swiss/mippmhcfjhliihkkdobllhpdnmmciaim/support">Chrome Web Store</a>, or as an issue on <a style={errorLink} href="https://github.com/jaszhix/tab-master-5000-chrome-extension/issues">Github</a>, so this issue can be investigated. Thank you! </div>
+            <div className="row">Tab Master encountered an error and was unable to initialize. Sorry for the inconvenience. Please report this to the Support tab in the <a style={errorLink} href="https://chrome.google.com/webstore/detail/tab-master-5000-tab-swiss/mippmhcfjhliihkkdobllhpdnmmciaim/support">Chrome Web Store</a>, or as an issue on <a style={errorLink} href="https://github.com/jaszhix/tab-master-5000-chrome-extension/issues">Github</a>, so this issue can be investigated. Thank you! </div>
             
             <div className="row" style={{margin: '0px auto', position: 'fixed', right: '0px', bottom: '0px'}}>
-              <button className="ntg-top-btn" onClick={()=>sessionsStore.exportSessions()}>Backup Sessions</button>
-              <button className="ntg-top-btn" onClick={()=>themeStore.export()}>Backup Themes</button>
-              <button className="ntg-top-btn" onClick={this.handleReset}>Reset Data</button>
+              <button className="ntg-btn" onClick={()=>sessionsStore.exportSessions()}>Backup Sessions</button>
+              <button className="ntg-btn" onClick={()=>themeStore.export()}>Backup Themes</button>
+              <button className="ntg-btn" onClick={this.handleReset}>Reset Data</button>
             </div>
           </div>
           : null}
@@ -167,9 +167,9 @@ var Search = React.createClass({
     return (
       <Container fluid={true} style={headerStyle} className="ntg-form">
         <Row>
-          <Col size={p.width <= 825 ? p.width <= 630 ? p.width <= 514 ? '11' : '10' : '8' : '6'}>
+          <Col size={p.width <= 825 ? p.width <= 630 ? p.width <= 514 ? '10' : '8' : '6' : '4'}>
             <div style={{display: 'flex', width: '100%', paddingLeft: '0px', paddingRight: '0px'}}>
-              <Btn onClick={this.handleSidebar} onMouseEnter={p.onMenuHoverIn} onMouseLeave={p.onMenuHoverOut} style={{fontSize: '20px', marginRight: '0px'}} className="ntg-top-btn" fa="reorder" />
+              <Btn onClick={this.handleSidebar} onMouseEnter={p.onMenuHoverIn} onMouseLeave={p.onMenuHoverOut} style={{marginRight: '0px', padding: '9px 13px'}} className="ntg-top-btn" fa="reorder" />
               <input 
                 type="text"
                 value={searchStore.get_search()}
@@ -179,14 +179,13 @@ var Search = React.createClass({
                 onKeyDown={(e)=>this.handleEnter(e)}/>
             </div>
           </Col>
-          <Col size={p.width <= 825 ? p.width <= 630 ? p.width <= 514 ? '1' : '2' : '4' : '6'}>
+          <Col size={p.width <= 825 ? p.width <= 630 ? p.width <= 514 ? '2' : '4' : '6' : '8'} style={{float: 'right'}}>
             {searchStore.get_search().length > 3 ? <span style={{color: p.theme.textFieldsPlaceholder}} className="search-msg ntg-search-google-text">Press Enter to Search Google</span> : null}
-            <Btn style={{marginLeft: '10px', float: 'left', fontSize: p.width <= 646 ? '20px' : '14px'}} onClick={()=>modalStore.set_modal(true, 'settings')} className="ntg-top-btn" fa="cogs" data-place="bottom" data-tip={p.width <= 646 ? 'Settings' : null}>{p.width <= 646 ? '' : 'Settings'}</Btn>
-            {p.event === 'newVersion' ? <Btn onClick={()=>chrome.runtime.reload()} style={{float: 'left', fontSize: p.width <= 841 ? '20px' : '14px'}} className="ntg-top-btn" fa="rocket" data-place="bottom" data-tip={p.width <= 841 ? 'New Version Available' : null}>{p.width <= 841 ? '' : 'New Version Available'}</Btn> : null}
-            {p.event === 'versionUpdate' ? <Btn onClick={this.openAbout} style={{float: 'left', fontSize: p.width <= 841 ? '20px' : '14px'}} className="ntg-top-btn" fa="info-circle" data-place="bottom" data-tip={p.width <= 841 ? `Updated to ${utilityStore.get_manifest().version}` : null}>{p.width <= 841 ? '' : `Updated to ${utilityStore.get_manifest().version}`}</Btn> : null}
-            {p.event === 'installed' ? <Btn onClick={this.openAbout} style={{float: 'left', fontSize: p.width <= 841 ? '20px' : '14px'}} className="ntg-top-btn" fa="thumbs-o-up" data-place="bottom" data-tip={p.width <= 841 ? 'Thank you for installing TM5K' : null}>{p.width <= 841 ? '' : 'Thank you for installing TM5K'}</Btn> : null}
+            {p.event === 'newVersion' ? <Btn onClick={()=>chrome.runtime.reload()} style={{fontSize: p.width <= 841 ? '20px' : '14px', marginRight: 'initial'}} className="ntg-sort-btn pull-right" fa="rocket" data-place="bottom" data-tip={p.width <= 841 ? 'New Version Available' : null}>{p.width <= 841 ? '' : 'New Version Available'}</Btn> : null}
+            {p.event === 'versionUpdate' ? <Btn onClick={this.openAbout} style={{fontSize: p.width <= 841 ? '20px' : '14px', marginLeft: '8px',  marginRight: 'initial'}} className="ntg-sort-btn pull-right" fa="info-circle" data-place="bottom" data-tip={p.width <= 841 ? `Updated to ${utilityStore.get_manifest().version}` : null}>{p.width <= 841 ? '' : `Updated to ${utilityStore.get_manifest().version}`}</Btn> : null}
+            {p.event === 'installed' ? <Btn onClick={this.openAbout} style={{fontSize: p.width <= 841 ? '20px' : '14px'}} className="ntg-sort-btn pull-right" fa="thumbs-o-up" data-place="bottom" data-tip={p.width <= 841 ? 'Thank you for installing TM5K' : null}>{p.width <= 841 ? '' : 'Thank you for installing TM5K'}</Btn> : null}
             {p.topLoad ? <Loading top={true} /> : null}
-            {p.event === 'dlFavicons' && p.topLoad ? <div><p className="tm5k-info" style={{color: p.theme.darkBtnText, textShadow: `2px 2px ${p.theme.darkBtnTextShadow}`}}> {p.width <= 841 ? '' : 'Downloading and caching favicons...'}</p></div> : null}
+            {p.event === 'dlFavicons' && p.topLoad ? <div><p className="tm5k-info pull-right" style={{color: p.theme.darkBtnText, textShadow: `2px 2px ${p.theme.darkBtnTextShadow}`, position: 'relative', top: '2px', marginRight: '8px'}}> {p.width <= 841 ? '' : 'Downloading and caching favicons...'}</p></div> : null}
           </Col>  
         </Row>
       </Container>
@@ -267,8 +266,7 @@ var Root = React.createClass({
     this.listenTo(applyTabOrderStore, this.applyTabOrderChange);
     this.listenTo(sortStore, this.sortChange);
     this.listenTo(modalStore, this.modalChange);
-    console.log('Chrome Version: ',utilityStore.chromeVersion());
-    console.log('Manifest: ', utilityStore.get_manifest());
+    window._trackJs.version = utilityStore.get_manifest().version;
     _.delay(()=>{
       if (this.state.prefs.length === 0) {
         utilityStore.reloadBg();
@@ -341,6 +339,21 @@ var Root = React.createClass({
       s.savedThemes = e.savedThemes;
     }
     if (e.theme) {
+      var rgb = e.theme.settingsBg;
+      var colors = rgb.match(/^rgba\((\d+),\s*(\d+),\s*(\d+),\s*(\d+(\.\d*)?)|(\.\d+)\)$/);
+      
+      console.log('color', colors, e.theme.textFieldsText);
+      var r = colors[1];
+      var g = colors[2];
+      var b = colors[3];
+      var brightness = colors[4];
+
+      var ir = Math.floor((255-r)*brightness);
+      var ig = Math.floor((255-g)*brightness);
+      var ib = Math.floor((255-b)*brightness);
+
+      var sessionFieldColor = 'rgb('+ir+','+ig+','+ib+')';
+      console.log('color', sessionFieldColor);
       v('style').n.innerHTML += `
       a, a:focus, a:hover {
         color: ${themeStore.opacify(e.theme.bodyText, 0.9)};
@@ -350,8 +363,15 @@ var Root = React.createClass({
       }
       .form-control {
         color: ${e.theme.textFieldsText};
-        background-color: ${e.theme.textFieldsBg};
-        border: 1px solid ${e.theme.textFieldsBorder};
+        border-bottom-color: ${e.theme.textFieldsBorder};
+        box-shadow: 0 1px 0 ${e.theme.textFieldsBorder};
+      }
+      .form-control:focus {
+        border-bottom-color: ${e.theme.textFieldsBg};
+        box-shadow: 0 1px 0 ${e.theme.textFieldsBg};
+      }
+      .session-field {
+        color: ${sessionFieldColor};
       }
       .nav-tabs>li {
         background-color: ${e.theme.lightBtnBg};
@@ -584,13 +604,15 @@ var Root = React.createClass({
   },
   removeSingleItem(e){
     var tabs = tabStore.get_altTab();
-    var tab = _.find(tabs, {id: e});
-    var tabToUpdate = _.findIndex(tabs, {id: tab.id});
+    var tabToUpdate = _.findIndex(tabs, {id: e});
     if (tabToUpdate > -1) {
       var s = this.state;
-      tabs = _.without(tabs, tab);
+      if (s.prefs.actions) {
+        actionStore.set_action('remove', tabs[tabToUpdate]);
+      }
+      tabs = _.without(tabs, tabs[tabToUpdate]);
       tabs = _.orderBy(_.uniqBy(tabs, 'id'), ['pinned'], ['desc']);
-      console.log('Single tab to remove:', tab);
+      console.log('Single tab to remove:', tabs[tabToUpdate]);
       if (s.prefs.sessionsSync) {
         synchronizeSession(s.prefs, tabs);
       }

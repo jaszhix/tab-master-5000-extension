@@ -43,9 +43,9 @@ export var themeStore = Reflux.createStore({
       };
       this.chromesque = {
         textFieldsBg: 'rgba(255, 255, 255, 0.93)',
-        textFieldsPlaceholder: 'rgba(156, 156, 156, 0.71)',
-        textFieldsText: 'rgba(103, 112, 115, 1)',
-        textFieldsBorder: 'rgba(52, 73, 94, 0.37)',
+        textFieldsPlaceholder: 'rgba(225, 230, 232, 0.71)',
+        textFieldsText: 'rgba(225, 230, 232, 1)',
+        textFieldsBorder: 'rgba(225, 230, 232, 0.37)',
         settingsBg: 'rgba(237, 240, 242, 1)',
         settingsItemHover: 'rgba(250, 250, 250, 0.48)',
         headerBg: 'rgba(52, 73, 94, 0.86)',
