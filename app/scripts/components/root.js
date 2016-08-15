@@ -1,3 +1,32 @@
+window._trackJs = {
+  token: 'bd495185bd7643e3bc43fa62a30cec92',
+  enabled: true,
+  onError: function (payload) { return true; },
+  version: "",
+  callback: {
+    enabled: true,
+    bindStack: true
+  },
+  console: {
+    enabled: true,
+    display: true,
+    error: true,
+    warn: false,
+    watch: ['info', 'warn', 'error']
+  },
+  network: {
+    enabled: true,
+    error: true
+  },
+  visitor: {
+    enabled: true
+  },
+  window: {
+    enabled: true,
+    promise: true
+  }
+};
+var trackJs = require('trackjs');
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Reflux from 'reflux';
@@ -685,6 +714,7 @@ var Root = React.createClass({
       if (opt === 'init' || opt === 'tile') {
         this.setState({render: true});
         if (opt === 'init') {
+          utilityStore.initTrackJs(s.prefs, s.savedThemes);
           this.setState({load: false});
           actionStore.set_state(false);
         }

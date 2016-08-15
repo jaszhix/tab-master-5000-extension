@@ -56,6 +56,10 @@ module.exports = {
       {
         test: /\.(png|jpg|gif)$/,
         loader: 'file-loader?name=[hash].[ext]'
+      },
+      {
+        test: require.resolve('trackjs'),
+        loader: 'exports-loader?trackJs'
       }
     ],
   },

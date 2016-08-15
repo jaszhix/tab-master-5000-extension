@@ -402,8 +402,12 @@ export var utilityStore = Reflux.createStore({
   now(){
     return new Date(Date.now()).getTime();
   },
+  initTrackJs(prefs, savedThemes){
+    window.trackJs.addMetadata('User Themes', savedThemes);
+    window.trackJs.addMetadata('User Preferences', prefs);  
+  },
 });
-
+window.utilityStore = utilityStore;
 export var contextStore = Reflux.createStore({
   init: function() {
     this.context = [false, null];

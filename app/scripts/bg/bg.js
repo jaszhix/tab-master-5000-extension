@@ -1,8 +1,49 @@
+window._trackJs = {
+  token: 'bd495185bd7643e3bc43fa62a30cec92',
+  enabled: true,
+  onError: function (payload) { return true; },
+  version: "",
+  callback: {
+    enabled: true,
+    bindStack: true
+  },
+  console: {
+    enabled: true,
+    display: true,
+    error: true,
+    warn: false,
+    watch: ['log', 'info', 'warn', 'error']
+  },
+  network: {
+    enabled: true,
+    error: true
+  },
+  visitor: {
+    enabled: true
+  },
+  window: {
+    enabled: true,
+    promise: true
+  }
+};
+var trackJs = require('trackjs');
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Reflux from 'reflux';
 import _ from 'lodash';
 import prefsStore from '../components/stores/prefs';
+var checkChromeErrors = (err)=>{
+  if (chrome.runtime.lastError) {
+    window.trackJs.track(chrome.runtime.lastError);
+  }
+  if (chrome.extension.lastError) {
+    window.trackJs.track(chrome.extension.lastError);
+  }
+  if (err) {
+    window.trackJs.track(err);
+  }
+};
+var checkChromeErrorsThrottled = _.throttle(checkChromeErrors, 2000, {leading: true});
 //import {reRenderStore} from '../components/stores/main';
 
 var sendMsg = (msg) => {
@@ -221,6 +262,7 @@ var Bg = React.createClass({
               } else {
                 reject();
               }
+              checkChromeErrorsThrottled();
             });
           } catch (e) {
             console.log(e);
@@ -229,7 +271,7 @@ var Bg = React.createClass({
         });
         capture.then((image)=>{
           sendResponse({'image': image});
-        }).catch(()=>{
+        }).catch((e)=>{
           if (s.prefs.mode !== 'tabs') {
             chrome.tabs.update(msg.id, {active: true});
             reload('Screenshot capture error.');
@@ -252,6 +294,7 @@ var Bg = React.createClass({
             pinned: msg.tabs[i].pinned
           }, (t)=>{
             console.log('restored: ',t);
+            checkChromeErrorsThrottled();
           });
         }
         sendResponse({'reload': true});
