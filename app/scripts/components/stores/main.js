@@ -623,8 +623,8 @@ export var bookmarksStore = Reflux.createStore({
     this.folder = value;
     this.trigger(this.folder);
   },
-  get_folder(){
-    return this.folder;
+  get_folder(folder){
+    return _.filter(this.bookmarks, {folder: folder});
   }
 });
 
@@ -664,7 +664,7 @@ export var historyStore = Reflux.createStore({
           for (var y = t.length - 1; y >= 0; y--) {
             openTabObj = _.find(t, {windowId: utilityStore.get_window()});
             if (h[i].url === t[y].url) {
-              h[i] = _.merge(h[i], t[y]);
+              h[i] = _.assignIn(h[i], _.cloneDeep(t[y]));
               h[i].openTab = ++openTab;
             } 
           }
@@ -689,7 +689,7 @@ export var actionStore = Reflux.createStore({
   },
   set_action: function(type, object) {
     if (object && !this.undoActionState && object.title !== 'New Tab') {
-      this.actions.push({type: type, item: object});
+      this.actions.push({type: type, item: _.cloneDeep(object)});
       console.log('action: ', {type: type, item: object});
       this.trigger(this.actions);
     }

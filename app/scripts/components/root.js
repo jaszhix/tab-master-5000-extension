@@ -267,6 +267,7 @@ var Root = React.createClass({
     this.listenTo(sortStore, this.sortChange);
     this.listenTo(modalStore, this.modalChange);
     window._trackJs.version = utilityStore.get_manifest().version;
+    
     _.delay(()=>{
       if (this.state.prefs.length === 0) {
         utilityStore.reloadBg();
@@ -656,8 +657,17 @@ var Root = React.createClass({
     var s = this.state;
     console.log('updateTabState: ',e);
     if (typeof e === 'string') {
-      this.setState({folder: e, folderState: !this.state.folderState});
-      this.extendTileLimit(this.state.folderState);    
+      _.assignIn(s, {
+        folderState: !s.folderState,
+        folder: e
+      });
+      var filter = s.prefs.mode === 'bookmarks' ? {folder: s.folder} : {originSession: s.folder};
+      console.log('filter', filter);
+      _.assignIn(s, {
+        tabs: s.folderState ? _.filter(s.tabs, filter) : s.bkCache,
+        bkCache: s.folderState ? s.tabs : null
+      });
+      this.setState(s);
     } else {
       tabStore.promise().then((Tab)=>{
         this.setState({topLoad: true});
