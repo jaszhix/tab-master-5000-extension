@@ -44,25 +44,10 @@ var prefsStore = Reflux.createStore({
             if (chrome.extension.lastError) {
               reject(chrome.extension.lastError);
             } else {
-              // Temporary local storage import for users upgrading from previous versions.
-              chrome.storage.local.get('preferences', (prefs)=>{
-                if (prefs && prefs.preferences) {
-                  chrome.storage.sync.set({preferences: prefs.preferences}, (result)=> {
-                    console.log('Imported prefs from local to sync storage', prefs.preferences);
-                  });
-                  resolve(prefs.preferences);
-                } else {
-                  if (chrome.extension.lastError) {
-                    reject(chrome.extension.lastError);
-                  } else {
-                    this.prefs = this.defaultPrefs;
-                    this.set_prefs(this.prefs, true);
-                    console.log('init prefs: ', this.prefs);
-                    this.trigger(this.prefs);
-                    //utilityStore.restartNewTab();
-                  }
-                }
-              });
+              this.prefs = this.defaultPrefs;
+              this.set_prefs(this.prefs, true);
+              console.log('init prefs: ', this.prefs);
+              this.trigger(this.prefs);
             }
           }
         });
