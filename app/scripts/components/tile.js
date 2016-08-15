@@ -7,7 +7,7 @@ import moment from 'moment';
 import Draggable from 'react-draggable';
 import OnClickOutside from 'react-onclickoutside';
 import ReactTooltip from './tooltip/tooltip';
-import {msgStore, searchStore, sortStore, relayStore, faviconStore, bookmarksStore, reRenderStore, applyTabOrderStore, utilityStore, contextStore, dragStore, draggedStore} from './stores/main';
+import {msgStore, searchStore, sortStore, relayStore, faviconStore, bookmarksStore, reRenderStore, applyTabOrderStore, utilityStore, contextStore, dragStore, draggedStore, modalStore} from './stores/main';
 import tabStore from './stores/tab';
 import sessionsStore from './stores/sessions';
 
@@ -70,11 +70,6 @@ var Tile = React.createClass({
     }
     if (p.i === 0) {
       closeNewTabsThrottled();
-      /*if (nextProps.stores.prefs.mode === 'tabs') {
-        closeNewTabsOnce();
-      } else {
-        closeNewTabsThrottled();
-      }*/
     }
     this.handleRelays(nextProps);
     if (nextProps.stores.applyTabOrder) {
@@ -102,9 +97,6 @@ var Tile = React.createClass({
   updateScreenshot(opt, props){
     var p = this.props;
     var setScreeenshot = ()=>{
-      if (chrome.extension.lastError) {
-        //utilityStore.restartNewTab();
-      }
       if (p.stores.prefs.screenshot) {
         var ssData = _.result(_.find(p.stores.screenshots, { url: p.tab.url }), 'data');
         if (ssData) {
@@ -292,7 +284,7 @@ var Tile = React.createClass({
     };
     var close = ()=>{
       chrome.tabs.remove(id, ()=>{
-        if (p.stores.prefs.mode !== 'tabs' && s.openTab) {
+        if (p.stores.prefs.mode !== 'tabs') {
           _.defer(()=>{
             reRender(true);
           });
