@@ -806,7 +806,7 @@ var Root = React.createClass({
   },
   onViewportChange: function (viewport) {
     var wrapper = document.body;
-    if (wrapper.scrollTop + window.innerHeight >= wrapper.scrollHeight) {
+    if (wrapper.scrollTop + window.innerHeight >= wrapper.scrollHeight - 200) {
       this.setState({tileLimit: this.state.tileLimit + 100});
     }
   },
@@ -962,7 +962,7 @@ var Root = React.createClass({
                 {s.modal && !s.modal.state && s.prefs.tooltip ? 
                 <ReactTooltip 
                 effect="solid" 
-                place="top"
+                place="right"
                 multiline={true}
                 html={true}
                 offset={{top: 0, left: 6}} /> : null}
