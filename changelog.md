@@ -1,5 +1,16 @@
 #### Release Notes
 
+##### v1.7.0 / *8-15-16*
+
+*   Miscellaneous stability fixes in the background JS.
+*   Added Track.JS error reporting as a trial run. The error reports will only collect error, preference, and theme data.
+*   Moved the Settings button to the sidebar menu.
+*   Fixed context menu rendering outside the viewport.
+*   Fixed sorting tabs by last updated not working.
+*   Fixed closing open tabs from history view mode not reverting to a non-open history tile.
+*   Clicking a folder at the bottom of a tile in bookmarks or sessions view modes now sorts the tiles by their folder/session.
+*   Overhauled CSS.
+
 ##### v1.6.1 / *8-2-16*
 
 *   Miscellaneous stability fixes.
