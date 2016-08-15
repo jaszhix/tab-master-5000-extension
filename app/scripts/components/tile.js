@@ -288,7 +288,7 @@ var Tile = React.createClass({
           _.defer(()=>{
             reRender(true);
           });
-        }      
+        }    
       });
     };
     if (p.stores.prefs.animations && !s.openTab) {
@@ -514,7 +514,7 @@ var Tile = React.createClass({
     chrome.tabs.move(dragged.id, {index: draggedOver.index}, (t)=>{
       console.log('moved: ',t);
       reRenderStore.set_reRender(true, 'cycle', dragged.id);
-      v('.tileClone').remove();
+      _.defer(()=>v('.tileClone').remove());
     });
   },
   getPos(left, top, ui){
