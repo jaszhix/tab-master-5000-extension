@@ -675,12 +675,13 @@ var Sidebar = React.createClass({
     };
     _.merge(faStyle, _.cloneDeep(p.faStyle));
     const sortButton = {
-      marginBottom: p.prefs.sort ? '20px' : '0px'
+      marginBottom: '20px'
     };
     _.merge(sortButton, _.cloneDeep(p.btnStyle));
     return (
       <div className="side-div" style={sideStyle}>
-        <Btn onClick={this.handleSort} className="ntg-apply-btn" style={sortButton} fa="sort-amount-asc" faStyle={faStyle} data-place="bottom" data-tip={p.width <= 767 ? 'Sort Tabs' : null}>{!iconCollapse ? 'Sort Tabs' : ''}</Btn>
+        <Btn onClick={()=>modalStore.set_modal(true, 'settings')} className="ntg-apply-btn" fa="cogs" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? 'Settings' : null}>{!iconCollapse ? 'Settings' : ''}</Btn>
+        <Btn onClick={this.handleSort} className="ntg-apply-btn" style={sortButton} fa="sort-amount-asc" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? 'Sort Tabs' : null}>{!iconCollapse ? 'Sort Tabs' : ''}</Btn>
           {p.prefs.sort ? <div>
               {p.labels}
               {p.prefs.mode === 'tabs' && p.search.length === 0 ? <Btn onClick={()=>applyTabOrderStore.set_saveTab(true)} className="ntg-apply-btn" style={p.btnStyle} fa="sort" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? 'Apply' : null}>{iconCollapse ? '' : 'Apply'}</Btn> : null}
