@@ -27,7 +27,7 @@ var prefsStore = Reflux.createStore({
       singleNewTab: false,
       keyboardShortcuts: true,
       resolutionWarning: true,
-      syncedSession: '',
+      syncedSession: null,
       theme: 9001,
       wallpaper: null,
       tooltip: true,
@@ -102,8 +102,8 @@ var prefsStore = Reflux.createStore({
       if (typeof this.prefs.resolutionWarning === 'undefined') {
         this.prefs.resolutionWarning = true;
       }
-      if (typeof this.prefs.syncedSession === 'undefined') {
-        this.prefs.syncedSession = '';
+      if (typeof this.prefs.syncedSession === 'undefined' || this.prefs.syncedSession === '') {
+        this.prefs.syncedSession = null;
       }
       if (typeof this.prefs.theme === 'undefined') {
         this.prefs.theme = 9001;
