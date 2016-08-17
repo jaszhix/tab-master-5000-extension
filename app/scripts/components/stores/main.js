@@ -37,22 +37,14 @@ var reRender = (type, id, prefs) => {
         utilityStore.set_systemState('lowRAM');
       }
     });
-    var active = null;
-    if (type === 'create' || type === 'activate') {
-      active = id.windowId;
-    } else if (type === 'tile' || prefs.mode !== 'tabs') {
-      active = utilityStore.get_window();
-    } else {
-      active = utilityStore.get_window();
-    }
     if (prefs.actions) {
       var refOldTab = _.findIndex(tabs('alt'), {id: tId});
       if (refOldTab !== -1) {
         actionStore.set_action(type, tabs('alt')[refOldTab]);
       }
     }
-    console.log('window: ', active, utilityStore.get_window(), 'state: ',utilityStore.get_systemState(), 'type: ', type, 'id: ',tId, 'item: ', targetTab);
-    if (active === utilityStore.get_window() && utilityStore.get_systemState() === 'active') {
+    console.log('window: ', targetTab.windowId, utilityStore.get_window(), 'state: ',utilityStore.get_systemState(), 'type: ', type, 'id: ',tId, 'item: ', targetTab);
+    if (targetTab.windowId === utilityStore.get_window() && utilityStore.get_systemState() === 'active') {
       if (type === 'update' || type === 'move') {
         updateStore.set(targetTab);
       } else if (type === 'activate') {
@@ -65,7 +57,9 @@ var reRender = (type, id, prefs) => {
     if (type === 'remove' || type === 'detach') {
       removeStore.set(tId);
     } else if (type === 'create' || type === 'attach') {
-      createStore.set(id); // Full tab object
+      if (id.windowId === utilityStore.get_window()) {
+        createStore.set(id); // Full tab object
+      }
     } else if (prefs.mode !== 'tabs') {
       reRenderStore.set_reRender(true, type, tId);
     }

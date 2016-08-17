@@ -702,10 +702,14 @@ var Root = React.createClass({
         });
       }
       tabStore.set_altTab(Tab);
-      chrome.windows.getCurrent((w)=>{
-        // Store the Chrome window ID for global reference
-        utilityStore.set_window(w.id);
-      });
+      try {
+        utilityStore.set_window(Tab[0].windowId);
+      } catch (e) {
+        chrome.windows.getCurrent((w)=>{
+          // Store the Chrome window ID for global reference
+          utilityStore.set_window(w.id);
+        });
+      }
       this.setState({init: false});
       if (opt !== 'init') {
         v('#main').css({cursor: 'wait'});
