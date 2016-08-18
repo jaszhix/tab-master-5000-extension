@@ -60,6 +60,7 @@ var reRender = (type, id, prefs) => {
             }
           } else {
             chrome.tabs.sendMessage(targetTab.id, {type: type});
+            _.delay(()=>updateStore.set(targetTab),1000);
           }
         };
         if (prefs.screenshot) {
