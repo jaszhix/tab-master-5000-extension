@@ -1,5 +1,12 @@
 #### Release Notes
 
+##### v1.7.1 / *8-17-16*
+
+*   Revised screenshot capturing, and added more customization over how TM5K captures screenshots in Preferences.
+*   Fixed tab tiles from other windows being rendered (regression).
+*   Fixed tab title truncation (regression).
+*   Fixed unnecessary render updates occuring when New Tabs are updated (regression).
+
 ##### v1.7.0 / *8-15-16*
 
 *   Miscellaneous stability fixes in the background JS.

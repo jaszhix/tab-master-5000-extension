@@ -1,7 +1,7 @@
 {
   "name": "Tab Master 5000: Tab Swiss Army Knife",
   "short_name": "Tab Master 5000",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "manifest_version": 2,
   "description": "This extensions replaces the new tab page with a clean, sortable, and searchable, grid view of all of your open tabs.",
   "icons": {
