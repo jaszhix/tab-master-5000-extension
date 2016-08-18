@@ -219,7 +219,7 @@ var Preferences = React.createClass({
                           child={true} 
                           label="Capture screenshots using the Chrome API"
                           hoverBg={p.theme.settingsItemHover}
-                          data-tip="By default, TM5K will use Chrome to capture screenshots. The Chrome API is faster and captures any website, but can impact the overall performance of Chrome more on slower computers. Disable this to use the canvas method only.">
+                          data-tip="By default, TM5K will use Chrome to capture screenshots. The Chrome API is faster and captures any website, but can impact the overall performance of Chrome more. Disable this to use the canvas method only. After disabling, you will need to restart Chrome.">
                   </Toggle>
                   <Toggle onMouseEnter={()=>this.handleToggle('screenshotBg')} 
                           onClick={()=>this.handleClick('screenshotBg')} 
