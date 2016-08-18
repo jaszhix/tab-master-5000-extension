@@ -271,13 +271,9 @@ var Root = React.createClass({
     _.delay(()=>{
       if (this.state.prefs.length === 0) {
         utilityStore.reloadBg();
-      }
-    },2000);
-    _.delay(()=>{
-      if (this.state.prefs.length === 0) {
         utilityStore.restartNewTab();
       }
-    },3000);
+    },2000);
   },
   sessionsChange(e){
     this.setState({sessions: e});
