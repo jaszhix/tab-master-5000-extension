@@ -28,6 +28,9 @@ export var bgSetPrefs = (obj)=>{
 var reRender = (type, id, prefs) => {
   var tId = typeof id.tabId !== 'undefined' ? id.tabId : id;
   tabStore.getSingleTab(tId).then((targetTab)=>{
+    if (targetTab.url.indexOf('chrome://newtab') !== -1) {
+      return;
+    }
     chrome.idle.queryState(900, (idle)=>{
       utilityStore.set_systemState(idle);
     });
