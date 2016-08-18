@@ -23,6 +23,7 @@ var screenshotStore = Reflux.createStore({
     });
   },
   capture(id, wid, imageData, type){
+    console.log('screenshotStore capture:', id, wid, imageData, type);
     var tab = _.find(tabs(), { id: id });
     var title = _.result(tab, 'title');
     var getScreenshot = new Promise((resolve, reject)=>{
@@ -30,18 +31,16 @@ var screenshotStore = Reflux.createStore({
         console.log('response from content canvas: ', id, wid, type);
         resolve(imageData);
       } else {
-        if (type === 'activate') {
-          chrome.runtime.sendMessage({method: 'captureTabs', id: id}, (response) => {
-            console.log('response from captureVisibleTab: ', id, wid, type);
-            if (response) {
-              if (response.image) {
-                resolve(response.image);
-              } else {
-                reject();
-              }
+        chrome.runtime.sendMessage({method: 'captureTabs', id: id}, (response) => {
+          console.log('response from captureVisibleTab: ', id, wid, type);
+          if (response) {
+            if (response.image) {
+              resolve(response.image);
+            } else {
+              reject();
             }
-          });
-        }
+          }
+        });
       }
     });
     msgStore.getPrefs().then((prefs)=>{

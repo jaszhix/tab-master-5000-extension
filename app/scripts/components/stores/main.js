@@ -51,21 +51,45 @@ var reRender = (type, id, prefs) => {
       if (type === 'update' || type === 'move') {
         updateStore.set(targetTab);
       } else if (type === 'activate') {
-        updateStore.set(targetTab);
+        var getImageFromTab = ()=>{
+          console.log('getImageFromTab');
+          if (prefs.screenshotChrome) {
+            if (targetTab.active) {
+              _.defer(()=>screenshotStore.capture(tId, targetTab.windowId, false, type));
+              _.defer(()=>updateStore.set(targetTab));
+            }
+          } else {
+            chrome.tabs.sendMessage(targetTab.id, {type: type});
+          }
+        };
+        if (prefs.screenshot) {
+          if (targetTab.url.indexOf('chrome://') !== -1 && targetTab.url.indexOf('chrome://newtab') === -1) {
+            if (targetTab.active) {
+              _.defer(()=>screenshotStore.capture(tId, targetTab.windowId, false, type));
+              _.defer(()=>updateStore.set(targetTab));
+            }
+          } else {
+            getImageFromTab();
+          }
+        } else {
+          updateStore.set(targetTab);
+        }
       } else if (prefs.mode !== 'tabs') {
         reRenderStore.set_reRender(true, type, tId);
       }
     }
-  }).catch(()=>{
-    if (type === 'remove' || type === 'detach') {
-      removeStore.set(tId);
-    } else if (type === 'create' || type === 'attach') {
-      if (id.windowId === utilityStore.get_window()) {
-        createStore.set(id); // Full tab object
+  }).catch((e)=>{
+      var wId = utilityStore.get_window();
+      console.log('Exception...', e);
+      if (type === 'remove' || type === 'detach') {
+        removeStore.set(tId);
+      } else if (type === 'create' || type === 'attach') {
+        if (id.windowId === wId && id.url.indexOf('chrome://newtab') === -1) {
+          createStore.set(id); // Full tab object
+        }
+      } else if (prefs.mode !== 'tabs') {
+        reRenderStore.set_reRender(true, type, tId);
       }
-    } else if (prefs.mode !== 'tabs') {
-      reRenderStore.set_reRender(true, type, tId);
-    }
   });
 };
 var throttled = {
@@ -78,7 +102,7 @@ export var msgStore = Reflux.createStore({
     this.getPrefs().then((prefs)=>{
       this.trigger(prefs);
       chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-        console.log('msg: ',msg);
+        console.log('msg: ',msg, 'sender: ', sender);
         if (msg.type === 'prefs') {
           this.trigger(msg.e);
         } else if (msg.type === 'create') {
@@ -86,33 +110,7 @@ export var msgStore = Reflux.createStore({
         } else if (msg.type === 'remove') {
           reRender(msg.type, msg.e, prefs);
         } else if (msg.type === 'activate') {
-          if (msg.e.windowId === utilityStore.get_window() && msg.e.title !== 'New Tab') {
-            var getImageFromTab = ()=>{
-              if (kmp(msg.e.url, 'chrome://' !== -1)) {
-                throttled.screenshot(msg.e.tabId, msg.e.windowId, false, msg.type);
-              } else {
-                chrome.tabs.sendMessage(msg.e.tabId, {type: msg.type}, (response)=>{});
-              }
-            };
-            if (prefs.screenshot) {
-              // Inject event listener that messages the extension to recapture the image on click.
-              var title = null;
-              if (prefs.mode === 'tabs') {
-                title = _.result(_.find(tabs(), { id: msg.e.tabId }), 'title');
-                if (title !== 'New Tab') {
-                  getImageFromTab();
-                }
-              } else {
-                title = _.result(_.find(tabs('alt'), { id: msg.e.tabId }), 'title');
-                if (title !== 'New Tab') {
-                  if (prefs.mode !== 'tabs') {
-                    getImageFromTab();
-                  }
-                }
-              }
-            }
-            reRender(msg.type, msg.e, prefs);
-          }
+          reRender(msg.type, msg.e, prefs);
         } else if (msg.type === 'update') {
           console.log('Update: ',msg);
           reRender(msg.type, msg.e, prefs);
@@ -138,7 +136,6 @@ export var msgStore = Reflux.createStore({
           contextStore.set_context(null, 'versionUpdate');
         } else if (msg.type === 'screenshot') {
           screenshotStore.capture(sender.tab.id, sender.tab.windowId, msg.image, msg.type);
-          reRender('activate', sender.tab.id, prefs);
         } else if (msg.type === 'checkSSCapture') {
           console.log('checkSSCapture: Sending screenshot to '+sender.tab.url);
           sendResponse(screenshotStore.tabHasScreenshot(sender.tab.url));
