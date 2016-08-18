@@ -550,7 +550,7 @@ var Tile = React.createClass({
       color: p.theme.tilePinned,
       backgroundColor: p.theme.tileButtonBg
     }));
-    var titleLimit = s.bookmarks || s.history ? 70 : 80;
+    var titleLimit = s.bookmarks || s.history ? 70 : 86;
     var drag = dragStore.get_drag();
     var remove = p.stores.prefs.mode !== 'tabs' && !s.openTab;
     var lowerLeft = p.stores.prefs.tabSizeHeight >= 205 ? -40 : -40;
