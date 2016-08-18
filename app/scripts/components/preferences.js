@@ -205,6 +205,22 @@ var Preferences = React.createClass({
                   <Row className="prefs-row-first" data-place="bottom" data-tip={`<div style="max-width: 350px;">If you notice performance issues, clearing the screenshot cache occassionally can help. Screenshots older than three days will start being purged once the cache reaches 50MB.</div>`}>
                     {s.bytesInUse ? `Screenshot disk usage: ${utils.formatBytes(s.bytesInUse, 2)}` : null}
                   </Row>
+                  <Toggle onMouseEnter={()=>this.handleToggle('screenshotInit')} 
+                          onClick={()=>this.handleClick('screenshotInit')} 
+                          on={p.prefs.screenshotInit} 
+                          child={true} 
+                          label="Capture screenshots when a tab loads"
+                          hoverBg={p.theme.settingsItemHover}
+                          data-tip="Enabling this will make TM5K attempt to capture tabs after they are loaded. This option is for users with fast computers, or those who have few tabs open.">
+                  </Toggle>
+                  <Toggle onMouseEnter={()=>this.handleToggle('screenshotChrome')} 
+                          onClick={()=>this.handleClick('screenshotChrome')} 
+                          on={p.prefs.screenshotChrome} 
+                          child={true} 
+                          label="Capture screenshots using the Chrome API"
+                          hoverBg={p.theme.settingsItemHover}
+                          data-tip="By default, TM5K will use Chrome to capture screenshots. The Chrome API is faster and captures any website, but can impact the overall performance of Chrome more on slower computers. Disable this to use the canvas method only.">
+                  </Toggle>
                   <Toggle onMouseEnter={()=>this.handleToggle('screenshotBg')} 
                           onClick={()=>this.handleClick('screenshotBg')} 
                           on={p.prefs.screenshotBg} 

@@ -13,7 +13,9 @@ var prefsStore = Reflux.createStore({
       context: true, 
       animations: true, 
       duplicate: true, 
-      screenshot: false, 
+      screenshot: false,
+      screenshotInit: false,
+      screenshotChrome: true,
       screenshotBg: false,
       screenshotBgBlur: 5,
       screenshotBgOpacity: 5,
@@ -60,6 +62,8 @@ var prefsStore = Reflux.createStore({
         context: prefs.context,
         duplicate: prefs.duplicate,
         screenshot: prefs.screenshot,
+        screenshotInit: prefs.screenshotInit,
+        screenshotChrome: prefs.screenshotChrome,
         screenshotBg: prefs.screenshotBg,
         screenshotBgBlur: prefs.screenshotBgBlur,
         screenshotBgOpacity: prefs.screenshotBgOpacity,
@@ -89,6 +93,12 @@ var prefsStore = Reflux.createStore({
       }
       if (typeof this.prefs.mode === 'undefined') {
         this.prefs.mode = 'tabs';
+      }
+      if (typeof this.prefs.screenshotInit === 'undefined') {
+        this.prefs.screenshotInit = false;
+      }
+      if (typeof this.prefs.screenshotChrome === 'undefined') {
+        this.prefs.screenshotChrome = true;
       }
       if (typeof this.prefs.screenshotBgBlur === 'undefined') {
         this.prefs.screenshotBgBlur = 5;
