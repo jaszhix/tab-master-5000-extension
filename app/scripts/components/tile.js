@@ -379,22 +379,6 @@ var Tile = React.createClass({
     }
     searchStore.set_search('');
   },
-  handleApp(opt){
-    var p = this.props;
-    if (opt === 'toggleEnable') {
-      chrome.management.setEnabled(p.tab.id, !p.tab.enabled);
-    } else if (opt === 'uninstallApp') {
-      chrome.management.uninstall(p.tab.id);
-    } else if (opt  === 'createAppShortcut') {
-      chrome.management.createAppShortcut(p.tab.id);
-    } else if (opt  === 'launchApp') {
-      this.handleClick(p.tab.id);
-    } else if (_.first(_.words(opt)) === 'OPEN') {
-      chrome.management.setLaunchType(p.tab.id, opt);
-      reRenderStore.set_reRender(true, 'update', null);
-    }
-
-  },
   applyTabOrder() {
     // Apply the sorted tab grid state to the Chrome window.
     var s = this.state;
@@ -421,6 +405,24 @@ var Tile = React.createClass({
       e.preventDefault();
       contextStore.set_context(true, this.props.tab);
     }
+  },
+  handleApp(opt){
+    var p = this.props;
+    if (opt === 'toggleEnable') {
+      chrome.management.setEnabled(p.tab.id, !p.tab.enabled, ()=>{
+        reRenderStore.set_reRender(true, 'update', null);
+      });
+    } else if (opt === 'uninstallApp') {
+      chrome.management.uninstall(p.tab.id);
+    } else if (opt  === 'createAppShortcut') {
+      chrome.management.createAppShortcut(p.tab.id);
+    } else if (opt  === 'launchApp') {
+      this.handleClick(p.tab.id);
+    } else if (_.first(_.words(opt)) === 'OPEN') {
+      chrome.management.setLaunchType(p.tab.id, opt);
+      reRenderStore.set_reRender(true, 'update', null);
+    }
+
   },
   handleRelays(props){
     var p = props;
