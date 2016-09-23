@@ -312,7 +312,7 @@ export var utilityStore = Reflux.createStore({
     this.window = null;
     this.focusedWindow = null;
     this.version = /Chrome\/([0-9.]+)/.exec(navigator.userAgent)[1].split('.');
-    this.cursor = {page: {x: null, y: null}, offset: {x: null, y: null}};
+    this.cursor = {page: {x: null, y: null}, offset: {x: null, y: null}, keys: {shift: null, ctrl: null}};
     this.systemState = null;
     this.bytesInUse = null;
   },
@@ -359,11 +359,8 @@ export var utilityStore = Reflux.createStore({
   get_manifest(){
     return chrome.runtime.getManifest();
   },
-  set_cursor(pageX, pageY, offsetX, offsetY){
-    this.cursor.page.x = pageX;
-    this.cursor.page.y = pageY;
-    this.cursor.offset.x = offsetX;
-    this.cursor.offset.x = offsetY;
+  set_cursor(obj){
+    _.assignIn(this.cursor, _.cloneDeep(obj));
   },
   get_cursor(){
     return this.cursor;
@@ -1024,7 +1021,20 @@ export var alertStore = Reflux.createStore({
 
 (function() {
     document.onmousemove = handleMouseMove;
-    function handleMouseMove(event) {
-      utilityStore.set_cursor(event.pageX, event.pageY, event.offsetX, event.offsetY);
+    function handleMouseMove(e) {
+      utilityStore.set_cursor({
+        page: {
+          x: e.pageX,
+          y: e.pageY
+        },
+        offset: {
+          x: e.offsetX,
+          y: e.offsetY,
+        },
+        keys: {
+          ctrl: e.ctrlKey,
+          shift: e.shiftKey
+        }
+      });
     }
 })();
