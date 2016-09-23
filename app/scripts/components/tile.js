@@ -8,6 +8,7 @@ import moment from 'moment';
 import Draggable from 'react-draggable';
 import OnClickOutside from 'react-onclickoutside';
 import ReactTooltip from './tooltip/tooltip';
+import state from './stores/state';
 import {msgStore, searchStore, sortStore, relayStore, faviconStore, bookmarksStore, reRenderStore, applyTabOrderStore, utilityStore, contextStore, dragStore, draggedStore, modalStore} from './stores/main';
 import tabStore from './stores/tab';
 import sessionsStore from './stores/sessions';
@@ -352,7 +353,7 @@ var Tile = React.createClass({
     var s = this.state;
     chrome.tabs.update(tab.id, {muted: !tab.mutedInfo.muted}, ()=>{
       if (s.muteInit) {
-        var refTab = _.findIndex(p.stores.prefs.tabs, {id: tab.id});
+        var refTab = _.findIndex(p.stores.tabs, {id: tab.id});
         p.stores.tabs[refTab].mutedInfo.muted = !tab.mutedInfo.muted;
         tabStore.set_tab(p.stores.tabs);
         this.setState({muteInit: false});
@@ -414,7 +415,7 @@ var Tile = React.createClass({
   handleContextClick(e){
     if (this.props.stores.prefs.context) {
       e.preventDefault();
-      contextStore.set_context(true, this.props.tab);
+      state.set({context: {value: true, id: this.props.tab}});
     }
   },
   handleApp(opt){
@@ -711,7 +712,7 @@ var TileGrid = React.createClass({
   },
   getDefaultProps: function() {
     return {
-      data: [],
+      tabs: [],
       keys: [],
       labels: {},
       collapse: true
@@ -719,7 +720,6 @@ var TileGrid = React.createClass({
   },
   getInitialState: function() {
     return {
-      data: this.props.data,
       title: true,
       order: 'index',
       direction: 'asc'
@@ -761,11 +761,12 @@ var TileGrid = React.createClass({
     if (nextProps.tileLimit !== p.tileLimit) {
       this.setState({tileLimit: nextProps.tileLimit});
     }
-    this.sort(nextProps.stores.sort, nextProps);
+    if (nextProps.stores.sort !== p.stores.sort) {
+      this.sort(nextProps);
+    }
   },
-  sort(key, props) {
-    var s = this.state;
-    
+  sort(p) {
+    var key = p.stores.sort;
     var direction = 'asc';
     if (key === 'offlineEnabled' 
       || key === 'sTimeStamp' 
@@ -775,16 +776,16 @@ var TileGrid = React.createClass({
       || key === 'timeStamp'  
       || key === 'lastVisitTime') {
       
-      direction = props.stores.prefs.format === 'tile' ? 'asc' : 'desc';
+      direction = p.stores.prefs.format === 'tile' ? 'asc' : 'desc';
     }
-    var pinned = _.orderBy(_.filter(props.data, {pinned: true}), key, direction);
-    var unpinned = _.orderBy(_.filter(props.data, {pinned: false}), key, direction);
+    var pinned = _.orderBy(_.filter(p.s.tabs, {pinned: true}), key, direction);
+    var unpinned = _.orderBy(_.filter(p.s.tabs, {pinned: false}), key, direction);
     var concat = _.concat(pinned, unpinned);
 
-    var pinnedDirection = props.stores.prefs.format == 'tile' ? ['desc', direction] : direction;
+    var pinnedDirection = p.s.prefs.format == 'tile' ? ['desc', direction] : direction;
     var result = _.orderBy(concat, ['pinned', key], pinnedDirection);
+    state.set({tabs: result});
     this.setState({
-      data: result,
       direction: direction,
       order: key
     });
@@ -795,7 +796,6 @@ var TileGrid = React.createClass({
   render: function() {
     var p = this.props;
     var s = this.state;
-    var data = p.stores.prefs.sort && p.stores.prefs.sidebar ? s.data : p.data;
     var favicons = faviconStore.get_favicon();
     var ssBg = p.stores.prefs && p.stores.prefs.screenshot && p.stores.prefs.screenshotBg;
     var iconCollapse = p.width <= 1135;
@@ -846,18 +846,19 @@ var TileGrid = React.createClass({
         btnStyle={btnStyle} /> : null}
         <div className="tile-div" style={tileDivStyle}>
           <div id="grid" ref="grid">
-            {p.stores.prefs.format === 'tile' ? data.map((data, i)=> {
+            {p.stores.prefs.format === 'tile' ? p.s.tabs.map((tab, i)=> {
               if (i <= p.tileLimit) {
-                if (p.stores.prefs.mode !== 'apps' && p.stores.prefs.mode !== 'extensions' && !_.find(favicons, {domain: data.url.split('/')[2]})) {
-                  faviconStore.set_favicon(data, s.data.length, i);
+                if (p.stores.prefs.mode !== 'apps' && p.stores.prefs.mode !== 'extensions' && !_.find(favicons, {domain: tab.url.split('/')[2]})) {
+                  faviconStore.set_favicon(tab, p.s.tabs.length, i);
                 }
                 return (
                   <Tile 
                   sessions={p.sessions} 
                   stores={p.stores} 
                   render={p.render} 
-                  i={i} key={data.id} 
-                  tab={data} 
+                  i={i} 
+                  key={tab.id} 
+                  tab={tab} 
                   tileLimit={p.tileLimit} 
                   init={p.init} 
                   theme={p.theme}
@@ -869,7 +870,7 @@ var TileGrid = React.createClass({
             })
             :
             <Table 
-            data={data}
+            data={p.s.tabs}
             stores={p.stores}
             favicons={favicons}
             theme={p.theme}

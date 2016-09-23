@@ -24,11 +24,12 @@ export var bgSetPrefs = (obj)=>{
 };
 
 // Chrome event listeners set to trigger re-renders.
-var reRender = (type, id, prefs) => {
-  console.log('reRender', type, id, prefs);
+var reRender = (type, id) => {
+  //debugger;
+  var s = state.get();
   var idIsObject = _.isObject(id);
   var tId = typeof id.tabId !== 'undefined' ? id.tabId : idIsObject ? id.id : id;
-  tabStore.getSingleTab(tId).then((targetTab)=>{
+  var handleUpdate = (targetTab)=>{
     if (targetTab.url.indexOf('chrome://newtab') !== -1 && !idIsObject) {
       return;
     }
@@ -41,10 +42,10 @@ var reRender = (type, id, prefs) => {
         utilityStore.set_systemState('lowRAM');
       }
     });
-    if (prefs.actions) {
-      var refOldTab = _.findIndex(tabs('alt'), {id: tId});
+    if (s.prefs.actions) {
+      var refOldTab = _.findIndex(s.altTabs, {id: tId});
       if (refOldTab !== -1) {
-        actionStore.set_action(type, tabs('alt')[refOldTab]);
+        actionStore.set_action(type, s.altTabs[refOldTab]);
       }
     }
     console.log('window: ', targetTab.windowId, utilityStore.get_window(), 'state: ',utilityStore.get_systemState(), 'type: ', type, 'id: ',tId, 'item: ', targetTab);
@@ -56,7 +57,7 @@ var reRender = (type, id, prefs) => {
       } else if (type === 'activate') {
         var getImageFromTab = ()=>{
           console.log('getImageFromTab');
-          if (prefs.screenshotChrome) {
+          if (s.prefs.screenshotChrome) {
             if (targetTab.active) {
               _.defer(()=>screenshotStore.capture(tId, targetTab.windowId, false, type));
               _.defer(()=>state.set({update: targetTab}));
@@ -66,7 +67,7 @@ var reRender = (type, id, prefs) => {
             _.delay(()=>state.set({update: targetTab}),1000);
           }
         };
-        if (prefs.screenshot) {
+        if (s.prefs.screenshot) {
           if (targetTab.url.indexOf('chrome://') !== -1 && targetTab.url.indexOf('chrome://newtab') === -1) {
             if (targetTab.active) {
               _.defer(()=>screenshotStore.capture(tId, targetTab.windowId, false, type));
@@ -78,23 +79,32 @@ var reRender = (type, id, prefs) => {
         } else {
           state.set({update: targetTab});
         }
-      } else if (prefs.mode !== 'tabs') {
+      } else if (s.prefs.mode !== 'tabs') {
         reRenderStore.set_reRender(true, type, tId);
       }
     }
-  }).catch((e)=>{
-      var wId = utilityStore.get_window();
-      console.log('Exception...', e);
-      if (type === 'remove' || type === 'detach') {
-        state.set({remove: tId});
-      } else if (type === 'create' || type === 'attach') {
-        if (id.windowId === wId && id.url.indexOf('chrome://newtab') === -1) {
-          state.set({create: id}); // Full tab object
+  };
+  if (type !== 'remove') {
+    tabStore.getSingleTab(tId).then((targetTab)=>{
+      _.defer(()=>handleUpdate(targetTab));
+    }).catch((e)=>{
+        var wId = utilityStore.get_window();
+        console.log('Exception...', e);
+        if (type === 'remove' || type === 'detach') {
+          state.set({remove: tId});
+        } else if (type === 'create' || type === 'attach') {
+          if (id.windowId === wId && id.url.indexOf('chrome://newtab') === -1) {
+            state.set({create: id}); // Full tab object
+          }
+        } else if (s.prefs.mode !== 'tabs') {
+          reRenderStore.set_reRender(true, type, tId);
         }
-      } else if (prefs.mode !== 'tabs') {
-        reRenderStore.set_reRender(true, type, tId);
-      }
-  });
+    });  
+  } else {
+    var targetTab = _.find(s.altTabs, {id: tId});
+    handleUpdate(targetTab);
+  }
+  
 };
 var throttled = {
   screenshot: _.throttle(screenshotStore.capture, 0, {leading: true}),
@@ -105,40 +115,39 @@ export var msgStore = Reflux.createStore({
     this.response = null;
     
     chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-      var prefs = state.get().prefs;
       console.log('msg: ',msg, 'sender: ', sender);
       if (msg.type === 'prefs') {
         state.set({prefs: msg.e});
       } else if (msg.type === 'create') {
         console.log('Create: ',msg);
-        reRender(msg.type, msg.e, prefs);
+        reRender(msg.type, msg.e);
       } else if (msg.type === 'remove') {
-        reRender(msg.type, msg.e, prefs);
+        reRender(msg.type, msg.e);
       } else if (msg.type === 'activate') {
-        reRender(msg.type, msg.e, prefs);
+        reRender(msg.type, msg.e);
       } else if (msg.type === 'update') {
         console.log('Update: ',msg);
-        reRender(msg.type, msg.e, prefs);
+        reRender(msg.type, msg.e);
       } else if (msg.type === 'move') {
-        reRender(msg.type, msg.e, prefs);
+        reRender(msg.type, msg.e);
       } else if (msg.type === 'attach') {
-        reRender(msg.type, msg.e, prefs);
+        reRender(msg.type, msg.e);
       } else if (msg.type === 'detach') {
-        reRender(msg.type, msg.e, prefs);
+        reRender(msg.type, msg.e);
       } else if (msg.type === 'bookmarks') {
-        reRender(msg.type, msg.e, prefs);
+        reRender(msg.type, msg.e);
       } else if (msg.type === 'history') {
-        throttled.history(msg.type, msg.e, prefs);
+        throttled.history(msg.type, msg.e);
       } else if (msg.type === 'app') {
         reRenderStore.set_reRender(true, 'update', null);
       } else if (msg.type === 'error') {
         utilityStore.reloadBg();
       } else if (msg.type === 'newVersion') {
-        contextStore.set_context(null, 'newVersion');
+        state.set({value: null, id: 'newVersion'});
       } else if (msg.type === 'installed') {
-        contextStore.set_context(null, 'installed');
+        state.set({value: null, id: 'installed'});
       } else if (msg.type === 'versionUpdate') {
-        contextStore.set_context(null, 'versionUpdate');
+        state.set({value: null, id: 'versionUpdate'});
       } else if (msg.type === 'screenshot') {
         screenshotStore.capture(sender.tab.id, sender.tab.windowId, msg.image, msg.type);
       } else if (msg.type === 'checkSSCapture') {
@@ -171,33 +180,6 @@ export var msgStore = Reflux.createStore({
   }
 });
 window.msgStore = msgStore;
-
-export var createStore = Reflux.createStore({
-  init(){
-    this.create = null;
-  },
-  set(id){
-    this.create = id;
-    this.trigger(this.create);
-  },
-  get(){
-    return this.create;
-  }
-});
-
-export var searchStore = Reflux.createStore({
-  init: function() {
-    this.search = '';
-  },
-  set_search: function(value) {
-    this.search = value;
-    console.log('search: ', value);
-    this.trigger(this.search);
-  },
-  get_search: function() {
-    return this.search;
-  }
-});
 
 export var clickStore = Reflux.createStore({
   init: function() {
@@ -377,20 +359,6 @@ export var utilityStore = Reflux.createStore({
   },
 });
 window.utilityStore = utilityStore;
-export var contextStore = Reflux.createStore({
-  init: function() {
-    this.context = [false, null];
-  },
-  set_context: function(value, id) {
-    this.context[0] = value;
-    this.context[1] = id;
-    this.trigger(this.context);
-    console.log('context: ', value);
-  },
-  get_context: function() {
-    return this.context;
-  }
-});
 
 export var relayStore = Reflux.createStore({
   init: function() {
@@ -532,7 +500,7 @@ export var bookmarksStore = Reflux.createStore({
       chrome.bookmarks.getTree((bk)=>{
         var bookmarks = [];
         var folders = [];
-        var t = tabStore.get_altTab();
+        var t = state.get().altTabs;
         var openTab = 0;
         var iter = -1;
         var addBookmarkChildren = (bookmarkLevel, title='')=> {
@@ -607,7 +575,7 @@ export var historyStore = Reflux.createStore({
     return new Promise((resolve, reject)=>{
       chrome.history.search({text: '', maxResults: 1000}, (h)=>{
         console.log(h);
-        var t = tabStore.get_altTab();
+        var t = state.get().altTabs;
         var openTab = 0;
         var openTabObj = null;
         for (var i = h.length - 1; i >= 0; i--) {
@@ -667,6 +635,7 @@ export var actionStore = Reflux.createStore({
     this.undoActionState = value;
   },
   undoAction(){
+    var s = state.get();
     console.log('this.actions: ',this.actions);
     this.undoActionState = true;
     var removeLastAction = ()=>{
@@ -676,7 +645,7 @@ export var actionStore = Reflux.createStore({
       var lastAction = _.last(this.actions);
       console.log('lastAction: ',lastAction);
       if (lastAction) {
-        var tab = _.find(tabs(), { id: lastAction.item.id });
+        var tab = _.find(s.tabs, { id: lastAction.item.id });
         if (lastAction.type === 'remove') {
           tabStore.keepNewTabOpen();
           tabStore.create(lastAction.item.url, lastAction.item.index);

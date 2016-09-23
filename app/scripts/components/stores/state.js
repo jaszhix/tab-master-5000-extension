@@ -11,14 +11,26 @@ var state = Reflux.createStore({
       update: null,
       remove: null,
       create: null,
+      // UI
+      search: '',
+      width: window.innerWidth,
+      height: window.innerHeight,
+      collapse: window.innerWidth >= 1565,
+      tileLimit: 100,
+      context: {
+        value: null,
+        id: null
+      },
+      // Chrome data
+      tabs: null,
+      altTabs: null
     };
   },
   set(obj){
     console.log('STATE INPUT: ', obj);
-    _.assignIn(this.state, _.cloneDeep(obj));
+    _.assignIn(this.state, obj);
     console.log('STATE: ', this.state);
     this.trigger(this.state);
-    console.log('PATH: ', this.state.path);
   },
   get(){
     return this.state;
