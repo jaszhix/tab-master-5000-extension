@@ -765,7 +765,6 @@ var TileGrid = React.createClass({
   },
   sort(key, props) {
     var s = this.state;
-    console.log('key', key, s.order, key === s.order);
     
     var direction = 'asc';
     if (key === 'offlineEnabled' 
@@ -776,13 +775,14 @@ var TileGrid = React.createClass({
       || key === 'timeStamp'  
       || key === 'lastVisitTime') {
       
-      direction = props.stores.prefs.format === 'tile' ? 'desc' : 'asc';
+      direction = props.stores.prefs.format === 'tile' ? 'asc' : 'desc';
     }
     var pinned = _.orderBy(_.filter(props.data, {pinned: true}), key, direction);
     var unpinned = _.orderBy(_.filter(props.data, {pinned: false}), key, direction);
     var concat = _.concat(pinned, unpinned);
 
-    var result = _.orderBy(concat, ['pinned', key], direction);
+    var pinnedDirection = props.stores.prefs.format == 'tile' ? ['desc', direction] : direction;
+    var result = _.orderBy(concat, ['pinned', key], pinnedDirection);
     this.setState({
       data: result,
       direction: direction,
