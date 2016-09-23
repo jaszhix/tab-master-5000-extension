@@ -318,14 +318,8 @@ export var utilityStore = Reflux.createStore({
   },
   filterFavicons(faviconUrl, tabUrl) {
     // Work around for Chrome favicon useage restriction.
-    if (kmp(tabUrl, 'chrome://settings') !== -1) {
-      return '../images/IDR_SETTINGS_FAVICON@2x.png';
-    } else if (kmp(tabUrl, 'chrome://extensions') !== -1) {
-      return '../images/IDR_EXTENSIONS_FAVICON@2x.png';
-    } else if (kmp(tabUrl, 'chrome://history') !== -1) {
-      return '../images/IDR_HISTORY_FAVICON@2x.png';
-    } else if (kmp(tabUrl, 'chrome://downloads') !== -1) {
-      return '../images/IDR_DOWNLOADS_FAVICON@2x.png';
+    if (faviconUrl.indexOf('chrome://theme/') !== -1) {
+      return `../images/${faviconUrl.split('chrome://theme/')[1]}.png`;
     } else {
       return faviconUrl;
     }
