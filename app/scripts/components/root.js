@@ -36,6 +36,7 @@ import kmp from 'kmp';
 import ReactUtils from 'react-utils';
 import ReactTooltip from './tooltip/tooltip';
 import '../../styles/app.scss';
+import '../../styles/icons/icomoon/styles.css';
 window.v = v;
 import {msgStore, createStore, removeStore, updateStore, keyboardStore, sortStore, chromeAppStore, faviconStore, actionStore, historyStore, bookmarksStore, relayStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore, applyTabOrderStore} from './stores/main';
 import themeStore from './stores/theme';
