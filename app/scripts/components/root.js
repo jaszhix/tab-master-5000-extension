@@ -1,6 +1,6 @@
 window._trackJs = {
   token: 'bd495185bd7643e3bc43fa62a30cec92',
-  enabled: true,
+  enabled: false,
   onError: function (payload) { return true; },
   version: "",
   callback: {
@@ -38,7 +38,8 @@ import ReactTooltip from './tooltip/tooltip';
 import '../../styles/app.scss';
 import '../../styles/icons/icomoon/styles.css';
 window.v = v;
-import {msgStore, createStore, removeStore, updateStore, keyboardStore, sortStore, chromeAppStore, faviconStore, actionStore, historyStore, bookmarksStore, relayStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore, applyTabOrderStore} from './stores/main';
+import state from './stores/state';
+import {msgStore, keyboardStore, sortStore, chromeAppStore, faviconStore, actionStore, historyStore, bookmarksStore, relayStore, searchStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, contextStore, applyTabOrderStore} from './stores/main';
 import themeStore from './stores/theme';
 import tabStore from './stores/tab';
 import sessionsStore from './stores/sessions';
@@ -117,9 +118,6 @@ var Loading = React.createClass({
 });
 
 var Search = React.createClass({
-  /*shouldComponentUpdate() {
-    return searchStore.get_search().length > -1;
-  },*/
   getInitialState(){
     return {
       theme: this.props.theme
@@ -238,7 +236,7 @@ var Root = React.createClass({
       wallpaper: null,
       wallpapers: [],
       sidebar: false,
-      disableSidebarClickOutside: false
+      disableSidebarClickOutside: false,
     };
   },
   componentWillMount(){
@@ -248,9 +246,6 @@ var Root = React.createClass({
     // Initialize Reflux listeners.
     actionStore.clear();
     this.listenTo(themeStore, this.themeChange);
-    this.listenTo(createStore, this.createSingleItem);
-    this.listenTo(removeStore, this.removeSingleItem);
-    this.listenTo(updateStore, this.updateSingleItem);
     this.listenTo(bookmarksStore, this.updateTabState);
     this.listenTo(historyStore, this.updateTabState);
     this.listenTo(chromeAppStore, this.updateTabState);
@@ -258,7 +253,6 @@ var Root = React.createClass({
     this.listenTo(reRenderStore, this.reRender);
     this.listenTo(settingsStore, this.settingsChange);
     this.listenTo(contextStore, this.contextTrigger);
-    this.listenTo(msgStore, this.prefsChange);
     this.listenTo(actionStore, this.actionsChange);
     this.listenTo(sessionsStore, this.sessionsChange);
     this.listenTo(faviconStore, this.faviconsChange);
@@ -269,20 +263,44 @@ var Root = React.createClass({
     this.listenTo(modalStore, this.modalChange);
     window._trackJs.version = utilityStore.get_manifest().version;
     
-    _.delay(()=>{
+    /*_.delay(()=>{
       if (this.state.prefs.length === 0) {
         utilityStore.reloadBg();
         utilityStore.restartNewTab();
       }
-    },2000);
+    },2000);*/
+  },
+  componentWillReceiveProps(nP){
+    var p = this.props;
+    if (!_.isEqual(nP.s.prefs, p.s.prefs) || this.state.init) {
+      this.prefsChange(nP.s.prefs);
+    }
+    if (!_.isEqual(nP.s.update, p.s.update)) {
+      this.updateSingleItem(nP.s.update);
+    }
+    if (!_.isEqual(nP.s.remove, p.s.remove)) {
+      this.removeSingleItem(nP.s.remove);
+    }
+    if (!_.isEqual(nP.s.create, p.s.create)) {
+      this.createSingleItem(nP.s.create);
+    }
+  },
+  componentDidUpdate(pP, pS){
+    if (!_.isEqual(pS.theme, this.state.theme)) {
+      this.themeChange({theme: this.state.theme});
+    }
+  },
+  stateChange(e){
+    this.setState({s: e});
   },
   sessionsChange(e){
     this.setState({sessions: e});
   },
   prefsChange(e){
     var s = this.state;
+
     this.setState({
-      prefs: e, 
+      //prefs: e, 
       tileLimit: 100,
       modal: modalStore.get_modal(),
       favicons: faviconStore.get_favicon(),
@@ -325,13 +343,9 @@ var Root = React.createClass({
   sortChange(e){
     this.setState({sort: e});
   },
-  componentDidUpdate(pP, pS){
-    if (!_.isEqual(pS.theme, this.state.theme)) {
-      this.themeChange({theme: this.state.theme});
-    }
-  },
   themeChange(e){
     var s = this.state;
+    var p = this.props;
     s.standardThemes = themeStore.getStandardThemes();
     if (e.savedThemes) {
       s.savedThemes = e.savedThemes;
@@ -438,11 +452,11 @@ var Root = React.createClass({
         background-color: ${e.theme.darkBtnBg};
       }
       body > div.ReactModalPortal > div > div {
-        -webkit-transition: ${s.prefs.animations ? 'background 0.5s ease-in, height 0.2s, width 0.2s, top 0.2s, left 0.2s, right 0.2s, bottom 0.2s' : 'initial'};
+        -webkit-transition: ${p.s.prefs.animations ? 'background 0.5s ease-in, height 0.2s, width 0.2s, top 0.2s, left 0.2s, right 0.2s, bottom 0.2s' : 'initial'};
         border: ${e.theme.tileShadow};
       }
       body > div.ReactModalPortal > div > div > div > div.row.ntg-tabs > div:nth-child(2) {
-        -webkit-transition: ${s.prefs.animations ? 'background 0.5s ease-in, top 0.2s, left 0.2s' : 'initial'};
+        -webkit-transition: ${p.s.prefs.animations ? 'background 0.5s ease-in, top 0.2s, left 0.2s' : 'initial'};
       }
       .rc-color-picker-panel {
         background-color: ${e.theme.settingsBg};
@@ -488,7 +502,7 @@ var Root = React.createClass({
         border-right: 6px solid ${themeStore.opacify(e.theme.darkBtnBg, 1)};
       }
       #main {
-        -webkit-transition: ${s.prefs.animations ? '-webkit-filter 0.2s ease-in' : 'initial'};
+        -webkit-transition: ${p.s.prefs.animations ? '-webkit-filter 0.2s ease-in' : 'initial'};
       }
       .alert-success {
         color: ${e.theme.lightBtnText};
@@ -529,7 +543,7 @@ var Root = React.createClass({
   },
   modalChange(e){
     this.setState({modal: e});
-    if (this.state.prefs.animations) {
+    if (this.props.s.prefs.animations) {
       if (e.state) {
         v('#main').css({
           WebkitTransition: '-webkit-filter .0.5s ease-in',
@@ -562,13 +576,15 @@ var Root = React.createClass({
       }
       this.setState({tabs: _.uniq(tabs)});
       tabStore.set_tab(tabs);
-    } else {
+    }/* else {
+      p.prefs.mode 
       msgStore.setPrefs({mode: s.prefs.mode});
-    }
+    }*/
     _.defer(()=>this.setState({topLoad: false}));
   },
   createSingleItem(e){
     var s = this.state;
+    var p = this.props;
     var tab = e;
     _.assign(tab, {
       timeStamp: new Date(Date.now()).getTime()
@@ -589,11 +605,11 @@ var Root = React.createClass({
     }
     tabs = _.orderBy(_.uniqBy(tabs, 'id'), ['pinned'], ['desc']);
     console.log('Single tab to update:', tab);
-    if (s.prefs.sessionsSync) {
+    if (p.s.prefs.sessionsSync) {
       synchronizeSession(s.prefs, tabs);
     }
     tabStore.set_altTab(tabs);
-    if (s.prefs.mode === 'tabs') {
+    if (p.s.prefs.mode === 'tabs') {
       tabStore.set_tab(tabs);
       this.setState({
         tabs: tabs
@@ -605,17 +621,18 @@ var Root = React.createClass({
     var tabToUpdate = _.findIndex(tabs, {id: e});
     if (tabToUpdate > -1) {
       var s = this.state;
-      if (s.prefs.actions) {
+      var p = this.props;
+      if (p.s.prefs.actions) {
         actionStore.set_action('remove', tabs[tabToUpdate]);
       }
       tabs = _.without(tabs, tabs[tabToUpdate]);
       tabs = _.orderBy(_.uniqBy(tabs, 'id'), ['pinned'], ['desc']);
       console.log('Single tab to remove:', tabs[tabToUpdate]);
-      if (s.prefs.sessionsSync) {
+      if (p.s.prefs.sessionsSync) {
         synchronizeSession(s.prefs, tabs);
       }
       tabStore.set_altTab(tabs);
-      if (s.prefs.mode === 'tabs') {
+      if (p.s.prefs.mode === 'tabs') {
         tabStore.set_tab(tabs);
         this.setState({
           tabs: tabs
@@ -631,6 +648,7 @@ var Root = React.createClass({
     var tabToUpdate = _.findIndex(tabs, {id: e.id});
     if (tabToUpdate > -1) {
       var s = this.state;
+      var p = this.props;
       tabs[tabToUpdate] = e;
       if (e.pinned) {
         tabs = _.orderBy(_.uniqBy(tabs, 'id'), ['pinned'], ['desc']);
@@ -638,11 +656,11 @@ var Root = React.createClass({
         tabs = _.orderBy(tabs, ['pinned'], ['desc']);
       }
       console.log('Single tab to update:', e);
-      if (s.prefs.sessionsSync) {
+      if (p.s.prefs.sessionsSync) {
         synchronizeSession(s.prefs, tabs);
       }
       tabStore.set_altTab(tabs);
-      if (s.prefs.mode === 'tabs') {
+      if (p.s.prefs.mode === 'tabs') {
         tabStore.set_tab(tabs);
         this.setState({
           tabs: tabs
@@ -652,13 +670,14 @@ var Root = React.createClass({
   },
   updateTabState(e, opt){
     var s = this.state;
+    var p = this.props;
     console.log('updateTabState: ',e);
     if (typeof e === 'string') {
       _.assignIn(s, {
         folderState: !s.folderState,
         folder: e
       });
-      var filter = s.prefs.mode === 'bookmarks' ? {folder: s.folder} : {originSession: s.folder};
+      var filter = p.s.prefs.mode === 'bookmarks' ? {folder: s.folder} : {originSession: s.folder};
       console.log('filter', filter);
       _.assignIn(s, {
         tabs: s.folderState ? _.filter(s.tabs, filter) : s.bkCache,
@@ -682,14 +701,15 @@ var Root = React.createClass({
         if (opt === 'cycle') {
           this.setState({grid: true});
         }
-        if (s.prefs.sessionsSync) {
-          synchronizeSession(s.prefs, Tab);
+        if (p.s.prefs.sessionsSync) {
+          synchronizeSession(p.s.prefs, Tab);
         }
       });
     }
   },
   captureTabs(opt) {
     var s = this.state;
+    var p = this.props;
     this.setState({topLoad: true});
     // Query current Chrome window for tabs.
     tabStore.promise().then((Tab)=>{
@@ -720,16 +740,16 @@ var Root = React.createClass({
       }
       var tab = [];
       // Handle session view querying, and set it to tabs var.
-      if (s.prefs.mode === 'sessions') {
+      if (p.s.prefs.mode === 'sessions') {
         tab = sessionsStore.flatten();
       } else {
         tab = Tab;
       }
       // Avoid setting tabs state here if the mode is not tabs or sessions. updateTabState will handle other modes.
-      if (s.prefs.mode !== 'bookmarks' 
-        && s.prefs.mode !== 'history' 
-        && s.prefs.mode !== 'apps' 
-        && s.prefs.mode !== 'extensions') {
+      if (p.s.prefs.mode !== 'bookmarks' 
+        && p.s.prefs.mode !== 'history' 
+        && p.s.prefs.mode !== 'apps' 
+        && p.s.prefs.mode !== 'extensions') {
         if (s.search.length === 0) {
           this.setState({tabs: tab});
           tabStore.set_tab(tab);
@@ -745,7 +765,7 @@ var Root = React.createClass({
       if (opt === 'init' || opt === 'tile') {
         this.setState({render: true});
         if (opt === 'init') {
-          utilityStore.initTrackJs(s.prefs, s.savedThemes);
+          utilityStore.initTrackJs(p.s.prefs, s.savedThemes);
           this.setState({load: false});
           actionStore.set_state(false);
         }
@@ -766,17 +786,17 @@ var Root = React.createClass({
   },
   reRender(e) {
     // Method triggered by Chrome event listeners.
-    var s = this.state;
+    var p = this.props;
     if (!clickStore.get_click()) {
       if (e[0]) {
         // Treat attaching/detaching and created tabs with a full re-render.
-        if (s.prefs.mode === 'bookmarks') {
+        if (p.s.prefs.mode === 'bookmarks') {
           this.updateTabState(bookmarksStore.get_bookmarks(), e[1]);
-        } else if (s.prefs.mode === 'history') {
+        } else if (p.s.prefs.mode === 'history') {
           this.updateTabState(historyStore.get_history(), e[1]);
-        } else if (s.prefs.mode === 'apps') {
+        } else if (p.s.prefs.mode === 'apps') {
           this.updateTabState(chromeAppStore.get(true), e[1]);
-        } else if (s.prefs.mode === 'extensions') {
+        } else if (p.s.prefs.mode === 'extensions') {
           this.updateTabState(chromeAppStore.get(false), e[1]);
         } else {
           this.captureTabs(e[1]);
@@ -785,7 +805,7 @@ var Root = React.createClass({
     }
   },
   onWindowResize: function (event, opt) {
-    var s = this.state;
+    var p = this.props;
     if (opt === 'init') {
       if (window.innerWidth >= 1565) {
         this.setState({collapse: true});
@@ -800,7 +820,7 @@ var Root = React.createClass({
         this.setState({collapse: false});
       }
     }
-    if (s.prefs.screenshotBg || s.prefs.screenshot) {
+    if (p.s.prefs.screenshotBg || p.s.prefs.screenshot) {
       document.getElementById('bgImg').style.width = window.innerWidth + 30;
       document.getElementById('bgImg').style.height = window.innerHeight + 5;
     }
@@ -824,6 +844,7 @@ var Root = React.createClass({
   },
   render: function() {
     var s = this.state;
+    var p = this.props;
     var tabs = tabStore.get_tab();
     var altTabs = tabStore.get_altTab();
     var newTabs = tabStore.getNewTabs();
@@ -837,7 +858,7 @@ var Root = React.createClass({
       favicons: s.favicons, 
       screenshots: s.screenshots, 
       newTabs: newTabs, 
-      prefs: s.prefs, 
+      prefs: p.s.prefs, 
       search: s.search, 
       cursor: cursor, 
       chromeVersion: s.chromeVersion, 
@@ -852,7 +873,7 @@ var Root = React.createClass({
     };
     var keys = [];
     var labels = {};
-    if (stores.prefs.mode === 'bookmarks') {
+    if (p.s.prefs.mode === 'bookmarks') {
       keys = ['url', 'title', 'dateAdded', 'folder', 'index'];
       labels = {
         folder: 'Folder',
@@ -861,7 +882,7 @@ var Root = React.createClass({
         title: 'Title',
         index: 'Original Order'
       };
-    } else if (stores.prefs.mode === 'history') {
+    } else if (p.s.prefs.mode === 'history') {
       keys = ['openTab', 'url', 'title', 'lastVisitTime', 'visitCount', 'index'];
       labels = {
         visitCount: 'Most Visited',
@@ -871,7 +892,7 @@ var Root = React.createClass({
         openTab: 'Open',
         index: 'Original Order'
       };
-    } else if (stores.prefs.mode === 'sessions') {
+    } else if (p.s.prefs.mode === 'sessions') {
       keys = ['openTab', 'url', 'title', 'sTimeStamp', 'label', 'index'];
       labels = {
         label: 'Label',
@@ -881,7 +902,7 @@ var Root = React.createClass({
         openTab: 'Open',
         index: 'Original Order'
       };
-    } else if (stores.prefs.mode === 'apps' || stores.prefs.mode === 'extensions') {
+    } else if (p.s.prefs.mode === 'apps' || p.s.prefs.mode === 'extensions') {
       keys = ['title', 'offlineEnabled', 'index'];
       labels = {
         offlineEnabled: 'Offline Enabled',
@@ -910,15 +931,15 @@ var Root = React.createClass({
     if (s.theme) {
       return (
         <div className="container-main">
-          {options ? <Preferences options={true} settingsMax={true} prefs={s.prefs} tabs={s.tabs} theme={s.theme} /> : s.load ? <Loading /> 
+          {options ? <Preferences options={true} settingsMax={true} prefs={p.s.prefs} tabs={s.tabs} theme={s.theme} /> : s.load ? <Loading /> 
           : 
           <div>
-            {s.context ? <ContextMenu search={stores.search} actions={s.actions} tabs={s.tabs} prefs={s.prefs} cursor={cursor} context={context} chromeVersion={s.chromeVersion} duplicateTabs={s.duplicateTabs}/> : null}
+            {s.context ? <ContextMenu search={stores.search} actions={s.actions} tabs={s.tabs} prefs={p.s.prefs} cursor={cursor} context={context} chromeVersion={s.chromeVersion} duplicateTabs={s.duplicateTabs}/> : null}
             {s.modal ? <ModalHandler 
                         modal={s.modal} 
-                        tabs={s.prefs.mode === 'tabs' ? s.tabs : stores.altTabs}
+                        tabs={p.s.prefs.mode === 'tabs' ? s.tabs : stores.altTabs}
                         allTabsByWindow={s.allTabsByWindow}
-                        sessions={s.sessions} prefs={s.prefs} 
+                        sessions={s.sessions} prefs={p.s.prefs} 
                         favicons={s.favicons} 
                         collapse={s.collapse} 
                         theme={s.theme} 
@@ -932,7 +953,7 @@ var Root = React.createClass({
               <div className="tile-container">
                 <Search 
                 event={s.event} 
-                prefs={s.prefs} 
+                prefs={p.s.prefs} 
                 topLoad={s.topLoad} 
                 theme={s.theme} 
                 width={s.width}
@@ -960,7 +981,7 @@ var Root = React.createClass({
                     />
                   : <Loading />}
                 </div>
-                {s.modal && !s.modal.state && s.prefs.tooltip ? 
+                {s.modal && !s.modal.state && p.s.prefs.tooltip ? 
                 <ReactTooltip 
                 effect="solid" 
                 place="right"
@@ -969,7 +990,7 @@ var Root = React.createClass({
                 offset={{top: 0, left: 6}} /> : null}
               </div> : null}
             </div>}
-            {s.modal && !s.modal.state && s.prefs.tooltip ? <Alert enabled={s.prefs.alerts} /> : null}
+            {s.modal && !s.modal.state && p.s.prefs.tooltip ? <Alert enabled={p.s.prefs.alerts} /> : null}
         </div>
       );
     } else {
@@ -977,6 +998,26 @@ var Root = React.createClass({
     }
   }
 });
+
+var App = React.createClass({
+  mixins: [Reflux.ListenerMixin],
+  getInitialState(){
+    return state.get();
+  },
+  componentDidMount(){
+    this.listenTo(state, this.stateChange);
+    chrome.runtime.sendMessage(chrome.runtime.id, {method: 'prefs'}, (response)=>{
+      console.log('App componentDidMount: ', response);
+      state.set({prefs: response.prefs});
+    });
+  },
+  stateChange(e){
+    this.setState(e);
+  },
+  render(){
+    return <Root s={this.state} />;
+  }
+});
 v(document).ready(()=>{
-  ReactDOM.render(<Root />, document.getElementById('main'));
+  ReactDOM.render(<App />, document.getElementById('main'));
 });

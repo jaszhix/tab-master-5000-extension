@@ -1,11 +1,11 @@
 import Reflux from 'reflux';
-import kmp from 'kmp';
 import _ from 'lodash';
 import v from 'vquery';
 import mouseTrap from 'mousetrap';
 
 import tabStore from './tab';
 import screenshotStore from './screenshot';
+import state from './state';
 
 export var tabs = (opt)=>{
   if (opt === 'alt') {
@@ -23,12 +23,13 @@ export var bgSetPrefs = (obj)=>{
   });
 };
 
-
 // Chrome event listeners set to trigger re-renders.
 var reRender = (type, id, prefs) => {
-  var tId = typeof id.tabId !== 'undefined' ? id.tabId : id;
+  console.log('reRender', type, id, prefs);
+  var idIsObject = _.isObject(id);
+  var tId = typeof id.tabId !== 'undefined' ? id.tabId : idIsObject ? id.id : id;
   tabStore.getSingleTab(tId).then((targetTab)=>{
-    if (targetTab.url.indexOf('chrome://newtab') !== -1) {
+    if (targetTab.url.indexOf('chrome://newtab') !== -1 && !idIsObject) {
       return;
     }
     chrome.idle.queryState(900, (idle)=>{
@@ -48,32 +49,34 @@ var reRender = (type, id, prefs) => {
     }
     console.log('window: ', targetTab.windowId, utilityStore.get_window(), 'state: ',utilityStore.get_systemState(), 'type: ', type, 'id: ',tId, 'item: ', targetTab);
     if (targetTab.windowId === utilityStore.get_window() && utilityStore.get_systemState() === 'active') {
-      if (type === 'update' || type === 'move') {
-        updateStore.set(targetTab);
+      if (type === 'create') {
+        state.set({create: id});
+      } else if (type === 'update' || type === 'move') {
+        state.set({update: targetTab});
       } else if (type === 'activate') {
         var getImageFromTab = ()=>{
           console.log('getImageFromTab');
           if (prefs.screenshotChrome) {
             if (targetTab.active) {
               _.defer(()=>screenshotStore.capture(tId, targetTab.windowId, false, type));
-              _.defer(()=>updateStore.set(targetTab));
+              _.defer(()=>state.set({update: targetTab}));
             }
           } else {
             chrome.tabs.sendMessage(targetTab.id, {type: type});
-            _.delay(()=>updateStore.set(targetTab),1000);
+            _.delay(()=>state.set({update: targetTab}),1000);
           }
         };
         if (prefs.screenshot) {
           if (targetTab.url.indexOf('chrome://') !== -1 && targetTab.url.indexOf('chrome://newtab') === -1) {
             if (targetTab.active) {
               _.defer(()=>screenshotStore.capture(tId, targetTab.windowId, false, type));
-              _.defer(()=>updateStore.set(targetTab));
+              _.defer(()=>state.set({update: targetTab}));
             }
           } else {
             getImageFromTab();
           }
         } else {
-          updateStore.set(targetTab);
+          state.set({update: targetTab});
         }
       } else if (prefs.mode !== 'tabs') {
         reRenderStore.set_reRender(true, type, tId);
@@ -83,10 +86,10 @@ var reRender = (type, id, prefs) => {
       var wId = utilityStore.get_window();
       console.log('Exception...', e);
       if (type === 'remove' || type === 'detach') {
-        removeStore.set(tId);
+        state.set({remove: tId});
       } else if (type === 'create' || type === 'attach') {
         if (id.windowId === wId && id.url.indexOf('chrome://newtab') === -1) {
-          createStore.set(id); // Full tab object
+          state.set({create: id}); // Full tab object
         }
       } else if (prefs.mode !== 'tabs') {
         reRenderStore.set_reRender(true, type, tId);
@@ -100,48 +103,48 @@ var throttled = {
 export var msgStore = Reflux.createStore({
   init(){
     this.response = null;
-    this.getPrefs().then((prefs)=>{
-      this.trigger(prefs);
-      chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-        console.log('msg: ',msg, 'sender: ', sender);
-        if (msg.type === 'prefs') {
-          this.trigger(msg.e);
-        } else if (msg.type === 'create') {
-          reRender(msg.type, msg.e, prefs);
-        } else if (msg.type === 'remove') {
-          reRender(msg.type, msg.e, prefs);
-        } else if (msg.type === 'activate') {
-          reRender(msg.type, msg.e, prefs);
-        } else if (msg.type === 'update') {
-          console.log('Update: ',msg);
-          reRender(msg.type, msg.e, prefs);
-        } else if (msg.type === 'move') {
-          reRender(msg.type, msg.e, prefs);
-        } else if (msg.type === 'attach') {
-          reRender(msg.type, msg.e, prefs);
-        } else if (msg.type === 'detach') {
-          reRender(msg.type, msg.e, prefs);
-        } else if (msg.type === 'bookmarks') {
-          reRender(msg.type, msg.e, prefs);
-        } else if (msg.type === 'history') {
-          throttled.history(msg.type, msg.e, prefs);
-        } else if (msg.type === 'app') {
-          reRenderStore.set_reRender(true, 'update', null);
-        } else if (msg.type === 'error') {
-          utilityStore.reloadBg();
-        } else if (msg.type === 'newVersion') {
-          contextStore.set_context(null, 'newVersion');
-        } else if (msg.type === 'installed') {
-          contextStore.set_context(null, 'installed');
-        } else if (msg.type === 'versionUpdate') {
-          contextStore.set_context(null, 'versionUpdate');
-        } else if (msg.type === 'screenshot') {
-          screenshotStore.capture(sender.tab.id, sender.tab.windowId, msg.image, msg.type);
-        } else if (msg.type === 'checkSSCapture') {
-          console.log('checkSSCapture: Sending screenshot to '+sender.tab.url);
-          sendResponse(screenshotStore.tabHasScreenshot(sender.tab.url));
-        }
-      });
+    
+    chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+      var prefs = state.get().prefs;
+      console.log('msg: ',msg, 'sender: ', sender);
+      if (msg.type === 'prefs') {
+        state.set({prefs: msg.e});
+      } else if (msg.type === 'create') {
+        console.log('Create: ',msg);
+        reRender(msg.type, msg.e, prefs);
+      } else if (msg.type === 'remove') {
+        reRender(msg.type, msg.e, prefs);
+      } else if (msg.type === 'activate') {
+        reRender(msg.type, msg.e, prefs);
+      } else if (msg.type === 'update') {
+        console.log('Update: ',msg);
+        reRender(msg.type, msg.e, prefs);
+      } else if (msg.type === 'move') {
+        reRender(msg.type, msg.e, prefs);
+      } else if (msg.type === 'attach') {
+        reRender(msg.type, msg.e, prefs);
+      } else if (msg.type === 'detach') {
+        reRender(msg.type, msg.e, prefs);
+      } else if (msg.type === 'bookmarks') {
+        reRender(msg.type, msg.e, prefs);
+      } else if (msg.type === 'history') {
+        throttled.history(msg.type, msg.e, prefs);
+      } else if (msg.type === 'app') {
+        reRenderStore.set_reRender(true, 'update', null);
+      } else if (msg.type === 'error') {
+        utilityStore.reloadBg();
+      } else if (msg.type === 'newVersion') {
+        contextStore.set_context(null, 'newVersion');
+      } else if (msg.type === 'installed') {
+        contextStore.set_context(null, 'installed');
+      } else if (msg.type === 'versionUpdate') {
+        contextStore.set_context(null, 'versionUpdate');
+      } else if (msg.type === 'screenshot') {
+        screenshotStore.capture(sender.tab.id, sender.tab.windowId, msg.image, msg.type);
+      } else if (msg.type === 'checkSSCapture') {
+        console.log('checkSSCapture: Sending screenshot to '+sender.tab.url);
+        sendResponse(screenshotStore.tabHasScreenshot(sender.tab.url));
+      }
     });
   },
   setPrefs(obj){
@@ -168,31 +171,6 @@ export var msgStore = Reflux.createStore({
   }
 });
 window.msgStore = msgStore;
-export var updateStore = Reflux.createStore({
-  init(){
-    this.update = null;
-  },
-  set(targetTab){
-    this.update = targetTab;
-    this.trigger(this.update);
-  },
-  get(){
-    return this.update;
-  }
-});
-
-export var removeStore = Reflux.createStore({
-  init(){
-    this.remove = null;
-  },
-  set(id){
-    this.remove = id;
-    this.trigger(this.remove);
-  },
-  get(){
-    return this.remove;
-  }
-});
 
 export var createStore = Reflux.createStore({
   init(){
@@ -1038,3 +1016,4 @@ export var alertStore = Reflux.createStore({
       });
     }
 })();
+
