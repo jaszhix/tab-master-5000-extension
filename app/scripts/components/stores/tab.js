@@ -125,7 +125,7 @@ var tabStore = Reflux.createStore({
   },
   create(href, index){
     chrome.tabs.create({url: href, index: index}, (t)=>{
-      console.log('Tab created from utilityStore.createTab: ',t);
+      console.log('Tab created from tabStore.createTab: ',t);
     });
   },
   pin(item){

@@ -22,7 +22,8 @@ var prefsStore = Reflux.createStore({
       blacklist: true, 
       sidebar: true, 
       sort: true, 
-      mode: 'tabs', 
+      mode: 'tabs',
+      format: 'tile',
       installTime: Date.now(), 
       actions: false,
       sessionsSync: true,
@@ -71,6 +72,7 @@ var prefsStore = Reflux.createStore({
         sidebar: prefs.sidebar,
         sort: prefs.sort,
         mode: prefs.mode,
+        format: prefs.format,
         animations: prefs.animations,
         installTime: prefs.installTime,
         settingsMax: prefs.settingsMax,
@@ -93,6 +95,9 @@ var prefsStore = Reflux.createStore({
       }
       if (typeof this.prefs.mode === 'undefined') {
         this.prefs.mode = 'tabs';
+      }
+      if (typeof this.prefs.format === 'undefined') {
+        this.prefs.format = 'tile';
       }
       if (typeof this.prefs.screenshotInit === 'undefined') {
         this.prefs.screenshotInit = false;

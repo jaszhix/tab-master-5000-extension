@@ -419,3 +419,7 @@ div.row.ntg-tile-row-top > div.col-xs-3 > div > i {
     border-radius: initial;
     margin-right: initial;
 }
+tr.placeholder {background: rgb(255,240,120);}
+tr.placeholder:before {
+  content: "Drop here";
+}

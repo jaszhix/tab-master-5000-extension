@@ -4,6 +4,7 @@ import Reflux from 'reflux';
 import _ from 'lodash';
 import v from 'vquery';
 import moment from 'moment';
+
 import Draggable from 'react-draggable';
 import OnClickOutside from 'react-onclickoutside';
 import ReactTooltip from './tooltip/tooltip';
@@ -11,12 +12,12 @@ import {msgStore, searchStore, sortStore, relayStore, faviconStore, bookmarksSto
 import tabStore from './stores/tab';
 import sessionsStore from './stores/sessions';
 
+import {Table} from './table';
 import {Btn, Col, Row} from './bootstrap';
 import style from './style';
 
 var tileDrag = null;
 var closeNewTabsThrottled = _.throttle(tabStore.closeNewTabs, 1500, {leading: false});
-var closeNewTabsOnce = _.once(tabStore.closeNewTabs);
 var Tile = React.createClass({
   mixins: [Reflux.ListenerMixin],
   getInitialState() {
@@ -43,7 +44,8 @@ var Tile = React.createClass({
       apps: false,
       tab: p.tab,
       i: p.i,
-      cursor: p.stores.cursor
+      cursor: p.stores.cursor,
+      muteInit: true
     };
   },
   componentDidMount() {
@@ -206,7 +208,7 @@ var Tile = React.createClass({
           if (s.openTab) {
             active();
           } else {
-            chrome.tabs.create({url: p.tab.url});
+            tabStore.create(p.tab.url);
           }
         } else if (s.apps) {
           if (p.tab.enabled) {
@@ -346,7 +348,16 @@ var Tile = React.createClass({
     }.bind(this));
   },
   handleMuting(tab){
-    chrome.tabs.update(tab.id, {muted: !tab.mutedInfo.muted});
+    var p = this.props;
+    var s = this.state;
+    chrome.tabs.update(tab.id, {muted: !tab.mutedInfo.muted}, ()=>{
+      if (s.muteInit) {
+        var refTab = _.findIndex(p.stores.prefs.tabs, {id: tab.id});
+        p.stores.tabs[refTab].mutedInfo.muted = !tab.mutedInfo.muted;
+        tabStore.set_tab(p.stores.tabs);
+        this.setState({muteInit: false});
+      }
+    });
     if (this.props.stores.prefs.mode !== 'tabs') {
       reRenderStore.set_reRender(true, 'create', null);
     }
@@ -481,7 +492,6 @@ var Tile = React.createClass({
       var clone = v(ReactDOM.findDOMNode(this.refs.tileMain)).clone().n;
       v(clone).allChildren().removeAttr('data-reactid');
       clone.removeAttribute('id');
-      console.log('drag clone',clone.attributes);
       clone.classList.add('tileClone');
       console.log('clone: ',clone);
       var original = v('#tileMain-'+s.i).n;
@@ -667,9 +677,11 @@ var Sidebar = React.createClass({
       marginBottom: '20px'
     };
     _.merge(sortButton, _.cloneDeep(p.btnStyle));
+    var formatBtnLabel = `Format: ${p.prefs.format === 'tile' ? 'Table' : 'Tile'}`;
     return (
       <div className="side-div" style={sideStyle}>
         <Btn onClick={()=>modalStore.set_modal(true, 'settings')} className="ntg-apply-btn" fa="cogs" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? 'Settings' : null}>{!iconCollapse ? 'Settings' : ''}</Btn>
+        <Btn onClick={()=>msgStore.setPrefs({format: p.prefs.format === 'tile' ? 'table' : 'tile'})} className="ntg-apply-btn" fa="cogs" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? formatBtnLabel : null}>{!iconCollapse ? formatBtnLabel : ''}</Btn>
         <Btn onClick={this.handleSort} className="ntg-apply-btn" style={sortButton} fa="sort-amount-asc" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? 'Sort Tabs' : null}>{!iconCollapse ? 'Sort Tabs' : ''}</Btn>
           {p.prefs.sort ? <div>
               {p.labels}
@@ -708,7 +720,9 @@ var TileGrid = React.createClass({
   getInitialState: function() {
     return {
       data: this.props.data,
-      title: true
+      title: true,
+      order: 'index',
+      direction: 'asc'
     };
   },
   componentDidMount(){
@@ -750,7 +764,10 @@ var TileGrid = React.createClass({
     this.sort(nextProps.stores.sort, nextProps);
   },
   sort(key, props) {
-    var order = 'asc';
+    var s = this.state;
+    console.log('key', key, s.order, key === s.order);
+    
+    var direction = 'asc';
     if (key === 'offlineEnabled' 
       || key === 'sTimeStamp' 
       || key === 'dateAdded' 
@@ -758,15 +775,18 @@ var TileGrid = React.createClass({
       || key === 'audible'
       || key === 'timeStamp'  
       || key === 'lastVisitTime') {
-      order = 'desc';
+      
+      direction = props.stores.prefs.format === 'tile' ? 'desc' : 'asc';
     }
-    var pinned = _.orderBy(_.filter(props.data, {pinned: true}), key, order);
-    var unpinned = _.orderBy(_.filter(props.data, {pinned: false}), key, order);
+    var pinned = _.orderBy(_.filter(props.data, {pinned: true}), key, direction);
+    var unpinned = _.orderBy(_.filter(props.data, {pinned: false}), key, direction);
     var concat = _.concat(pinned, unpinned);
 
-    var result = _.orderBy(concat, ['pinned', key], ['desc', order]);
+    var result = _.orderBy(concat, ['pinned', key], direction);
     this.setState({
-      data: result
+      data: result,
+      direction: direction,
+      order: key
     });
   },
   handleTitleIcon(){
@@ -826,27 +846,36 @@ var TileGrid = React.createClass({
         btnStyle={btnStyle} /> : null}
         <div className="tile-div" style={tileDivStyle}>
           <div id="grid" ref="grid">
-              {data.map((data, i)=> {
-                if (i <= p.tileLimit) {
-                  if (p.stores.prefs.mode !== 'apps' && p.stores.prefs.mode !== 'extensions' && !_.find(favicons, {domain: data.url.split('/')[2]})) {
-                    faviconStore.set_favicon(data, s.data.length, i);
-                  }
-                  return (
-                    <Tile 
-                    sessions={p.sessions} 
-                    stores={p.stores} 
-                    render={p.render} 
-                    i={i} key={data.id} 
-                    tab={data} 
-                    tileLimit={p.tileLimit} 
-                    init={p.init} 
-                    theme={p.theme}
-                    wallpaper={p.wallpaper}
-                    onApply={()=>this.sort('index', p)}
-                    width={p.width} />
-                  );
+            {p.stores.prefs.format === 'tile' ? data.map((data, i)=> {
+              if (i <= p.tileLimit) {
+                if (p.stores.prefs.mode !== 'apps' && p.stores.prefs.mode !== 'extensions' && !_.find(favicons, {domain: data.url.split('/')[2]})) {
+                  faviconStore.set_favicon(data, s.data.length, i);
                 }
-              })}
+                return (
+                  <Tile 
+                  sessions={p.sessions} 
+                  stores={p.stores} 
+                  render={p.render} 
+                  i={i} key={data.id} 
+                  tab={data} 
+                  tileLimit={p.tileLimit} 
+                  init={p.init} 
+                  theme={p.theme}
+                  wallpaper={p.wallpaper}
+                  onApply={()=>this.sort('index', p)}
+                  width={p.width} />
+                );
+              }
+            })
+            :
+            <Table 
+            data={data}
+            stores={p.stores}
+            favicons={favicons}
+            theme={p.theme}
+            width={p.width}
+            direction={s.direction}
+            />}
           </div>
         </div>
       </div>
