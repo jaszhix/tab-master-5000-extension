@@ -1,9 +1,9 @@
 {
   "name": "Tab Master 5000: Tab Swiss Army Knife",
   "short_name": "Tab Master 5000",
-  "version": "1.7.2",
+  "version": "1.8.0",
   "manifest_version": 2,
-  "description": "This extensions replaces the new tab page with a clean, sortable, and searchable, grid view of all of your open tabs.",
+  "description": "The swiss army knife of tab, history, bookmark, session, and extension management.",
   "icons": {
     "16": "images/icon-16.png",
     "128": "images/icon-128.png"
@@ -24,7 +24,7 @@
       "19": "images/icon-19.png",
       "38": "images/icon-38.png"
     },
-    "default_title": "Tab Master 5000: Tab and Session Swiss Army Knife"
+    "default_title": "Tab Master 5000: Chrome Swiss Army Knife"
   },
   "omnibox": {
     "keyword": "new tab"
