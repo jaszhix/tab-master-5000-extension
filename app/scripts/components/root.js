@@ -39,7 +39,7 @@ import '../../styles/app.scss';
 import '../../styles/icons/icomoon/styles.css';
 window.v = v;
 import state from './stores/state';
-import {keyboardStore, sortStore, chromeAppStore, faviconStore, actionStore, historyStore, bookmarksStore, relayStore, reRenderStore, clickStore, modalStore, settingsStore, utilityStore, applyTabOrderStore} from './stores/main';
+import {keyboardStore, sortStore, chromeAppStore, faviconStore, actionStore, historyStore, bookmarksStore, reRenderStore, clickStore, modalStore, utilityStore} from './stores/main';
 import themeStore from './stores/theme';
 import tabStore from './stores/tab';
 import sessionsStore from './stores/sessions';
@@ -147,8 +147,8 @@ var Search = React.createClass({
       });
     });
   },
-  openAbout(){   
-    settingsStore.set_settings('about');
+  openAbout(){
+    state.set({settings: 'about'});
     modalStore.set_modal(true, 'settings');
   },
   handleSidebar(){
@@ -246,23 +246,14 @@ var Root = React.createClass({
     this.listenTo(historyStore, this.updateTabState);
     this.listenTo(chromeAppStore, this.updateTabState);
     this.listenTo(reRenderStore, this.reRender);
-    this.listenTo(settingsStore, this.settingsChange);
     this.listenTo(actionStore, this.actionsChange);
     this.listenTo(sessionsStore, this.sessionsChange);
     this.listenTo(faviconStore, this.faviconsChange);
     this.listenTo(screenshotStore, this.screenshotsChange);
-    this.listenTo(relayStore, this.relayChange);
-    this.listenTo(applyTabOrderStore, this.applyTabOrderChange);
     this.listenTo(sortStore, this.sortChange);
     this.listenTo(modalStore, this.modalChange);
     window._trackJs.version = utilityStore.get_manifest().version;
     
-    /*_.delay(()=>{
-      if (this.state.prefs.length === 0) {
-        utilityStore.reloadBg();
-        utilityStore.restartNewTab();
-      }
-    },2000);*/
   },
   componentWillReceiveProps(nP){
     var p = this.props;
@@ -280,6 +271,13 @@ var Root = React.createClass({
     }
     if (!_.isEqual(nP.s.search, p.s.search)) {
       this.searchChange(nP.s.search);
+    }
+    if (nP.s.applyTabOrder !== p.s.applyTabOrder) {
+      if (nP.s.applyTabOrder) {
+        _.defer(()=>state.set({applyTabOrder: false}));
+      } else {
+        _.defer(()=>reRenderStore.set_reRender(true, 'cycle', null));
+      }
     }
   },
   componentDidUpdate(pP, pS){
@@ -326,12 +324,6 @@ var Root = React.createClass({
   },
   screenshotsChange(){
     this.setState({screenshots: screenshotStore.get_ssIndex()});
-  },
-  relayChange(e){
-    this.setState({relay: e});
-  },
-  applyTabOrderChange(e){
-    this.setState({applyTabOrder: e});
   },
   chromeAppChange(e){
     this.setState({apps: e});
@@ -551,9 +543,6 @@ var Root = React.createClass({
     } else {
       v('#main').css({WebkitFilter: 'none'});
     }
-  },
-  settingsChange(e){
-    this.setState({settings: e});
   },
   searchChange(e, update) {
     var search = e;
@@ -818,8 +807,8 @@ var Root = React.createClass({
         search: p.s.search, 
         cursor: cursor, 
         chromeVersion: s.chromeVersion, 
-        relay: s.relay,
-        applyTabOrder: s.applyTabOrder,
+        relay: p.s.relay,
+        applyTabOrder: p.s.applyTabOrder,
         folder: {
           name: s.folder, 
           state: s.folderState
@@ -904,7 +893,7 @@ var Root = React.createClass({
               standardThemes={s.standardThemes}
               wallpaper={s.wallpaper}
               wallpapers={s.wallpapers}
-              settings={s.settings}
+              settings={p.s.settings}
               height={p.s.height} /> : null}
               {p.s.tabs ? 
               <div className="tile-container">

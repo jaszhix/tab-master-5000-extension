@@ -9,7 +9,7 @@ import Draggable from 'react-draggable';
 import OnClickOutside from 'react-onclickoutside';
 import ReactTooltip from './tooltip/tooltip';
 import state from './stores/state';
-import {msgStore, searchStore, sortStore, relayStore, faviconStore, bookmarksStore, reRenderStore, applyTabOrderStore, utilityStore, contextStore, dragStore, draggedStore, modalStore} from './stores/main';
+import {msgStore, searchStore, sortStore, faviconStore, bookmarksStore, reRenderStore, utilityStore, dragStore, draggedStore, modalStore} from './stores/main';
 import tabStore from './stores/tab';
 import sessionsStore from './stores/sessions';
 
@@ -401,15 +401,11 @@ var Tile = React.createClass({
         chrome.tabs.move(p.tab.id, {
           index: -1
         });
-        _.defer(()=>sortStore.set('index'));
       } else {
         chrome.tabs.move(p.tab.id, {
           index: s.i
         });
       }
-    }
-    if (p.tab.id === 0) {
-      p.onApply();
     }
   },
   handleContextClick(e){
@@ -439,33 +435,33 @@ var Tile = React.createClass({
   handleRelays(props){
     var p = props;
     var r = props.stores.relay;
-    if (r[1] && r[1].index === p.tab.index) {
-      if (r[0] === 'close') {
+    if (r.id && r.id.index === p.tab.index) {
+      if (r.value === 'close') {
         this.handleCloseTab(r[1].id);
-      } else if (r[0] === 'closeAll') {
+      } else if (r.value === 'closeAll') {
         this.handleCloseAll(p.tab);
-      } else if (r[0] === 'pin') {
+      } else if (r.value === 'pin') {
         this.handlePinning(p.tab);
-      } else if (r[0] === 'mute') {
+      } else if (r.value === 'mute') {
         this.handleMuting(p.tab);
-      } else if (r[0] === 'closeDupes') {
-        this.checkDuplicateTabs(r[0], props);
-      } else if (r[0] === 'closeAllDupes') {
-        this.checkDuplicateTabs(r[0], props);
-      } else if (r[0] === 'closeSearched') {
+      } else if (r.value === 'closeDupes') {
+        this.checkDuplicateTabs(r.value, props);
+      } else if (r.value === 'closeAllDupes') {
+        this.checkDuplicateTabs(r.value, props);
+      } else if (r.value === 'closeSearched') {
         this.handleCloseAllSearched();
-      } else if (r[0] === 'toggleEnable') {
-        this.handleApp(r[0]);
-      } else if (r[0] === 'uninstallApp') {
-        this.handleApp(r[0]);
-      } else if (r[0] === 'createAppShortcut') {
-        this.handleApp(r[0]);
-      } else if (r[0] === 'launchApp') {
-        this.handleApp(r[0]);
-      } else if (_.first(_.words(r[0])) === 'OPEN') {
-        this.handleApp(r[0]);
+      } else if (r.value === 'toggleEnable') {
+        this.handleApp(r.value);
+      } else if (r.value === 'uninstallApp') {
+        this.handleApp(r.value);
+      } else if (r.value === 'createAppShortcut') {
+        this.handleApp(r.value);
+      } else if (r.value === 'launchApp') {
+        this.handleApp(r.value);
+      } else if (_.first(_.words(r.value)) === 'OPEN') {
+        this.handleApp(r.value);
       }
-      relayStore.set_relay('', null);
+      state.set({relay: {value: '', id: null}});
     }
   },
   handleFocus(opt, bool, props){
@@ -686,7 +682,7 @@ var Sidebar = React.createClass({
         <Btn onClick={this.handleSort} className="ntg-apply-btn" style={sortButton} fa="sort-amount-asc" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? 'Sort Tabs' : null}>{!iconCollapse ? 'Sort Tabs' : ''}</Btn>
           {p.prefs.sort ? <div>
               {p.labels}
-              {p.prefs.mode === 'tabs' && p.search.length === 0 ? <Btn onClick={()=>applyTabOrderStore.set_saveTab(true)} className="ntg-apply-btn" style={p.btnStyle} fa="sort" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? 'Apply' : null}>{iconCollapse ? '' : 'Apply'}</Btn> : null}
+              {p.prefs.mode === 'tabs' && p.search.length === 0 ? <Btn onClick={()=>state.set({applyTabOrder: true, massUpdate: true})} className="ntg-apply-btn" style={p.btnStyle} fa="sort" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? 'Apply' : null}>{iconCollapse ? '' : 'Apply'}</Btn> : null}
             </div> : null}
           <div className="mode-container">
             {p.prefs.mode !== 'tabs' ? <Btn onClick={()=>utilityStore.handleMode('tabs')} className="ntg-apply-btn" style={p.btnStyle} fa="square" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? 'Tabs' : null}>{iconCollapse ? '' : 'Tabs'}</Btn> : null}
@@ -863,8 +859,8 @@ var TileGrid = React.createClass({
                   init={p.init} 
                   theme={p.theme}
                   wallpaper={p.wallpaper}
-                  onApply={()=>this.sort('index', p)}
-                  width={p.width} />
+                  width={p.width}
+                  context={p.s.context} />
                 );
               }
             })

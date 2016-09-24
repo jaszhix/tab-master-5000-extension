@@ -9,7 +9,8 @@ import cf from 'colorformat';
 import ColorPicker from 'rc-color-picker';
 import ReactTooltip from './tooltip/tooltip';
 
-import {msgStore, faviconStore, clickStore, modalStore, settingsStore, utilityStore} from './stores/main';
+import state from './stores/state';
+import {msgStore, faviconStore, clickStore, modalStore, utilityStore} from './stores/main';
 import themeStore from './stores/theme';
 import tabStore from './stores/tab';
 import sessionsStore from './stores/sessions';
@@ -730,7 +731,7 @@ var Settings = React.createClass({
     }
   },
   handleTabClick(opt){
-    settingsStore.set_settings(opt);
+    state.set({settings: opt});
     clickStore.set_click(true, false);
   },
   handleCloseBtn(){

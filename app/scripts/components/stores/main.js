@@ -22,11 +22,19 @@ export var bgSetPrefs = (obj)=>{
     }
   });
 };
-
+var massUpdateItems = 0;
 // Chrome event listeners set to trigger re-renders.
 var reRender = (type, id) => {
   //debugger;
   var s = state.get();
+  if (s.massUpdate && type === 'move') {
+    ++massUpdateItems;
+    console.log(massUpdateItems, s.altTabs.length);
+    if (massUpdateItems >= s.altTabs.length - 8) {
+      state.set({massUpdate: null});
+    }
+    return;
+  } 
   var idIsObject = _.isObject(id);
   var tId = typeof id.tabId !== 'undefined' ? id.tabId : idIsObject ? id.id : id;
   var handleUpdate = (targetTab)=>{
@@ -42,7 +50,7 @@ var reRender = (type, id) => {
         utilityStore.set_systemState('lowRAM');
       }
     });
-    if (s.prefs.actions) {
+    if (s.prefs.actions && !s.massUpdate) {
       var refOldTab = _.findIndex(s.altTabs, {id: tId});
       if (refOldTab !== -1) {
         actionStore.set_action(type, s.altTabs[refOldTab]);
@@ -52,7 +60,7 @@ var reRender = (type, id) => {
     if (targetTab.windowId === utilityStore.get_window() && utilityStore.get_systemState() === 'active') {
       if (type === 'create') {
         state.set({create: id});
-      } else if (type === 'update' || type === 'move') {
+      } else if (type === 'update' || type === 'move' && !s.massUpdate) {
         state.set({update: targetTab});
       } else if (type === 'activate') {
         var getImageFromTab = ()=>{
@@ -200,24 +208,6 @@ export var clickStore = Reflux.createStore({
   }
 });
 
-export var applyTabOrderStore = Reflux.createStore({
-  init: function() {
-    this.saveTab = false;
-  },
-  set_saveTab: function(value) {
-    this.saveTab = value;
-    setTimeout(() => {
-      this.saveTab = false;
-      this.trigger(this.saveTab);
-    }, 0);
-    console.log('saveTab: ', value);
-    this.trigger(this.saveTab);
-  },
-  get_saveTab: function() {
-    return this.saveTab;
-  }
-});
-
 export var reRenderStore = Reflux.createStore({
   init: function() {
     this.reRender = [null, null, null];
@@ -250,20 +240,6 @@ export var modalStore = Reflux.createStore({
   },
   get_modal: function() {
     return this.modal;
-  }
-});
-
-export var settingsStore = Reflux.createStore({
-  init: function() {
-    this.settings = 'sessions';
-  },
-  set_settings: function(value) {
-    this.settings = value;
-    console.log('settings: ', value);
-    this.trigger(this.settings);
-  },
-  get_settings: function() {
-    return this.settings;
   }
 });
 
@@ -863,32 +839,34 @@ export var keyboardStore = Reflux.createStore({
     });
     mouseTrap.bind('ctrl+shift+s', (e)=>{
       e.preventDefault();
-      settingsStore.set_settings('sessions');
+      state.set({settings: 'sessions'});
       modalStore.set_modal(this.state('ctrl+shift+s'), 'settings');
     });
     mouseTrap.bind('ctrl+shift+p', (e)=>{
       e.preventDefault();
-      settingsStore.set_settings('preferences');
+      state.set({settings: 'preferences'});
       modalStore.set_modal(this.state('ctrl+shift+p'), 'settings');
     });
     mouseTrap.bind('ctrl+shift+t', (e)=>{
       e.preventDefault();
-      settingsStore.set_settings('theming');
+      state.set({settings: 'theming'});
       modalStore.set_modal(this.state('ctrl+shift+t'), 'settings');
     });
     mouseTrap.bind('ctrl+shift+a', (e)=>{
       e.preventDefault();
-      settingsStore.set_settings('about');
+      state.set({settings: 'about'});
       modalStore.set_modal(this.state('ctrl+shift+a'), 'settings');
     });
     mouseTrap.bind('ctrl+s', (e)=>{
       e.preventDefault();
-      settingsStore.set_settings('sessions');
+      state.set({settings: 'sessions'});
       modalStore.set_modal(true, 'settings');
+      // fix
       v('body > div.ReactModalPortal > div > div > div > div.row.ntg-settings-pane > div > div.col-xs-5.session-col > button').click();
     });
     mouseTrap.bind('ctrl+m', (e)=>{
       e.preventDefault();
+      // fix
       v('body > div.ReactModalPortal > div > div > div.container-fluid > div.row.ntg-tabs > div:nth-child(2) > button:nth-child(1)').click();
     });
     mouseTrap.bind('ctrl+alt+shift+s', (e)=>{

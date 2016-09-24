@@ -9,6 +9,7 @@ var state = Reflux.createStore({
       prefs: null,
       // Single item states
       update: null,
+      massUpdate: null,
       remove: null,
       create: null,
       // UI
@@ -21,6 +22,12 @@ var state = Reflux.createStore({
         value: null,
         id: null
       },
+      relay: {
+        value: '',
+        id: null
+      },
+      applyTabOrder: false,
+      settings: 'sessions',
       // Chrome data
       tabs: null,
       altTabs: null
