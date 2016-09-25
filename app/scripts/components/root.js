@@ -269,6 +269,9 @@ var Root = React.createClass({
     if (!_.isEqual(nP.s.create, p.s.create)) {
       this.createSingleItem(nP.s.create);
     }
+    if (!_.isEqual(nP.s.move, p.s.move)) {
+      this.moveSingleItem(nP.s.move);
+    }
     if (!_.isEqual(nP.s.search, p.s.search)) {
       this.searchChange(nP.s.search);
     }
@@ -649,6 +652,36 @@ var Root = React.createClass({
         tabs: p.s.prefs.mode === 'tabs' ? p.s.altTabs : p.s.tabs,
         altTabs: p.s.altTabs 
       });
+    }
+  },
+  moveSingleItem(e){
+    var p = this.props;
+    if (p.s.init) {
+      return;
+    }
+    console.log('moveSingleItem', e);
+
+    var tabToUpdate = _.findIndex(p.s.altTabs, {id: e.id});
+
+    if (tabToUpdate > -1) {
+      var s = this.state;
+      console.log('Move indexes: ', tabToUpdate, e.index);
+      p.s.altTabs = v(p.s.altTabs).move(tabToUpdate, e.index).ns;
+      p.s.altTabs[tabToUpdate].timeStamp = new Date(Date.now()).getTime();
+      if (e.pinned) {
+        p.s.altTabs = _.orderBy(_.uniqBy(p.s.altTabs, 'id'), ['pinned'], ['desc']);
+      } else {
+        p.s.altTabs = _.orderBy(p.s.altTabs, ['pinned'], ['desc']);
+      }
+      if (p.s.prefs.sessionsSync) {
+        synchronizeSession(s.prefs, p.s.altTabs);
+      }
+      if (tabToUpdate === e.index) {
+        state.set({
+          tabs: p.s.prefs.mode === 'tabs' ? p.s.altTabs : p.s.tabs,
+          altTabs: p.s.altTabs 
+        });
+      }
     }
   },
   updateTabState(e, opt){
