@@ -256,9 +256,6 @@ export var Table = React.createClass({
             </thead>
             <tbody onMouseLeave={()=>this.setState({rowHover: -1})}>
             {s.rows.map((row, i)=>{
-              if (p.stores.prefs.mode !== 'apps' && p.stores.prefs.mode !== 'extensions' && !_.find(p.favicons, {domain: row.domain})) {
-                faviconStore.set_favicon(row, s.rows.length, i);
-              }
               return (
                 <tr 
                 key={i} 
@@ -274,11 +271,10 @@ export var Table = React.createClass({
                   {s.columns.map((column, z)=>{
                     if (row.hasOwnProperty(column)) {
                       if (column === 'title' || column === 'name') {
-                        var fvData = _.result(_.find(p.stores.favicons, { domain: row.domain }), 'favIconUrl');
                         return (
                           <td key={z} style={{maxWidth: p.width <= 950 ? '300px' : p.width <= 1015 ? '400px' : '700px'}}>
                             <div className="media-left media-middle">
-                              <img src={fvData ? fvData : row.favIconUrl && row.domain !== 'chrome' ? row.favIconUrl : '../images/file_paper_blank_document.png' } style={{width: '16px', height: '16px'}}/>
+                              <img src={row.favIconUrl && row.domain !== 'chrome' ? row.favIconUrl : '../images/file_paper_blank_document.png' } style={{width: '16px', height: '16px'}}/>
                             </div>
                             <div className="media-left">
                               <div style={textOverflow}><a style={{cursor: 'pointer'}} onClick={()=>this.handleTitleClick(row)} className="text-default text-semibold">{row[column]}</a></div>

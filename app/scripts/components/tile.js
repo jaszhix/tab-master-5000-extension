@@ -88,8 +88,8 @@ var Tile = React.createClass({
       this.checkDuplicateTabs('', p);
     }
   },
-  updateFavicons(props){
-    var fvData = _.result(_.find(props.stores.favicons, { domain: props.tab.url.split('/')[2] }), 'favIconUrl');
+  updateFavicons(p){
+    var fvData = _.result(_.find(p.favicons, {domain: p.tab.url.split('/')[2] }), 'favIconUrl');
     if (fvData) {
       this.setState({favicon: fvData});
     }
@@ -584,7 +584,7 @@ var Tile = React.createClass({
                         : null}
                       </div>
                       <Row>
-                        <img className="ntg-favicon" src={s.apps ? p.tab.favIconUrl : s.favicon ? s.favicon : '../images/file_paper_blank_document.png' } />
+                        <img className="ntg-favicon" src={p.tab.favIconUrl ? p.tab.favIconUrl : '../images/file_paper_blank_document.png' } />
                       </Row>
                     </Col>
                     <Col size="9" onClick={!s.bookmarks && !s.apps && !s.sessions ? ()=>this.handleClick(p.tab.id) : null} className="ntg-title-container">
@@ -776,7 +776,6 @@ var TileGrid = React.createClass({
   render: function() {
     var p = this.props;
     var s = this.state;
-    var favicons = faviconStore.get_favicon();
     var ssBg = p.stores.prefs && p.stores.prefs.screenshot && p.stores.prefs.screenshotBg;
     var iconCollapse = p.width <= 1135;
     const faStyle = {
@@ -828,9 +827,6 @@ var TileGrid = React.createClass({
           <div id="grid" ref="grid">
             {p.stores.prefs.format === 'tile' ? p.s.tabs.map((tab, i)=> {
               if (i <= p.tileLimit) {
-                if (p.stores.prefs.mode !== 'apps' && p.stores.prefs.mode !== 'extensions' && !_.find(favicons, {domain: tab.url.split('/')[2]})) {
-                  faviconStore.set_favicon(tab, p.s.tabs.length, i);
-                }
                 return (
                   <Tile
                   sessions={p.sessions} 
@@ -853,7 +849,7 @@ var TileGrid = React.createClass({
             <Table 
             data={p.s.tabs}
             stores={p.stores}
-            favicons={favicons}
+            favicons={p.s.favicons}
             theme={p.theme}
             width={p.width}
             direction={s.direction}

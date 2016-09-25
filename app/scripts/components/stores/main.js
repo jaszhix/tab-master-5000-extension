@@ -41,9 +41,6 @@ var reRender = (type, id) => {
     if (targetTab.url.indexOf('chrome://newtab') !== -1 && !idIsObject) {
       return;
     }
-    /*chrome.idle.queryState(900, (idle)=>{
-      utilityStore.set_systemState(idle);
-    });*/
     // If 10MB of RAM or less is available to Chrome, disable rendering.
     chrome.system.memory.getInfo((info)=>{
       if (info.availableCapacity <= 10000000) {
@@ -58,8 +55,10 @@ var reRender = (type, id) => {
     }
     console.log('window: ', targetTab.windowId, utilityStore.get_window(), 'state: ',utilityStore.get_systemState(), 'type: ', type, 'id: ',tId, 'item: ', targetTab);
     if (targetTab.windowId === utilityStore.get_window()) {
-      if (type === 'create') {
+      if (type === 'create' || type === 'attach') {
         state.set({create: id});
+      } else if (type === 'remove' || type === 'detach') {
+        state.set({remove: tId});
       } else if (type.indexOf('move') !== -1 && !s.massUpdate) {
         state.set({move: targetTab});
       } else if (type === 'update') {
@@ -123,29 +122,10 @@ var throttled = {
 export var msgStore = Reflux.createStore({
   init(){
     this.response = null;
-    
     chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       console.log('msg: ',msg, 'sender: ', sender);
       if (msg.type === 'prefs') {
         state.set({prefs: msg.e});
-      } else if (msg.type === 'create') {
-        console.log('Create: ',msg);
-        reRender(msg.type, msg.e);
-      } else if (msg.type === 'remove') {
-        reRender(msg.type, msg.e);
-      } else if (msg.type === 'activate') {
-        reRender(msg.type, msg.e);
-      } else if (msg.type === 'update') {
-        console.log('Update: ',msg);
-        reRender(msg.type, msg.e);
-      } else if (msg.type === 'move') {
-        reRender(msg.type, msg.e);
-      } else if (msg.type === 'attach') {
-        reRender(msg.type, msg.e);
-      } else if (msg.type === 'detach') {
-        reRender(msg.type, msg.e);
-      } else if (msg.type === 'bookmarks') {
-        reRender(msg.type, msg.e);
       } else if (msg.type === 'history') {
         throttled.history(msg.type, msg.e);
       } else if (msg.type === 'app') {
@@ -163,6 +143,9 @@ export var msgStore = Reflux.createStore({
       } else if (msg.type === 'checkSSCapture') {
         console.log('checkSSCapture: Sending screenshot to '+sender.tab.url);
         sendResponse(screenshotStore.tabHasScreenshot(sender.tab.url));
+      } else if (msg.e !== undefined) {
+        console.log(`${msg.type}: `,msg.e);
+        reRender(msg.type, msg.e);
       }
     });
   },
@@ -621,8 +604,7 @@ export var actionStore = Reflux.createStore({
 
 export var faviconStore = Reflux.createStore({
   init: function() {
-    this.favicons = [];
-    var getFavicons = new Promise((resolve, reject)=>{
+    /*var getFavicons = new Promise((resolve, reject)=>{
       chrome.storage.local.get('favicons', (fv)=>{
         if (fv && fv.favicons) {
           resolve(fv);
@@ -633,87 +615,59 @@ export var faviconStore = Reflux.createStore({
     });
     getFavicons.then((fv)=>{
       console.log('load favicons');
-      this.favicons = fv.favicons;
-      this.trigger(this.favicons);
+      state.set({favicons: fv.favicons});
     }).catch(()=>{
       console.log('init favicons');
-      chrome.storage.local.set({favicons: this.favicons}, (result)=> {
-        console.log('Init favicons saved: ',result);
+      chrome.storage.local.set({favicons: []}, (result)=> {
+        console.log('Init favicons saved.');
       });
-      this.trigger(this.favicons);
-    });
+    });*/
   },
   set_favicon: function(tab, queryLength, i) {
+    //debugger;
+    var s = state.get();
     var domain = tab.url.split('/')[2];
-    if (tab && tab.favIconUrl && !_.find(this.favicons, {domain: domain})) {
-      var resize = new Promise((resolve, reject)=>{
-        var sourceImage = new Image();
-        sourceImage.onerror = ()=>{
-          reject();
-        };
-        sourceImage.onload = ()=>{
-          var imgWidth = sourceImage.width;
-          var imgHeight = sourceImage.height;
-          var canvas = document.createElement("canvas");
-          canvas.width = imgWidth;
-          canvas.height = imgHeight;
-          canvas.getContext("2d").drawImage(sourceImage, 0, 0, imgWidth, imgHeight);
-          var newDataUri = canvas.toDataURL('image/png');
-          if (newDataUri) {
-            resolve(newDataUri);
-          } else {
-            reject();
-          }
-        };
-        sourceImage.src = utilityStore.filterFavicons(tab.favIconUrl, tab.url);
-      });
-      resize.then((img)=>{
+    if (tab && tab.favIconUrl && !_.find(s.favicons, {domain: domain})) {
+      var sourceImage = new Image();
+      sourceImage.onerror = (e)=>{
+        console.log(e);
+      };
+      sourceImage.onload = ()=>{
+        var imgWidth = sourceImage.width;
+        var imgHeight = sourceImage.height;
+        var canvas = document.createElement("canvas");
+        canvas.width = imgWidth;
+        canvas.height = imgHeight;
+        canvas.getContext("2d").drawImage(sourceImage, 0, 0, imgWidth, imgHeight);
+        var img = canvas.toDataURL('image/png');
         if (img) {
-          tab.favIconUrl = img;
-          tab.domain = domain;
-          this.favicons.push(tab);
-          this.favIcons = _.uniqBy(this.favicons, 'domain');
+          s.favicons.push({
+            favIconUrl: img,
+            domain:  domain
+          });
+          s.favicons = _.uniqBy(s.favicons, 'domain');
           if (queryLength === i) {
-            _.defer(()=>{
-              chrome.storage.local.set({favicons: this.favicons}, (result)=> {
-                console.log('favicons saved: ',result);
-                this.trigger(this.favicons);
-              });
+            chrome.storage.local.set({favicons: s.favicons}, (result)=> {
+              console.log('favicons saved: ',result);
+              state.set({favicons: s.favicons});
             });
           }
         }
-      }).catch(()=>{
-        if (this.favicons) {
-          tab.favIconUrl = null;
-          tab.domain = domain;
-          this.favicons.push(tab);
-          this.favIcons = _.uniqBy(this.favicons, 'domain');
-          _.defer(()=>{
-            chrome.storage.local.set({favicons: this.favicons}, (result)=> {
-              console.log('favicons saved: ',result);
-            });
-            this.trigger(this.favicons);
-          });
-        }
-      });
+      };
+      sourceImage.src = utilityStore.filterFavicons(tab.favIconUrl, tab.url);
     }
-  },
-  get_favicon: function() {
-    return this.favicons;
   },
   clean(){
-    for (var i = this.favicons.length - 1; i >= 0; i--) {
-      if (!this.favicons[i]) {
-        this.favicons = _.without(this.favicons, this.favicons[i]);
+    var s = state.get();
+    for (var i = s.favicons.length - 1; i >= 0; i--) {
+      if (!s.favicons[i]) {
+        this.favicons = _.without(s.favicons, s.favicons[i]);
       }
     }
-    chrome.storage.local.set({favicons: this.favicons}, (result)=> {
+    chrome.storage.local.set({favicons: s.favicons}, (result)=> {
       console.log('cleaned dud favicon entries: ',result);
     });
   },
-  triggerFavicons(){
-    this.trigger(this.favicons);
-  }
 });
 
 export var chromeAppStore = Reflux.createStore({

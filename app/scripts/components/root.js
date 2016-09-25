@@ -39,7 +39,7 @@ import '../../styles/app.scss';
 import '../../styles/icons/icomoon/styles.css';
 window.v = v;
 import state from './stores/state';
-import {keyboardStore, chromeAppStore, faviconStore, actionStore, historyStore, bookmarksStore, clickStore, utilityStore} from './stores/main';
+import {keyboardStore, chromeAppStore, actionStore, historyStore, bookmarksStore, clickStore, utilityStore, faviconStore} from './stores/main';
 import themeStore from './stores/theme';
 import tabStore from './stores/tab';
 import sessionsStore from './stores/sessions';
@@ -246,7 +246,6 @@ var Root = React.createClass({
     this.listenTo(chromeAppStore, this.updateTabState);
     this.listenTo(actionStore, this.actionsChange);
     this.listenTo(sessionsStore, this.sessionsChange);
-    this.listenTo(faviconStore, this.faviconsChange);
     this.listenTo(screenshotStore, this.screenshotsChange);
     window._trackJs.version = utilityStore.get_manifest().version;
     
@@ -277,6 +276,9 @@ var Root = React.createClass({
     if (nP.s.folder !== p.s.folder) {
       this.updateTabState(nP.s.folder, 'folder');
     }
+    if (nP.s.favicons !== p.s.favicons) {
+      this.faviconsChange(nP.s.favicons);
+    }
     if (!_.isEqual(nP.s.reQuery, p.s.reQuery) && nP.s.reQuery.state) {
       this.reQuery(nP.s.reQuery);
       state.set({reQuery: {state: false}});
@@ -304,7 +306,6 @@ var Root = React.createClass({
     var s = this.state;
 
     this.setState({
-      favicons: faviconStore.get_favicon(),
       allTabsByWindow: tabStore.getAllTabsByWindow()
     });
     if (s.init) {
@@ -322,7 +323,7 @@ var Root = React.createClass({
     }
   },
   faviconsChange(e){
-    this.setState({favicons: e, event: 'dlFavicons', topLoad: true});
+    this.setState({event: 'dlFavicons', topLoad: true});
     _.defer(()=>this.setState({event: '', topLoad: false}));
   },
   actionsChange(e){
@@ -575,8 +576,20 @@ var Root = React.createClass({
       return;
     }
     var tab = e;
+    _.each(p.s.favicons, (fVal, fKey)=>{
+      if (tab.url.indexOf(fVal.domain) !== -1) {
+        tab.favIconUrl = fVal.favIconUrl;
+      } else {
+        faviconStore.set_favicon(tab, 0, 0);
+      }
+    });
     _.assign(tab, {
-      timeStamp: new Date(Date.now()).getTime()
+      timeStamp: new Date(Date.now()).getTime(),
+      favIconUrl: _.find(p.s.favicons, (fv)=>{
+        if (tab.url.indexOf(fv.domain) !== -1) {
+          return fv.favIconUrl;
+        }
+      })
     });
     if (typeof p.s.altTabs[tab.index] !== 'undefined') {
       for (var i = p.s.altTabs.length - 1; i >= 0; i--) {
@@ -731,19 +744,33 @@ var Root = React.createClass({
     // Query current Chrome window for tabs.
     tabStore.promise().then((Tab)=>{
       var blacklisted = [];
-      for (let i = 0; i < Tab.length; i++) {
-        _.assign(Tab[i], {
+      _.each(Tab, (tVal, tKey)=>{
+        _.assign(Tab[tKey], {
           timeStamp: new Date(Date.now()).getTime()
         });
-        console.log(Tab[i].url)
-        if (Tab[i].url === 'chrome://newtab/') {
-          blacklisted.push(i);
+        if (tVal.url === 'chrome://newtab/') {
+          blacklisted.push(tKey);
         }
-      }
-      console.log('BLACKLISTED: ', blacklisted);
+        if (p.s.favicons.length > 0) {
+          var match = false;
+          _.each(p.s.favicons, (fVal, fKey)=>{
+            if (tVal.url.indexOf(fVal.domain) !== -1) {
+              match = true;
+              Tab[tKey].favIconUrl = fVal.favIconUrl;
+            }
+          });
+          if (!match) {
+            faviconStore.set_favicon(tVal, 0, 0);
+          }
+        } else {
+          faviconStore.set_favicon(tVal, 0, 0);
+        }
+      });
+
       for (let i = blacklisted.length - 1; i >= 0; i--) {
         _.pullAt(Tab, blacklisted[i]);
       }
+     
       var stateUpdate = {
         altTabs: Tab
       };
@@ -845,7 +872,6 @@ var Root = React.createClass({
         tabs: p.s.tabs,
         altTabs: p.s.altTabs,
         duplicateTabs: s.duplicateTabs,
-        favicons: s.favicons, 
         screenshots: s.screenshots, 
         newTabs: newTabs, 
         prefs: p.s.prefs, 
@@ -927,7 +953,7 @@ var Root = React.createClass({
               allTabsByWindow={s.allTabsByWindow}
               sessions={s.sessions} 
               prefs={p.s.prefs} 
-              favicons={s.favicons} 
+              favicons={p.s.favicons} 
               collapse={p.s.collapse} 
               theme={s.theme} 
               savedThemes={s.savedThemes} 
@@ -998,8 +1024,9 @@ var App = React.createClass({
   componentDidMount(){
     this.listenTo(state, this.stateChange);
     chrome.runtime.sendMessage(chrome.runtime.id, {method: 'prefs'}, (response)=>{
+      var stateUpdate = {prefs: response.prefs, init: false, favicons: this.props.favicons};
+      state.set(stateUpdate);
       console.log('App componentDidMount: ', response);
-      state.set({prefs: response.prefs, init: false});
       this.onWindowResize({width: window.innerWidth, height: window.innerHeight});
     });
   },
@@ -1025,10 +1052,28 @@ var App = React.createClass({
     }
   },
   render(){
-    return <Root s={this.state} />;
+    console.log('app state: ',this.state);
+    if (!this.state.init) {
+      return <Root s={this.state} />;
+    } else {
+      return null;
+    }
   }
 });
 
+var renderApp = (favicons)=>{
+  ReactDOM.render(<App favicons={favicons} />, document.getElementById('main'));
+};
+
 v(document).ready(()=>{
-  ReactDOM.render(<App />, document.getElementById('main'));
+  chrome.storage.local.get('favicons', (fv)=>{
+    if (fv && fv.favicons) {
+      renderApp(fv.favicons);
+    } else {
+      chrome.storage.local.set({favicons: []}, (result)=> {
+        console.log('Init favicons saved.');
+        renderApp([]);
+      });
+    }
+  });
 });

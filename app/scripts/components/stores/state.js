@@ -41,6 +41,7 @@ var state = Reflux.createStore({
       tabsCache: null,
       tabs: null,
       altTabs: null,
+      favicons: [],
       sort: 'index'
     };
   },
