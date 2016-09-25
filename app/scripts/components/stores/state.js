@@ -31,12 +31,14 @@ var state = Reflux.createStore({
       applyTabOrder: false,
       settings: 'sessions',
       modal: {state: false, type: null, opt: null},
+      folder: null,
       // Chrome data
       reQuery: {
         state: null,
         type: null,
         id: null
       },
+      tabsCache: null,
       tabs: null,
       altTabs: null,
       sort: 'index'

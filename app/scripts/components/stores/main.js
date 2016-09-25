@@ -436,7 +436,6 @@ export var bookmarksStore = Reflux.createStore({
         this.get_bookmarks();
       }
     });
-    this.folder = null;
   },
   set_bookmarks: function(value) {
     return new Promise((resolve, reject)=>{
@@ -493,10 +492,6 @@ export var bookmarksStore = Reflux.createStore({
       this.trigger(this.bookmarks);
     });
     return this.bookmarks;
-  },
-  set_folder(value){
-    this.folder = value;
-    this.trigger(this.folder);
   },
   get_folder(folder){
     return _.filter(this.bookmarks, {folder: folder});

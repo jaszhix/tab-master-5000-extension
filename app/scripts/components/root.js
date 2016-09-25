@@ -274,6 +274,9 @@ var Root = React.createClass({
     if (!_.isEqual(nP.s.modal, p.s.modal)) {
       this.modalChange(nP.s.modal);
     }
+    if (nP.s.folder !== p.s.folder) {
+      this.updateTabState(nP.s.folder, 'folder');
+    }
     if (!_.isEqual(nP.s.reQuery, p.s.reQuery) && nP.s.reQuery.state) {
       this.reQuery(nP.s.reQuery);
       state.set({reQuery: {state: false}});
@@ -688,21 +691,17 @@ var Root = React.createClass({
     }
   },
   updateTabState(e, opt){
-    var s = this.state;
     var p = this.props;
     console.log('updateTabState: ',e);
-    if (typeof e === 'string') {
-      _.assignIn(s, {
-        folderState: !s.folderState,
-        folder: e
-      });
-      var filter = p.s.prefs.mode === 'bookmarks' ? {folder: s.folder} : {originSession: s.folder};
-      console.log('filter', filter);
-      _.assignIn(s, {
-        tabs: s.folderState ? _.filter(p.s.tabs, filter) : s.bkCache,
-        bkCache: s.folderState ? p.s.tabs : null
-      });
-      this.setState(s);
+    if (opt === 'folder') {
+      if (e) {
+        var filter = p.s.prefs.mode === 'bookmarks' ? {folder: e} : {originSession: e};
+        console.log('filter', filter);
+        state.set({tabs: _.filter(p.s.tabs, filter), tabsCache: p.s.tabs});  
+      } else {
+        state.set({tabs: p.s.tabsCache});
+      }
+      
     } else {
       tabStore.promise().then((Tab)=>{
         this.setState({topLoad: true});
@@ -855,10 +854,6 @@ var Root = React.createClass({
         chromeVersion: s.chromeVersion, 
         relay: p.s.relay,
         applyTabOrder: p.s.applyTabOrder,
-        folder: {
-          name: s.folder, 
-          state: s.folderState
-        },
         windowId: windowId,
         sort: p.s.sort
       };

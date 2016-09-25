@@ -9,7 +9,7 @@ import Draggable from 'react-draggable';
 import OnClickOutside from 'react-onclickoutside';
 import ReactTooltip from './tooltip/tooltip';
 import state from './stores/state';
-import {msgStore, searchStore, faviconStore, bookmarksStore, utilityStore, dragStore, draggedStore} from './stores/main';
+import {msgStore, searchStore, faviconStore, utilityStore, dragStore, draggedStore} from './stores/main';
 import tabStore from './stores/tab';
 import sessionsStore from './stores/sessions';
 
@@ -55,32 +55,29 @@ var Tile = React.createClass({
   shouldComponentUpdate() {
     return this.state.render;
   },
-  componentWillReceiveProps(nextProps){
+  componentWillReceiveProps(nP){
     var p = this.props;
     this.setTabMode();
-    this.updateFavicons(nextProps);
-    if (nextProps.stores.prefs.mode === 'tabs') {
-      this.checkDuplicateTabs('', nextProps);
+    this.updateFavicons(nP);
+    if (nP.stores.prefs.mode === 'tabs') {
+      this.checkDuplicateTabs('', nP);
     }
-    if (nextProps.stores.prefs.screenshot) {
-      this.updateScreenshot('init', nextProps);
+    if (nP.stores.prefs.screenshot) {
+      this.updateScreenshot('init', nP);
     }
-    if (nextProps.tab.pinned) {
-      this.handleFocus(null, null, nextProps);
+    if (nP.tab.pinned) {
+      this.handleFocus(null, null, nP);
     }
-    if (nextProps.i !== p.i) {
-      this.setState({i: nextProps.i});
+    if (nP.i !== p.i) {
+      this.setState({i: nP.i});
     }
     if (p.i === 0) {
       closeNewTabsThrottled();
     }
-    this.handleRelays(nextProps);
-    if (nextProps.stores.applyTabOrder) {
+    this.handleRelays(nP);
+    if (nP.stores.applyTabOrder) {
       this.applyTabOrder();
     }
-    if (nextProps.stores.folder !== p.stores.folder) {
-      this.filterFolders(nextProps);
-    } 
   },
   initMethods(){
     var p = this.props;
@@ -144,17 +141,9 @@ var Tile = React.createClass({
     }
   },
   
-  filterFolders(props){
-    var s = this.state;
+  filterFolders(folderName){
     var p = this.props;
-    var folder = p.stores.folder.name;
-    if (folder && p.tab.folder !== folder) {
-      if (p.stores.folder.state && p.stores.prefs.mode === 'bookmarks') {
-        v('#tileMain-'+s.i).hide();
-      } else {
-        v('#tileMain-'+s.i).show();
-      }
-    } 
+    state.set({folder: p.folder ? false : folderName});
   },
   checkDuplicateTabs(opt, props){
     if (props.stores.prefs.duplicate) {
@@ -604,13 +593,13 @@ var Tile = React.createClass({
                         {_.truncate(p.tab.title, {length: titleLimit})}
                         </h6>
                       </span>
-                      {s.bookmarks ? <h6 onClick={()=>bookmarksStore.set_folder(p.tab.folder)} style={lowerStyle} className="ntg-folder">
+                      {s.bookmarks ? <h6 onClick={()=>this.filterFolders(p.tab.folder)} style={lowerStyle} className="ntg-folder">
                         <i className="fa fa-folder-o" />{p.tab.folder ? s.bookmarks ? ' '+p.tab.folder : null : null}
                       </h6> : null}
                       {s.history ? <h6 style={lowerStyle} className="ntg-folder">
                         <i className="fa fa-hourglass-o" />{' '+_.capitalize(moment(p.tab.lastVisitTime).fromNow())}
                       </h6> : null}
-                      {s.sessions ? <h6 onClick={()=>bookmarksStore.set_folder(p.tab.originSession)} style={lowerStyle} className="ntg-folder">
+                      {s.sessions ? <h6 onClick={()=>this.filterFolders(p.tab.originSession)} style={lowerStyle} className="ntg-folder">
                         <i className={p.tab.label ? 'fa fa-folder-o' : 'fa fa-hourglass-o'} />{p.tab.label ? ' '+p.tab.label : ' '+_.capitalize(moment(p.tab.sTimeStamp).fromNow())}
                       </h6> : null}
                       {s.apps && s.hover ? <h6 style={lowerStyle} className="ntg-folder">
@@ -744,16 +733,16 @@ var TileGrid = React.createClass({
       });
     }
   },
-  componentWillReceiveProps(nextProps){
+  componentWillReceiveProps(nP){
     var p = this.props;
-    if (!_.isEqual(nextProps.stores, p.stores)) {
-      this.prefsInit(nextProps);
+    if (!_.isEqual(nP.stores, p.stores)) {
+      this.prefsInit(nP);
     }
-    if (nextProps.tileLimit !== p.tileLimit) {
-      this.setState({tileLimit: nextProps.tileLimit});
+    if (nP.tileLimit !== p.tileLimit) {
+      this.setState({tileLimit: nP.tileLimit});
     }
-    if (nextProps.stores.sort !== p.stores.sort) {
-      this.sort(nextProps);
+    if (nP.stores.sort !== p.stores.sort) {
+      this.sort(nP);
     }
   },
   sort(p) {
@@ -843,7 +832,7 @@ var TileGrid = React.createClass({
                   faviconStore.set_favicon(tab, p.s.tabs.length, i);
                 }
                 return (
-                  <Tile 
+                  <Tile
                   sessions={p.sessions} 
                   stores={p.stores} 
                   render={p.render} 
@@ -855,7 +844,8 @@ var TileGrid = React.createClass({
                   theme={p.theme}
                   wallpaper={p.wallpaper}
                   width={p.width}
-                  context={p.s.context} />
+                  context={p.s.context}
+                  folder={p.s.folder} />
                 );
               }
             })
