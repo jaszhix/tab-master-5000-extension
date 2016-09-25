@@ -18,7 +18,7 @@ export var bgSetPrefs = (obj)=>{
   chrome.runtime.sendMessage(chrome.runtime.id, {method: 'setPrefs', obj: obj}, (response)=>{
     if (response && response.prefs) {
       console.log('setPrefs: ', obj);
-      reRenderStore.set_reRender(true, 'create', null);
+      state.set({reQuery: {state: true, type: 'create'}});
     }
   });
 };
@@ -41,9 +41,9 @@ var reRender = (type, id) => {
     if (targetTab.url.indexOf('chrome://newtab') !== -1 && !idIsObject) {
       return;
     }
-    chrome.idle.queryState(900, (idle)=>{
+    /*chrome.idle.queryState(900, (idle)=>{
       utilityStore.set_systemState(idle);
-    });
+    });*/
     // If 10MB of RAM or less is available to Chrome, disable rendering.
     chrome.system.memory.getInfo((info)=>{
       if (info.availableCapacity <= 10000000) {
@@ -57,38 +57,40 @@ var reRender = (type, id) => {
       }
     }
     console.log('window: ', targetTab.windowId, utilityStore.get_window(), 'state: ',utilityStore.get_systemState(), 'type: ', type, 'id: ',tId, 'item: ', targetTab);
-    if (targetTab.windowId === utilityStore.get_window() && utilityStore.get_systemState() === 'active') {
+    if (targetTab.windowId === utilityStore.get_window()) {
       if (type === 'create') {
         state.set({create: id});
-      } else if (type === 'update' || type === 'move' && !s.massUpdate) {
-        state.set({update: targetTab});
+      } else if (type.indexOf('move') !== -1 && !s.massUpdate) {
+        state.set({move: targetTab});
+      } else if (type === 'update') {
+        state.set({update: targetTab, updateType: type});
       } else if (type === 'activate') {
         var getImageFromTab = ()=>{
           console.log('getImageFromTab');
           if (s.prefs.screenshotChrome) {
             if (targetTab.active) {
               _.defer(()=>screenshotStore.capture(tId, targetTab.windowId, false, type));
-              _.defer(()=>state.set({update: targetTab}));
+              //_.defer(()=>state.set({update: targetTab}));
             }
           } else {
             chrome.tabs.sendMessage(targetTab.id, {type: type});
-            _.delay(()=>state.set({update: targetTab}),1000);
+            //_.delay(()=>state.set({update: targetTab}),1000);
           }
         };
         if (s.prefs.screenshot) {
           if (targetTab.url.indexOf('chrome://') !== -1 && targetTab.url.indexOf('chrome://newtab') === -1) {
             if (targetTab.active) {
               _.defer(()=>screenshotStore.capture(tId, targetTab.windowId, false, type));
-              _.defer(()=>state.set({update: targetTab}));
+              //_.defer(()=>state.set({update: targetTab}));
             }
           } else {
             getImageFromTab();
           }
         } else {
-          state.set({update: targetTab});
+          //state.set({update: targetTab});
         }
       } else if (s.prefs.mode !== 'tabs') {
-        reRenderStore.set_reRender(true, type, tId);
+        state.set({reQuery: {state: true, type: type, id: tId}});
       }
     }
   };
@@ -105,7 +107,7 @@ var reRender = (type, id) => {
             state.set({create: id}); // Full tab object
           }
         } else if (s.prefs.mode !== 'tabs') {
-          reRenderStore.set_reRender(true, type, tId);
+          state.set({reQuery: {state: true, type: type, id: tId}});
         }
     });  
   } else {
@@ -147,7 +149,7 @@ export var msgStore = Reflux.createStore({
       } else if (msg.type === 'history') {
         throttled.history(msg.type, msg.e);
       } else if (msg.type === 'app') {
-        reRenderStore.set_reRender(true, 'update', null);
+        state.set({reQuery: {state: true, type: 'update'}});
       } else if (msg.type === 'error') {
         utilityStore.reloadBg();
       } else if (msg.type === 'newVersion') {
@@ -170,7 +172,7 @@ export var msgStore = Reflux.createStore({
         this.response = response.prefs;
         this.trigger(this.response);
         console.log('setPrefs: ', obj);
-        reRenderStore.set_reRender(true, 'create', null);
+        state.set({reQuery: {state: true, type: 'create'}});
       }
     });
   },
@@ -205,41 +207,6 @@ export var clickStore = Reflux.createStore({
   },
   get_click: function() {
     return this.click;
-  }
-});
-
-export var reRenderStore = Reflux.createStore({
-  init: function() {
-    this.reRender = [null, null, null];
-  },
-  set_reRender: function(value, type, object) {
-    this.reRender[0] = value;
-    this.reRender[1] = type;
-    this.reRender[2] = object;
-    console.log('reRender: ', this.reRender);
-    this.trigger(this.reRender);
-  },
-  get_reRender: function() {
-    return this.reRender;
-  }
-});
-
-export var modalStore = Reflux.createStore({
-  init: function() {
-    this.modal = {state: false, type: null, opt: null};
-  },
-  set_modal: function(value, type, opt) {
-    this.modal.state = value;
-    this.modal.type = type;
-    this.modal.opt = opt;
-    console.log('modal: ', this.modal);
-    if (!value) {
-      this.modal.type = null;
-    }
-    this.trigger(this.modal);
-  },
-  get_modal: function() {
-    return this.modal;
   }
 });
 
@@ -324,7 +291,7 @@ export var utilityStore = Reflux.createStore({
       }
     });
     msgStore.setPrefs({mode: mode});
-    sortStore.set('index');
+    state.set({sort: 'index'});
   },
   now(){
     return new Date(Date.now()).getTime();
@@ -439,7 +406,7 @@ export var blacklistStore = Reflux.createStore({
     chrome.storage.sync.set({blacklist: valueArr}, (result)=> {
       this.trigger(this.blacklist);
       console.log('Blacklist saved: ',result);
-      reRenderStore.set_reRender(true, 'create', null);
+      state.set({reQuery: {state: true, type: 'create'}});
     }); 
   },
   get_blacklist: function() {
@@ -795,19 +762,6 @@ export var chromeAppStore = Reflux.createStore({
   }
 });
 
-export var sortStore = Reflux.createStore({
-  init(){
-    this.key = 'index';
-  },
-  set(value){
-    this.key = value;
-    this.trigger(this.key);
-  },
-  get(){
-    return this.key;
-  }
-});
-
 export var keyboardStore = Reflux.createStore({
   init(){
     this.key = '';
@@ -834,33 +788,28 @@ export var keyboardStore = Reflux.createStore({
     });
     mouseTrap.bind('ctrl+f', (e)=>{
       e.preventDefault();
-      modalStore.set_modal(false, 'settings');
+      state.set({modal: {state: false, type: 'settings'}});
       v('#search > input').n.focus();
     });
     mouseTrap.bind('ctrl+shift+s', (e)=>{
       e.preventDefault();
-      state.set({settings: 'sessions'});
-      modalStore.set_modal(this.state('ctrl+shift+s'), 'settings');
+      state.set({settings: 'sessions', modal: {state: this.state('ctrl+shift+s'), type: 'settings'}});
     });
     mouseTrap.bind('ctrl+shift+p', (e)=>{
       e.preventDefault();
-      state.set({settings: 'preferences'});
-      modalStore.set_modal(this.state('ctrl+shift+p'), 'settings');
+      state.set({settings: 'preferences', modal: {state: this.state('ctrl+shift+p'), type: 'settings'}});
     });
     mouseTrap.bind('ctrl+shift+t', (e)=>{
       e.preventDefault();
-      state.set({settings: 'theming'});
-      modalStore.set_modal(this.state('ctrl+shift+t'), 'settings');
+      state.set({settings: 'theming', modal: {state: this.state('ctrl+shift+t'), type: 'settings'}});
     });
     mouseTrap.bind('ctrl+shift+a', (e)=>{
       e.preventDefault();
-      state.set({settings: 'about'});
-      modalStore.set_modal(this.state('ctrl+shift+a'), 'settings');
+      state.set({settings: 'about', modal: {state: this.state('ctrl+shift+a'), type: 'settings'}});
     });
     mouseTrap.bind('ctrl+s', (e)=>{
       e.preventDefault();
-      state.set({settings: 'sessions'});
-      modalStore.set_modal(true, 'settings');
+      state.set({settings: 'sessions', modal: {state: true, type: 'settings'}});
       // fix
       v('body > div.ReactModalPortal > div > div > div > div.row.ntg-settings-pane > div > div.col-xs-5.session-col > button').click();
     });

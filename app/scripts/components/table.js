@@ -2,7 +2,8 @@ import React from 'react';
 import _ from 'lodash';
 import v from 'vquery';
 import mouseTrap from 'mousetrap';
-import {alertStore, faviconStore, reRenderStore} from './stores/main';
+import state from './stores/state';
+import {alertStore, faviconStore} from './stores/main';
 import tabStore from './stores/tab';
 
 export var Table = React.createClass({
@@ -99,7 +100,7 @@ export var Table = React.createClass({
     if (column === 'pinned') {
       chrome.tabs.update(row.id, {pinned: !row.pinned});
       if (p.stores.prefs.mode !== 'tabs') {
-        reRenderStore.set_reRender(true, 'create', null);
+        state.set({reQuery: {state: true, type: 'create'}});
       }
     } else if (column === 'mutedInfo') {
       chrome.tabs.update(row.id, {muted: !row.mutedInfo.muted}, ()=>{
@@ -110,11 +111,11 @@ export var Table = React.createClass({
         }
       });
       if (p.stores.prefs.mode !== 'tabs') {
-        reRenderStore.set_reRender(true, 'create', null);
+        state.set({reQuery: {state: true, type: 'create'}});
       }
     } else if (column === 'enabled') {
       chrome.management.setEnabled(row.id, !row.enabled, ()=>{
-        reRenderStore.set_reRender(true, 'update', null);
+        state.set({reQuery: {state: true, type: 'update'}});
       });
     }
   },
@@ -130,20 +131,21 @@ export var Table = React.createClass({
     var s = this.state;
     var start = this.dragged.i;
     var end = this.over.i;
+    this.dragged.el.style.display = 'table-row';
     if (start < end) {
       end--;
     }
     if (this.nodePlacement === 'after') {
       end++;
     }
-    console.log(s.rows[start].index, s.rows[end].index)
+    console.log(s.rows[start].index, s.rows[end].index);
     if (s.rows[start].pinned !== s.rows[end -1].pinned) {
       s.rows[end - 1].index = _.chain(s.rows).filter({pinned: true}).last().value().index;
     }
     chrome.tabs.move(s.rows[start].id, {index: s.rows[end - 1].index}, (t)=>{
-      console.log('MOVE: ', t)
-      
-      reRenderStore.set_reRender(true, 'cycle', s.rows[end - 1].id);
+      console.log('MOVE: ', t);
+      state.set({reQuery: {state: true, type: 'cycle', id: s.rows[end - 1].id}});
+      //state.set({move: t})
       _.defer(()=>this.dragged.el.parentNode.removeChild(this.placeholder));
     });
   },

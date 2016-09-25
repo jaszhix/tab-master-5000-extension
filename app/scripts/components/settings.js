@@ -10,7 +10,7 @@ import ColorPicker from 'rc-color-picker';
 import ReactTooltip from './tooltip/tooltip';
 
 import state from './stores/state';
-import {msgStore, faviconStore, clickStore, modalStore, utilityStore} from './stores/main';
+import {msgStore, faviconStore, clickStore, utilityStore} from './stores/main';
 import themeStore from './stores/theme';
 import tabStore from './stores/tab';
 import sessionsStore from './stores/sessions';
@@ -745,11 +745,10 @@ var Settings = React.createClass({
       if (p.modal.opt) {
         var opt = p.modal.opt;
         _.defer(()=>{
-          modalStore.set_modal(true, opt);
+          state.set({modal: {state: true, type: opt}});
         });
-        modalStore.set_modal(false);
       } else {
-        modalStore.set_modal(false);
+        state.set({modal: {state: false}});
       }
     });
   },

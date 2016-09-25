@@ -9,7 +9,7 @@ import Draggable from 'react-draggable';
 import OnClickOutside from 'react-onclickoutside';
 import ReactTooltip from './tooltip/tooltip';
 import state from './stores/state';
-import {msgStore, searchStore, sortStore, faviconStore, bookmarksStore, reRenderStore, utilityStore, dragStore, draggedStore, modalStore} from './stores/main';
+import {msgStore, searchStore, faviconStore, bookmarksStore, utilityStore, dragStore, draggedStore} from './stores/main';
 import tabStore from './stores/tab';
 import sessionsStore from './stores/sessions';
 
@@ -277,13 +277,7 @@ var Tile = React.createClass({
     var p = this.props;
     var s = this.state;
     var reRender = (defer)=>{
-      var t = tabStore.get_altTab();
-      if (defer) {
-        reRenderStore.set_reRender(true, 'cycle', t[0].id);
-      } else {
-        reRenderStore.set_reRender(true, 'create', t[0].id);
-      }
-
+      state.set({reQuery: {state: true, type: defer ? 'cycle' : 'create', id: p.stores.altTabs[0].id}});
     };
     var close = ()=>{
       chrome.tabs.remove(id, ()=>{
@@ -322,7 +316,7 @@ var Tile = React.createClass({
       tabStore.keepNewTabOpen();
     }
     if (p.stores.prefs.mode !== 'tabs') {
-      reRenderStore.set_reRender(true, 'create', null);
+      state.set({reQuery: {state: true, type: 'create'}});
     }
   },
   handlePinning(tab, opt) {
@@ -341,7 +335,7 @@ var Tile = React.createClass({
       pinned: !tab.pinned
     });
     if (p.stores.prefs.mode !== 'tabs') {
-      reRenderStore.set_reRender(true, 'create', null);
+      state.set({reQuery: {state: true, type: 'create'}});
     }
     v('#subTile-'+s.i).on('animationend', function animationEnd(e){
       this.setState({pinning: false});
@@ -360,7 +354,7 @@ var Tile = React.createClass({
       }
     });
     if (this.props.stores.prefs.mode !== 'tabs') {
-      reRenderStore.set_reRender(true, 'create', null);
+      state.set({reQuery: {state: true, type: 'create'}});
     }
   },
   handleCloseAll(tab){
@@ -418,7 +412,7 @@ var Tile = React.createClass({
     var p = this.props;
     if (opt === 'toggleEnable') {
       chrome.management.setEnabled(p.tab.id, !p.tab.enabled, ()=>{
-        reRenderStore.set_reRender(true, 'update', null);
+        state.set({reQuery: {state: true, type: 'update'}});
       });
     } else if (opt === 'uninstallApp') {
       chrome.management.uninstall(p.tab.id);
@@ -428,7 +422,7 @@ var Tile = React.createClass({
       this.handleClick(p.tab.id);
     } else if (_.first(_.words(opt)) === 'OPEN') {
       chrome.management.setLaunchType(p.tab.id, opt);
-      reRenderStore.set_reRender(true, 'update', null);
+      state.set({reQuery: {state: true, type: 'update'}});
     }
 
   },
@@ -522,8 +516,9 @@ var Tile = React.createClass({
     var draggedOver = dragStore.get_tabIndex();
     chrome.tabs.move(dragged.id, {index: draggedOver.index}, (t)=>{
       console.log('moved: ',t);
-      reRenderStore.set_reRender(true, 'cycle', dragged.id);
-      _.defer(()=>v('.tileClone').remove());
+      //_.defer(()=>state.set({move: t}));
+      state.set({reQuery: {state: true, type: 'cycle', id: dragged.id}});
+      v('.tileClone').remove();
     });
   },
   getPos(left, top, ui){
@@ -677,7 +672,7 @@ var Sidebar = React.createClass({
     var formatBtnLabel = `Format: ${p.prefs.format === 'tile' ? 'Table' : 'Tile'}`;
     return (
       <div className="side-div" style={sideStyle}>
-        <Btn onClick={()=>modalStore.set_modal(true, 'settings')} className="ntg-apply-btn" fa="cogs" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? 'Settings' : null}>{!iconCollapse ? 'Settings' : ''}</Btn>
+        <Btn onClick={()=>state.set({modal: {state: true, type: 'settings'}})} className="ntg-apply-btn" fa="cogs" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? 'Settings' : null}>{!iconCollapse ? 'Settings' : ''}</Btn>
         <Btn onClick={()=>msgStore.setPrefs({format: p.prefs.format === 'tile' ? 'table' : 'tile'})} className="ntg-apply-btn" fa="cogs" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? formatBtnLabel : null}>{!iconCollapse ? formatBtnLabel : ''}</Btn>
         <Btn onClick={this.handleSort} className="ntg-apply-btn" style={sortButton} fa="sort-amount-asc" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? 'Sort Tabs' : null}>{!iconCollapse ? 'Sort Tabs' : ''}</Btn>
           {p.prefs.sort ? <div>
@@ -806,7 +801,7 @@ var TileGrid = React.createClass({
       var label = p.labels[key] || key;
       var cLabel = p.width <= 1135 ? '' : label;
       return (
-        <div key={i} onClick={()=>sortStore.set(key)}>
+        <div key={i} onClick={()=>state.set({sort: key})}>
           {label === 'Tab Order' || label === 'Original Order' ? <Btn className="ntg-btn" style={btnStyle} fa="history" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
           {label === 'Website' ? <Btn className="ntg-btn" style={btnStyle} fa="external-link" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
           {label === 'Title' ? <Btn onClick={this.handleTitleIcon} className="ntg-btn" style={btnStyle} fa={s.title ? 'sort-alpha-asc' : 'sort-alpha-desc'} faStyle={faStyle} data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}

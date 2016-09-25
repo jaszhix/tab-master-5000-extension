@@ -39,7 +39,7 @@ import '../../styles/app.scss';
 import '../../styles/icons/icomoon/styles.css';
 window.v = v;
 import state from './stores/state';
-import {keyboardStore, sortStore, chromeAppStore, faviconStore, actionStore, historyStore, bookmarksStore, reRenderStore, clickStore, modalStore, utilityStore} from './stores/main';
+import {keyboardStore, chromeAppStore, faviconStore, actionStore, historyStore, bookmarksStore, clickStore, utilityStore} from './stores/main';
 import themeStore from './stores/theme';
 import tabStore from './stores/tab';
 import sessionsStore from './stores/sessions';
@@ -148,8 +148,7 @@ var Search = React.createClass({
     });
   },
   openAbout(){
-    state.set({settings: 'about'});
-    modalStore.set_modal(true, 'settings');
+    state.set({settings: 'about', modal: {state: true, type: 'settings'}});
   },
   handleSidebar(){
     this.props.onMenuClick();
@@ -245,13 +244,10 @@ var Root = React.createClass({
     this.listenTo(bookmarksStore, this.updateTabState);
     this.listenTo(historyStore, this.updateTabState);
     this.listenTo(chromeAppStore, this.updateTabState);
-    this.listenTo(reRenderStore, this.reRender);
     this.listenTo(actionStore, this.actionsChange);
     this.listenTo(sessionsStore, this.sessionsChange);
     this.listenTo(faviconStore, this.faviconsChange);
     this.listenTo(screenshotStore, this.screenshotsChange);
-    this.listenTo(sortStore, this.sortChange);
-    this.listenTo(modalStore, this.modalChange);
     window._trackJs.version = utilityStore.get_manifest().version;
     
   },
@@ -275,11 +271,18 @@ var Root = React.createClass({
     if (!_.isEqual(nP.s.search, p.s.search)) {
       this.searchChange(nP.s.search);
     }
+    if (!_.isEqual(nP.s.modal, p.s.modal)) {
+      this.modalChange(nP.s.modal);
+    }
+    if (!_.isEqual(nP.s.reQuery, p.s.reQuery) && nP.s.reQuery.state) {
+      this.reQuery(nP.s.reQuery);
+      state.set({reQuery: {state: false}});
+    }
     if (nP.s.applyTabOrder !== p.s.applyTabOrder) {
       if (nP.s.applyTabOrder) {
         _.defer(()=>state.set({applyTabOrder: false}));
       } else {
-        _.defer(()=>reRenderStore.set_reRender(true, 'cycle', null));
+        this.reQuery(true, 'cycle');
       }
     }
   },
@@ -298,9 +301,6 @@ var Root = React.createClass({
     var s = this.state;
 
     this.setState({
-      //prefs: e, 
-      //tileLimit: 100,
-      modal: modalStore.get_modal(),
       favicons: faviconStore.get_favicon(),
       allTabsByWindow: tabStore.getAllTabsByWindow()
     });
@@ -330,9 +330,6 @@ var Root = React.createClass({
   },
   chromeAppChange(e){
     this.setState({apps: e});
-  },
-  sortChange(e){
-    this.setState({sort: e});
   },
   themeChange(e){
     var s = this.state;
@@ -533,7 +530,6 @@ var Root = React.createClass({
     this.setState(s);
   },
   modalChange(e){
-    this.setState({modal: e});
     if (this.props.s.prefs.animations) {
       if (e.state) {
         v('#main').css({
@@ -549,7 +545,6 @@ var Root = React.createClass({
   },
   searchChange(e, update) {
     var search = e;
-    var s = this.state;
     var p = this.props;
     var tabs = update ? update : p.s.tabs;
     this.setState({topLoad: true});
@@ -631,14 +626,22 @@ var Root = React.createClass({
     if (p.s.init) {
       return;
     }
-    console.log('updateSingleItem');
+    console.log('updateSingleItem', p.s.updateType);
     _.merge(e, {
       timeStamp: new Date(Date.now()).getTime()
     });
+    var orderBy = ['pinned'];
     var tabToUpdate = _.findIndex(p.s.altTabs, {id: e.id});
+
     if (tabToUpdate > -1) {
       var s = this.state;
-      p.s.altTabs[tabToUpdate] = e;
+      if (p.s.updateType === 'move') {
+        console.log('Move indexes: ', tabToUpdate, e.index);
+        p.s.altTabs = v(p.s.altTabs).move(tabToUpdate, e.index).ns;
+        orderBy.push('index');
+      } else {
+        p.s.altTabs[tabToUpdate] = e;
+      }
       if (e.pinned) {
         p.s.altTabs = _.orderBy(_.uniqBy(p.s.altTabs, 'id'), ['pinned'], ['desc']);
       } else {
@@ -728,10 +731,19 @@ var Root = React.createClass({
     this.setState({topLoad: true});
     // Query current Chrome window for tabs.
     tabStore.promise().then((Tab)=>{
+      var blacklisted = [];
       for (let i = 0; i < Tab.length; i++) {
         _.assign(Tab[i], {
           timeStamp: new Date(Date.now()).getTime()
         });
+        console.log(Tab[i].url)
+        if (Tab[i].url === 'chrome://newtab/') {
+          blacklisted.push(i);
+        }
+      }
+      console.log('BLACKLISTED: ', blacklisted);
+      for (let i = blacklisted.length - 1; i >= 0; i--) {
+        _.pullAt(Tab, blacklisted[i]);
       }
       var stateUpdate = {
         altTabs: Tab
@@ -802,22 +814,23 @@ var Root = React.createClass({
       this.setState({duplicateTabs: utils.getDuplicates(tabUrls)});
     } 
   },
-  reRender(e) {
+  reQuery(e) {
+    console.log('### reQuery', e);
     // Method triggered by Chrome event listeners.
     var p = this.props;
     if (!clickStore.get_click()) {
-      if (e[0]) {
+      if (e.state) {
         // Treat attaching/detaching and created tabs with a full re-render.
         if (p.s.prefs.mode === 'bookmarks') {
-          this.updateTabState(bookmarksStore.get_bookmarks(), e[1]);
+          this.updateTabState(bookmarksStore.get_bookmarks(), e.type);
         } else if (p.s.prefs.mode === 'history') {
-          this.updateTabState(historyStore.get_history(), e[1]);
+          this.updateTabState(historyStore.get_history(), e.type);
         } else if (p.s.prefs.mode === 'apps') {
-          this.updateTabState(chromeAppStore.get(true), e[1]);
+          this.updateTabState(chromeAppStore.get(true), e.type);
         } else if (p.s.prefs.mode === 'extensions') {
-          this.updateTabState(chromeAppStore.get(false), e[1]);
+          this.updateTabState(chromeAppStore.get(false), e.type);
         } else {
-          this.captureTabs(e[1]);
+          this.captureTabs(e.type);
         }
       }
     }
@@ -847,7 +860,7 @@ var Root = React.createClass({
           state: s.folderState
         },
         windowId: windowId,
-        sort: s.sort
+        sort: p.s.sort
       };
       var keys = [];
       var labels = {};
@@ -912,9 +925,9 @@ var Root = React.createClass({
           : 
           <div>
             {p.s.context.value ? <ContextMenu search={p.s.search} actions={s.actions} tabs={p.s.tabs} prefs={p.s.prefs} cursor={cursor} context={p.s.context} chromeVersion={s.chromeVersion} duplicateTabs={s.duplicateTabs}/> : null}
-            {s.modal ? 
+            {p.s.modal ? 
               <ModalHandler 
-              modal={s.modal} 
+              modal={p.s.modal} 
               tabs={p.s.prefs.mode === 'tabs' ? p.s.tabs : p.s.altTabs}
               allTabsByWindow={s.allTabsByWindow}
               sessions={s.sessions} 
@@ -960,7 +973,7 @@ var Root = React.createClass({
                     />
                   : <Loading />}
                 </div>
-                {s.modal && !s.modal.state && p.s.prefs.tooltip ? 
+                {p.s.modal && !p.s.modal.state && p.s.prefs.tooltip ? 
                 <ReactTooltip 
                 effect="solid" 
                 place="right"
@@ -969,7 +982,7 @@ var Root = React.createClass({
                 offset={{top: 0, left: 6}} /> : null}
               </div> : null}
             </div>}
-            {s.modal && !s.modal.state && p.s.prefs.tooltip ? <Alert enabled={p.s.prefs.alerts} /> : null}
+            {p.s.modal && !p.s.modal.state && p.s.prefs.tooltip ? <Alert enabled={p.s.prefs.alerts} /> : null}
         </div>
       );
     } else {

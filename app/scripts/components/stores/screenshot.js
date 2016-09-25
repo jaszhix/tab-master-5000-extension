@@ -1,7 +1,8 @@
 import Reflux from 'reflux';
 import _ from 'lodash';
 
-import {msgStore, utilityStore, reRenderStore, tabs} from './main';
+import state from './state';
+import {msgStore, utilityStore, tabs} from './main';
 
 var screenshotStore = Reflux.createStore({
   init: function() {
@@ -111,7 +112,7 @@ var screenshotStore = Reflux.createStore({
     chrome.storage.local.remove('screenshots', (result)=>{
       console.log('Screenshot cache cleared: ',result);
       _.defer(()=>{
-        reRenderStore.set_reRender(true, 'create', tabs()[2].id);
+        state.set({reQuery: {state: true, type: 'create', id: tabs()[2].id}});
       });
       this.index = [];
       this.trigger(this.index);

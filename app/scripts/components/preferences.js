@@ -6,7 +6,8 @@ import utils from './utils';
 
 import Slider from 'rc-slider';
 import ReactTooltip from './tooltip/tooltip';
-import {msgStore, reRenderStore, utilityStore, blacklistStore} from './stores/main';
+import state from './stores/state';
+import {msgStore, utilityStore, blacklistStore} from './stores/main';
 import themeStore from './stores/theme';
 import screenshotStore from './stores/screenshot';
 
@@ -273,7 +274,7 @@ var Preferences = React.createClass({
                 defaultValue={p.prefs.tabSizeHeight}
                 value={p.prefs.tabSizeHeight}
                 onChange={(e)=>this.handleSlide(e, 'tabSizeHeight')}
-                onAfterChange={()=>reRenderStore.set_reRender(true, 'cycle', this.props.tabs[0].id)}
+                onAfterChange={()=>state.set({reQuery: {state: true, type: 'cycle', id: this.props.tabs[0].id}})}
                 onMouseEnter={()=>this.handleToggle('tabSizeHeight')}
                 step={20}
                 dots={true}
