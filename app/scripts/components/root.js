@@ -732,45 +732,49 @@ var Root = React.createClass({
       });
     }
   },
+  checkFavicons(p, tab, key, tabs){
+    if (p.s.favicons.length > 0) {
+      var match = false;
+      _.each(p.s.favicons, (fVal, fKey)=>{
+        if (tab.url.indexOf(fVal.domain) !== -1) {
+          match = true;
+          tabs[key].favIconUrl = fVal.favIconUrl;
+        }
+      });
+      if (!match) {
+        faviconStore.set_favicon(tab, 0, 0);
+      }
+    } else {
+      faviconStore.set_favicon(tab, 0, 0);
+    }
+    return tabs;
+  },
   captureTabs(opt) {
     var s = this.state;
     var p = this.props;
     this.setState({topLoad: true});
     // Query current Chrome window for tabs.
-    tabStore.promise().then((Tab)=>{
+    tabStore.promise().then((Tabs)=>{
       var blacklisted = [];
-      _.each(Tab, (tVal, tKey)=>{
-        _.assign(Tab[tKey], {
+      _.each(Tabs, (tVal, tKey)=>{
+        _.assign(Tabs[tKey], {
           timeStamp: new Date(Date.now()).getTime()
         });
         if (tVal.url === 'chrome://newtab/') {
           blacklisted.push(tKey);
         }
-        if (p.s.favicons.length > 0) {
-          var match = false;
-          _.each(p.s.favicons, (fVal, fKey)=>{
-            if (tVal.url.indexOf(fVal.domain) !== -1) {
-              match = true;
-              Tab[tKey].favIconUrl = fVal.favIconUrl;
-            }
-          });
-          if (!match) {
-            faviconStore.set_favicon(tVal, 0, 0);
-          }
-        } else {
-          faviconStore.set_favicon(tVal, 0, 0);
-        }
+        Tabs = this.checkFavicons(p, tVal, tKey, Tabs);
       });
 
       for (let i = blacklisted.length - 1; i >= 0; i--) {
-        _.pullAt(Tab, blacklisted[i]);
+        _.pullAt(Tabs, blacklisted[i]);
       }
      
       var stateUpdate = {
-        altTabs: Tab
+        altTabs: Tabs
       };
       try {
-        utilityStore.set_window(Tab[0].windowId);
+        utilityStore.set_window(Tabs[0].windowId);
       } catch (e) {
         chrome.windows.getCurrent((w)=>{
           // Store the Chrome window ID for global reference
@@ -788,12 +792,15 @@ var Root = React.createClass({
           this.setState({grid: false});
         }
       }
-      var tab = [];
+      var tabs = [];
       // Handle session view querying, and set it to tabs var.
       if (p.s.prefs.mode === 'sessions') {
-        tab = sessionsStore.flatten(p.s.sessions);
+        tabs = sessionsStore.flatten(p.s.sessions);
+        for (let i = tabs.length - 1; i >= 0; i--) {
+          tabs = this.checkFavicons(p, tabs[i], i, tabs);
+        }
       } else {
-        tab = Tab;
+        tabs = Tabs;
       }
       // Avoid setting tabs state here if the mode is not tabs or sessions. updateTabState will handle other modes.
       if (p.s.prefs.mode !== 'bookmarks' 
@@ -801,11 +808,11 @@ var Root = React.createClass({
         && p.s.prefs.mode !== 'apps' 
         && p.s.prefs.mode !== 'extensions') {
         if (p.s.search.length === 0) {
-          stateUpdate.tabs = tab;
+          stateUpdate.tabs = tabs;
         } else {
-          this.searchChange(p.s.search, tab);
+          this.searchChange(p.s.search, tabs);
         }
-        this.checkDuplicateTabs(Tab);
+        this.checkDuplicateTabs(Tabs);
       }
 
       state.set(stateUpdate);

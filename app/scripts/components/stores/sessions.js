@@ -8,11 +8,6 @@ import state from './state';
 import {msgStore, utilityStore, alertStore} from './main';
 
 var sessionsStore = Reflux.createStore({
-  init: function() {
-    this.sessions = [];
-    this.tabs = [];
-    this.load();
-  },
   load(){
     v('div.ReactModalPortal > div').css({cursor: 'wait'});
     chrome.storage.local.get('sessions',(item)=>{
@@ -144,11 +139,11 @@ var sessionsStore = Reflux.createStore({
           allTabs.push(sessions[i].tabs[y]);
         }
       }
-      this.tabs = _.chain(allTabs)
+      var tabs = _.chain(allTabs)
         .flatten()
         .orderBy(['openTab'], ['asc'])
         .uniqBy('url').value();
-      return this.tabs;
+      return tabs;
     } else {
       msgStore.setPrefs({mode: 'tabs'});
     }
