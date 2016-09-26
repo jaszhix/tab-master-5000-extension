@@ -482,7 +482,7 @@ var Sessions = React.createClass({
   setTabSource(){
     var p = this.props;
     if (p.prefs.mode !== 'tabs') {
-      this.setState({tabs: tabStore.get_altTab()});
+      this.setState({tabs: p.tabs});
     } else {
       this.setState({tabs: p.tabs});
     }
@@ -495,7 +495,7 @@ var Sessions = React.createClass({
   },
   labelSession(session){
     session.label = this.state.sessionLabelValue;
-    sessionsStore.v2Update(session);
+    sessionsStore.v2Update(this.props.sessions, session);
 
     this.setState({
       labelSession: '',
@@ -565,7 +565,7 @@ var Sessions = React.createClass({
                   </div>
                 </div>
                 <div style={{width: 'auto', float: 'right', display: 'inline'}}>
-                  {s.sessionHover === i ? <Btn onClick={()=>sessionsStore.v2Remove(session)} className="ntg-session-btn" fa="times" data-tip="Remove Session" /> : null}
+                  {s.sessionHover === i ? <Btn onClick={()=>sessionsStore.v2Remove(p.sessions, session)} className="ntg-session-btn" fa="times" data-tip="Remove Session" /> : null}
                   {s.sessionHover === i ? <Btn onClick={()=>sessionsStore.restore(session, p.prefs.screenshot)} className="ntg-session-btn" fa="folder-open-o" data-tip="Restore Session"/> : null}
                   {s.sessionHover === i && p.prefs.sessionsSync ? <Btn onClick={()=>msgStore.setPrefs({syncedSession: p.prefs.syncedSession === session.id ? null : session.id})} className="ntg-session-btn" fa={p.prefs.syncedSession === session.id ? 'circle-o' : 'circle-o-notch'} data-tip={p.prefs.syncedSession === session.id ? 'Desynchronize Session' : 'Synchronize Session'}/> : null}
                   {s.sessionHover === i ? <Btn onClick={()=>this.setState({searchField: i, expandedSession: i})} className="ntg-session-btn" fa="search" data-tip="Search Session"/> : null}
@@ -628,7 +628,7 @@ var Sessions = React.createClass({
                                   </span>
                                 </Col>
                                 <Col size="4">
-                                  {s.selectedSessionTabHover === x ? <Btn onClick={()=>sessionsStore.v2RemoveTab(i, w, x)} className="ntg-session-btn" fa="times" data-tip="Remove Tab" />: null}
+                                  {s.selectedSessionTabHover === x ? <Btn onClick={()=>sessionsStore.v2RemoveTab(p.sessions, i, w, x)} className="ntg-session-btn" fa="times" data-tip="Remove Tab" />: null}
                                   {s.selectedSessionTabHover === x ? <Btn onClick={()=>utilityStore.createTab(t.url)} className="ntg-session-btn" fa="external-link" data-tip="Open Tab" /> : null}
                                 </Col>
                               </Row>
@@ -642,8 +642,8 @@ var Sessions = React.createClass({
               </Row>
             );
           }) : null}
-          <Btn onClick={()=>sessionsStore.exportSessions()} style={p.settingsMax ? {top: '95%'} : null} className="ntg-setting-btn" fa="arrow-circle-o-down">Export</Btn>
-          <input children={undefined} type="file" onChange={(e)=>sessionsStore.importSessions(e)} accept=".json" ref="fileInput" style={style.hiddenInput} />
+          <Btn onClick={()=>sessionsStore.exportSessions(p.sessions)} style={p.settingsMax ? {top: '95%'} : null} className="ntg-setting-btn" fa="arrow-circle-o-down">Export</Btn>
+          <input children={undefined} type="file" onChange={(e)=>sessionsStore.importSessions(p.sessions, e)} accept=".json" ref="fileInput" style={style.hiddenInput} />
           <Btn onClick={this.triggerInput} style={p.settingsMax ? {top: '95%', marginLeft: '86px'} : {marginLeft: '86px'}} className="ntg-setting-btn" fa="arrow-circle-o-up">Import</Btn>
         </Col>
         <Col size="6" className="session-col">

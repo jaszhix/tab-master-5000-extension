@@ -7,6 +7,7 @@ var state = Reflux.createStore({
       // Core
       init: true,
       prefs: null,
+      sessions: [],
       // Single item states
       move: null,
       update: null,
@@ -41,8 +42,10 @@ var state = Reflux.createStore({
       tabsCache: null,
       tabs: null,
       altTabs: null,
+      allTabs: null,
+      newTabs: null,
       favicons: [],
-      sort: 'index'
+      sort: 'index',
     };
   },
   set(obj){

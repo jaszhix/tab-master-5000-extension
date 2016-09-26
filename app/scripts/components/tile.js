@@ -9,7 +9,7 @@ import Draggable from 'react-draggable';
 import OnClickOutside from 'react-onclickoutside';
 import ReactTooltip from './tooltip/tooltip';
 import state from './stores/state';
-import {msgStore, searchStore, faviconStore, utilityStore, dragStore, draggedStore} from './stores/main';
+import {msgStore, searchStore, utilityStore, dragStore, draggedStore} from './stores/main';
 import tabStore from './stores/tab';
 import sessionsStore from './stores/sessions';
 
@@ -18,7 +18,6 @@ import {Btn, Col, Row} from './bootstrap';
 import style from './style';
 
 var tileDrag = null;
-var closeNewTabsThrottled = _.throttle(tabStore.closeNewTabs, 1500, {leading: false});
 var Tile = React.createClass({
   mixins: [Reflux.ListenerMixin],
   getInitialState() {
@@ -70,9 +69,6 @@ var Tile = React.createClass({
     }
     if (nP.i !== p.i) {
       this.setState({i: nP.i});
-    }
-    if (p.i === 0) {
-      closeNewTabsThrottled();
     }
     this.handleRelays(nP);
     if (nP.stores.applyTabOrder) {

@@ -106,7 +106,7 @@ var Loading = React.createClass({
             <div className="row">Tab Master encountered an error and was unable to initialize. Sorry for the inconvenience. Please report this to the Support tab in the <a style={errorLink} href="https://chrome.google.com/webstore/detail/tab-master-5000-tab-swiss/mippmhcfjhliihkkdobllhpdnmmciaim/support">Chrome Web Store</a>, or as an issue on <a style={errorLink} href="https://github.com/jaszhix/tab-master-5000-chrome-extension/issues">Github</a>, so this issue can be investigated. Thank you! </div>
             
             <div className="row" style={{margin: '0px auto', position: 'fixed', right: '0px', bottom: '0px'}}>
-              <button className="ntg-btn" onClick={()=>sessionsStore.exportSessions()}>Backup Sessions</button>
+              <button className="ntg-btn" onClick={()=>sessionsStore.exportSessions(p.sessions)}>Backup Sessions</button>
               <button className="ntg-btn" onClick={()=>themeStore.export()}>Backup Themes</button>
               <button className="ntg-btn" onClick={this.handleReset}>Reset Data</button>
             </div>
@@ -245,9 +245,9 @@ var Root = React.createClass({
     this.listenTo(historyStore, this.updateTabState);
     this.listenTo(chromeAppStore, this.updateTabState);
     this.listenTo(actionStore, this.actionsChange);
-    this.listenTo(sessionsStore, this.sessionsChange);
     this.listenTo(screenshotStore, this.screenshotsChange);
     window._trackJs.version = utilityStore.get_manifest().version;
+    this.init(this.props);
     
   },
   componentWillReceiveProps(nP){
@@ -296,18 +296,12 @@ var Root = React.createClass({
       this.themeChange({theme: this.state.theme});
     }
   },
-  stateChange(e){
-    this.setState({s: e});
-  },
-  sessionsChange(e){
-    this.setState({sessions: e});
+  init(p){
+    _.delay(()=>state.set({allTabs: tabStore.getAllTabsByWindow()}), 100);
+    sessionsStore.load();
   },
   prefsChange(e){
     var s = this.state;
-
-    this.setState({
-      allTabsByWindow: tabStore.getAllTabsByWindow()
-    });
     if (s.init) {
       themeStore.load(e);
       // Init methods called here after prefs are loaded from Chrome storage.
@@ -575,6 +569,7 @@ var Root = React.createClass({
     if (p.s.init) {
       return;
     }
+    tabStore.closeNewTabs();
     var tab = e;
     _.each(p.s.favicons, (fVal, fKey)=>{
       if (tab.url.indexOf(fVal.domain) !== -1) {
@@ -607,7 +602,7 @@ var Root = React.createClass({
     p.s.altTabs = _.orderBy(_.uniqBy(p.s.altTabs, 'id'), ['pinned'], ['desc']);
     console.log('Single tab to update:', tab);
     if (p.s.prefs.sessionsSync) {
-      synchronizeSession(s.prefs, p.s.altTabs);
+      synchronizeSession(p.s.sessions, p.s.prefs, p.s.altTabs);
     }
     state.set({
       tabs: p.s.prefs.mode === 'tabs' ? p.s.altTabs : p.s.tabs,
@@ -629,7 +624,7 @@ var Root = React.createClass({
       p.s.altTabs = _.orderBy(_.uniqBy(p.s.altTabs, 'id'), ['pinned'], ['desc']);
       console.log('Single tab to remove:', p.s.altTabs[tabToUpdate]);
       if (p.s.prefs.sessionsSync) {
-        synchronizeSession(s.prefs, p.s.altTabs);
+        synchronizeSession(p.s.sessions, p.s.prefs, p.s.altTabs);
       }
       state.set({
         tabs: p.s.prefs.mode === 'tabs' ? p.s.altTabs : p.s.tabs,
@@ -665,7 +660,7 @@ var Root = React.createClass({
       }
       console.log('Single tab to update:', e);
       if (p.s.prefs.sessionsSync) {
-        synchronizeSession(s.prefs, p.s.altTabs);
+        synchronizeSession(p.s.sessions, p.s.prefs, p.s.altTabs);
       }
       state.set({
         tabs: p.s.prefs.mode === 'tabs' ? p.s.altTabs : p.s.tabs,
@@ -693,7 +688,7 @@ var Root = React.createClass({
         p.s.altTabs = _.orderBy(p.s.altTabs, ['pinned'], ['desc']);
       }
       if (p.s.prefs.sessionsSync) {
-        synchronizeSession(s.prefs, p.s.altTabs);
+        synchronizeSession(p.s.sessions, p.s.prefs, p.s.altTabs);
       }
       if (tabToUpdate === e.index) {
         state.set({
@@ -732,7 +727,7 @@ var Root = React.createClass({
           this.setState({grid: true});
         }
         if (p.s.prefs.sessionsSync) {
-          synchronizeSession(p.s.prefs, Tab);
+          synchronizeSession(p.s.sessions, p.s.prefs, Tab);
         }
       });
     }
@@ -796,7 +791,7 @@ var Root = React.createClass({
       var tab = [];
       // Handle session view querying, and set it to tabs var.
       if (p.s.prefs.mode === 'sessions') {
-        tab = sessionsStore.flatten();
+        tab = sessionsStore.flatten(p.s.sessions);
       } else {
         tab = Tab;
       }
@@ -942,7 +937,7 @@ var Root = React.createClass({
       console.log('ROOT STATE: ', s);
       return (
         <div className="container-main">
-          {options ? <Preferences options={true} settingsMax={true} prefs={p.s.prefs} tabs={p.s.tabs} theme={s.theme} /> : s.load ? <Loading /> 
+          {options ? <Preferences options={true} settingsMax={true} prefs={p.s.prefs} tabs={p.s.tabs} theme={s.theme} /> : s.load ? <Loading sessions={p.s.sessions} /> 
           : 
           <div>
             {p.s.context.value ? <ContextMenu search={p.s.search} actions={s.actions} tabs={p.s.tabs} prefs={p.s.prefs} cursor={cursor} context={p.s.context} chromeVersion={s.chromeVersion} duplicateTabs={s.duplicateTabs}/> : null}
@@ -950,8 +945,8 @@ var Root = React.createClass({
               <ModalHandler 
               modal={p.s.modal} 
               tabs={p.s.prefs.mode === 'tabs' ? p.s.tabs : p.s.altTabs}
-              allTabsByWindow={s.allTabsByWindow}
-              sessions={s.sessions} 
+              allTabsByWindow={p.s.allTabs}
+              sessions={p.s.sessions} 
               prefs={p.s.prefs} 
               favicons={p.s.favicons} 
               collapse={p.s.collapse} 
@@ -985,14 +980,14 @@ var Root = React.createClass({
                     sidebar={s.sidebar}
                     stores={stores}
                     tileLimit={p.s.tileLimit}
-                    sessions={s.sessions}
+                    sessions={p.s.sessions}
                     init={s.init}
                     theme={s.theme}
                     wallpaper={s.wallpaper}
                     onSidebarClickOutside={()=>this.setState({sidebar: false})}
                     disableSidebarClickOutside={s.disableSidebarClickOutside}
                     />
-                  : <Loading />}
+                  : <Loading sessions={p.s.sessions}  />}
                 </div>
                 {p.s.modal && !p.s.modal.state && p.s.prefs.tooltip ? 
                 <ReactTooltip 
@@ -1007,7 +1002,7 @@ var Root = React.createClass({
         </div>
       );
     } else {
-      return <Loading />;
+      return <Loading sessions={p.s.sessions} />;
     }
   }
 });

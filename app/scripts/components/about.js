@@ -5,6 +5,7 @@ import {utilityStore} from './stores/main';
 import {Btn, Col, Row} from './bootstrap';
 
 import changelog from 'html!markdown!../../../changelog.md';
+import EFFBadge from '../../images/eff.png';
 
 var Donate = React.createClass({
   render:function(){
@@ -85,7 +86,9 @@ var ReleaseNotes = React.createClass({
     var p = this.props;
     return (
       <div>
-        <img src="../../images/icon-128.png" className="ntg-about"/>
+        
+        <img className="ntg-about" src="../../images/icon-128.png"/>
+        <img style={{position: 'absolute', top: '0px', right:'5%', height: '120px', opacity: '0.7'}} src={EFFBadge} />
         <div className="ntg-about">
           <h3 className="ntg-about">Tab Master 5000</h3>
         </div>
