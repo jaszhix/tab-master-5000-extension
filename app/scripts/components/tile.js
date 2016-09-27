@@ -703,9 +703,7 @@ var TileGrid = React.createClass({
   },
   getInitialState: function() {
     return {
-      title: true,
-      order: 'index',
-      direction: 'asc'
+      title: true
     };
   },
   componentDidMount(){
@@ -741,37 +739,37 @@ var TileGrid = React.createClass({
     if (!_.isEqual(nP.stores, p.stores)) {
       this.prefsInit(nP);
     }
-    if (nP.tileLimit !== p.tileLimit) {
-      this.setState({tileLimit: nP.tileLimit});
-    }
-    if (nP.stores.sort !== p.stores.sort) {
+    if (nP.s.sort !== p.s.sort || nP.s.direction !== p.s.direction) {
       this.sort(nP);
     }
   },
   sort(p) {
-    var key = p.stores.sort;
-    var direction = 'asc';
-    if (key === 'offlineEnabled' 
+    var key = p.s.sort;
+    var direction = p.s.direction;
+    /*if (key === 'offlineEnabled' 
       || key === 'sTimeStamp' 
       || key === 'dateAdded' 
       || key === 'visitCount' 
       || key === 'audible'
       || key === 'timeStamp'  
       || key === 'lastVisitTime') {
-      
-      direction = p.stores.prefs.format === 'tile' ? 'asc' : 'desc';
-    }
-    var pinned = _.orderBy(_.filter(p.s.tabs, {pinned: true}), key, direction);
-    var unpinned = _.orderBy(_.filter(p.s.tabs, {pinned: false}), key, direction);
-    var concat = _.concat(pinned, unpinned);
+      //direction = p.s.direction === 'asc' ? 'desc' : 'asc';
+    }*/
 
-    var pinnedDirection = p.s.prefs.format == 'tile' ? ['desc', direction] : direction;
-    var result = _.orderBy(concat, ['pinned', key], pinnedDirection);
-    state.set({tabs: result});
-    this.setState({
-      direction: direction,
-      order: key
-    });
+    var result;
+
+    if (p.s.prefs.mode === 'tabs') {
+      var pinned = _.orderBy(_.filter(p.data, {pinned: true}), key, direction);
+      var unpinned = _.orderBy(_.filter(p.data, {pinned: false}), key, direction);
+      var concat = _.concat(pinned, unpinned);
+      result = _.orderBy(concat, ['pinned', key], direction);
+    } else {
+      result = _.orderBy(p.data, [key], [direction]);
+    }
+
+    var stateUpdate = {};
+    stateUpdate[p.s.modeKey] = result;
+    state.set(stateUpdate);
   },
   handleTitleIcon(){
     this.setState({title: !this.state.title});
@@ -792,10 +790,10 @@ var TileGrid = React.createClass({
       var label = p.labels[key] || key;
       var cLabel = p.width <= 1135 ? '' : label;
       return (
-        <div key={i} onClick={()=>state.set({sort: key})}>
+        <div key={i} onClick={()=>state.set({sort: key, direction: p.s.direction === 'desc' ? 'asc' : 'desc'})}>
           {label === 'Tab Order' || label === 'Original Order' ? <Btn className="ntg-btn" style={btnStyle} fa="history" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
           {label === 'Website' ? <Btn className="ntg-btn" style={btnStyle} fa="external-link" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
-          {label === 'Title' ? <Btn onClick={this.handleTitleIcon} className="ntg-btn" style={btnStyle} fa={s.title ? 'sort-alpha-asc' : 'sort-alpha-desc'} faStyle={faStyle} data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
+          {label === 'Title' ? <Btn onClick={this.handleTitleIcon} className="ntg-btn" style={btnStyle} fa={p.s.direction === 'asc' ? 'sort-alpha-asc' : 'sort-alpha-desc'} faStyle={faStyle} data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
           {label === 'Audible' ? <Btn className="ntg-btn" style={btnStyle} fa="volume-up" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
           {label === 'Updated' ? <Btn className="ntg-btn" style={btnStyle} fa="hourglass" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
           {label === 'Open' ? <Btn className="ntg-btn" style={btnStyle} fa="folder-open" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
@@ -857,7 +855,7 @@ var TileGrid = React.createClass({
             favicons={p.s.favicons}
             theme={p.theme}
             width={p.width}
-            direction={s.direction}
+            direction={p.s.direction}
             />}
           </div>
         </div>

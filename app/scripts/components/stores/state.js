@@ -8,6 +8,7 @@ var state = Reflux.createStore({
       init: true,
       prefs: null,
       modeKey: 'tabs',
+      lastUpdate: [],
       sessions: [],
       sessionTabs: null,
       // Single item states
@@ -37,6 +38,11 @@ var state = Reflux.createStore({
       settings: 'sessions',
       modal: {state: false, type: null, opt: null},
       folder: null,
+      // Themes
+      theme: null,
+      savedThemes: null,
+      wallpapers: null,
+      currentWallpaper: null,
       // Chrome data
       chromeVersion: null,
       reQuery: {
@@ -56,11 +62,19 @@ var state = Reflux.createStore({
       extensions: null,
       favicons: [],
       sort: 'index',
+      direction: 'asc'
     };
   },
   set(obj){
     console.log('STATE INPUT: ', obj);
-    _.assignIn(this.state, obj);
+    var lastUpdate = _.keys(obj);
+    if (obj.hasOwnProperty('prefs')) {
+      _.merge(this.state, obj);
+    } else {
+      _.assignIn(this.state, _.cloneDeep(obj));  
+    }
+    this.state.lastUpdate = lastUpdate;
+    
     console.log('STATE: ', this.state);
     this.trigger(this.state);
   },
