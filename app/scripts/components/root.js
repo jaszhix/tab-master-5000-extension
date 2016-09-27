@@ -860,15 +860,9 @@ var Root = React.createClass({
         altTabs: p.s.altTabs,
         duplicateTabs: p.s.duplicateTabs,
         screenshots: s.screenshots, 
-        newTabs: newTabs, 
-        prefs: p.s.prefs, 
-        search: p.s.search, 
-        cursor: cursor, 
-        chromeVersion: p.s.chromeVersion, 
-        relay: p.s.relay,
-        applyTabOrder: p.s.applyTabOrder,
+        newTabs: newTabs,
+        cursor: cursor,
         windowId: windowId,
-        sort: p.s.sort
       };
       var keys = [];
       var labels = {};
@@ -967,7 +961,6 @@ var Root = React.createClass({
                     width={p.s.width}
                     sidebar={p.s.sidebar}
                     stores={stores}
-                    tileLimit={p.s.tileLimit}
                     sessions={p.s.sessions}
                     init={s.init}
                     theme={s.theme}

@@ -3,7 +3,7 @@ import _ from 'lodash';
 import v from 'vquery';
 import mouseTrap from 'mousetrap';
 import state from './stores/state';
-import {alertStore, faviconStore} from './stores/main';
+import {alertStore} from './stores/main';
 import tabStore from './stores/tab';
 
 export var Table = React.createClass({
@@ -27,29 +27,30 @@ export var Table = React.createClass({
     });
   },
   componentWillReceiveProps(nP){
-    if (!_.eq(nP.data, this.props.data) || !_.isEqual(nP.data, this.props.data)) {
+    var p = this.props;
+    if (!_.eq(nP.s[p.s.modeKey], p.s[p.s.modeKey]) || !_.isEqual(nP.s[p.s.modeKey], p.s[p.s.modeKey])) {
       this.buildTable(nP);
     }
-    if (nP.stores.sort !== this.props.stores.sort) {
-      this.setState({order: nP.stores.sort, direction:  nP.direction});
+    if (nP.s.sort !== this.props.s.sort) {
+      this.setState({order: nP.s.sort, direction:  nP.s.direction});
     }
   },
   buildTable(p){
     var s = this.state;
     var rows = [];
 
-    for (var i = 0; i < p.data.length; i++) {
-      var row = p.data[i];
+    for (var i = 0; i < p.s[p.s.modeKey].length; i++) {
+      var row = p.s[p.s.modeKey][i];
       var urlMatch = row.url.match(/^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n]+)/im);
       row.domain = urlMatch ? urlMatch[1] : false;
       rows.push(row);
     }
     var columns = ['title', 'domain'];
-    if (p.stores.prefs.mode === 'tabs' || p.stores.prefs.mode === 'sessions' || p.stores.prefs.mode === 'history') {
+    if (p.s.prefs.mode === 'tabs' || p.s.prefs.mode === 'sessions' || p.s.prefs.mode === 'history') {
       columns = columns.concat(['pinned', 'mutedInfo']);
-    } else if (p.stores.prefs.mode === 'apps' || p.stores.prefs.mode === 'extensions') {
+    } else if (p.s.prefs.mode === 'apps' || p.s.prefs.mode === 'extensions') {
       columns[0] = 'name';
-      if (p.stores.prefs.mode === 'apps') {
+      if (p.s.prefs.mode === 'apps') {
         columns = columns.concat(['launchType']);
       } else {
         _.pullAt(columns, 1);
@@ -72,11 +73,11 @@ export var Table = React.createClass({
   handleTitleClick(row){
     var p = this.props;
     
-    if (p.stores.prefs.mode === 'tabs') {
+    if (p.s.prefs.mode === 'tabs') {
       chrome.tabs.update(row.id, {active: true});
-    } else if (p.stores.prefs.mode === 'apps' || p.stores.prefs.mode === 'extensions') {
+    } else if (p.s.prefs.mode === 'apps' || p.s.prefs.mode === 'extensions') {
       if (row.enabled) {
-        if (p.stores.prefs.mode === 'extensions' || row.launchType === 'OPEN_AS_REGULAR_TAB') {
+        if (p.s.prefs.mode === 'extensions' || row.launchType === 'OPEN_AS_REGULAR_TAB') {
           if (row.url.length > 0) {
             tabStore.create(row.url);
           } else {
@@ -99,7 +100,7 @@ export var Table = React.createClass({
     var s = this.state;
     if (column === 'pinned') {
       chrome.tabs.update(row.id, {pinned: !row.pinned});
-      if (p.stores.prefs.mode !== 'tabs') {
+      if (p.s.prefs.mode !== 'tabs') {
         state.set({reQuery: {state: true, type: 'create'}});
       }
     } else if (column === 'mutedInfo') {
@@ -110,7 +111,7 @@ export var Table = React.createClass({
           this.setState({rows: s.rows, muteInit: false});
         }
       });
-      if (p.stores.prefs.mode !== 'tabs') {
+      if (p.s.prefs.mode !== 'tabs') {
         state.set({reQuery: {state: true, type: 'create'}});
       }
     } else if (column === 'enabled') {
@@ -177,22 +178,22 @@ export var Table = React.createClass({
 
     var s = this.state;
     var p = this.props;
-    console.log('p.stores.cursor', p.stores.cursor);
-    if (p.stores.cursor.keys.ctrl) {
+    console.log('p.cursor', p.cursor);
+    if (p.cursor.keys.ctrl) {
       if (s.selectedItems.indexOf(i) !== -1) {
         _.pull(s.selectedItems, i);
       } else {
         if (s.selectedItems.length === 0) {
           s.shiftRange = i;
           alertStore.set({
-            text: `Press the delete key to remove selected ${p.stores.prefs.mode}.`,
+            text: `Press the delete key to remove selected ${p.s.prefs.mode}.`,
             tag: 'alert-success',
             open: true
           });
         }
         s.selectedItems.push(i);
       }
-    } else if (p.stores.cursor.keys.shift) {
+    } else if (p.cursor.keys.shift) {
       if (!s.shiftRange) {
         s.selectedItems.push(i);
         this.setState({shiftRange: i});
@@ -235,7 +236,7 @@ export var Table = React.createClass({
     var p = this.props;
     var textOverflow = {
       whiteSpace: 'nowrap',
-      width: `${p.width <= 1186 ? p.width / 3 : p.width <= 1015 ? p.width / 6 : p.width / 2}px`,
+      width: `${p.s.width <= 1186 ? p.s.width / 3 : p.s.width <= 1015 ? p.s.width / 6 : p.s.width / 2}px`,
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       display: 'inline-block'
@@ -247,7 +248,7 @@ export var Table = React.createClass({
             <thead>
               <tr role="row">
                 {s.columns.map((column, i)=>{
-                  var columnLabel = p.stores.prefs.mode === 'apps' && column === 'domain' ? 'webWrapper' : column === 'mutedInfo' ? 'muted' : column;
+                  var columnLabel = p.s.prefs.mode === 'apps' && column === 'domain' ? 'webWrapper' : column === 'mutedInfo' ? 'muted' : column;
                   return (
                     <th key={i} className={`sorting${s.order === column ? '_'+s.direction : ''}`} rowSpan="1" colSpan="1" onClick={()=>this.handleColumnClick(column)}>{_.upperFirst(columnLabel.replace(/([A-Z])/g, ' $1'))}</th>
                   );
@@ -272,13 +273,13 @@ export var Table = React.createClass({
                     if (row.hasOwnProperty(column)) {
                       if (column === 'title' || column === 'name') {
                         return (
-                          <td key={z} style={{maxWidth: p.width <= 950 ? '300px' : p.width <= 1015 ? '400px' : '700px'}}>
+                          <td key={z} style={{maxWidth: p.s.width <= 950 ? '300px' : p.s.width <= 1015 ? '400px' : '700px'}}>
                             <div className="media-left media-middle">
                               <img src={row.favIconUrl && row.domain !== 'chrome' ? row.favIconUrl : '../images/file_paper_blank_document.png' } style={{width: '16px', height: '16px'}}/>
                             </div>
                             <div className="media-left">
                               <div style={textOverflow}><a style={{cursor: 'pointer'}} onClick={()=>this.handleTitleClick(row)} className="text-default text-semibold">{row[column]}</a></div>
-                              {p.stores.prefs.mode === 'apps' || p.stores.prefs.mode === 'extensions' ? <div className="text-muted text-size-small" style={{whiteSpace: 'nowrap'}}>{row.description}</div> : null}
+                              {p.s.prefs.mode === 'apps' || p.s.prefs.mode === 'extensions' ? <div className="text-muted text-size-small" style={{whiteSpace: 'nowrap'}}>{row.description}</div> : null}
                             </div>
                             {row.audible ?
                             <div className="media-right media-middle" style={{right: '20px'}}>
@@ -287,7 +288,7 @@ export var Table = React.createClass({
                           </td>
                         );
 
-                      } else if (p.stores.prefs.mode === 'apps' && column === 'domain') {
+                      } else if (p.s.prefs.mode === 'apps' && column === 'domain') {
                         return <td key={z}><i className={`icon-${_.isString(row[column]) ? 'check2' : 'cross'}`} /></td>;
                       } else if (_.isBoolean(row[column]) || column === 'mutedInfo') {
                         var bool = column === 'mutedInfo' ? row[column].muted : row[column];

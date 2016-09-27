@@ -58,10 +58,10 @@ var Tile = React.createClass({
     var p = this.props;
     this.setTabMode();
     this.updateFavicons(nP);
-    if (nP.stores.prefs.mode === 'tabs') {
-      this.checkDuplicateTabs('', nP);
+    if (nP.prefs.mode === 'tabs') {
+      this.checkDuplicateTabs(nP, '');
     }
-    if (nP.stores.prefs.screenshot) {
+    if (nP.prefs.screenshot) {
       this.updateScreenshot('init', nP);
     }
     if (nP.tab.pinned) {
@@ -71,7 +71,7 @@ var Tile = React.createClass({
       this.setState({i: nP.i});
     }
     this.handleRelays(nP);
-    if (nP.stores.applyTabOrder) {
+    if (nP.applyTabOrder) {
       this.applyTabOrder();
     }
   },
@@ -80,8 +80,8 @@ var Tile = React.createClass({
     this.setTabMode();
     this.updateFavicons(p);
     this.updateScreenshot('init', p);
-    if (p.stores.prefs.mode === 'tabs') {
-      this.checkDuplicateTabs('', p);
+    if (p.prefs.mode === 'tabs') {
+      this.checkDuplicateTabs(p, '');
     }
   },
   updateFavicons(p){
@@ -93,7 +93,7 @@ var Tile = React.createClass({
   updateScreenshot(opt, props){
     var p = this.props;
     var setScreeenshot = ()=>{
-      if (p.stores.prefs.screenshot) {
+      if (p.prefs.screenshot) {
         var ssData = _.result(_.find(p.stores.screenshots, { url: p.tab.url }), 'data');
         if (ssData) {
           this.setState({screenshot: ssData});
@@ -110,27 +110,27 @@ var Tile = React.createClass({
   },
   setTabMode(){
     var p = this.props;
-    if (p.stores.prefs.mode === 'bookmarks') {
+    if (p.prefs.mode === 'bookmarks') {
       this.setState({bookmarks: true});
     } else {
       this.setState({bookmarks: false});
     }
-    if (p.stores.prefs.mode === 'history') {
+    if (p.prefs.mode === 'history') {
       this.setState({history: true});
     } else {
       this.setState({history: false});
     }
-    if (p.stores.prefs.mode === 'sessions') {
+    if (p.prefs.mode === 'sessions') {
       this.setState({sessions: true});
     } else {
       this.setState({sessions: false});
     }
-    if (p.stores.prefs.mode === 'apps' || p.stores.prefs.mode === 'extensions') {
+    if (p.prefs.mode === 'apps' || p.prefs.mode === 'extensions') {
       this.setState({apps: true});
     } else {
       this.setState({apps: false});
     }
-    if (p.stores.prefs.mode === 'sessions' && p.tab.openTab|| p.stores.prefs.mode === 'bookmarks' && p.tab.openTab || p.stores.prefs.mode === 'history' && p.tab.openTab) {
+    if (p.prefs.mode === 'sessions' && p.tab.openTab|| p.prefs.mode === 'bookmarks' && p.tab.openTab || p.prefs.mode === 'history' && p.tab.openTab) {
       this.setState({openTab: true});
     } else {
       this.setState({openTab: false});
@@ -141,14 +141,14 @@ var Tile = React.createClass({
     var p = this.props;
     state.set({folder: p.folder ? false : folderName});
   },
-  checkDuplicateTabs(opt, props){
-    if (props.stores.prefs.duplicate) {
+  checkDuplicateTabs(p, opt){
+    if (p.prefs.duplicate) {
       var s = this.state;
       var first;
       if (opt === 'closeAllDupes') {
         var duplicates;
-        for (var y = props.stores.duplicateTabs.length - 1; y >= 0; y--) {
-          duplicates = _.filter(props.stores.tabs, {url: props.stores.duplicateTabs[y]});
+        for (var y = p.stores.duplicateTabs.length - 1; y >= 0; y--) {
+          duplicates = _.filter(p.stores.tabs, {url: p.stores.duplicateTabs[y]});
           first = _.first(duplicates);
           if (duplicates) {
             for (var x = duplicates.length - 1; x >= 0; x--) {
@@ -159,16 +159,16 @@ var Tile = React.createClass({
           }
         }
       }
-      if (_.includes(props.stores.duplicateTabs, props.tab.url)) {
-        var t = _.filter(props.stores.tabs, {url: props.tab.url});
+      if (_.includes(p.stores.duplicateTabs, p.tab.url)) {
+        var t = _.filter(p.stores.tabs, {url: p.tab.url});
         first = _.first(t);
         var activeTab = _.map(_.find(t, { 'active': true }), 'id');
         for (var i = 0; i < t.length; i++) {
-          if (t[i].id !== first.id && t[i].title !== 'New Tab' && t[i].id !== activeTab && t[i].id === props.tab.id) {
+          if (t[i].id !== first.id && t[i].title !== 'New Tab' && t[i].id !== activeTab && t[i].id === p.tab.id) {
             if (opt === 'closeDupes') {
               this.handleCloseTab(t[i].id, s.i);
-            } else if (props.stores.duplicateTabs.length > 0) {
-              this.handleFocus('duplicate',true,props);
+            } else if (p.stores.duplicateTabs.length > 0) {
+              this.handleFocus('duplicate', true, p);
             }
           }
         }
@@ -182,7 +182,7 @@ var Tile = React.createClass({
       render: false
     });
     var active = ()=>{
-      if (p.stores.search.length > 0) {
+      if (p.search.length > 0) {
         searchStore.set_search('');
       }
       chrome.tabs.update(id, {active: true});
@@ -198,7 +198,7 @@ var Tile = React.createClass({
           }
         } else if (s.apps) {
           if (p.tab.enabled) {
-            if (p.stores.prefs.mode === 'extensions' || p.tab.launchType === 'OPEN_AS_REGULAR_TAB') {
+            if (p.prefs.mode === 'extensions' || p.tab.launchType === 'OPEN_AS_REGULAR_TAB') {
               if (p.tab.url.length > 0) {
                 tabStore.create(p.tab.url);
               } else {
@@ -220,9 +220,9 @@ var Tile = React.createClass({
     var s = this.state;
     var p = this.props;
     this.setState({hover: true});
-    if (p.stores.prefs.screenshot && p.stores.prefs.screenshotBg && s.screenshot && !s.apps) {
+    if (p.prefs.screenshot && p.prefs.screenshotBg && s.screenshot && !s.apps) {
       document.getElementById('bgImg').style.backgroundImage = `url("${s.screenshot}")`;
-      document.getElementById('bgImg').style.WebkitFilter = `blur(${p.stores.prefs.screenshotBgBlur}px)`;
+      document.getElementById('bgImg').style.WebkitFilter = `blur(${p.prefs.screenshotBgBlur}px)`;
     } else {
       if (p.wallpaper && p.wallpaper.data !== -1) {
         document.getElementById('bgImg').style.backgroundImage = `url("${p.wallpaper.data}")`;
@@ -266,17 +266,17 @@ var Tile = React.createClass({
     };
     var close = ()=>{
       chrome.tabs.remove(id, ()=>{
-        if (p.stores.prefs.mode !== 'tabs') {
+        if (p.prefs.mode !== 'tabs') {
           _.defer(()=>{
             reRender(true);
           });
         }    
       });
     };
-    if (p.stores.prefs.animations && !s.openTab) {
+    if (p.prefs.animations && !s.openTab) {
       this.setState({close: true});
     }
-    if (p.stores.prefs.mode !== 'tabs') {
+    if (p.prefs.mode !== 'tabs') {
       if (s.openTab) {
         close();
       } else {
@@ -320,13 +320,13 @@ var Tile = React.createClass({
     } else {
       id = tab.id;
     }
-    if (p.stores.prefs.animations) {
+    if (p.prefs.animations) {
       this.setState({pinning: true});
     }
     chrome.tabs.update(id, {
       pinned: !tab.pinned
     });
-    if (p.stores.prefs.mode !== 'tabs') {
+    if (p.prefs.mode !== 'tabs') {
       state.set({reQuery: {state: true, type: 'create'}});
     }
     v('#subTile-'+s.i).on('animationend', function animationEnd(e){
@@ -345,7 +345,7 @@ var Tile = React.createClass({
         this.setState({muteInit: false});
       }
     });
-    if (this.props.stores.prefs.mode !== 'tabs') {
+    if (this.props.prefs.mode !== 'tabs') {
       state.set({reQuery: {state: true, type: 'create'}});
     }
   },
@@ -395,7 +395,7 @@ var Tile = React.createClass({
     }
   },
   handleContextClick(e){
-    if (this.props.stores.prefs.context) {
+    if (this.props.prefs.context) {
       e.preventDefault();
       state.set({context: {value: true, id: this.props.tab}});
     }
@@ -418,9 +418,8 @@ var Tile = React.createClass({
     }
 
   },
-  handleRelays(props){
-    var p = props;
-    var r = props.stores.relay;
+  handleRelays(p){
+    var r = p.relay;
     if (r.id && r.id.index === p.tab.index) {
       if (r.value === 'close') {
         this.handleCloseTab(r[1].id);
@@ -431,9 +430,9 @@ var Tile = React.createClass({
       } else if (r.value === 'mute') {
         this.handleMuting(p.tab);
       } else if (r.value === 'closeDupes') {
-        this.checkDuplicateTabs(r.value, props);
+        this.checkDuplicateTabs(p, r.value);
       } else if (r.value === 'closeAllDupes') {
-        this.checkDuplicateTabs(r.value, props);
+        this.checkDuplicateTabs(p, r.value);
       } else if (r.value === 'closeSearched') {
         this.handleCloseAllSearched();
       } else if (r.value === 'toggleEnable') {
@@ -453,9 +452,9 @@ var Tile = React.createClass({
   handleFocus(opt, bool, props){
     var s = this.state;
     var p = this.props;
-    if (p.stores.prefs.animations) {
+    if (p.prefs.animations) {
       if (opt === 'duplicate') {
-        if (p.stores.prefs.mode === 'tabs') {
+        if (p.prefs.mode === 'tabs') {
           this.setState({focus: bool, duplicate: bool});
         }
       } else {
@@ -516,7 +515,7 @@ var Tile = React.createClass({
   getPos(left, top, ui){
     var p = this.props;
     var oLeft = left - ui.x - v('#tileMain-'+p.i).width() / 8;
-    var oTop = top - ui.y + p.stores.prefs.tabSizeHeight / 12;
+    var oTop = top - ui.y + p.prefs.tabSizeHeight / 12;
     dragStore.set_drag(oLeft, oTop);
   },
   currentlyDraggedOver(tab){
@@ -533,8 +532,8 @@ var Tile = React.createClass({
   render: function() {
     var s = this.state;
     var p = this.props;
-    var tileStyle = {height: p.stores.prefs.tabSizeHeight, width: p.stores.prefs.tabSizeHeight+80};
-    var mainTileStyle = s.screenshot ? s.hover ? style.tileHovered(s.screenshot, p.stores.prefs.tabSizeHeight) : style.tile(s.screenshot, p.stores.prefs.tabSizeHeight) : tileStyle;
+    var tileStyle = {height: p.prefs.tabSizeHeight, width: p.prefs.tabSizeHeight+80};
+    var mainTileStyle = s.screenshot ? s.hover ? style.tileHovered(s.screenshot, p.prefs.tabSizeHeight) : style.tile(s.screenshot, p.prefs.tabSizeHeight) : tileStyle;
     mainTileStyle = _.cloneDeep(_.merge(mainTileStyle, {
       backgroundColor: s.hover ? p.theme.tileBgHover : p.theme.tileBg, 
       boxShadow: `${p.theme.tileShadow} 1px 1px 3px -1px`
@@ -548,14 +547,14 @@ var Tile = React.createClass({
     }));
     var titleLimit = s.bookmarks || s.history ? 70 : 86;
     var drag = dragStore.get_drag();
-    var remove = p.stores.prefs.mode !== 'tabs' && !s.openTab;
-    var lowerLeft = p.stores.prefs.tabSizeHeight >= 205 ? -40 : -40;
-    var lowerTop = p.stores.prefs.tabSizeHeight - 25;
+    var remove = p.prefs.mode !== 'tabs' && !s.openTab;
+    var lowerLeft = p.prefs.tabSizeHeight >= 205 ? -40 : -40;
+    var lowerTop = p.prefs.tabSizeHeight - 25;
     var lowerStyle = s.screenshot ? {backgroundColor: s.hover ? p.theme.tileBgHover : p.theme.tileBg, borderRadius: '3px', left: lowerLeft.toString()+'px', top: lowerTop.toString()+'px'} : {top: lowerTop.toString()+'px'};
-    var appHomepage = p.stores.prefs.tabSizeHeight >= 170 ? p.stores.prefs.tabSizeHeight + 5 : 170;
-    var appOfflineEnabled = p.stores.prefs.tabSizeHeight >= 170 ? p.stores.prefs.tabSizeHeight - 10 : 158;
+    var appHomepage = p.prefs.tabSizeHeight >= 170 ? p.prefs.tabSizeHeight + 5 : 170;
+    var appOfflineEnabled = p.prefs.tabSizeHeight >= 170 ? p.prefs.tabSizeHeight - 10 : 158;
     return (
-      <div ref="tileMain" id={'tileMain-'+s.i} className="outerTile" onDragEnter={this.currentlyDraggedOver(p.tab)} style={p.stores.prefs.screenshot && p.stores.prefs.screenshotBg ? {opacity: '0.95'} : null}>
+      <div ref="tileMain" id={'tileMain-'+s.i} className="outerTile" onDragEnter={this.currentlyDraggedOver(p.tab)} style={p.prefs.screenshot && p.prefs.screenshotBg ? {opacity: '0.95'} : null}>
         {p.render ? 
           <Draggable  axis="both"
                       handle=".handle"
@@ -571,7 +570,7 @@ var Tile = React.createClass({
                 { true ? <div id={'innerTile-'+p.tab.id} className={s.apps && !p.tab.enabled ? 'ntg-tile-disabled' : s.hover ? 'ntg-tile-hover' : 'ntg-tile'} style={mainTileStyle}>
                   <Row className="ntg-tile-row-top">
                     <Col size="3">
-                      {p.stores.chromeVersion >= 46 && s.openTab || p.stores.chromeVersion >= 46 && p.stores.prefs.mode === 'tabs' ? <div onMouseEnter={this.handleTabMuteHoverIn} onMouseLeave={this.handleTabMuteHoverOut} onClick={() => this.handleMuting(p.tab)}>
+                      {p.chromeVersion >= 46 && s.openTab || p.chromeVersion >= 46 && p.prefs.mode === 'tabs' ? <div onMouseEnter={this.handleTabMuteHoverIn} onMouseLeave={this.handleTabMuteHoverOut} onClick={() => this.handleMuting(p.tab)}>
                                         {s.hover || p.tab.audible || p.tab.mutedInfo.muted ? 
                                         <i className={p.tab.audible ? s.mHover ? 'fa fa-volume-off ntg-mute-audible-hover' : 'fa fa-volume-up ntg-mute-audible' : s.mHover ? 'fa fa-volume-off ntg-mute-hover' : 'fa fa-volume-off ntg-mute'} style={s.screenshot && s.hover ? style.ssIconBg : s.screenshot ? style.ssIconBg : null} />
                                         : null}
@@ -582,7 +581,7 @@ var Tile = React.createClass({
                         : null}
                       </div>
                       <div onMouseEnter={this.handlePinHoverIn} onMouseLeave={this.handlePinHoverOut} onClick={() => this.handlePinning(p.tab)}>
-                      {p.tab.pinned && p.stores.prefs.mode === 'tabs' || s.hover && s.openTab || s.hover && !s.bookmarks && !s.history && !s.sessions && !s.apps ? 
+                      {p.tab.pinned && p.prefs.mode === 'tabs' || s.hover && s.openTab || s.hover && !s.bookmarks && !s.history && !s.sessions && !s.apps ? 
                         <i className={s.pHover ? "fa fa-map-pin ntg-pinned-hover" : "fa fa-map-pin ntg-pinned"} style={p.tab.pinned ? s.screenshot && s.hover ? style.ssPinnedIconBg : s.screenshot ? style.ssPinnedIconBg : {color: p.theme.tilePinned} : s.screenshot ? style.ssIconBg : null} />
                         : null}
                       </div>
@@ -608,7 +607,7 @@ var Tile = React.createClass({
                       {s.apps && s.hover ? <h6 style={lowerStyle} className="ntg-folder">
                         <i className="fa fa-at" />{' '+p.tab.version}{p.tab.offlineEnabled ? <span style={{position: 'absolute', left: appOfflineEnabled.toString()+'px'}} title="Offline Enabled"><i style={{opacity: '0.7', fontSize: '12px', position: 'relative', top: '1px'}} className="fa fa-bolt" /></span> : null}{p.tab.homepageUrl ? <span onClick={()=>tabStore.create(p.tab.homepageUrl)} style={{cursor: 'pointer', position: 'absolute', left: appHomepage.toString()+'px'}} title="Homepage" onMouseEnter={this.handleDragHoverIn} onMouseLeave={this.handleDragHoverOut}><i style={s.dHover ? {opacity: '0.7'} : {opacity: '0.5'}} className="fa fa-home" /> </span> : null}
                       </h6> : null}
-                      {p.stores.prefs ? p.stores.prefs.drag && !s.bookmarks && !s.history && !s.sessions  && !s.apps ? <div onMouseEnter={this.handleDragHoverIn} onMouseLeave={this.handleDragHoverOut} onClick={() => this.handleCloseTab(p.tab.id)}>
+                      {p.prefs ? p.prefs.drag && !s.bookmarks && !s.history && !s.sessions  && !s.apps ? <div onMouseEnter={this.handleDragHoverIn} onMouseLeave={this.handleDragHoverOut} onClick={() => this.handleCloseTab(p.tab.id)}>
                         {s.hover ? 
                         <i className={s.dHover ? "fa fa-hand-grab-o ntg-move-hover handle" : "fa fa-hand-grab-o ntg-move"} style={s.screenshot && s.hover ? style.ssIconBg : null} />
                         : null}
@@ -712,16 +711,15 @@ var TileGrid = React.createClass({
   componentWillUnmount(){
     utilityStore.reloadBg();
   },
-  prefsInit(type){
-    var p = type;
-    if (p.stores.prefs.screenshotBg || p.stores.prefs.screenshot || p.wallpaper && p.wallpaper.data !== -1) {
+  prefsInit(p){
+    if (p.s.prefs.screenshotBg || p.s.prefs.screenshot || p.wallpaper && p.wallpaper.data !== -1) {
       v('#main').css({position: 'absolute'});
       v('#bgImg').css({
         display: 'inline-block',
         width: window.innerWidth + 30,
         height: window.innerHeight + 5,
-        WebkitFilter: `blur(${p.stores.prefs.screenshotBgBlur}px)`,
-        opacity: 0.1 * p.stores.prefs.screenshotBgOpacity
+        WebkitFilter: `blur(${p.s.prefs.screenshotBgBlur}px)`,
+        opacity: 0.1 * p.s.prefs.screenshotBgOpacity
       });
     } else {
       v('#main').css({position: p.wallpaper ? 'absolute' : ''});
@@ -729,14 +727,14 @@ var TileGrid = React.createClass({
         display: 'none',
         backgroundImage: 'none',
         backgroundBlendMode: 'normal',
-        WebkitFilter: `blur(${p.stores.prefs.screenshotBgBlur}px)`,
+        WebkitFilter: `blur(${p.s.prefs.screenshotBgBlur}px)`,
         opacity: 1
       });
     }
   },
   componentWillReceiveProps(nP){
     var p = this.props;
-    if (!_.isEqual(nP.stores, p.stores)) {
+    if (!_.isEqual(nP.prefs, p.prefs) || !_.isEqual(nP.wallpaper, p.wallpaper)) {
       this.prefsInit(nP);
     }
     if (nP.s.sort !== p.s.sort || nP.s.direction !== p.s.direction) {
@@ -777,7 +775,7 @@ var TileGrid = React.createClass({
   render: function() {
     var p = this.props;
     var s = this.state;
-    var ssBg = p.stores.prefs && p.stores.prefs.screenshot && p.stores.prefs.screenshotBg;
+    var ssBg = p.prefs && p.prefs.screenshot && p.prefs.screenshotBg;
     var iconCollapse = p.width <= 1135;
     const faStyle = {
       float: 'left',
@@ -811,13 +809,13 @@ var TileGrid = React.createClass({
       <div className="tile-body">
         {p.sidebar ? 
         <Sidebar 
-        prefs={p.stores.prefs} 
-        tabs={p.stores.tabs} 
+        prefs={p.s.prefs} 
+        tabs={p.s[p.s.modeKey]} 
         labels={labels} 
         width={p.width} 
         collapse={p.collapse} 
         ssBg={ssBg} 
-        search={p.stores.search} 
+        search={p.s.search} 
         theme={p.theme}
         disableSidebarClickOutside={p.disableSidebarClickOutside}
         
@@ -826,36 +824,38 @@ var TileGrid = React.createClass({
         <div className="tile-div" style={tileDivStyle}>
           <div id="grid" ref="grid">
             {p.s.prefs.format === 'tile' ? p.data.map((tab, i)=> {
-              if (i <= p.tileLimit) {
+              if (i <= p.s.tileLimit) {
                 return (
                   <Tile
+                  key={i}
+                  prefs={p.s.prefs}
                   bookmarks={p.s.bookmarks}
                   history={p.s.history}
                   sessions={p.s.sessions}
                   sessionTabs={p.s.sessionTabs}
                   stores={p.stores} 
                   render={p.render} 
-                  i={i} 
-                  key={tab.id} 
+                  i={i}  
                   tab={tab} 
-                  tileLimit={p.tileLimit} 
+                  tileLimit={p.s.tileLimit} 
                   init={p.init} 
                   theme={p.theme}
                   wallpaper={p.wallpaper}
                   width={p.width}
                   context={p.s.context}
-                  folder={p.s.folder} />
+                  folder={p.s.folder}
+                  applyTabOrder={p.s.applyTabOrder}
+                  relay={p.s.relay}
+                  search={p.s.search}
+                  chromeVersion={p.s.chromeVersion} />
                 );
               }
             })
             :
             <Table 
-            data={p.data}
-            stores={p.stores}
-            favicons={p.s.favicons}
+            s={p.s}
             theme={p.theme}
-            width={p.width}
-            direction={p.s.direction}
+            cursor={p.stores.cursor}
             />}
           </div>
         </div>
