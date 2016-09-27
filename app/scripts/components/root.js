@@ -284,7 +284,7 @@ var Root = React.createClass({
     }
   },
   init(p){
-    _.delay(()=>state.set({allTabs: tabStore.getAllTabsByWindow()}), 100);
+    _.delay(()=>state.set({allTabs: tabStore.getAllTabsByWindow()}), 500);
     sessionsStore.load();
   },
   prefsChange(e){
@@ -577,51 +577,45 @@ var Root = React.createClass({
         }
       })
     });
-    if (typeof p.s.altTabs[tab.index] !== 'undefined') {
-      for (var i = p.s.altTabs.length - 1; i >= 0; i--) {
+    if (typeof p.s.tabs[tab.index] !== 'undefined') {
+      for (var i = p.s.tabs.length - 1; i >= 0; i--) {
         if (i > tab.index) {
-          if (i <= p.s.altTabs.length) {
-            p.s.altTabs[i].index = i + 1;
+          if (i <= p.s.tabs.length) {
+            p.s.tabs[i].index = i + 1;
           }
         }
       }
-      p.s.altTabs.push(tab);
-      utils.arrayMove(p.s.altTabs, _.findIndex(p.s.altTabs, _.last(p.s.altTabs)), tab.index);   
+      p.s.tabs.push(tab);
+      utils.arrayMove(p.s.tabs, _.findIndex(p.s.tabs, _.last(p.s.tabs)), tab.index);   
     } else {
-      p.s.altTabs.push(tab);
+      p.s.tabs.push(tab);
     }
-    p.s.altTabs = _.orderBy(_.uniqBy(p.s.altTabs, 'id'), ['pinned'], ['desc']);
+    p.s.tabs = _.orderBy(_.uniqBy(p.s.tabs, 'id'), ['pinned'], ['desc']);
     console.log('Single tab to update:', tab);
     if (p.s.prefs.sessionsSync) {
-      synchronizeSession(p.s.sessions, p.s.prefs, p.s.altTabs);
+      synchronizeSession(p.s.sessions, p.s.prefs, p.s.tabs);
     }
-    this.checkDuplicateTabs(p.s.altTabs);
-    state.set({
-      tabs: p.s.prefs.mode === 'tabs' ? p.s.altTabs : p.s.tabs,
-      altTabs: p.s.altTabs 
-    });
+    this.checkDuplicateTabs(p.s.tabs);
+    state.set({tabs: p.s.tabs});
   },
   removeSingleItem(e){
     var p = this.props;
     if (p.s.init) {
       return;
     }
-    var tabToUpdate = _.findIndex(p.s.altTabs, {id: e});
+    var tabToUpdate = _.findIndex(p.s.tabs, {id: e});
     if (tabToUpdate > -1) {
       var s = this.state;
       if (p.s.prefs.actions) {
-        actionStore.set_action('remove', p.s.altTabs[tabToUpdate]);
+        actionStore.set_action('remove', p.s.tabs[tabToUpdate]);
       }
-      p.s.altTabs = _.without(p.s.altTabs, p.s.altTabs[tabToUpdate]);
-      p.s.altTabs = _.orderBy(_.uniqBy(p.s.altTabs, 'id'), ['pinned'], ['desc']);
-      console.log('Single tab to remove:', p.s.altTabs[tabToUpdate]);
+      p.s.tabs = _.without(p.s.tabs, p.s.tabs[tabToUpdate]);
+      p.s.tabs = _.orderBy(_.uniqBy(p.s.tabs, 'id'), ['pinned'], ['desc']);
+      console.log('Single tab to remove:', p.s.tabs[tabToUpdate]);
       if (p.s.prefs.sessionsSync) {
-        synchronizeSession(p.s.sessions, p.s.prefs, p.s.altTabs);
+        synchronizeSession(p.s.sessions, p.s.prefs, p.s.tabs);
       }
-      state.set({
-        tabs: p.s.prefs.mode === 'tabs' ? p.s.altTabs : p.s.tabs,
-        altTabs: p.s.altTabs 
-      });
+      state.set({tabs: p.s.tabs});
     }
   },
   updateSingleItem(e){
@@ -634,30 +628,27 @@ var Root = React.createClass({
       timeStamp: new Date(Date.now()).getTime()
     });
     var orderBy = ['pinned'];
-    var tabToUpdate = _.findIndex(p.s.altTabs, {id: e.id});
+    var tabToUpdate = _.findIndex(p.s.tabs, {id: e.id});
 
     if (tabToUpdate > -1) {
       var s = this.state;
       if (p.s.updateType === 'move') {
         console.log('Move indexes: ', tabToUpdate, e.index);
-        p.s.altTabs = v(p.s.altTabs).move(tabToUpdate, e.index).ns;
+        p.s.tabs = v(p.s.tabs).move(tabToUpdate, e.index).ns;
         orderBy.push('index');
       } else {
-        p.s.altTabs[tabToUpdate] = e;
+        p.s.tabs[tabToUpdate] = e;
       }
       if (e.pinned) {
-        p.s.altTabs = _.orderBy(_.uniqBy(p.s.altTabs, 'id'), ['pinned'], ['desc']);
+        p.s.tabs = _.orderBy(_.uniqBy(p.s.tabs, 'id'), ['pinned'], ['desc']);
       } else {
-        p.s.altTabs = _.orderBy(p.s.altTabs, ['pinned'], ['desc']);
+        p.s.tabs = _.orderBy(p.s.tabs, ['pinned'], ['desc']);
       }
       console.log('Single tab to update:', e);
       if (p.s.prefs.sessionsSync) {
-        synchronizeSession(p.s.sessions, p.s.prefs, p.s.altTabs);
+        synchronizeSession(p.s.sessions, p.s.prefs, p.s.tabs);
       }
-      state.set({
-        tabs: p.s.prefs.mode === 'tabs' ? p.s.altTabs : p.s.tabs,
-        altTabs: p.s.altTabs 
-      });
+      state.set({tabs: p.s.tabs});
     }
   },
   moveSingleItem(e){
@@ -667,26 +658,23 @@ var Root = React.createClass({
     }
     console.log('moveSingleItem', e);
 
-    var tabToUpdate = _.findIndex(p.s.altTabs, {id: e.id});
+    var tabToUpdate = _.findIndex(p.s.tabs, {id: e.id});
 
     if (tabToUpdate > -1) {
       var s = this.state;
       console.log('Move indexes: ', tabToUpdate, e.index);
-      p.s.altTabs = v(p.s.altTabs).move(tabToUpdate, e.index).ns;
-      p.s.altTabs[tabToUpdate].timeStamp = new Date(Date.now()).getTime();
+      p.s.tabs = v(p.s.tabs).move(tabToUpdate, e.index).ns;
+      p.s.tabs[tabToUpdate].timeStamp = new Date(Date.now()).getTime();
       if (e.pinned) {
-        p.s.altTabs = _.orderBy(_.uniqBy(p.s.altTabs, 'id'), ['pinned'], ['desc']);
+        p.s.tabs = _.orderBy(_.uniqBy(p.s.tabs, 'id'), ['pinned'], ['desc']);
       } else {
-        p.s.altTabs = _.orderBy(p.s.altTabs, ['pinned'], ['desc']);
+        p.s.tabs = _.orderBy(p.s.tabs, ['pinned'], ['desc']);
       }
       if (p.s.prefs.sessionsSync) {
-        synchronizeSession(p.s.sessions, p.s.prefs, p.s.altTabs);
+        synchronizeSession(p.s.sessions, p.s.prefs, p.s.tabs);
       }
       if (tabToUpdate === e.index) {
-        state.set({
-          tabs: p.s.prefs.mode === 'tabs' ? p.s.altTabs : p.s.tabs,
-          altTabs: p.s.altTabs 
-        });
+        state.set({tabs: p.s.tabs});
       }
     }
   },
@@ -713,7 +701,7 @@ var Root = React.createClass({
         if (opt === 'cycle') {
           this.setState({grid: false});
         }
-        state.set({altTabs: Tabs});
+        state.set({tabs: Tabs});
         if (p.s.search.length === 0) {
           stateUpdate[p.s.modeKey] = e;
           state.set(stateUpdate);
@@ -769,7 +757,7 @@ var Root = React.createClass({
       }
      
       var stateUpdate = {
-        altTabs: Tabs
+        tabs: Tabs
       };
       try {
         utilityStore.set_window(Tabs[0].windowId);
@@ -857,7 +845,6 @@ var Root = React.createClass({
       var windowId = utilityStore.get_window();
       var stores = {
         tabs: p.s[p.s.prefs.mode],
-        altTabs: p.s.altTabs,
         duplicateTabs: p.s.duplicateTabs,
         screenshots: s.screenshots, 
         newTabs: newTabs,
@@ -929,7 +916,7 @@ var Root = React.createClass({
             {p.s.modal ? 
               <ModalHandler 
               modal={p.s.modal} 
-              tabs={p.s.prefs.mode === 'tabs' ? p.s.tabs : p.s.altTabs}
+              tabs={p.s.tabs}
               allTabsByWindow={p.s.allTabs}
               sessions={p.s.sessions} 
               prefs={p.s.prefs} 

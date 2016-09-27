@@ -8,7 +8,7 @@ import style from './style';
 
 import Settings from './settings';
 
-import {modalStore} from './stores/main';
+import state from './stores/state';
 import themeStore from './stores/theme';
 
 import Alert from './alert';
@@ -49,18 +49,6 @@ var ModalHandler = React.createClass({
   componentWillUnmount(){
     mount = false;
   },
-  handleClosing(){
-    var s = this.state;
-    if (s.modal.opt) {
-      var opt = s.modal.opt;
-      _.defer(()=>{
-        modalStore.set_modal(true, opt);
-      });
-      modalStore.set_modal(false);
-    } else {
-      modalStore.set_modal(false);
-    }
-  },
   render: function() {
     var s = this.state;
     var p = this.props;
@@ -73,7 +61,7 @@ var ModalHandler = React.createClass({
       <Modal
         id="modal"
         isOpen={s.modal.state}
-        onRequestClose={this.handleClosing}
+        onRequestClose={()=>state.set({modal: {value: false}})}
         style={style.modal}>
           {s.modal.type === 'settings' ? 
           <Settings 

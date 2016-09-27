@@ -52,7 +52,6 @@ var state = Reflux.createStore({
       },
       tabsCache: null,
       tabs: null,
-      altTabs: null,
       allTabs: null,
       newTabs: null,
       duplicateTabs: null,

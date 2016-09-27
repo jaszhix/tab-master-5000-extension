@@ -28,8 +28,8 @@ var reRender = (type, id, s) => {
   //debugger;
   if (s.massUpdate && type === 'move') {
     ++massUpdateItems;
-    console.log(massUpdateItems, s.altTabs.length);
-    if (massUpdateItems >= s.altTabs.length - 8) {
+    console.log(massUpdateItems, s.tabs.length);
+    if (massUpdateItems >= s.tabs.length - 8) {
       state.set({massUpdate: null});
     }
     return;
@@ -47,9 +47,9 @@ var reRender = (type, id, s) => {
       }
     });
     if (s.prefs.actions && !s.massUpdate) {
-      var refOldTab = _.findIndex(s.altTabs, {id: tId});
+      var refOldTab = _.findIndex(s.tabs, {id: tId});
       if (refOldTab !== -1) {
-        actionStore.set_action(type, s.altTabs[refOldTab]);
+        actionStore.set_action(type, s.tabs[refOldTab]);
       }
     }
     console.log('window: ', targetTab.windowId, utilityStore.get_window(), 'state: ',utilityStore.get_systemState(), 'type: ', type, 'id: ',tId, 'item: ', targetTab);
@@ -107,7 +107,7 @@ var reRender = (type, id, s) => {
         }
     });  
   } else {
-    var targetTab = _.find(s.altTabs, {id: tId});
+    var targetTab = _.find(s.tabs, {id: tId});
     handleUpdate(targetTab);
   }
   
@@ -415,7 +415,7 @@ export var bookmarksStore = Reflux.createStore({
       chrome.bookmarks.getTree((bk)=>{
         var bookmarks = [];
         var folders = [];
-        var t = state.get().altTabs;
+        var t = state.get().tabs;
         var openTab = 0;
         var iter = -1;
         var addBookmarkChildren = (bookmarkLevel, title='')=> {
@@ -481,7 +481,7 @@ export var historyStore = Reflux.createStore({
     return new Promise((resolve, reject)=>{
       chrome.history.search({text: '', maxResults: 1000}, (h)=>{
         console.log(h);
-        var t = state.get().altTabs;
+        var t = state.get().tabs;
         var openTab = 0;
         var openTabObj = null;
         for (var i = h.length - 1; i >= 0; i--) {

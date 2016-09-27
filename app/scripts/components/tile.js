@@ -262,7 +262,7 @@ var Tile = React.createClass({
     var p = this.props;
     var s = this.state;
     var reRender = (defer)=>{
-      state.set({reQuery: {state: true, type: defer ? 'cycle' : 'create', id: p.stores.altTabs[0].id}});
+      state.set({reQuery: {state: true, type: defer ? 'cycle' : 'create', id: p.stores.tabs[0].id}});
     };
     var close = ()=>{
       chrome.tabs.remove(id, ()=>{
