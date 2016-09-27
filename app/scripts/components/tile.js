@@ -290,10 +290,17 @@ var Tile = React.createClass({
             console.log('History url deleted: ', h);
           });
         } else if (s.sessions) {
-          var session = _.find(p.sessions, {timeStamp: p.tab.sTimeStamp});
-          var tab = _.find(session.tabs, {url: p.tab.url});
-          sessionsStore.removeTabFromSession(tab.id, session, tabStore.get_altTab());
-          reRender();
+          var refSession = _.findIndex(p.sessions, {id: p.tab.originSession});
+          _.each(p.sessions[refSession], (w, i)=>{
+            if (w) {
+              var tab = _.findIndex(w[p.tab.originWindow], {id: id});
+              if (tab !== -1) {
+                console.log('####', tab);
+                sessionsStore.v2RemoveTab(p.sessions, refSession, p.tab.originWindow, tab, p.sessionTabs, p.s.sort);
+                return;
+              }
+            }
+          });
         }
       }
     } else {

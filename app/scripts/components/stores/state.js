@@ -8,6 +8,7 @@ var state = Reflux.createStore({
       init: true,
       prefs: null,
       sessions: [],
+      sessionTabs: null,
       // Single item states
       move: null,
       update: null,

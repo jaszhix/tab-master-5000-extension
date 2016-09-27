@@ -148,13 +148,23 @@ var sessionsStore = Reflux.createStore({
       msgStore.setPrefs({mode: 'tabs'});
     }
   },
-  v2RemoveTab(sessions, session, _window, tab){
-    //debugger;
+  v2RemoveTab(sessions, session, _window, tab, sessionTabs, sortOrder){
+    var stateUpdate = {};
+    if (sessionTabs) {
+      var refSessionTab = _.findIndex(_.orderBy(sessionTabs, sortOrder), {id: sessions[session].tabs[_window][tab].id});
+      console.log('### ref', refSessionTab);
+      if (refSessionTab !== -1) {
+        _.pullAt(sessionTabs, refSessionTab);
+        stateUpdate.sessionTabs = sessionTabs;
+      }
+    }
+
     _.pullAt(sessions[session].tabs[_window], tab);
     chrome.storage.local.set({sessions: sessions}, (result)=> {
       console.log('session tab removed', sessions);
     });
-    state.set({sessions: sessions});
+    stateUpdate.sessions = sessions;
+    state.set(stateUpdate);
   },
   v2Remove(sessions, session){
     var refSession = _.findIndex(sessions, {id: session.id});
