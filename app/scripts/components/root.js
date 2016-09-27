@@ -202,13 +202,11 @@ var Root = React.createClass({
       load: true,
       topLoad: false,
       screenshots: [],
-      chromeApps: [],
       theme: null,
       savedThemes: [],
       standardThemes: [],
       wallpaper: null,
-      wallpapers: [],
-      disableSidebarClickOutside: false,
+      wallpapers: []
     };
   },
   componentWillMount(){
@@ -258,7 +256,7 @@ var Root = React.createClass({
       nP.s.context.id = 'dlFavicons';
       state.set({context: nP.s.context});
     }
-
+ 
     /*var themeStates = ['theme', 'savedThemes', 'wallpapers', 'currentWallpaper'];
     for (let i = themeStates.length - 1; i >= 0; i--) {
       if (!_.isEqual(nP.s[themeStates[i]], p.s[themeStates[i]])) {
@@ -691,24 +689,29 @@ var Root = React.createClass({
   updateTabState(e, opt){
     var p = this.props;
     console.log('updateTabState: ',e);
+    var stateUpdate = {};
     if (opt === 'folder') {
       if (e) {
         var filter = p.s.prefs.mode === 'bookmarks' ? {folder: e} : {originSession: e};
         console.log('filter', filter);
-        state.set({tabs: _.filter(p.s.tabs, filter), tabsCache: p.s.tabs});  
+        stateUpdate[p.s.modeKey] = _.filter(p.s[p.s.modeKey], filter);
+        stateUpdate.tileCache = p.s[p.s.modeKey];
+        state.set(stateUpdate);  
       } else {
-        state.set({tabs: p.s.tabsCache});
+        stateUpdate[p.s.modeKey] = p.s.tileCache;
+        state.set(stateUpdate);
       }
       
     } else {
-      tabStore.promise().then((Tab)=>{
+      tabStore.promise().then((Tabs)=>{
         this.setState({topLoad: true});
         if (opt === 'cycle') {
           this.setState({grid: false});
         }
-        state.set({altTabs: Tab});
+        state.set({altTabs: Tabs});
         if (p.s.search.length === 0) {
-          state.set({tabs: e});
+          stateUpdate[p.s.modeKey] = e;
+          state.set(stateUpdate);
         } else {
           this.searchChange(p.s.search, e);
         }
@@ -717,7 +720,7 @@ var Root = React.createClass({
           this.setState({grid: true});
         }
         if (p.s.prefs.sessionsSync) {
-          synchronizeSession(p.s.sessions, p.s.prefs, Tab);
+          synchronizeSession(p.s.sessions, p.s.prefs, Tabs);
         }
       });
     }
@@ -789,9 +792,9 @@ var Root = React.createClass({
         for (let i = tabs.length - 1; i >= 0; i--) {
           tabs = this.checkFavicons(p, tabs[i], i, tabs);
         }
-      } else {
-        tabs = Tabs;
+        stateUpdate.sessionTabs = tabs;
       }
+      tabs = Tabs;
       // Avoid setting tabs state here if the mode is not tabs or sessions. updateTabState will handle other modes.
       if (p.s.prefs.mode === 'tabs' || p.s.prefs.mode === 'sessions') {
         if (p.s.search.length === 0) {
@@ -836,17 +839,7 @@ var Root = React.createClass({
     if (!clickStore.get_click()) {
       if (e.state) {
         // Treat attaching/detaching and created tabs with a full re-render.
-        if (p.s.prefs.mode === 'bookmarks') {
-          this.updateTabState(bookmarksStore.get_bookmarks(), e.type);
-        } else if (p.s.prefs.mode === 'history') {
-          this.updateTabState(historyStore.get_history(), e.type);
-        } else if (p.s.prefs.mode === 'apps') {
-          this.updateTabState(chromeAppStore.get(true), e.type);
-        } else if (p.s.prefs.mode === 'extensions') {
-          this.updateTabState(chromeAppStore.get(false), e.type);
-        } else {
-          this.captureTabs(e.type);
-        }
+        this.captureTabs(e.type);
       }
     }
   },
@@ -858,7 +851,7 @@ var Root = React.createClass({
       var cursor = utilityStore.get_cursor();
       var windowId = utilityStore.get_window();
       var stores = {
-        tabs: p.s.tabs,
+        tabs: p.s[p.s.prefs.mode],
         altTabs: p.s.altTabs,
         duplicateTabs: p.s.duplicateTabs,
         screenshots: s.screenshots, 
@@ -928,13 +921,12 @@ var Root = React.createClass({
         }
       }
       var options = v('#options').n;
-      console.log('ROOT STATE: ', s);
       return (
         <div className="container-main">
           {options ? <Preferences options={true} settingsMax={true} prefs={p.s.prefs} tabs={p.s.tabs} theme={s.theme} /> : s.load ? <Loading sessions={p.s.sessions} /> 
           : 
           <div>
-            {p.s.context.value ? <ContextMenu search={p.s.search} actions={s.actions} tabs={p.s.tabs} prefs={p.s.prefs} cursor={cursor} context={p.s.context} chromeVersion={p.s.chromeVersion} duplicateTabs={p.s.duplicateTabs}/> : null}
+            {p.s.context.value ? <ContextMenu search={p.s.search} actions={s.actions} tabs={p.s[p.s.prefs.mode]} prefs={p.s.prefs} cursor={cursor} context={p.s.context} chromeVersion={p.s.chromeVersion} duplicateTabs={p.s.duplicateTabs}/> : null}
             {p.s.modal ? 
               <ModalHandler 
               modal={p.s.modal} 
@@ -951,7 +943,7 @@ var Root = React.createClass({
               wallpapers={s.wallpapers}
               settings={p.s.settings}
               height={p.s.height} /> : null}
-              {p.s.tabs ? 
+              {p.s[p.s.modeKey] ? 
               <div className="tile-container">
                 <Search
                 s={p.s}
@@ -962,7 +954,7 @@ var Root = React.createClass({
                   {s.grid ? 
                     <TileGrid
                     s={p.s}
-                    data={p.s.tabs}
+                    data={p.s[p.s.modeKey]}
                     keys={keys}
                     labels={labels}
                     render={s.render}
@@ -1048,7 +1040,6 @@ var App = React.createClass({
     }
   },
   render(){
-    console.log('app state: ',this.state);
     if (!this.state.init) {
       return <Root s={this.state} />;
     } else {

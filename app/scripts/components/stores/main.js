@@ -24,9 +24,8 @@ export var bgSetPrefs = (obj)=>{
 };
 var massUpdateItems = 0;
 // Chrome event listeners set to trigger re-renders.
-var reRender = (type, id) => {
+var reRender = (type, id, s) => {
   //debugger;
-  var s = state.get();
   if (s.massUpdate && type === 'move') {
     ++massUpdateItems;
     console.log(massUpdateItems, s.altTabs.length);
@@ -88,8 +87,6 @@ var reRender = (type, id) => {
         } else {
           //state.set({update: targetTab});
         }
-      } else if (s.prefs.mode !== 'tabs') {
-        state.set({reQuery: {state: true, type: type, id: tId}});
       }
     }
   };
@@ -123,13 +120,14 @@ export var msgStore = Reflux.createStore({
   init(){
     this.response = null;
     chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+      var s = state.get();
       console.log('msg: ',msg, 'sender: ', sender);
       if (msg.type === 'prefs') {
         state.set({prefs: msg.e});
       } else if (msg.type === 'history') {
-        throttled.history(msg.type, msg.e);
+        throttled.history(msg.type, msg.e, s);
       } else if (msg.type === 'app') {
-        state.set({reQuery: {state: true, type: 'update'}});
+        chromeAppStore.set(s.prefs.mode === 'apps');
       } else if (msg.type === 'error') {
         utilityStore.reloadBg();
       } else if (msg.type === 'newVersion') {
@@ -145,7 +143,7 @@ export var msgStore = Reflux.createStore({
         sendResponse(screenshotStore.tabHasScreenshot(sender.tab.url));
       } else if (msg.e !== undefined) {
         console.log(`${msg.type}: `,msg.e);
-        reRender(msg.type, msg.e);
+        reRender(msg.type, msg.e, s);
       }
     });
   },
@@ -265,16 +263,15 @@ export var utilityStore = Reflux.createStore({
   },
   handleMode(mode){
     this.reloadBg();
-    msgStore.getPrefs().then((prefs)=>{
-      if (prefs.sidebar) {
-        this.sidebar = prefs.sidebar;
-        this.trigger(this.sidebar);
-      } else {
-        this.sidebar = false;
-      }
-    });
+    if (mode === 'apps' || mode === 'extensions') {
+      chromeAppStore.set(mode === 'apps');
+    } else if (mode === 'bookmarks') {
+      bookmarksStore.get_bookmarks();
+    } else if (mode === 'history') {
+      historyStore.get_history();
+    }
     msgStore.setPrefs({mode: mode});
-    state.set({sort: 'index'});
+    state.set({sort: 'index', prefs: {mode: mode}, modeKey: mode === 'sessions' ? 'sessionTabs' : mode});
   },
   now(){
     return new Date(Date.now()).getTime();
@@ -413,13 +410,6 @@ var defaults = (iteration)=>{
   };
 };
 export var bookmarksStore = Reflux.createStore({
-  init: function() {
-    msgStore.getPrefs().then((prefs)=>{
-      if (prefs.mode === 'bookmarks') {
-        this.get_bookmarks();
-      }
-    });
-  },
   set_bookmarks: function(value) {
     return new Promise((resolve, reject)=>{
       chrome.bookmarks.getTree((bk)=>{
@@ -471,27 +461,22 @@ export var bookmarksStore = Reflux.createStore({
   },
   get_bookmarks: function() {
     this.set_bookmarks().then((bk)=>{
-      this.bookmarks = bk;
-      this.trigger(this.bookmarks);
+      state.set({bookmarks: bk});
     });
-    return this.bookmarks;
   },
   get_folder(folder){
     return _.filter(this.bookmarks, {folder: folder});
+  },
+  remove(bookmarks, bookmarkId){
+    var refBookmark = _.findIndex(bookmarks, {bookmarkId: bookmarkId});
+    if (refBookmark !== -1) {
+      _.pullAt(bookmarks, refBookmark);
+      state.set({bookmarks: bookmarks});
+    }
   }
 });
 
 export var historyStore = Reflux.createStore({
-  init: function() {
-    msgStore.getPrefs().then((prefs)=>{
-      if (prefs.mode === 'history') {
-        this.get_history();
-      }
-    });
-    this.history = [];
-    this.state = false;
-    this.maxResults = 100;
-  },
   set_history: function(value) {
     return new Promise((resolve, reject)=>{
       chrome.history.search({text: '', maxResults: 1000}, (h)=>{
@@ -528,11 +513,16 @@ export var historyStore = Reflux.createStore({
   },
   get_history: function() {
     this.set_history().then((h)=>{
-      this.history = h;
-      this.trigger(this.history);
+      state.set({history: h});
     });
-    return this.history;
   },
+  remove(history, url){
+    var refHistory = _.findIndex(history, {url: url});
+    if (refHistory !== -1) {
+      _.pullAt(history, refHistory);
+      state.set({history: history});
+    }
+  }
 });
 
 export var actionStore = Reflux.createStore({
@@ -671,33 +661,24 @@ export var faviconStore = Reflux.createStore({
 });
 
 export var chromeAppStore = Reflux.createStore({
-  init(){
-    msgStore.getPrefs().then((prefs)=>{
-      if (prefs.mode === 'apps') {
-        this.get(true);
-      } else if (prefs.mode === 'extensions') {
-        this.get(false);
-      }
-    });
-  },
   set(app){
-    return new Promise((resolve, reject)=>{
-      chrome.management.getAll((apps)=>{
-        var _apps = _.filter(apps, {isApp: app});
-        if (_apps) {
-          for (let i = _apps.length - 1; i >= 0; i--) {
-            _.assign(_apps[i], {
-              favIconUrl: _apps[i].icons ? utilityStore.filterFavicons(_.last(_apps[i].icons).url, _.last(_apps[i].icons).url) : '../images/IDR_EXTENSIONS_FAVICON@2x.png',
-              id: _apps[i].id,
-              url: app ? _apps[i].appLaunchUrl : _apps[i].optionsUrl,
-              title: _apps[i].name
-            });
-            _apps[i] = _.merge(defaults(i), _apps[i]);
-          }
-          resolve(_apps);
-          console.log('installed apps: ', _apps);
+    chrome.management.getAll((apps)=>{
+      var _apps = _.filter(apps, {isApp: app});
+      if (_apps) {
+        for (let i = _apps.length - 1; i >= 0; i--) {
+          _.assign(_apps[i], {
+            favIconUrl: _apps[i].icons ? utilityStore.filterFavicons(_.last(_apps[i].icons).url, _.last(_apps[i].icons).url) : '../images/IDR_EXTENSIONS_FAVICON@2x.png',
+            id: _apps[i].id,
+            url: app ? _apps[i].appLaunchUrl : _apps[i].optionsUrl,
+            title: _apps[i].name
+          });
+          _apps[i] = _.merge(defaults(i), _apps[i]);
         }
-      });
+        var stateKey = app ? {apps: _apps} : {extensions: _apps};
+        state.set(stateKey);
+
+        console.log('installed apps: ', _apps);
+      }
     });
   },
   get(app){

@@ -9,7 +9,7 @@ import Draggable from 'react-draggable';
 import OnClickOutside from 'react-onclickoutside';
 import ReactTooltip from './tooltip/tooltip';
 import state from './stores/state';
-import {msgStore, searchStore, utilityStore, dragStore, draggedStore} from './stores/main';
+import {msgStore, searchStore, utilityStore, dragStore, draggedStore, historyStore, bookmarksStore} from './stores/main';
 import tabStore from './stores/tab';
 import sessionsStore from './stores/sessions';
 
@@ -281,13 +281,16 @@ var Tile = React.createClass({
         close();
       } else {
         if (s.bookmarks) {
-        var bookmarkId = search ? id.bookmarkId : p.tab.bookmarkId;
+          var bookmarkId = search ? id.bookmarkId : p.tab.bookmarkId;
           chrome.bookmarks.remove(bookmarkId,(b)=>{
             console.log('Bookmark deleted: ',b);
+            bookmarksStore.remove(p.bookmarks, bookmarkId);
           });
         } else if (s.history) {
-          chrome.history.deleteUrl({url: search ? id.url : p.tab.url},(h)=>{
+          var historyUrl = search ? id.url : p.tab.url;
+          chrome.history.deleteUrl({url: historyUrl},(h)=>{
             console.log('History url deleted: ', h);
+            historyStore.remove(p.history, historyUrl);
           });
         } else if (s.sessions) {
           var refSession = _.findIndex(p.sessions, {id: p.tab.originSession});
@@ -306,9 +309,6 @@ var Tile = React.createClass({
     } else {
       close();
       tabStore.keepNewTabOpen();
-    }
-    if (p.stores.prefs.mode !== 'tabs') {
-      state.set({reQuery: {state: true, type: 'create'}});
     }
   },
   handlePinning(tab, opt) {
@@ -404,7 +404,7 @@ var Tile = React.createClass({
     var p = this.props;
     if (opt === 'toggleEnable') {
       chrome.management.setEnabled(p.tab.id, !p.tab.enabled, ()=>{
-        state.set({reQuery: {state: true, type: 'update'}});
+        state.set({reQuery: {state: true, type: 'cycle'}});
       });
     } else if (opt === 'uninstallApp') {
       chrome.management.uninstall(p.tab.id);
@@ -447,7 +447,7 @@ var Tile = React.createClass({
       } else if (_.first(_.words(r.value)) === 'OPEN') {
         this.handleApp(r.value);
       }
-      state.set({relay: {value: '', id: null}});
+      _.defer(()=>state.set({relay: {value: null, id: null}}));
     }
   },
   handleFocus(opt, bool, props){
@@ -827,11 +827,14 @@ var TileGrid = React.createClass({
         btnStyle={btnStyle} /> : null}
         <div className="tile-div" style={tileDivStyle}>
           <div id="grid" ref="grid">
-            {p.stores.prefs.format === 'tile' ? p.s.tabs.map((tab, i)=> {
+            {p.s.prefs.format === 'tile' ? p.data.map((tab, i)=> {
               if (i <= p.tileLimit) {
                 return (
                   <Tile
-                  sessions={p.sessions} 
+                  bookmarks={p.s.bookmarks}
+                  history={p.s.history}
+                  sessions={p.s.sessions}
+                  sessionTabs={p.s.sessionTabs}
                   stores={p.stores} 
                   render={p.render} 
                   i={i} 
@@ -849,7 +852,7 @@ var TileGrid = React.createClass({
             })
             :
             <Table 
-            data={p.s.tabs}
+            data={p.data}
             stores={p.stores}
             favicons={p.s.favicons}
             theme={p.theme}
