@@ -199,12 +199,10 @@ var Root = React.createClass({
       render: false,
       grid: true,
       window: true,
-      chromeVersion: utilityStore.chromeVersion(),
       load: true,
       topLoad: false,
       screenshots: [],
       chromeApps: [],
-      duplicateTabs: [],
       theme: null,
       savedThemes: [],
       standardThemes: [],
@@ -595,6 +593,7 @@ var Root = React.createClass({
     if (p.s.prefs.sessionsSync) {
       synchronizeSession(p.s.sessions, p.s.prefs, p.s.altTabs);
     }
+    this.checkDuplicateTabs(p.s.altTabs);
     state.set({
       tabs: p.s.prefs.mode === 'tabs' ? p.s.altTabs : p.s.tabs,
       altTabs: p.s.altTabs 
@@ -794,10 +793,7 @@ var Root = React.createClass({
         tabs = Tabs;
       }
       // Avoid setting tabs state here if the mode is not tabs or sessions. updateTabState will handle other modes.
-      if (p.s.prefs.mode !== 'bookmarks' 
-        && p.s.prefs.mode !== 'history' 
-        && p.s.prefs.mode !== 'apps' 
-        && p.s.prefs.mode !== 'extensions') {
+      if (p.s.prefs.mode === 'tabs' || p.s.prefs.mode === 'sessions') {
         if (p.s.search.length === 0) {
           stateUpdate.tabs = tabs;
         } else {
@@ -830,7 +826,7 @@ var Root = React.createClass({
     }
     console.log('Duplicates: ', utils.getDuplicates(tabUrls));
     if (utils.hasDuplicates(tabUrls)) {
-      this.setState({duplicateTabs: utils.getDuplicates(tabUrls)});
+      state.set({duplicateTabs: utils.getDuplicates(tabUrls)});
     } 
   },
   reQuery(e) {
@@ -864,13 +860,13 @@ var Root = React.createClass({
       var stores = {
         tabs: p.s.tabs,
         altTabs: p.s.altTabs,
-        duplicateTabs: s.duplicateTabs,
+        duplicateTabs: p.s.duplicateTabs,
         screenshots: s.screenshots, 
         newTabs: newTabs, 
         prefs: p.s.prefs, 
         search: p.s.search, 
         cursor: cursor, 
-        chromeVersion: s.chromeVersion, 
+        chromeVersion: p.s.chromeVersion, 
         relay: p.s.relay,
         applyTabOrder: p.s.applyTabOrder,
         windowId: windowId,
@@ -922,7 +918,7 @@ var Root = React.createClass({
           title: 'Title',
           'timeStamp': 'Updated'
         };
-        if (s.chromeVersion >= 46) {
+        if (p.s.chromeVersion >= 46) {
           var init = _.initial(keys);
           init.push('audible');
           keys = _.union(init, keys);
@@ -938,7 +934,7 @@ var Root = React.createClass({
           {options ? <Preferences options={true} settingsMax={true} prefs={p.s.prefs} tabs={p.s.tabs} theme={s.theme} /> : s.load ? <Loading sessions={p.s.sessions} /> 
           : 
           <div>
-            {p.s.context.value ? <ContextMenu search={p.s.search} actions={s.actions} tabs={p.s.tabs} prefs={p.s.prefs} cursor={cursor} context={p.s.context} chromeVersion={s.chromeVersion} duplicateTabs={s.duplicateTabs}/> : null}
+            {p.s.context.value ? <ContextMenu search={p.s.search} actions={s.actions} tabs={p.s.tabs} prefs={p.s.prefs} cursor={cursor} context={p.s.context} chromeVersion={p.s.chromeVersion} duplicateTabs={p.s.duplicateTabs}/> : null}
             {p.s.modal ? 
               <ModalHandler 
               modal={p.s.modal} 
@@ -1012,23 +1008,34 @@ var App = React.createClass({
   },
   componentDidMount(){
     this.listenTo(state, this.stateChange);
-    chrome.runtime.sendMessage(chrome.runtime.id, {method: 'prefs'}, (response)=>{
-      var stateUpdate = {prefs: response.prefs, init: false, favicons: this.props.favicons};
-      state.set(stateUpdate);
-      console.log('App componentDidMount: ', response);
-      this.onWindowResize({width: window.innerWidth, height: window.innerHeight});
-    });
+    this.getPrefs();
   },
   stateChange(e){
     this.setState(e);
   },
-  onWindowResize(e) {
+  getPrefs(){
+    chrome.runtime.sendMessage(chrome.runtime.id, {method: 'prefs'}, (response)=>{
+      var stateUpdate = {
+        prefs: response.prefs, 
+        init: false, 
+        favicons: this.props.favicons,
+        chromeVersion: utilityStore.chromeVersion()
+      };
+      console.log('App componentDidMount: ', response);
+      this.onWindowResize({width: window.innerWidth, height: window.innerHeight}, stateUpdate);
+    });
+  },
+  onWindowResize(e, _stateUpdate) {
     var s = this.state;
-    state.set({
+    var stateUpdate = {
       collapse: e.width >= 1565,
       width: e.width,
       height: e.height
-    });
+    };
+    if (s.init) {
+      _.merge(stateUpdate, _stateUpdate);
+    }
+    state.set(stateUpdate);
     if (s.prefs.screenshotBg || s.prefs.screenshot) {
       document.getElementById('bgImg').style.width = window.innerWidth + 30;
       document.getElementById('bgImg').style.height = window.innerHeight + 5;

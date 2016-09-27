@@ -36,6 +36,7 @@ var state = Reflux.createStore({
       modal: {state: false, type: null, opt: null},
       folder: null,
       // Chrome data
+      chromeVersion: null,
       reQuery: {
         state: null,
         type: null,
@@ -46,6 +47,7 @@ var state = Reflux.createStore({
       altTabs: null,
       allTabs: null,
       newTabs: null,
+      duplicateTabs: null,
       favicons: [],
       sort: 'index',
     };
