@@ -20,7 +20,7 @@ var state = Reflux.createStore({
       width: window.innerWidth,
       height: window.innerHeight,
       collapse: window.innerWidth >= 1565,
-      tileLimit: 100,
+      tileLimit: 50,
       context: {
         value: null,
         id: null

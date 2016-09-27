@@ -1044,7 +1044,7 @@ var App = React.createClass({
   onViewportChange(viewport) {
     var wrapper = document.body;
     if (wrapper.scrollTop + window.innerHeight >= wrapper.scrollHeight - 200) {
-      this.setState({tileLimit: this.state.tileLimit + 100});
+      this.setState({tileLimit: this.state.tileLimit + 50});
     }
   },
   render(){
