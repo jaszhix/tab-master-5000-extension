@@ -625,7 +625,7 @@ var Sidebar = React.createClass({
   },
   handleClickOutside(){
     if (!this.props.disableSidebarClickOutside) {
-      this.props.onClickOutside();
+      state.set({sidebar: false});
     }
   },
   handleSort(){
@@ -814,7 +814,6 @@ var TileGrid = React.createClass({
         ssBg={ssBg} 
         search={p.stores.search} 
         theme={p.theme}
-        onClickOutside={()=>p.onSidebarClickOutside()}
         disableSidebarClickOutside={p.disableSidebarClickOutside}
         
         faStyle={faStyle}

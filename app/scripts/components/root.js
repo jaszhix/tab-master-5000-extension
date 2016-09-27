@@ -151,7 +151,7 @@ var Search = React.createClass({
     state.set({settings: 'about', modal: {state: true, type: 'settings'}});
   },
   handleSidebar(){
-    this.props.onMenuClick();
+    state.set({sidebar: !this.props.s.sidebar});
   },
   handleEnter(e){
     if (e.keyCode === 13) {
@@ -167,7 +167,7 @@ var Search = React.createClass({
         <Row>
           <Col size={p.s.width <= 825 ? p.s.width <= 630 ? p.s.width <= 514 ? '10' : '8' : '6' : '4'}>
             <div style={{display: 'flex', width: '100%', paddingLeft: '0px', paddingRight: '0px'}}>
-              <Btn onClick={this.handleSidebar} onMouseEnter={p.onMenuHoverIn} onMouseLeave={p.onMenuHoverOut} style={{marginRight: '0px', padding: '9px 13px'}} className="ntg-top-btn" fa="reorder" />
+              <Btn onClick={this.handleSidebar} onMouseEnter={()=>state.set({disableSidebarClickOutside: true})} onMouseLeave={()=>state.set({disableSidebarClickOutside: false})} style={{marginRight: '0px', padding: '9px 13px'}} className="ntg-top-btn" fa="reorder" />
               <input 
                 type="text"
                 value={p.s.search}
@@ -196,41 +196,20 @@ var Root = React.createClass({
   getInitialState() {
     return {
       init: true,
-      tabs: [],
-      allTabsByWindow: [],
       render: false,
       grid: true,
-      search: '',
       window: true,
-      settings: 'sessions',
-      collapse: true,
-      width: window.innerWidth,
-      height: window.innerHeight,
-      context: false,
-      modal: null,
-      event: '',
       chromeVersion: utilityStore.chromeVersion(),
-      prefs: [],
       load: true,
       topLoad: false,
-      tileLimit: 100,
-      oldTileLimit: 100,
-      sessions: [],
-      favicons: [],
       screenshots: [],
-      relay: [],
-      applyTabOrder: false,
-      folder: '',
-      folderState: false,
       chromeApps: [],
       duplicateTabs: [],
-      sort: 'index',
       theme: null,
       savedThemes: [],
       standardThemes: [],
       wallpaper: null,
       wallpapers: [],
-      sidebar: false,
       disableSidebarClickOutside: false,
     };
   },
@@ -276,9 +255,21 @@ var Root = React.createClass({
     if (nP.s.folder !== p.s.folder) {
       this.updateTabState(nP.s.folder, 'folder');
     }
-    if (nP.s.favicons !== p.s.favicons) {
+    if (!_.isEqual(nP.s.favicons, p.s.favicons)) {
       this.faviconsChange(nP.s.favicons);
+      nP.s.context.id = 'dlFavicons';
+      state.set({context: nP.s.context});
     }
+
+    /*var themeStates = ['theme', 'savedThemes', 'wallpapers', 'currentWallpaper'];
+    for (let i = themeStates.length - 1; i >= 0; i--) {
+      if (!_.isEqual(nP.s[themeStates[i]], p.s[themeStates[i]])) {
+        var themeChangeInput = {};
+        themeChangeInput[themeStates[i]] = nP.s[themeStates[i]];
+        this.faviconsChange(nP.s[themeStates[i]]);
+      }
+    }*/
+
     if (!_.isEqual(nP.s.reQuery, p.s.reQuery) && nP.s.reQuery.state) {
       this.reQuery(nP.s.reQuery);
       state.set({reQuery: {state: false}});
@@ -317,8 +308,8 @@ var Root = React.createClass({
     }
   },
   faviconsChange(e){
-    this.setState({event: 'dlFavicons', topLoad: true});
-    _.defer(()=>this.setState({event: '', topLoad: false}));
+    this.setState({topLoad: true});
+    _.defer(()=>this.setState({topLoad: false}));
   },
   actionsChange(e){
     this.setState({actions: e});
@@ -970,10 +961,7 @@ var Root = React.createClass({
                 s={p.s}
                 event={s.event}
                 topLoad={s.topLoad} 
-                theme={s.theme} 
-                onMenuClick={()=>this.setState({sidebar: !s.sidebar})}
-                onMenuHoverIn={()=>this.setState({disableSidebarClickOutside: true})}
-                onMenuHoverOut={()=>this.setState({disableSidebarClickOutside: false})} />
+                theme={s.theme}  />
                 <div style={{marginTop: '67px'}} className="tile-child-container">
                   {s.grid ? 
                     <TileGrid
@@ -984,15 +972,14 @@ var Root = React.createClass({
                     render={s.render}
                     collapse={p.s.collapse}
                     width={p.s.width}
-                    sidebar={s.sidebar}
+                    sidebar={p.s.sidebar}
                     stores={stores}
                     tileLimit={p.s.tileLimit}
                     sessions={p.s.sessions}
                     init={s.init}
                     theme={s.theme}
                     wallpaper={s.wallpaper}
-                    onSidebarClickOutside={()=>this.setState({sidebar: false})}
-                    disableSidebarClickOutside={s.disableSidebarClickOutside}
+                    disableSidebarClickOutside={p.s.disableSidebarClickOutside}
                     />
                   : <Loading sessions={p.s.sessions}  />}
                 </div>
