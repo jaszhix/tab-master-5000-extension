@@ -531,22 +531,26 @@ var Root = React.createClass({
   searchChange(e, update) {
     var search = e;
     var p = this.props;
-    var tabs = update ? update : p.s.tabs;
+    var items = update ? update : p.s[p.s.modeKey];
     this.setState({topLoad: true});
-    // Mutate the tabs array and reroute all event methods to searchChanged while search length > 0
+    var stateUpdate = {};
+    // Mutate the items array and reroute all event methods to searchChanged while search length > 0
     if (search.length > 0) {
-      for (var i = tabs.length - 1; i >= 0; i--) {
-        if (kmp(tabs[i].title.toLowerCase(), search) !== -1 || kmp(tabs[i].url, search) !== -1) {
-          tabs.push(tabs[i]);
-        } else {
-          tabs = _.without(tabs, tabs[i]);
-        }
+      if (search.length === 1 && !p.s.tileCache) {
+        stateUpdate.tileCache = p.s[p.s.modeKey]; 
       }
-      this.setState({tabs: _.uniq(tabs)});
-      tabStore.set_tab(tabs);
+      var sourceItems = p.s.tileCache ? p.s.tileCache : items;
+      var searchItems = _.filter(sourceItems, (item)=>{
+        if (kmp(item.title.toLowerCase(), search) !== -1 || item.url.indexOf(search) !== -1) {
+          return item;
+        }
+      });
+      stateUpdate[p.s.modeKey] = _.uniqBy(searchItems, 'id');
+      state.set(stateUpdate);
     } else {
-      // fix
-      state.set({mode: p.s.prefs.mode});
+      stateUpdate[p.s.modeKey] = p.s.tileCache;
+      stateUpdate.tileCache = null;
+      state.set(stateUpdate);
     }
     _.defer(()=>this.setState({topLoad: false}));
   },
@@ -699,6 +703,7 @@ var Root = React.createClass({
         state.set(stateUpdate);  
       } else {
         stateUpdate[p.s.modeKey] = p.s.tileCache;
+        stateUpdate.tileCache = null;
         state.set(stateUpdate);
       }
       
