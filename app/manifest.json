@@ -1,7 +1,7 @@
 {
   "name": "Tab Master 5000: Tab Swiss Army Knife",
   "short_name": "Tab Master 5000",
-  "version": "1.8.0",
+  "version": "2.0.0",
   "manifest_version": 2,
   "description": "The swiss army knife of tab, history, bookmark, session, and extension management.",
   "icons": {
