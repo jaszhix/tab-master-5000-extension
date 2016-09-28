@@ -10,6 +10,7 @@ import OnClickOutside from 'react-onclickoutside';
 import ReactTooltip from './tooltip/tooltip';
 import state from './stores/state';
 import {msgStore, searchStore, utilityStore, dragStore, draggedStore, historyStore, bookmarksStore} from './stores/main';
+import themeStore from './stores/theme';
 import tabStore from './stores/tab';
 import sessionsStore from './stores/sessions';
 
@@ -561,24 +562,45 @@ var Tile = React.createClass({
                 overflow: 'hidden',
                 cursor: 'pointer'
               }}>
-                <a style={{fontSize: '14px', color: p.theme.tileText}}>{p.tab.title}</a>
+                <a style={{fontSize: s.hover ? '13px' : '14px', color: p.theme.tileText, transition: 'font-size 0.2s'}}>{p.tab.title}</a>
               </div>
-              {p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ? <div className="text-muted text-size-small" style={{whiteSpace: s.hover ? 'initial' : 'nowrap', WebkitTransition: 'white-space 0.1s'}}>{p.tab.description}</div> : null}
+              {p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ? 
+              <div className="text-muted text-size-small" style={{whiteSpace: s.hover ? 'initial' : 'nowrap', WebkitTransition: 'white-space 0.1s'}}>{p.tab.description}</div> : null}
             </div>
         </div>
       }
       header={
         <div style={{position: 'relative'}}>
           <ul className="icons-list" style={{float: 'right'}}>
+            {p.chromeVersion >= 46 && s.openTab || p.chromeVersion >= 46 && p.prefs.mode === 'tabs' ?
             <li>
-              <a style={{color: s.hover ? p.theme.tileMuteHover : p.theme.tileMute}} className="icon-volume-mute"></a>
+              <i 
+              style={{display: 'block', cursor: 'pointer', color: s.mHover ? p.theme.tileMuteHover : p.theme.tileMute, opacity: s.hover || p.tab.mutedInfo.muted || p.tab.audible ? '1' : '0',}} 
+              className={`icon-volume-${p.tab.mutedInfo.muted ? 'mute2' : p.tab.audible ? 'medium' : 'mute'}`}
+              onMouseEnter={this.handleTabMuteHoverIn} 
+              onMouseLeave={this.handleTabMuteHoverOut} 
+              onClick={() => this.handleMuting(p.tab)} />
             </li>
+            : null}
+            {s.openTab || p.prefs.mode === 'tabs' ?
             <li>
-              <a style={{color: s.hover ? p.theme.tilePinHover : p.theme.tilePin}} className="icon-pushpin"></a>
+              <i 
+              style={{display: 'block', cursor: 'pointer', color: s.pHover ? p.theme.tilePinHover : p.theme.tilePin, opacity: s.hover || p.tab.pinned ? '1' : '0'}} 
+              className="icon-pushpin"
+              onMouseEnter={this.handlePinHoverIn} 
+              onMouseLeave={this.handlePinHoverOut}
+              onClick={() => this.handlePinning(p.tab)} />
             </li>
+            : null}
+            {p.prefs.mode !== 'apps' && p.prefs.mode !== 'extensions' ?
             <li>
-              <a style={{color: s.hover ? p.theme.tilePinHover : p.theme.tileX}} className="icon-cross2 ntg-x"></a>
-            </li>
+              <i 
+              style={{display: 'block', cursor: 'pointer', color: s.xHover ? p.theme.tileXHover : p.theme.tileX, opacity: s.hover ? '1' : '0',}} 
+              className="icon-cross2 ntg-x"
+              onMouseEnter={this.handleTabCloseHoverIn} 
+              onMouseLeave={this.handleTabCloseHoverOut} 
+              onClick={()=>this.handleCloseTab(p.tab.id)} />
+            </li> : null}
           </ul>
         </div>
       }
@@ -627,11 +649,10 @@ var Tile = React.createClass({
       headingStyle={{
         width: `${p.prefs.tabSizeHeight + 80}px`,
         padding: '0px',
-        opacity: s.hover ? '1' : '0',
-        backgroundColor: s.hover ? p.theme.tileBg : 'rgba(255, 255, 255, 0)',
+        backgroundColor: s.hover ? p.theme.tileBg : p.tab.pinned || p.tab.mutedInfo.muted || p.tab.audible ? themeStore.opacify(p.theme.tileBg, 0.8) : 'rgba(255, 255, 255, 0)',
         position: 'absolute',
         zIndex: '11',
-        WebkitTransition: 'opacity 0.1s, background-color 0.1s'
+        WebkitTransition: 'opacity 0.2s, background-color 0.1s'
       }}
       onMouseEnter={()=>this.setState({hover: true})}
       onMouseLeave={()=>this.setState({hover: false})}>
@@ -830,7 +851,6 @@ var TileGrid = React.createClass({
         
         faStyle={faStyle}
         btnStyle={btnStyle} /> : null}
-        <div className="tile-div" style={tileDivStyle}>
           <div id="grid" ref="grid">
             {p.s.prefs.format === 'tile' ? p.data.map((tab, i)=> {
               if (i <= p.s.tileLimit) {
@@ -868,7 +888,6 @@ var TileGrid = React.createClass({
             cursor={p.stores.cursor}
             />}
           </div>
-        </div>
       </div>
     );
   }
