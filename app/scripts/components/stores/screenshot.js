@@ -25,6 +25,7 @@ var screenshotStore = Reflux.createStore({
   },
   capture(id, wid, imageData, type){
     console.log('screenshotStore capture:', id, wid, imageData, type);
+    var s = state.get();
     var tab = _.find(tabs(), { id: id });
     var title = _.result(tab, 'title');
     var getScreenshot = new Promise((resolve, reject)=>{
@@ -44,54 +45,52 @@ var screenshotStore = Reflux.createStore({
         });
       }
     });
-    msgStore.getPrefs().then((prefs)=>{
-      if (title !== 'New Tab' && prefs.screenshot) {
-        var ssUrl = _.result(_.find(tabs(), { id: id }), 'url');
-        if (ssUrl) {
-          getScreenshot.then((img, err)=>{
-            var resize = new Promise((resolve, reject)=>{
-              var sourceImage = new Image();
-              sourceImage.onload = function() {
-                var imgWidth = sourceImage.width / 2;
-                var imgHeight = sourceImage.height / 2;
-                var canvas = document.createElement("canvas");
-                canvas.width = imgWidth;
-                canvas.height = imgHeight;
-                canvas.getContext("2d").drawImage(sourceImage, 0, 0, imgWidth, imgHeight);
-                var newDataUri = canvas.toDataURL('image/jpeg', 0.25);
-                if (newDataUri) {
-                  resolve(newDataUri);
-                }
-              };
-              sourceImage.src = img;
-            });
-            resize.then((image)=>{
-              var screenshot = {url: null, data: null, timeStamp: Date.now()};
-              screenshot.url = ssUrl;
-              screenshot.data = image;
-              console.log('screenshot: ', ssUrl);
-              var urlInIndex = _.result(_.find(this.index, { url: ssUrl }), 'url');
-              if (urlInIndex) {
-                var dataInIndex = _.map(_.filter(this.index, { url: ssUrl }), 'data');
-                var timeInIndex = _.map(_.filter(this.index, { url: ssUrl }), 'timeStamp');
-                var index = _.findIndex(this.index, { 'url': ssUrl, 'data': _.last(dataInIndex), timeStamp: _.last(timeInIndex) });
-                var newIndex = _.remove(this.index, this.index[index]);
-                this.index = _.without(this.index, newIndex);
+    if (title !== 'New Tab' && s.prefs.screenshot) {
+      var ssUrl = _.result(_.find(tabs(), { id: id }), 'url');
+      if (ssUrl) {
+        getScreenshot.then((img, err)=>{
+          var resize = new Promise((resolve, reject)=>{
+            var sourceImage = new Image();
+            sourceImage.onload = function() {
+              var imgWidth = sourceImage.width / 2;
+              var imgHeight = sourceImage.height / 2;
+              var canvas = document.createElement("canvas");
+              canvas.width = imgWidth;
+              canvas.height = imgHeight;
+              canvas.getContext("2d").drawImage(sourceImage, 0, 0, imgWidth, imgHeight);
+              var newDataUri = canvas.toDataURL('image/jpeg', 0.25);
+              if (newDataUri) {
+                resolve(newDataUri);
               }
-              this.index.push(screenshot);
-              this.index = _.uniqBy(this.index, 'url');
-              this.index = _.uniqBy(this.index, 'data');
-              chrome.storage.local.set({screenshots: this.index}, ()=>{
-                console.log(this.index);
-              });
-              this.trigger(this.index);
-            });
-          }).catch(()=>{
-            _.defer(()=>chrome.tabs.update(id, {active: true}));
+            };
+            sourceImage.src = img;
           });
-        }
+          resize.then((image)=>{
+            var screenshot = {url: null, data: null, timeStamp: Date.now()};
+            screenshot.url = ssUrl;
+            screenshot.data = image;
+            console.log('screenshot: ', ssUrl);
+            var urlInIndex = _.result(_.find(this.index, { url: ssUrl }), 'url');
+            if (urlInIndex) {
+              var dataInIndex = _.map(_.filter(this.index, { url: ssUrl }), 'data');
+              var timeInIndex = _.map(_.filter(this.index, { url: ssUrl }), 'timeStamp');
+              var index = _.findIndex(this.index, { 'url': ssUrl, 'data': _.last(dataInIndex), timeStamp: _.last(timeInIndex) });
+              var newIndex = _.remove(this.index, this.index[index]);
+              this.index = _.without(this.index, newIndex);
+            }
+            this.index.push(screenshot);
+            this.index = _.uniqBy(this.index, 'url');
+            this.index = _.uniqBy(this.index, 'data');
+            chrome.storage.local.set({screenshots: this.index}, ()=>{
+              console.log(this.index);
+            });
+            this.trigger(this.index);
+          });
+        }).catch(()=>{
+          _.defer(()=>chrome.tabs.update(id, {active: true}));
+        });
       }
-    });
+    }
   },
   get_ssIndex(){
     return this.index;
@@ -143,5 +142,5 @@ var screenshotStore = Reflux.createStore({
     return _.filter(this.index, {url: url});
   }
 });
-
+window.screenshotStore = screenshotStore;
 export default screenshotStore;

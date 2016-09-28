@@ -14,7 +14,7 @@ import tabStore from './stores/tab';
 import sessionsStore from './stores/sessions';
 
 import {Table} from './table';
-import {Btn, Col, Row} from './bootstrap';
+import {Btn, Col, Row, Panel} from './bootstrap';
 import style from './style';
 
 var tileDrag = null;
@@ -299,7 +299,7 @@ var Tile = React.createClass({
               var tab = _.findIndex(w[p.tab.originWindow], {id: id});
               if (tab !== -1) {
                 console.log('####', tab);
-                sessionsStore.v2RemoveTab(p.sessions, refSession, p.tab.originWindow, tab, p.sessionTabs, p.s.sort);
+                sessionsStore.v2RemoveTab(p.sessions, refSession, p.tab.originWindow, tab, p.sessionTabs, p.sort);
                 return;
               }
             }
@@ -308,8 +308,9 @@ var Tile = React.createClass({
       }
     } else {
       close();
-      tabStore.keepNewTabOpen();
+      //tabStore.keepNewTabOpen();
     }
+    _.delay(()=>this.setState({render: false}), 200);
   },
   handlePinning(tab, opt) {
     var s = this.state;
@@ -375,7 +376,7 @@ var Tile = React.createClass({
         this.handleCloseTab(p.stores.tabs[i].id);
       }
     }
-    searchStore.set_search('');
+    state.set({search: ''});
   },
   applyTabOrder() {
     // Apply the sorted tab grid state to the Chrome window.
@@ -429,8 +430,6 @@ var Tile = React.createClass({
         this.handlePinning(p.tab);
       } else if (r.value === 'mute') {
         this.handleMuting(p.tab);
-      } else if (r.value === 'closeDupes') {
-        this.checkDuplicateTabs(p, r.value);
       } else if (r.value === 'closeAllDupes') {
         this.checkDuplicateTabs(p, r.value);
       } else if (r.value === 'closeSearched') {
@@ -532,12 +531,6 @@ var Tile = React.createClass({
   render: function() {
     var s = this.state;
     var p = this.props;
-    var tileStyle = {height: p.prefs.tabSizeHeight, width: p.prefs.tabSizeHeight+80};
-    var mainTileStyle = s.screenshot ? s.hover ? style.tileHovered(s.screenshot, p.prefs.tabSizeHeight) : style.tile(s.screenshot, p.prefs.tabSizeHeight) : tileStyle;
-    mainTileStyle = _.cloneDeep(_.merge(mainTileStyle, {
-      backgroundColor: s.hover ? p.theme.tileBgHover : p.theme.tileBg, 
-      boxShadow: `${p.theme.tileShadow} 1px 1px 3px -1px`
-    }));
     style.ssIconBg = _.cloneDeep(_.merge(style.ssIconBg, {
       backgroundColor: p.theme.tileButtonBg
     }));
@@ -554,72 +547,96 @@ var Tile = React.createClass({
     var appHomepage = p.prefs.tabSizeHeight >= 170 ? p.prefs.tabSizeHeight + 5 : 170;
     var appOfflineEnabled = p.prefs.tabSizeHeight >= 170 ? p.prefs.tabSizeHeight - 10 : 158;
     return (
-      <div ref="tileMain" id={'tileMain-'+s.i} className="outerTile" onDragEnter={this.currentlyDraggedOver(p.tab)} style={p.prefs.screenshot && p.prefs.screenshotBg ? {opacity: '0.95'} : null}>
-        {p.render ? 
-          <Draggable  axis="both"
-                      handle=".handle"
-                      moveOnStartChange={true}
-                      grid={[1, 1]}
-                      
-                      zIndex={-1}
-                      onStart={this.handleStart}
-                      onDrag={this.handleDrag}
-                      onStop={this.handleStop}>
-            <div ref="tile" style={s.drag ? {position: 'fixed', left: `${drag.left}px`, top: `${drag.top}px`} : null}>
-            {p.render && s.render && p.tab.title !== 'New Tab' ? <Row fluid={true} id={'subTile-'+s.i} style={s.duplicate && s.focus && !s.hover ? {WebkitAnimationIterationCount: 'infinite', WebkitAnimationDuration: '5s'} : null} onContextMenu={this.handleContextClick} onMouseOver={this.handleHoverIn} onMouseEnter={this.handleHoverIn} onMouseLeave={this.handleHoverOut} className={s.close ? "animated zoomOut" : s.pinning ? "animated pulse" : s.duplicate && s.focus ? "animated flash" : ''}>
-                { true ? <div id={'innerTile-'+p.tab.id} className={s.apps && !p.tab.enabled ? 'ntg-tile-disabled' : s.hover ? 'ntg-tile-hover' : 'ntg-tile'} style={mainTileStyle}>
-                  <Row className="ntg-tile-row-top">
-                    <Col size="3">
-                      {p.chromeVersion >= 46 && s.openTab || p.chromeVersion >= 46 && p.prefs.mode === 'tabs' ? <div onMouseEnter={this.handleTabMuteHoverIn} onMouseLeave={this.handleTabMuteHoverOut} onClick={() => this.handleMuting(p.tab)}>
-                                        {s.hover || p.tab.audible || p.tab.mutedInfo.muted ? 
-                                        <i className={p.tab.audible ? s.mHover ? 'fa fa-volume-off ntg-mute-audible-hover' : 'fa fa-volume-up ntg-mute-audible' : s.mHover ? 'fa fa-volume-off ntg-mute-hover' : 'fa fa-volume-off ntg-mute'} style={s.screenshot && s.hover ? style.ssIconBg : s.screenshot ? style.ssIconBg : null} />
-                                        : null}
-                                      </div> : null}
-                      <div onMouseEnter={this.handleTabCloseHoverIn} onMouseLeave={this.handleTabCloseHoverOut} onClick={()=>this.handleCloseTab(p.tab.id)}>
-                        {s.hover && !s.apps ? 
-                        <i className={s.xHover ? remove ? "fa fa-eraser ntg-x-hover" : "fa fa-times ntg-x-hover" : remove ? "fa fa-eraser ntg-x" : "fa fa-times ntg-x"} style={s.screenshot && s.hover ? style.ssIconBg : null} />
-                        : null}
-                      </div>
-                      <div onMouseEnter={this.handlePinHoverIn} onMouseLeave={this.handlePinHoverOut} onClick={() => this.handlePinning(p.tab)}>
-                      {p.tab.pinned && p.prefs.mode === 'tabs' || s.hover && s.openTab || s.hover && !s.bookmarks && !s.history && !s.sessions && !s.apps ? 
-                        <i className={s.pHover ? "fa fa-map-pin ntg-pinned-hover" : "fa fa-map-pin ntg-pinned"} style={p.tab.pinned ? s.screenshot && s.hover ? style.ssPinnedIconBg : s.screenshot ? style.ssPinnedIconBg : {color: p.theme.tilePinned} : s.screenshot ? style.ssIconBg : null} />
-                        : null}
-                      </div>
-                      <Row>
-                        <img className="ntg-favicon" src={p.tab.favIconUrl ? p.tab.favIconUrl : '../images/file_paper_blank_document.png' } />
-                      </Row>
-                    </Col>
-                    <Col size="9" onClick={!s.bookmarks && !s.apps && !s.sessions ? ()=>this.handleClick(p.tab.id) : null} className="ntg-title-container">
-                      <span title={s.apps ? p.tab.description : null}>
-                        <h6 style={s.screenshot ? {backgroundColor: p.theme.tileBg, borderRadius: '3px', color: p.theme.tileText, textShadow: `2px 2px ${p.theme.tileTextShadow}`} : {color: p.theme.tileText, textShadow: `2px 2px ${p.theme.tileTextShadow}`}} className="ntg-title">
-                        {_.truncate(p.tab.title, {length: titleLimit})}
-                        </h6>
-                      </span>
-                      {s.bookmarks ? <h6 onClick={()=>this.filterFolders(p.tab.folder)} style={lowerStyle} className="ntg-folder">
-                        <i className="fa fa-folder-o" />{p.tab.folder ? s.bookmarks ? ' '+p.tab.folder : null : null}
-                      </h6> : null}
-                      {s.history ? <h6 style={lowerStyle} className="ntg-folder">
-                        <i className="fa fa-hourglass-o" />{' '+_.capitalize(moment(p.tab.lastVisitTime).fromNow())}
-                      </h6> : null}
-                      {s.sessions ? <h6 onClick={()=>this.filterFolders(p.tab.originSession)} style={lowerStyle} className="ntg-folder">
-                        <i className={p.tab.label ? 'fa fa-folder-o' : 'fa fa-hourglass-o'} />{p.tab.label ? ' '+p.tab.label : ' '+_.capitalize(moment(p.tab.sTimeStamp).fromNow())}
-                      </h6> : null}
-                      {s.apps && s.hover ? <h6 style={lowerStyle} className="ntg-folder">
-                        <i className="fa fa-at" />{' '+p.tab.version}{p.tab.offlineEnabled ? <span style={{position: 'absolute', left: appOfflineEnabled.toString()+'px'}} title="Offline Enabled"><i style={{opacity: '0.7', fontSize: '12px', position: 'relative', top: '1px'}} className="fa fa-bolt" /></span> : null}{p.tab.homepageUrl ? <span onClick={()=>tabStore.create(p.tab.homepageUrl)} style={{cursor: 'pointer', position: 'absolute', left: appHomepage.toString()+'px'}} title="Homepage" onMouseEnter={this.handleDragHoverIn} onMouseLeave={this.handleDragHoverOut}><i style={s.dHover ? {opacity: '0.7'} : {opacity: '0.5'}} className="fa fa-home" /> </span> : null}
-                      </h6> : null}
-                      {p.prefs ? p.prefs.drag && !s.bookmarks && !s.history && !s.sessions  && !s.apps ? <div onMouseEnter={this.handleDragHoverIn} onMouseLeave={this.handleDragHoverOut} onClick={() => this.handleCloseTab(p.tab.id)}>
-                        {s.hover ? 
-                        <i className={s.dHover ? "fa fa-hand-grab-o ntg-move-hover handle" : "fa fa-hand-grab-o ntg-move"} style={s.screenshot && s.hover ? style.ssIconBg : null} />
-                        : null}
-                      </div> : null : null}
-                    </Col> 
-                  </Row>
-                  <Row onClick={() => this.handleClick(p.tab.id)} className={s.bookmarks || s.history || s.sessions || s.apps ? "ntg-tile-row-bottom-bk" : "ntg-tile-row-bottom"} />
-                </div> : null}
-              </Row> : null}
+      <Panel 
+      footerLeft={
+        <div>
+            <div className="media-left" style={{paddingRight: '6px'}}>
+              <img src={p.tab.favIconUrl && p.tab.domain !== 'chrome' ? p.tab.favIconUrl : '../images/file_paper_blank_document.png' } style={{width: '16px', height: '16px'}}/>
             </div>
-          </Draggable> : null}
-      </div>
+            <div className="media-left">
+              <div style={{
+                color: p.theme.tileText, 
+                textShadow: `2px 2px ${p.theme.tileTextShadow}`, 
+                width: p.prefs.tabSizeHeight+30, 
+                overflow: 'hidden',
+                cursor: 'pointer'
+              }}>
+                <a style={{fontSize: '14px', color: p.theme.tileText}}>{p.tab.title}</a>
+              </div>
+              {p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ? <div className="text-muted text-size-small" style={{whiteSpace: s.hover ? 'initial' : 'nowrap', WebkitTransition: 'white-space 0.1s'}}>{p.tab.description}</div> : null}
+            </div>
+        </div>
+      }
+      header={
+        <div style={{position: 'relative'}}>
+          <ul className="icons-list" style={{float: 'right'}}>
+            <li>
+              <a style={{color: s.hover ? p.theme.tileMuteHover : p.theme.tileMute}} className="icon-volume-mute"></a>
+            </li>
+            <li>
+              <a style={{color: s.hover ? p.theme.tilePinHover : p.theme.tilePin}} className="icon-pushpin"></a>
+            </li>
+            <li>
+              <a style={{color: s.hover ? p.theme.tilePinHover : p.theme.tileX}} className="icon-cross2 ntg-x"></a>
+            </li>
+          </ul>
+        </div>
+      }
+      style={{
+        height: p.prefs.tabSizeHeight, 
+        width: `${p.prefs.tabSizeHeight + 80}px`, 
+        float: 'left', 
+        margin: '6px', 
+        backgroundColor: s.hover ? p.theme.tileBgHover : p.theme.tileBg, 
+        backgroundImage: `url('${s.screenshot ? s.screenshot : p.tab.favIconUrl}')`, 
+        backgroundBlendMode: s.screenshot ? 'multiply, soft-light' : 'luminosity',
+        backgroundPosition: 'center',
+        backgroundSize: '100%',
+        overflow: 'hidden',
+        zIndex: '50'
+      }}
+      bodyStyle={{
+        height: s.hover ? `${p.prefs.tabSizeHeight - 116}px` : `${p.prefs.tabSizeHeight - 40}px`, 
+        width: p.prefs.tabSizeHeight+80,
+        padding: s.hover ? '0px' : 'initial',
+        backgroundImage: !s.screenshot ? `url('${p.tab.favIconUrl}')` : 'initial', 
+        backgroundBlendMode: 'luminosity',
+        backgroundPosition: 'center',
+        backgroundSize: '1px, auto, contain',
+        opacity: s.hover ? '1' : '0.8',
+        WebkitTransition: p.prefs.animations ? 'padding 0.1s, height 0.1s, opacity 0.1s' : 'initial',
+        WebkitTransitionTimingFunction: 'ease-in-out',
+        zIndex: s.hover ? '2' : '1',
+        cursor: 'pointer'
+      }}
+      footerStyle={{
+        backgroundColor: s.hover ? p.theme.tileBg : p.theme.settingsBg, 
+        borderBottomRightRadius: '2px', 
+        borderBottomLeftRadius: '2px', 
+        width: p.prefs.tabSizeHeight+80, 
+        position: 'absolute', 
+        padding: `${s.hover ? 4 : 0}px 6px`, 
+        minHeight: s.hover ? `${p.prefs.tabSizeHeight - 18}px` : '40px', 
+        height: s.hover ? `${p.prefs.tabSizeHeight - 18}px` : '40px',
+        maxHeight: s.hover ? `${p.prefs.tabSizeHeight - 18}px` : '40px',
+        WebkitTransition: p.prefs.animations ? 'padding 0.1s, height 0.1s, min-height 0.1s, max-height 0.1s, background-color 0.2s' : 'initial',
+        WebkitTransitionTimingFunction: 'ease-in-out',
+        overflow: 'hidden', 
+        zIndex: s.hover ? '1' : '2'
+      }}
+      headingStyle={{
+        width: `${p.prefs.tabSizeHeight + 80}px`,
+        padding: '0px',
+        opacity: s.hover ? '1' : '0',
+        backgroundColor: s.hover ? p.theme.tileBg : 'rgba(255, 255, 255, 0)',
+        position: 'absolute',
+        zIndex: '11',
+        WebkitTransition: 'opacity 0.1s, background-color 0.1s'
+      }}
+      onMouseEnter={()=>this.setState({hover: true})}
+      onMouseLeave={()=>this.setState({hover: false})}>
+
+      </Panel>
     );
   }
 });
@@ -664,7 +681,7 @@ var Sidebar = React.createClass({
     return (
       <div className="side-div" style={sideStyle}>
         <Btn onClick={()=>state.set({modal: {state: true, type: 'settings'}})} className="ntg-apply-btn" fa="cogs" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? 'Settings' : null}>{!iconCollapse ? 'Settings' : ''}</Btn>
-        <Btn onClick={()=>msgStore.setPrefs({format: p.prefs.format === 'tile' ? 'table' : 'tile'})} className="ntg-apply-btn" fa="cogs" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? formatBtnLabel : null}>{!iconCollapse ? formatBtnLabel : ''}</Btn>
+        <Btn onClick={()=>msgStore.setPrefs({format: p.prefs.format === 'tile' ? 'table' : 'tile'})} className="ntg-apply-btn" icon={p.prefs.format === 'tile' ? 'list' : 'grid'} faStyle={faStyle} data-place="right" data-tip={iconCollapse ? formatBtnLabel : null}>{!iconCollapse ? formatBtnLabel : ''}</Btn>
         <Btn onClick={this.handleSort} className="ntg-apply-btn" style={sortButton} fa="sort-amount-asc" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? 'Sort Tabs' : null}>{!iconCollapse ? 'Sort Tabs' : ''}</Btn>
           {p.prefs.sort ? <div>
               {p.labels}
@@ -698,11 +715,6 @@ var TileGrid = React.createClass({
       keys: [],
       labels: {},
       collapse: true
-    };
-  },
-  getInitialState: function() {
-    return {
-      title: true
     };
   },
   componentDidMount(){
@@ -768,9 +780,6 @@ var TileGrid = React.createClass({
     var stateUpdate = {};
     stateUpdate[p.s.modeKey] = result;
     state.set(stateUpdate);
-  },
-  handleTitleIcon(){
-    this.setState({title: !this.state.title});
   },
   render: function() {
     var p = this.props;
@@ -847,6 +856,7 @@ var TileGrid = React.createClass({
                   applyTabOrder={p.s.applyTabOrder}
                   relay={p.s.relay}
                   search={p.s.search}
+                  sort={p.s.sort}
                   chromeVersion={p.s.chromeVersion} />
                 );
               }

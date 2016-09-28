@@ -265,23 +265,21 @@ div.row.ntg-tile-row-top > div.col-xs-3 > div > i {
     font-size: 13px;
 };
 .ntg-tile {
-    text-align: center;
     background-color: rgb(237, 237, 237);
     box-shadow: rgb(133, 132, 132) 1px 1px 5px -1px;
     -webkit-transition: background-color .05s ease-in;
     background-size: cover;
-    margin: 3px;
+    margin: 6px;
     height: auto;
     width: auto;
     overflow-wrap: break-word;
     float: left;
 }
 .ntg-tile-disabled {
-    text-align: center;
     background-color: rgb(237, 237, 237);
     box-shadow: rgb(133, 132, 132) 1px 1px 5px -1px;
     background-size: cover;
-    margin: 3px;
+    margin: 6px;
     height: auto;
     width: auto;
     overflow-wrap: break-word;
@@ -290,12 +288,11 @@ div.row.ntg-tile-row-top > div.col-xs-3 > div > i {
     cursor: 'default';
 }
 .ntg-tile-hover {
-    text-align: center;
     background-color: rgb(247, 247, 247);
     box-shadow: rgb(133, 132, 132) 1px 1px 5px -1px;
     -webkit-transition: background-color .05s ease-in;
     background-size: cover;
-    margin: 3px;
+    margin: 6px;
     height: 134px;
     width: 200px;
     overflow-wrap: break-word;

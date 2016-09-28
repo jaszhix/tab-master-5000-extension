@@ -96,8 +96,7 @@ var ContextMenu = React.createClass({
         <div style={{left: s.cursor.page.x, top: s.cursor.page.y}} className="ntg-context-menu">
           {notAppsExt ? <Btn onClick={()=>this.handleRelay('close')} className="ntg-context-btn" fa={p.prefs.mode !== 'tabs' && !s.openTab ? "eraser" : "times"}>{close}</Btn> : null}
           {p.prefs.mode === 'tabs' ? <Btn onClick={()=>this.handleRelay('closeAll')} className="ntg-context-btn-close-all" fa="asterisk">{close+'all from ' + p.context.id.url.split('/')[2]}</Btn> : null}
-          {notAppsExt && this.getStatus('duplicate') ? <Btn onClick={()=>this.handleRelay('closeDupes')} className="ntg-context-btn-close-all" fa="asterisk">{close+'duplicates from '+p.context.id.url.split('/')[2]}</Btn> : null}
-          {notAppsExt && this.getStatus('duplicate') && p.duplicateTabs.length > 1 ? <Btn onClick={()=>this.handleRelay('closeAllDupes')} className="ntg-context-btn-close-all" fa="asterisk">{close+'all duplicates'}</Btn> : null}
+          {notAppsExt && this.getStatus('duplicate') ? <Btn onClick={()=>this.handleRelay('closeAllDupes')} className="ntg-context-btn-close-all" fa="asterisk">{close+'duplicates from '+p.context.id.url.split('/')[2]}</Btn> : null}
           {notAppsExt && p.prefs.mode !== 'sessions' && p.search.length > 0 ? <Btn onClick={()=>this.handleRelay('closeSearched')} className="ntg-context-btn-close-all" fa="asterisk">{close+'all search results'}</Btn> : null }
           {p.context.id.openTab || notBookmarksHistorySessAppsExt ? <Btn onClick={()=>this.handleRelay('pin')} className="ntg-context-btn" fa="map-pin">{p.context.id.pinned ? 'Unpin' : 'Pin'}</Btn> : null}
           {p.chromeVersion >= 46 ? p.context.id.openTab || notBookmarksHistorySessAppsExt ? <Btn onClick={()=>this.handleRelay('mute')} className="ntg-context-btn" fa={p.context.id.mutedInfo.muted ? 'volume-up' : 'volume-off'}>{p.context.id.mutedInfo.muted ? 'Unmute' : 'Mute'}</Btn> : null : null}

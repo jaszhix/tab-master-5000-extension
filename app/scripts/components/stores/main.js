@@ -68,24 +68,24 @@ var reRender = (type, id, s) => {
           if (s.prefs.screenshotChrome) {
             if (targetTab.active) {
               _.defer(()=>screenshotStore.capture(tId, targetTab.windowId, false, type));
-              //_.defer(()=>state.set({update: targetTab}));
+              _.defer(()=>state.set({update: targetTab}));
             }
           } else {
             chrome.tabs.sendMessage(targetTab.id, {type: type});
-            //_.delay(()=>state.set({update: targetTab}),1000);
+            _.delay(()=>state.set({update: targetTab}),1000);
           }
         };
         if (s.prefs.screenshot) {
           if (targetTab.url.indexOf('chrome://') !== -1 && targetTab.url.indexOf('chrome://newtab') === -1) {
             if (targetTab.active) {
               _.defer(()=>screenshotStore.capture(tId, targetTab.windowId, false, type));
-              //_.defer(()=>state.set({update: targetTab}));
+              _.defer(()=>state.set({update: targetTab}));
             }
           } else {
             getImageFromTab();
           }
         } else {
-          //state.set({update: targetTab});
+          state.set({update: targetTab});
         }
       }
     }

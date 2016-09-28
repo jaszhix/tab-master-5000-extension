@@ -78,7 +78,7 @@ export var Btn = React.createClass({
           onClick={p.onClick}
           id={p.id} 
           className={p.className}>
-            <div className="btn-label">{p.fa ? <i className={'fa fa-'+p.fa} style={p.faStyle}></i> : null}{p.fa ? ' ' : null}{p.children}</div>
+            <div className="btn-label">{p.fa || p.icon ? <i className={`${p.fa ? 'fa fa-'+p.fa : ''}${p.icon ? ' icon-'+p.icon : ''}`} style={p.faStyle}></i> : null}{p.fa ? ' ' : null}{p.children}</div>
           </button>
       );
     } else {
@@ -129,6 +129,60 @@ export var Container = React.createClass({
     var p = this.props;
     return (
       <div data-tip={p['data-tip'] ? `<div style="max-width: 350px;">${p['data-tip']}</div>` : null} onContextMenu={p.onContextMenu} onDragEnter={p.onDragEnter} onMouseEnter={p.onMouseEnter} onMouseLeave={p.onMouseLeave} onClick={p.onClick} style={p.style} id={p.id} className={p.fluid ? p.className ? 'container-fluid '+p.className : 'container-fluid' : p.className ? 'container '+p.className : 'container'}>{p.children}</div>
+    );
+  }
+});
+
+export var Panel = React.createClass({
+  getDefaultProps(){
+    return {
+      className: null,
+      style: null,
+      bodyStyle: null,
+      header: null,
+      footerLeft: null,
+      footerRight: null,
+      noBody: false,
+      type: 'flat',
+      content: false
+    };
+  },
+  render:function(){
+    var p = this.props;
+    var defaultStyle = {};
+    if (p.content) {
+      _.assignIn(defaultStyle, {
+        boxShadow: p.type === 'default' ? '0 1px 3px rgba(0, 0, 0, 0), 0 1px 2px rgba(0, 0, 0, 0)' : 'initial'
+      });
+    }
+    _.assignIn(defaultStyle, _.cloneDeep(p.style));
+    return (
+      <div 
+      className={`panel panel-${p.type}${p.className ? ' '+p.className : ''}`} 
+      style={defaultStyle}
+      onMouseEnter={p.onMouseEnter}
+      onMouseLeave={p.onMouseLeave}>
+        {p.header ?
+        <div className="panel-heading" style={p.headingStyle}>
+          {p.header}
+        </div> : null}
+
+        {!p.noBody ?
+        <div className="panel-body" style={p.bodyStyle}>
+          {p.children}
+        </div> : null}
+        {p.noBody ? p.children : null}
+        {p.footerLeft || p.footerRight ?
+        <div className="panel-footer panel-footer-transparent" style={p.footerStyle}>
+          <div className="heading-elements">
+            {p.footerLeft}
+            {p.footerRight ?
+            <div className="pull-right">
+              {p.footerRight}
+            </div> : null}
+          </div>
+        </div> : null}
+      </div>
     );
   }
 });

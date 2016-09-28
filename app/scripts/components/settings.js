@@ -196,16 +196,6 @@ var Theming = React.createClass({
       right: '16%'
     });
     v('.ntg-settings-pane').css({height: '85%'});
-    if (this.props.modal.state) {
-      if (this.props.prefs.animations) {
-        v('#main').css({
-          transition: '-webkit-filter .2s ease-in',
-          WebkitFilter: 'blur(5px)'
-        });
-      } else {
-        v('body > div.ReactModalPortal > div').css({backgroundColor: themeStore.opacify(this.props.theme.headerBg, 0.21)});
-      }
-    }
   },
   handleSelectTheme(theme){
     console.log('handleSelectTheme: ', theme);

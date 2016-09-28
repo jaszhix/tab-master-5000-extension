@@ -70,12 +70,15 @@ var state = Reflux.createStore({
     if (obj.hasOwnProperty('prefs')) {
       _.merge(this.state, obj);
     } else {
-      _.assignIn(this.state, _.cloneDeep(obj));  
+      _.assignIn(this.state, obj);  
     }
     this.state.lastUpdate = lastUpdate;
     
     console.log('STATE: ', this.state);
     this.trigger(this.state);
+    if (obj.hasOwnProperty(this.state.modeKey)) {
+      this.trigger(this.state);
+    }
   },
   get(){
     return this.state;

@@ -36,11 +36,17 @@ var ModalHandler = React.createClass({
     if (!_.isEqual(nP.modal, this.props.modal) && mount) {
       this.setState({modal: nP.modal});
     }
-    if (nP.settings !== 'theming') {
+    if (nP.settings !== 'theming' && nP.modal.state) {
       if (nP.prefs.animations) {
         style.modal.overlay.backgroundColor = themeStore.opacify(this.props.theme.headerBg, 0.21);
       } else {
         style.modal.overlay.backgroundColor = themeStore.opacify(this.props.theme.headerBg, 0.59);
+      }
+      if (this.props.prefs.animations) {
+        v('#main').css({
+          transition: '-webkit-filter .2s ease-in',
+          WebkitFilter: 'blur(5px)'
+        });
       }
     } else {
       style.modal.overlay.backgroundColor = 'initial';
@@ -61,7 +67,7 @@ var ModalHandler = React.createClass({
       <Modal
         id="modal"
         isOpen={s.modal.state}
-        onRequestClose={()=>state.set({modal: {value: false}})}
+        onRequestClose={()=>state.set({modal: {state: false}})}
         style={style.modal}>
           {s.modal.type === 'settings' ? 
           <Settings 

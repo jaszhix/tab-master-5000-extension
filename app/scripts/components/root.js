@@ -286,6 +286,7 @@ var Root = React.createClass({
   init(p){
     _.delay(()=>state.set({allTabs: tabStore.getAllTabsByWindow()}), 500);
     sessionsStore.load();
+    this.setState({screenshots: screenshotStore.get_ssIndex()});
   },
   prefsChange(e){
     var s = this.state;
@@ -310,8 +311,8 @@ var Root = React.createClass({
   actionsChange(e){
     this.setState({actions: e});
   },
-  screenshotsChange(){
-    this.setState({screenshots: screenshotStore.get_ssIndex()});
+  screenshotsChange(e){
+    this.setState({screenshots: e});
   },
   chromeAppChange(e){
     this.setState({apps: e});
@@ -603,15 +604,15 @@ var Root = React.createClass({
     if (p.s.init) {
       return;
     }
+    console.log('removeSingleItem:', e);
     var tabToUpdate = _.findIndex(p.s.tabs, {id: e});
     if (tabToUpdate > -1) {
       var s = this.state;
       if (p.s.prefs.actions) {
         actionStore.set_action('remove', p.s.tabs[tabToUpdate]);
       }
-      p.s.tabs = _.without(p.s.tabs, p.s.tabs[tabToUpdate]);
+      _.pullAt(p.s.tabs, tabToUpdate);
       p.s.tabs = _.orderBy(_.uniqBy(p.s.tabs, 'id'), ['pinned'], ['desc']);
-      console.log('Single tab to remove:', p.s.tabs[tabToUpdate]);
       if (p.s.prefs.sessionsSync) {
         synchronizeSession(p.s.sessions, p.s.prefs, p.s.tabs);
       }
@@ -696,26 +697,7 @@ var Root = React.createClass({
       }
       
     } else {
-      tabStore.promise().then((Tabs)=>{
-        this.setState({topLoad: true});
-        if (opt === 'cycle') {
-          this.setState({grid: false});
-        }
-        state.set({tabs: Tabs});
-        if (p.s.search.length === 0) {
-          stateUpdate[p.s.modeKey] = e;
-          state.set(stateUpdate);
-        } else {
-          this.searchChange(p.s.search, e);
-        }
-        _.defer(()=>this.setState({topLoad: false}));
-        if (opt === 'cycle') {
-          this.setState({grid: true});
-        }
-        if (p.s.prefs.sessionsSync) {
-          synchronizeSession(p.s.sessions, p.s.prefs, Tabs);
-        }
-      });
+      state.set({tabs: p.s.tabs});
     }
   },
   checkFavicons(p, tab, key, tabs){
@@ -740,11 +722,14 @@ var Root = React.createClass({
     var p = this.props;
     this.setState({topLoad: true});
     // Query current Chrome window for tabs.
+    
     tabStore.promise().then((Tabs)=>{
       var blacklisted = [];
       _.each(Tabs, (tVal, tKey)=>{
+        var urlMatch = tVal.url.match(/^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n]+)/im);
         _.assign(Tabs[tKey], {
-          timeStamp: new Date(Date.now()).getTime()
+          timeStamp: new Date(Date.now()).getTime(),
+          domain: urlMatch ? urlMatch[1] : false
         });
         if (tVal.url === 'chrome://newtab/') {
           blacklisted.push(tKey);
@@ -839,6 +824,7 @@ var Root = React.createClass({
   render: function() {
     var s = this.state;
     var p = this.props;
+    console.log(s.screenshots)
     if (s.theme && p.s.prefs) {
       var newTabs = tabStore.getNewTabs();
       var cursor = utilityStore.get_cursor();
