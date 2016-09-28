@@ -27,11 +27,13 @@ window._trackJs = {
   }
 };
 var trackJs = require('trackjs');
+import v from 'vquery';
+import moment from 'moment';
+v('.startup-p').text(moment().format('h:mm A'));
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Reflux from 'reflux';
 import _ from 'lodash';
-import v from 'vquery';
 import kmp from 'kmp';
 import ReactUtils from 'react-utils';
 import ReactTooltip from './tooltip/tooltip';
@@ -214,6 +216,7 @@ var Root = React.createClass({
   },
   componentDidMount() {
     // Initialize Reflux listeners.
+    themeStore.load(this.props.s.prefs);
     actionStore.clear();
     this.listenTo(themeStore, this.themeChange);
     this.listenTo(bookmarksStore, this.updateTabState);
@@ -291,7 +294,7 @@ var Root = React.createClass({
   prefsChange(e){
     var s = this.state;
     if (s.init) {
-      themeStore.load(e);
+      
       // Init methods called here after prefs are loaded from Chrome storage.
       if (e.mode !== 'tabs') {
         _.defer(()=>utilityStore.handleMode(e.mode));
@@ -325,21 +328,7 @@ var Root = React.createClass({
       s.savedThemes = e.savedThemes;
     }
     if (e.theme) {
-      var rgb = e.theme.settingsBg;
-      var colors = rgb.match(/^rgba\((\d+),\s*(\d+),\s*(\d+),\s*(\d+(\.\d*)?)|(\.\d+)\)$/);
-      
-      console.log('color', colors, e.theme.textFieldsText);
-      var r = colors[1];
-      var g = colors[2];
-      var b = colors[3];
-      var brightness = colors[4];
-
-      var ir = Math.floor((255-r)*brightness);
-      var ig = Math.floor((255-g)*brightness);
-      var ib = Math.floor((255-b)*brightness);
-
-      var sessionFieldColor = 'rgb('+ir+','+ig+','+ib+')';
-      console.log('color', sessionFieldColor);
+      var sessionFieldColor = themeStore.balance(e.theme.settingsBg);
       v('style').n.innerHTML += `
       a, a:focus, a:hover {
         color: ${themeStore.opacify(e.theme.bodyText, 0.9)};
@@ -789,6 +778,7 @@ var Root = React.createClass({
       v('#main').css({cursor: 'default'});
       // Querying is complete, allow the component to render.
       if (opt === 'init' || opt === 'tile') {
+        v('section').remove();
         this.setState({render: true});
         if (opt === 'init') {
           utilityStore.initTrackJs(p.s.prefs, s.savedThemes);
@@ -955,7 +945,7 @@ var Root = React.createClass({
         </div>
       );
     } else {
-      return <Loading sessions={p.s.sessions} />;
+      return null;
     }
   }
 });
