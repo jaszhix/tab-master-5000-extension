@@ -11,6 +11,7 @@ import Settings from './settings';
 import state from './stores/state';
 import themeStore from './stores/theme';
 
+import {ModalOverlay, Tabs} from './bootstrap';
 import Alert from './alert';
 
 var mount = false;
@@ -33,23 +34,14 @@ var ModalHandler = React.createClass({
     mount = true;
   },
   componentWillReceiveProps(nP){
-    if (!_.isEqual(nP.modal, this.props.modal) && mount) {
+    if (!_.isEqual(nP.modal, this.props.modal) && mount || nP.settings !== this.props.settings) {
       this.setState({modal: nP.modal});
-    }
-    if (nP.settings !== 'theming' && nP.modal.state) {
-      if (nP.prefs.animations) {
-        style.modal.overlay.backgroundColor = themeStore.opacify(this.props.theme.headerBg, 0.21);
-      } else {
-        style.modal.overlay.backgroundColor = themeStore.opacify(this.props.theme.headerBg, 0.59);
-      }
-      if (this.props.prefs.animations) {
-        v('#main').css({
-          transition: '-webkit-filter .2s ease-in',
-          WebkitFilter: 'blur(5px)'
-        });
-      }
-    } else {
-      style.modal.overlay.backgroundColor = 'initial';
+        if (nP.prefs.animations) {
+          v('.tile-container').css({
+            WebkitFilter: `blur(${nP.modal.state && nP.settings !== 'theming' ? '5' : '0'}px)`,
+            WebkitTransition: '-webkit-filter 0.2s'
+          });
+        }
     }
   },
   componentWillUnmount(){
@@ -63,13 +55,40 @@ var ModalHandler = React.createClass({
       border: `1px solid ${p.theme.textFieldsPlaceholderText}`,
       WebkitBoxShadow: `2px 2px 15px -2px ${p.theme.tileShadow}`
     });
-    return (
-      <Modal
-        id="modal"
-        isOpen={s.modal.state}
-        onRequestClose={()=>state.set({modal: {state: false}})}
-        style={style.modal}>
-          {s.modal.type === 'settings' ? 
+    var tabOptions = [{label: 'Sessions'}, {label: 'Preferences'}, {label: 'Theming'}, {label: 'About'}];
+    if (p.modal.state && p.modal.type === 'settings') {
+      return (
+        <ModalOverlay
+        clickOutside={p.settings !== 'theming'}
+        onClose={()=>state.set({modal: {state: false}})}
+        size="full"
+        header="Settings"
+        closeBtnStyle={{color: p.theme.bodyText}}
+        backdropStyle={{
+          zIndex: 11, 
+          backgroundColor: p.settings === 'theming' ? 'rgba(255, 255, 255, 0)' : '#000', 
+          WebkitTransition: 'background-color 0.2s'
+        }}
+        overlayStyle={{top: p.settings === 'theming' ? '55%' : '0'}}
+        dialogStyle={{
+          zIndex: '50'
+        }}
+        headerStyle={{backgroundColor: p.theme.headerBg}}
+        bodyStyle={{
+          backgroundColor: p.theme.settingsBg,
+          maxHeight: p.settings === 'theming' ? '300px' : `${window.innerHeight - 200}px`,
+        }}
+        footerStyle={{backgroundColor: p.theme.settingsBg, paddingTop: '8px'}}
+        headerComponent={
+          <Tabs
+          initActiveOption={_.findIndex(tabOptions, (opt)=>p.settings.indexOf(opt.label.toLowerCase()) !== -1)}
+          style={{position: 'relative', top: '16px'}}
+          options={tabOptions} 
+          onClick={(setting)=>state.set({settings: setting.label.toLowerCase()})}
+          borderTopColor={p.theme.darkBtnText}
+          borderLeftRightColor={p.theme.headerBg} />
+        }
+        footerComponent={p.modal.footer}>
           <Settings 
           sessions={p.sessions} 
           modal={s.modal} 
@@ -84,16 +103,19 @@ var ModalHandler = React.createClass({
           wallpaper={p.wallpaper}
           wallpapers={p.wallpapers}
           settings={p.settings}
-          height={p.height} /> : null}
-          {p.prefs.tooltip ?
+          height={p.height} />
           <ReactTooltip 
           effect="solid" 
           place="top"
           multiline={true}
-          html={true} /> : null}
+          html={true} />
           <Alert enabled={p.prefs.alerts} />
-      </Modal>
-    );
+        </ModalOverlay>
+      );
+    } else {
+      return null;
+    }
+    
   }
 });
 

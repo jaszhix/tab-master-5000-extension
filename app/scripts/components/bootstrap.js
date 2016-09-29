@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Reflux from 'reflux';
 import _ from 'lodash';
+import onClickOutside from 'react-onclickoutside';
 import ReactTooltip from './tooltip/tooltip';
 import themeStore from './stores/theme';
 
@@ -168,12 +169,12 @@ export var Panel = React.createClass({
         </div> : null}
 
         {!p.noBody ?
-        <div className="panel-body" style={p.bodyStyle}>
+        <div className="panel-body" style={p.bodyStyle} onClick={p.onBodyClick}>
           {p.children}
         </div> : null}
         {p.noBody ? p.children : null}
         {p.footerLeft || p.footerRight ?
-        <div className="panel-footer panel-footer-transparent" style={p.footerStyle}>
+        <div className="panel-footer panel-footer-transparent" style={p.footerStyle} onClick={p.onFooterClick}>
           <div className="heading-elements">
             {p.footerLeft}
             {p.footerRight ?
@@ -181,6 +182,154 @@ export var Panel = React.createClass({
               {p.footerRight}
             </div> : null}
           </div>
+        </div> : null}
+      </div>
+    );
+  }
+});
+
+export var ModalOverlay = React.createClass({
+  getDefaultProps(){
+    return {
+      onClose: ()=>{return;},
+      header: '',
+      size: null,
+      footerComponent: null,
+      clickOutside: false,
+      bodyStyle: {}
+    };
+  },
+  getInitialState(){
+    return {
+      fadeIn: false
+    };
+  },
+  componentDidMount(){
+    _.defer(()=>{
+      this.setState({fadeIn: true});
+    });
+  },
+  componentWillUnmount(){
+    this.setState({fadeIn: false});
+  },
+  handleCloseClick(){
+    this.setState({fadeIn: false});
+    _.defer(()=>this.props.onClose());
+  },
+  render(){
+    var s = this.state;
+    var p = this.props;
+    var overlayStyle = {display: 'block', paddingRight: '15px', WebkitTransition: 'top 0.2s'};
+    overlayStyle = _.assignIn(overlayStyle, p.overlayStyle);
+    return (
+      <div className={`modal fade${s.fadeIn ? ' in' : ''}`} style={overlayStyle}>
+        <ModalDefault 
+        onClose={this.handleCloseClick} 
+        header={p.header}
+        size={p.size}
+        heightOffset={p.heightOffset}
+        closeBtnStyle={p.closeBtnStyle}
+        headerComponent={p.headerComponent}
+        footerComponent={p.footerComponent}
+        clickOutside={p.clickOutside}
+        headerStyle={p.headerStyle}
+        bodyStyle={p.bodyStyle}
+        dialogStyle={p.dialogStyle}
+        footerStyle={p.footerStyle}>
+        {p.children}
+        </ModalDefault>
+        <div className={`modal-backdrop fade${s.fadeIn ? ' in' : ''}`} style={p.backdropStyle} />
+      </div>
+    );
+  }
+});
+
+export var ModalDefault = onClickOutside(React.createClass({
+  handleClickOutside(){
+    if (this.props.clickOutside) {
+      this.props.onClose();
+    }
+  },
+  render(){
+    var p = this.props;
+    var heightOffset = p.heightOffset ? p.heightOffset : p.footerComponent ? 200 : 140;
+    var bodyStyle = {maxHeight: `${window.innerHeight - heightOffset}px`, overflowY: 'auto', WebkitTransition: 'max-height 0.2s'};
+    bodyStyle = _.assignIn(bodyStyle, _.cloneDeep(p.bodyStyle));
+    var headerStyle = {paddingTop: '0px'};
+    headerStyle = _.assignIn(headerStyle, _.cloneDeep(p.headerStyle));
+    return (
+      <div className={`modal-dialog${p.size ? ' modal-'+p.size : ''}`} style={p.dialogStyle}>
+        <div className="modal-content">
+          <div className="modal-header bg-blue" style={headerStyle}>
+            <button type="button" className="close icon-cross2" onClick={p.onClose} style={p.closeBtnStyle}/>
+            <div className="col-xs-10">
+              <div className="media-left media-middle" style={{position: 'relative', top: '8px'}}>
+                {p.header}
+              </div>
+              <div className="media-right">
+                {p.headerComponent}
+              </div>
+            </div>
+          </div>
+
+          <div className="modal-body" style={bodyStyle}>
+            {p.children}
+          </div>
+
+          {p.footerComponent ?
+          <div className="modal-footer" style={p.footerStyle}>
+            {p.footerComponent}
+          </div> : null}
+        </div>
+      </div>
+    );
+  }
+}));
+
+export var Tabs = React.createClass({
+  getDefaultProps(){
+    return {
+      options: []
+    };
+  },
+  getInitialState(){
+    return {
+      active: 0
+    };
+  },
+  componentDidMount(){
+    this.setState({active: this.props.initActiveOption});
+  },
+  handleTabClick(option, i){
+    this.props.onClick(option);
+    this.setState({active: i});
+  },
+  render(){
+    var p = this.props;
+    var s = this.state;
+    return (
+      <div className="tabbable" style={p.style}>
+        <ul className="nav nav-tabs nav-tabs-highlight nav-justified">
+          {p.options.map((option, i)=>{
+            var tabStyle = {
+              cursor: 'pointer',
+              borderTopColor: s.active === i ? p.borderTopColor : 'rgba(255, 255, 255, 0)',
+              borderBottomColor: s.active === i ? 'rgba(255, 255, 255, 0)' : p.borderTopColor,
+              borderLeftColor: s.active === i ? p.borderTopColor : p.borderLeftRightColor,
+              borderRightColor: s.active === i ? p.borderTopColor : p.borderLeftRightColor
+            };
+            tabStyle = _.assignIn(tabStyle, _.cloneDeep(p.tabStyle));
+            return (
+              <li key={i} className={s.active === i ? 'active' : ''}>
+                <a style={tabStyle} data-toggle="tab" className="legitRipple" onClick={()=>this.handleTabClick(option, i)}>{option.label}</a>
+              </li>
+            );
+          })}
+        </ul>
+
+        {p.children ? 
+        <div className="tab-content">
+          {p.children}
         </div> : null}
       </div>
     );

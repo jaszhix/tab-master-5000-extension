@@ -37,3 +37,9 @@ Tab Master 5K replaces your New Tab page with a full-featured tabs, history, boo
 - Start the Webpack dev server with ```node server.js``` for the main app JS.
 - Load the ```app``` directory as an unpackaged extension.
 - To build for production, run ```gulp dist```.
+
+<div>
+    <a href="">
+        <img src="https://trackjs.com/assets/external/badge.gif" height="40px" alt="Protected by TrackJS JavaScript Error Monitoring" style="border-radius:2px;">
+    </a>
+</div>

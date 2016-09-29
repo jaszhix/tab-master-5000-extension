@@ -36,7 +36,12 @@ var state = Reflux.createStore({
       disableSidebarClickOutside: false,
       applyTabOrder: false,
       settings: 'sessions',
-      modal: {state: false, type: null, opt: null},
+      modal: {
+        state: false, 
+        type: null, 
+        opt: null,
+        footer: null
+      },
       folder: null,
       // Themes
       theme: null,

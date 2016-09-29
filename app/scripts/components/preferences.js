@@ -132,6 +132,17 @@ var Preferences = React.createClass({
   componentDidMount(){
     this.listenTo(screenshotStore, this.getBytesInUse);
     this.getBytesInUse();
+    var p = this.props;
+    p.modal.footer = (
+      <div>
+        <Btn onClick={()=>this.handleSlide(134, 'tabSizeHeight')} className="ntg-setting-btn" fa="undo">Reset Tile Size</Btn>
+        {p.prefs.screenshot ? <Btn onClick={()=>screenshotStore.clear()} className="ntg-setting-btn" fa="trash">Clear Screenshot Cache</Btn> : null}
+      </div>
+    );
+    state.set({modal: p.modal});
+  },
+  componentWillUnmount(){
+    state.set({modal: {footer: null}});
   },
   getBytesInUse(){
     if (this.props.prefs.screenshot) {
@@ -167,7 +178,6 @@ var Preferences = React.createClass({
       <div className="preferences">
         <Row>
           <Col size="6">
-            <Btn onClick={()=>this.handleSlide(134, 'tabSizeHeight')} style={p.settingsMax ? {top: '95%'} : null} className="ntg-setting-btn" fa="undo">Reset Tile Size</Btn>
             <Toggle onMouseEnter={()=>this.handleToggle('context')} 
                     onClick={()=>this.handleClick('context')} 
                     on={p.prefs.context} label="Enable context menu"
@@ -230,7 +240,6 @@ var Preferences = React.createClass({
                           hoverBg={p.theme.settingsItemHover}
                           data-tip="This setting enables full-size tab screenshots to fill the background of the New Tab page, while you are hovering over a tab with a screenshot. Screenshots are blurred and blended into the background.">
                   </Toggle>
-                  <Btn onClick={()=>screenshotStore.clear()} style={p.settingsMax ? {top: '95%', marginLeft: '125px'} : {marginLeft: '125px'}} className="ntg-setting-btn" fa="trash">Clear Screenshot Cache</Btn>
                 </div>
               : null}
             </Toggle>

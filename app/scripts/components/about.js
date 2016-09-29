@@ -1,11 +1,13 @@
 import React from 'react';
 
+import state from './stores/state';
 import {utilityStore} from './stores/main';
 
 import {Btn, Col, Row} from './bootstrap';
 
 import changelog from 'html!markdown!../../../changelog.md';
 import EFFBadge from '../../images/eff.png';
+import TrackJSBadge from '../../images/trackjs.gif';
 
 var Donate = React.createClass({
   render:function(){
@@ -88,7 +90,8 @@ var ReleaseNotes = React.createClass({
       <div>
         
         <img className="ntg-about" src="../../images/icon-128.png"/>
-        <img style={{position: 'absolute', top: '0px', right:'5%', height: '120px', opacity: '0.7'}} src={EFFBadge} />
+        <a href="https://trackjs.com" target="_blank"><img style={{borderRadius: '2px', position: 'absolute', top: '0px', right:'5%', opacity: '0.7'}} src={TrackJSBadge} height="40px" alt="Protected by TrackJS JavaScript Error Monitoring" /></a>
+        <img style={{position: 'absolute', top: '50px', right:'8%', height: '120px', opacity: '0.7'}} src={EFFBadge} />
         <div className="ntg-about">
           <h3 className="ntg-about">Tab Master 5000</h3>
         </div>
@@ -107,6 +110,22 @@ var About = React.createClass({
     return {
       tab: 'release'
     };
+  },
+  componentWillMount(){
+    var p = this.props;
+    p.modal.footer = (
+      <div>
+        <Btn onClick={()=>utilityStore.createTab('https://github.com/jaszhix/tab-master-5000-chrome-extension')} className="ntg-setting-btn" fa="github-square">Github</Btn>
+        <Btn onClick={()=>utilityStore.createTab('https://chrome.google.com/webstore/detail/tab-master-5000-tab-swiss/mippmhcfjhliihkkdobllhpdnmmciaim')} className="ntg-setting-btn" fa="chrome">Chrome Web Store</Btn>
+        <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" src="https://i.creativecommons.org/l/by/4.0/88x31.png" className="pull-right" /></a>
+      </div>
+    );
+    state.set({modal: p.modal});
+  },
+  componentWillUnmount(){
+    var p = this.props;
+    p.modal.footer = null;
+    state.set({modal: p.modal});
   },
   render: function() {
     var p = this.props;
@@ -128,9 +147,6 @@ var About = React.createClass({
             </ul>
           </div>
         </Row>
-        <Btn onClick={()=>utilityStore.createTab('https://github.com/jaszhix/tab-master-5000-chrome-extension')} style={p.settingsMax ? {top: '95%'} : null} className="ntg-setting-btn" fa="github-square">Github</Btn>
-        <Btn onClick={()=>utilityStore.createTab('https://chrome.google.com/webstore/detail/tab-master-5000-tab-swiss/mippmhcfjhliihkkdobllhpdnmmciaim')} style={p.settingsMax ? {top: '95%', marginLeft: '87px'} : {marginLeft: '87px'}} className="ntg-setting-btn" fa="chrome">Chrome Web Store</Btn>
-        <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style={p.settingsMax ? {top: '95%', borderWidth:0} : {borderWidth:0}} src="https://i.creativecommons.org/l/by/4.0/88x31.png" className="ntg-cc" /></a>
         <Col size="12" className="about">
           {s.tab === 'release' ? <ReleaseNotes settingsMax={p.settingsMax}/> : null}
           {s.tab === 'attribution' ? <Attribution /> : null}

@@ -6,7 +6,7 @@ import v from 'vquery';
 import moment from 'moment';
 
 import Draggable from 'react-draggable';
-import OnClickOutside from 'react-onclickoutside';
+import onClickOutside from 'react-onclickoutside';
 import ReactTooltip from './tooltip/tooltip';
 import state from './stores/state';
 import {msgStore, searchStore, utilityStore, dragStore, draggedStore, historyStore, bookmarksStore} from './stores/main';
@@ -613,7 +613,8 @@ var Tile = React.createClass({
         backgroundImage: `url('${s.screenshot ? s.screenshot : p.tab.favIconUrl}')`, 
         backgroundBlendMode: s.screenshot ? 'multiply, soft-light' : 'luminosity',
         backgroundPosition: 'center',
-        backgroundSize: '100%',
+        backgroundSize: 'contain',
+        backgroundRepeat: s.screenshot ? 'initial' : 'no-repeat',
         overflow: 'hidden',
         zIndex: '50'
       }}
@@ -662,8 +663,7 @@ var Tile = React.createClass({
   }
 });
 
-var Sidebar = React.createClass({
-  mixins: [OnClickOutside],
+var Sidebar = onClickOutside(React.createClass({
   componentDidUpdate(){
     ReactTooltip.rebuild();
   },
@@ -719,7 +719,7 @@ var Sidebar = React.createClass({
       </div>
     );
   }
-});
+}));
 
 // TileGrid is modified from react-sort-table for this extension - https://github.com/happy-charlie-777/react-sort-table 
 var TileGrid = React.createClass({

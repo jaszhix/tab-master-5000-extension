@@ -29,6 +29,7 @@ window._trackJs = {
 var trackJs = require('trackjs');
 import v from 'vquery';
 import moment from 'moment';
+import tc from 'tinycolor2';
 v('.startup-p').text(moment().format('h:mm A'));
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -162,7 +163,7 @@ var Search = React.createClass({
   },
   render: function() {
     var p = this.props;
-    const headerStyle = p.s.prefs && p.s.prefs.screenshot && p.s.prefs.screenshotBg ? {backgroundColor: this.state.theme.headerBg, position: 'fixed', top: '0px', width: '100%', zIndex: '2', boxShadow: `${p.theme.tileShadow} 1px 1px 3px -1px`} : {backgroundColor: this.state.theme.headerBg, position: 'fixed', top: '0px', width: '100%', zIndex: '2', boxShadow: `${p.theme.tileShadow} 1px 1px 3px -1px`};
+    const headerStyle = p.s.prefs && p.s.prefs.screenshot && p.s.prefs.screenshotBg ? {backgroundColor: this.state.theme.headerBg, position: 'fixed', top: '0px', width: '100%', zIndex: '50', boxShadow: `${p.theme.tileShadow} 1px 1px 3px -1px`} : {backgroundColor: this.state.theme.headerBg, position: 'fixed', top: '0px', width: '100%', zIndex: '50', boxShadow: `${p.theme.tileShadow} 1px 1px 3px -1px`};
 
     return (
       <Container fluid={true} style={headerStyle} className="ntg-form">
@@ -358,9 +359,9 @@ var Root = React.createClass({
         background-color: ${e.theme.settingsBg};
       }
       .nav-tabs>li.active>a, .nav-tabs>li.active>a:focus {
-        color: ${e.theme.darkBtnText};
-        background-color: ${e.theme.darkBtnBg};
-        border: 1px solid ${e.theme.tileShadow};
+        color: ${tc.isReadable(tc(e.theme.darkBtnText).toHexString(), tc(e.theme.settingsBg).toHexString(), {}) ? e.theme.darkBtnText : e.theme.lightBtnText};
+        background-color: ${e.theme.settingsBg};
+        
       }
       .nav-tabs>li.active>a:hover {
         color: ${e.theme.darkBtnText};
@@ -505,18 +506,18 @@ var Root = React.createClass({
     this.setState(s);
   },
   modalChange(e){
-    if (this.props.s.prefs.animations) {
+    /*if (this.props.s.prefs.animations) {
       if (e.state) {
         v('#main').css({
-          WebkitTransition: '-webkit-filter .0.5s ease-in',
-          WebkitFilter: 'blur(5px)'
+          //WebkitTransition: '-webkit-filter .0.5s ease-in',
+          //WebkitFilter: 'blur(5px)'
         });
       } else {
         v('#main').css({WebkitFilter: 'none'});
       }
     } else {
       v('#main').css({WebkitFilter: 'none'});
-    }
+    }*/
   },
   searchChange(e, update) {
     var search = e;

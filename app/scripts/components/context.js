@@ -1,12 +1,12 @@
 import React from 'react';
 import _ from 'lodash';
+import onClickOutside from 'react-onclickoutside';
 
 import {Btn} from './bootstrap';
 import state from './stores/state';
 import {actionStore} from './stores/main';
 
-var ContextMenu = React.createClass({
-  mixins: [require('react-onclickoutside')],
+var ContextMenu = onClickOutside(React.createClass({
   getInitialState(){
     var p = this.props;
     return {
@@ -114,6 +114,6 @@ var ContextMenu = React.createClass({
       </div>
     );
   }
-});
+}));
 
 export default ContextMenu;
