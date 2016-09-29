@@ -249,9 +249,6 @@ var Root = React.createClass({
     if (!_.isEqual(nP.s.search, p.s.search)) {
       this.searchChange(nP.s.search);
     }
-    if (!_.isEqual(nP.s.modal, p.s.modal)) {
-      this.modalChange(nP.s.modal);
-    }
     if (nP.s.folder !== p.s.folder) {
       this.updateTabState(nP.s.folder, 'folder');
     }
@@ -505,20 +502,6 @@ var Root = React.createClass({
     }
     this.setState(s);
   },
-  modalChange(e){
-    /*if (this.props.s.prefs.animations) {
-      if (e.state) {
-        v('#main').css({
-          //WebkitTransition: '-webkit-filter .0.5s ease-in',
-          //WebkitFilter: 'blur(5px)'
-        });
-      } else {
-        v('#main').css({WebkitFilter: 'none'});
-      }
-    } else {
-      v('#main').css({WebkitFilter: 'none'});
-    }*/
-  },
   searchChange(e, update) {
     var search = e;
     var p = this.props;
@@ -622,14 +605,7 @@ var Root = React.createClass({
     var tabToUpdate = _.findIndex(p.s.tabs, {id: e.id});
 
     if (tabToUpdate > -1) {
-      var s = this.state;
-      if (p.s.updateType === 'move') {
-        console.log('Move indexes: ', tabToUpdate, e.index);
-        p.s.tabs = v(p.s.tabs).move(tabToUpdate, e.index).ns;
-        orderBy.push('index');
-      } else {
-        p.s.tabs[tabToUpdate] = e;
-      }
+      p.s.tabs[tabToUpdate] = e;
       if (e.pinned) {
         p.s.tabs = _.orderBy(_.uniqBy(p.s.tabs, 'id'), ['pinned'], ['desc']);
       } else {
@@ -664,9 +640,7 @@ var Root = React.createClass({
       if (p.s.prefs.sessionsSync) {
         synchronizeSession(p.s.sessions, p.s.prefs, p.s.tabs);
       }
-      if (tabToUpdate === e.index) {
-        state.set({tabs: p.s.tabs});
-      }
+      state.set({tabs: p.s.tabs});
     }
   },
   updateTabState(e, opt){
@@ -721,7 +695,7 @@ var Root = React.createClass({
           timeStamp: new Date(Date.now()).getTime(),
           domain: urlMatch ? urlMatch[1] : false
         });
-        if (tVal.url === 'chrome://newtab/') {
+        if (tVal.url.indexOf('chrome://newtab/') !== -1) {
           blacklisted.push(tKey);
         }
         Tabs = this.checkFavicons(p, tVal, tKey, Tabs);

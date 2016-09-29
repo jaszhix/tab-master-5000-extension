@@ -28,7 +28,6 @@ var Tile = React.createClass({
       xHover: false,
       pHover: false,
       mHover: false,
-      dHover: false,
       render: true,
       close: false,
       pinning: false,
@@ -253,12 +252,6 @@ var Tile = React.createClass({
   handleTabMuteHoverOut(){
     this.setState({mHover: false});
   },
-  handleDragHoverIn(){
-    this.setState({dHover: true});
-  },
-  handleDragHoverOut(){
-    this.setState({dHover: false});
-  },
   handleCloseTab(id, search) {
     var p = this.props;
     var s = this.state;
@@ -309,7 +302,6 @@ var Tile = React.createClass({
       }
     } else {
       close();
-      //tabStore.keepNewTabOpen();
     }
     _.delay(()=>this.setState({render: false}), 200);
   },
@@ -466,69 +458,6 @@ var Tile = React.createClass({
       }
     }
   },
-  handleStart(e, ui) {
-    var s = this.state;
-    if (!s.drag) {
-      var p = this.props;
-      // Temporarily move tile element to the parent div, so the drag position stays in sync with the cursor.
-      var clone = v(ReactDOM.findDOMNode(this.refs.tileMain)).clone().n;
-      v(clone).allChildren().removeAttr('data-reactid');
-      clone.removeAttribute('id');
-      clone.classList.add('tileClone');
-      console.log('clone: ',clone);
-      var original = v('#tileMain-'+s.i).n;
-      v('#grid').insertBefore(clone, original);
-      v('#main').append(original);
-      console.log('Event: ', e, ui);
-      console.log('Start Position: ', ui.position);
-      // tileDrag will store the state outside of the component's lifecycle.
-      tileDrag = true;
-      this.setState({drag: tileDrag});
-      draggedStore.set_dragged(this.props.tab);
-      this.getPos(p.stores.cursor.page.x, p.stores.cursor.page.y, ui);
-    }
-  },
-  handleDrag(e, ui) {
-    var p = this.props;
-    this.getPos(p.stores.cursor.page.x, p.stores.cursor.page.y, ui);
-  },
-  handleStop(e, ui) {
-    var s = this.state;
-    var p = this.props;
-    v('#tileMain-'+s.i).hide();
-    // Move the tile element back to #grid where it belongs.
-    v('#grid').append(v('#tileMain-'+s.i).n);
-    console.log('Event: ', e, ui);
-    console.log('Stop Position: ', ui.position);
-    tileDrag = false;
-    this.setState({drag: tileDrag});
-    this.getPos(p.stores.cursor.page.x, p.stores.cursor.page.y, ui);
-    var dragged = draggedStore.get_dragged();
-    var draggedOver = dragStore.get_tabIndex();
-    chrome.tabs.move(dragged.id, {index: draggedOver.index}, (t)=>{
-      console.log('moved: ',t);
-      //_.defer(()=>state.set({move: t}));
-      state.set({reQuery: {state: true, type: 'cycle', id: dragged.id}});
-      v('.tileClone').remove();
-    });
-  },
-  getPos(left, top, ui){
-    var p = this.props;
-    var oLeft = left - ui.x - v('#tileMain-'+p.i).width() / 8;
-    var oTop = top - ui.y + p.prefs.tabSizeHeight / 12;
-    dragStore.set_drag(oLeft, oTop);
-  },
-  currentlyDraggedOver(tab){
-    if (tileDrag) {
-      var drag = dragStore.get_drag();
-      var dragged = draggedStore.get_dragged();
-      if (drag && dragged) {
-        console.log('dragged id: ',dragged.id);
-        dragStore.set_tabIndex(tab);
-      }
-      console.log('current dragged over: ', tab.title);
-    }
-  },
   render: function() {
     var s = this.state;
     var p = this.props;
@@ -548,7 +477,11 @@ var Tile = React.createClass({
     var appHomepage = p.prefs.tabSizeHeight >= 170 ? p.prefs.tabSizeHeight + 5 : 170;
     var appOfflineEnabled = p.prefs.tabSizeHeight >= 170 ? p.prefs.tabSizeHeight - 10 : 158;
     return (
-      <Panel 
+      <Panel
+      draggable="true"
+      onDragEnd={p.onDragEnd}
+      onDragStart={p.onDragStart}
+      onDragOver={p.onDragOver}
       footerLeft={
         <div>
             <div className="media-left" style={{paddingRight: '6px'}}>
@@ -619,7 +552,7 @@ var Tile = React.createClass({
         zIndex: '50'
       }}
       bodyStyle={{
-        height: s.hover ? `${p.prefs.tabSizeHeight - 116}px` : `${p.prefs.tabSizeHeight - 40}px`, 
+        height: s.hover ? `${p.bodyHeightOnHover}px` : `${p.prefs.tabSizeHeight - 40}px`, 
         width: p.prefs.tabSizeHeight+80,
         padding: s.hover ? '0px' : 'initial',
         backgroundImage: !s.screenshot ? `url('${p.tab.favIconUrl}')` : 'initial', 
@@ -639,9 +572,9 @@ var Tile = React.createClass({
         width: p.prefs.tabSizeHeight+80, 
         position: 'absolute', 
         padding: `${s.hover ? 4 : 0}px 6px`, 
-        minHeight: s.hover ? `${p.prefs.tabSizeHeight - 18}px` : '40px', 
-        height: s.hover ? `${p.prefs.tabSizeHeight - 18}px` : '40px',
-        maxHeight: s.hover ? `${p.prefs.tabSizeHeight - 18}px` : '40px',
+        minHeight: s.hover ? `${p.footerHeightOnHover}px` : '40px', 
+        height: s.hover ? `${p.footerHeightOnHover}px` : '40px',
+        maxHeight: s.hover ? `${p.footerHeightOnHover}px` : '40px',
         WebkitTransition: p.prefs.animations ? 'padding 0.1s, height 0.1s, min-height 0.1s, max-height 0.1s, background-color 0.2s' : 'initial',
         WebkitTransitionTimingFunction: 'ease-in-out',
         overflow: 'hidden', 
@@ -657,7 +590,17 @@ var Tile = React.createClass({
       }}
       onMouseEnter={()=>this.setState({hover: true})}
       onMouseLeave={()=>this.setState({hover: false})}>
-
+        {!p.tab.favIconUrl || p.tab.domain === 'chrome' ?
+        <div style={{
+          color: p.theme.tileText,
+          fontSize: '70px',
+          textAlign: 'center',
+          opacity: s.hover ? '0' : '1',
+          zIndex: s.hover ? '-1' : '1'
+        }}>
+          {p.tab.title[0]}
+        </div>
+        : null}
       </Panel>
     );
   }
@@ -802,9 +745,55 @@ var TileGrid = React.createClass({
     stateUpdate[p.s.modeKey] = result;
     state.set(stateUpdate);
   },
+  dragStart: function(e, i) {
+    this.dragged = {el: e.currentTarget, i: i};
+    e.dataTransfer.effectAllowed = 'move';
+    this.placeholder = v(this.dragged.el).clone().n;
+    v(this.placeholder).allChildren().removeAttr('data-reactid');
+    this.placeholder.removeAttribute('id');
+    this.placeholder.classList.add('tileClone');
+  },
+  dragEnd: function(e) {
+    var p = this.props;
+    var start = this.dragged.i;
+    var end = this.over.i;
+    if (start === end) {
+      this.dragged.el.style.display = 'block';
+      _.defer(()=>this.dragged.el.parentNode.removeChild(this.placeholder));
+      return;
+    }
+    if (start < end) {
+      end--;
+    }
+    chrome.tabs.move(p.s.tabs[start].id, {index: p.s.tabs[end].index}, (t)=>{
+      state.set({reQuery: {state: true, type: 'cycle', id: p.s.tabs[end - 1].id}});
+      _.defer(()=>this.dragged.el.parentNode.removeChild(this.placeholder));
+    });
+  },
+  dragOver: function(e, i) {
+    var p = this.props;
+    e.preventDefault();
+    if (p.s.tabs[i].pinned !== p.s.tabs[this.dragged.i].pinned) {
+      return;
+    }
+    this.dragged.el.style.display = 'none';
+    this.over = {el: e.target, i: i};
+    var relY = e.clientY - this.over.el.offsetTop;
+    var height = this.over.el.offsetHeight / 2;
+    var parent = e.target.parentNode;
+    if (relY > height) {
+      this.nodePlacement = 'after';
+      try {
+        parent.parentNode.insertBefore(this.placeholder, e.target.nextElementSibling.parentNode);
+      } catch (e) {}
+    } else if (relY < height) {
+      this.nodePlacement = 'before';
+      parent.parentNode.insertBefore(this.placeholder, e.target.parentNode);
+    }
+    
+  },
   render: function() {
     var p = this.props;
-    var s = this.state;
     var ssBg = p.prefs && p.prefs.screenshot && p.prefs.screenshotBg;
     var iconCollapse = p.width <= 1135;
     const faStyle = {
@@ -834,7 +823,8 @@ var TileGrid = React.createClass({
         </div>
       );
     });
-    const tileDivStyle = {width: '100%'};
+    var bodyHeightOnHover = p.s.prefs.tabSizeHeight - _.round(_.round(p.s.prefs.tabSizeHeight / 7.44) * 6.449);
+    var footerHeightOnHover = p.s.prefs.tabSizeHeight - _.round(p.s.prefs.tabSizeHeight / 7.44);
     return (
       <div className="tile-body">
         {p.sidebar ? 
@@ -856,6 +846,9 @@ var TileGrid = React.createClass({
               if (i <= p.s.tileLimit) {
                 return (
                   <Tile
+                  onDragEnd={this.dragEnd}
+                  onDragStart={(e)=>this.dragStart(e, i)}
+                  onDragOver={(e)=>this.dragOver(e, i)}
                   key={i}
                   prefs={p.s.prefs}
                   bookmarks={p.s.bookmarks}
@@ -877,7 +870,9 @@ var TileGrid = React.createClass({
                   relay={p.s.relay}
                   search={p.s.search}
                   sort={p.s.sort}
-                  chromeVersion={p.s.chromeVersion} />
+                  chromeVersion={p.s.chromeVersion}
+                  bodyHeightOnHover={bodyHeightOnHover}
+                  footerHeightOnHover={footerHeightOnHover} />
                 );
               }
             })

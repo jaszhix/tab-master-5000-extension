@@ -158,7 +158,11 @@ export var Panel = React.createClass({
     }
     _.assignIn(defaultStyle, _.cloneDeep(p.style));
     return (
-      <div 
+      <div
+      draggable={p.draggable}
+      onDragEnd={p.onDragEnd}
+      onDragStart={p.onDragStart}
+      onDragOver={p.onDragOver}
       className={`panel panel-${p.type}${p.className ? ' '+p.className : ''}`} 
       style={defaultStyle}
       onMouseEnter={p.onMouseEnter}
