@@ -23,7 +23,7 @@ var state = Reflux.createStore({
       width: window.innerWidth,
       height: window.innerHeight,
       collapse: window.innerWidth >= 1565,
-      tileLimit: 50,
+      tileLimit: 100,
       context: {
         value: null,
         id: null,
@@ -66,6 +66,7 @@ var state = Reflux.createStore({
       apps: [],
       extensions: null,
       favicons: [],
+      screenshots: [],
       sort: 'index',
       direction: 'asc'
     };

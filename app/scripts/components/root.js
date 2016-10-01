@@ -217,6 +217,7 @@ var Root = React.createClass({
   },
   componentDidMount() {
     // Initialize Reflux listeners.
+    screenshotStore.init();
     themeStore.load(this.props.s.prefs);
     actionStore.clear();
     this.listenTo(themeStore, this.themeChange);
@@ -224,7 +225,6 @@ var Root = React.createClass({
     this.listenTo(historyStore, this.updateTabState);
     this.listenTo(chromeAppStore, this.updateTabState);
     this.listenTo(actionStore, this.actionsChange);
-    this.listenTo(screenshotStore, this.screenshotsChange);
     window._trackJs.version = utilityStore.get_manifest().version;
     this.init(this.props);
     
@@ -311,9 +311,6 @@ var Root = React.createClass({
   },
   actionsChange(e){
     this.setState({actions: e});
-  },
-  screenshotsChange(e){
-    this.setState({screenshots: e});
   },
   chromeAppChange(e){
     this.setState({apps: e});
@@ -789,7 +786,6 @@ var Root = React.createClass({
   render: function() {
     var s = this.state;
     var p = this.props;
-    console.log(s.screenshots)
     if (s.theme && p.s.prefs) {
       var newTabs = tabStore.getNewTabs();
       var cursor = utilityStore.get_cursor();
@@ -797,7 +793,7 @@ var Root = React.createClass({
       var stores = {
         tabs: p.s[p.s.prefs.mode],
         duplicateTabs: p.s.duplicateTabs,
-        screenshots: s.screenshots, 
+        screenshots: p.s.screenshots, 
         newTabs: newTabs,
         cursor: cursor,
         windowId: windowId,

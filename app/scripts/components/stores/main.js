@@ -67,7 +67,7 @@ var reRender = (type, id, s) => {
           console.log('getImageFromTab');
           if (s.prefs.screenshotChrome) {
             if (targetTab.active) {
-              _.defer(()=>screenshotStore.capture(tId, targetTab.windowId, false, type));
+              screenshotStore.capture(tId, targetTab.windowId, false, type);
               _.defer(()=>state.set({update: targetTab}));
             }
           } else {

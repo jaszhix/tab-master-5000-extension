@@ -476,6 +476,10 @@ var Tile = React.createClass({
     var lowerStyle = s.screenshot ? {backgroundColor: s.hover ? p.theme.tileBgHover : p.theme.tileBg, borderRadius: '3px', left: lowerLeft.toString()+'px', top: lowerTop.toString()+'px'} : {top: lowerTop.toString()+'px'};
     var appHomepage = p.prefs.tabSizeHeight >= 170 ? p.prefs.tabSizeHeight + 5 : 170;
     var appOfflineEnabled = p.prefs.tabSizeHeight >= 170 ? p.prefs.tabSizeHeight - 10 : 158;
+    var titleFontSize = p.tab.title.length >= 115 ? 13 : 14;
+    if (s.hover) {
+      titleFontSize--;
+    } 
     return (
       <Panel
       draggable="true"
@@ -495,10 +499,16 @@ var Tile = React.createClass({
                 overflow: 'hidden',
                 cursor: 'pointer'
               }}>
-                <a style={{fontSize: s.hover ? '13px' : '14px', color: p.theme.tileText, transition: 'font-size 0.2s'}}>{p.tab.title}</a>
+                <a style={{
+                  fontSize: `${titleFontSize}px`, 
+                  color: p.theme.tileText, 
+                  transition: 'font-size 0.2s'
+                }}>{p.tab.title}</a>
               </div>
               {p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ? 
               <div className="text-muted text-size-small" style={{whiteSpace: s.hover ? 'initial' : 'nowrap', WebkitTransition: 'white-space 0.1s'}}>{p.tab.description}</div> : null}
+              {p.prefs.mode === 'tabs' ? 
+              <div className="text-muted text-size-small" style={{whiteSpace: 'nowrap', WebkitTransition: 'white-space 0.1s', position: 'absolute', top: `${p.prefs.tabSizeHeight - 40}px`, right: '0'}}>{p.tab.domain}</div> : null}
             </div>
         </div>
       }
@@ -544,9 +554,9 @@ var Tile = React.createClass({
         margin: '6px', 
         backgroundColor: s.hover ? p.theme.tileBgHover : p.theme.tileBg, 
         backgroundImage: `url('${s.screenshot ? s.screenshot : p.tab.favIconUrl}')`, 
-        backgroundBlendMode: s.screenshot ? 'multiply, soft-light' : 'luminosity',
+        backgroundBlendMode: s.screenshot ? 'multiply, lighten' : 'luminosity',
         backgroundPosition: 'center',
-        backgroundSize: 'contain',
+        backgroundSize: s.screenshot ? 'cover' : 'contain',
         backgroundRepeat: s.screenshot ? 'initial' : 'no-repeat',
         overflow: 'hidden',
         zIndex: '50'
@@ -555,12 +565,12 @@ var Tile = React.createClass({
         height: s.hover ? `${p.bodyHeightOnHover}px` : `${p.prefs.tabSizeHeight - 40}px`, 
         width: p.prefs.tabSizeHeight+80,
         padding: s.hover ? '0px' : 'initial',
-        backgroundImage: !s.screenshot ? `url('${p.tab.favIconUrl}')` : 'initial', 
+        backgroundImage: `url('${p.tab.favIconUrl}')`, 
         backgroundBlendMode: 'luminosity',
         backgroundPosition: 'center',
         backgroundSize: '1px, auto, contain',
-        opacity: s.hover ? '1' : '0.8',
-        WebkitTransition: p.prefs.animations ? 'padding 0.1s, height 0.1s, opacity 0.1s' : 'initial',
+        opacity: s.screenshot ? '0.4' : '0.8',
+        WebkitTransition: p.prefs.animations ? 'padding 0.1s, height 0.1s, opacity 0.1s, background-size 0.1s' : 'initial',
         WebkitTransitionTimingFunction: 'ease-in-out',
         zIndex: s.hover ? '2' : '1',
         cursor: 'pointer'
@@ -589,7 +599,10 @@ var Tile = React.createClass({
         WebkitTransition: 'opacity 0.2s, background-color 0.1s'
       }}
       onMouseEnter={()=>this.setState({hover: true})}
-      onMouseLeave={()=>this.setState({hover: false})}>
+      onMouseLeave={()=>this.setState({hover: false})}
+      onBodyClick={()=>this.handleClick(p.tab.id)}
+      onFooterClick={()=>this.handleClick(p.tab.id)}
+      onContextMenu={this.handleContextClick}>
         {!p.tab.favIconUrl || p.tab.domain === 'chrome' ?
         <div style={{
           color: p.theme.tileText,
@@ -598,7 +611,7 @@ var Tile = React.createClass({
           opacity: s.hover ? '0' : '1',
           zIndex: s.hover ? '-1' : '1'
         }}>
-          {p.tab.title[0]}
+          {p.tab.title[0].toUpperCase()}
         </div>
         : null}
       </Panel>
@@ -843,7 +856,7 @@ var TileGrid = React.createClass({
         btnStyle={btnStyle} /> : null}
           <div id="grid" ref="grid">
             {p.s.prefs.format === 'tile' ? p.data.map((tab, i)=> {
-              if (i <= p.s.tileLimit) {
+              if (i <= p.s.tileLimit && p.s.prefs.mode !== 'tabs' || p.s.prefs.mode === 'tabs') {
                 return (
                   <Tile
                   onDragEnd={this.dragEnd}
