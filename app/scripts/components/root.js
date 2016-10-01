@@ -217,7 +217,7 @@ var Root = React.createClass({
   },
   componentDidMount() {
     // Initialize Reflux listeners.
-    screenshotStore.init();
+    //screenshotStore.init();
     themeStore.load(this.props.s.prefs);
     actionStore.clear();
     this.listenTo(themeStore, this.themeChange);
@@ -932,22 +932,10 @@ var App = React.createClass({
   },
   componentDidMount(){
     this.listenTo(state, this.stateChange);
-    this.getPrefs();
+    this.onWindowResize({width: window.innerWidth, height: window.innerHeight}, this.props.stateUpdate);
   },
   stateChange(e){
     this.setState(e);
-  },
-  getPrefs(){
-    chrome.runtime.sendMessage(chrome.runtime.id, {method: 'prefs'}, (response)=>{
-      var stateUpdate = {
-        prefs: response.prefs, 
-        init: false, 
-        favicons: this.props.favicons,
-        chromeVersion: utilityStore.chromeVersion()
-      };
-      console.log('App componentDidMount: ', response);
-      this.onWindowResize({width: window.innerWidth, height: window.innerHeight}, stateUpdate);
-    });
   },
   onWindowResize(e, _stateUpdate) {
     var s = this.state;
@@ -980,19 +968,60 @@ var App = React.createClass({
   }
 });
 
-var renderApp = (favicons)=>{
-  ReactDOM.render(<App favicons={favicons} />, document.getElementById('main'));
+var renderApp = (stateUpdate)=>{
+  ReactDOM.render(<App stateUpdate={stateUpdate} />, document.getElementById('main'));
 };
 
-v(document).ready(()=>{
+var loadScreenshots = (stateUpdate)=>{
+  var save = (index)=>{
+    chrome.storage.local.set({screenshots: index}, (result)=> {
+
+    });
+  };
+  chrome.storage.local.get('screenshots', (shots)=>{
+    var index = [];
+    if (shots && shots.screenshots) {
+      index = shots.screenshots;
+    } else {
+      save([]);
+    }
+    stateUpdate.screenshots = index;
+    renderApp(stateUpdate);
+  });
+};
+
+var loadFavicons = (cb)=>{
   chrome.storage.local.get('favicons', (fv)=>{
     if (fv && fv.favicons) {
-      renderApp(fv.favicons);
+      cb(fv.favicons);
     } else {
       chrome.storage.local.set({favicons: []}, (result)=> {
         console.log('Init favicons saved.');
-        renderApp([]);
+        cb([]);
       });
     }
   });
+};
+
+var loadPrefs = ()=>{
+  chrome.runtime.sendMessage(chrome.runtime.id, {method: 'prefs'}, (response)=>{
+    var stateUpdate = {
+      prefs: response.prefs, 
+      init: false, 
+      chromeVersion: utilityStore.chromeVersion()
+    };
+    console.log('Prefs loaded: ', response);
+    loadFavicons((fv)=>{
+      stateUpdate.favicons = fv;
+      if (response.prefs.screenshot) {
+        loadScreenshots(stateUpdate);
+      } else {
+        renderApp(stateUpdate);
+      }
+    });
+  });
+};
+
+v(document).ready(()=>{
+  loadPrefs();
 });
