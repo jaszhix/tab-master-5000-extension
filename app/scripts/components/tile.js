@@ -416,7 +416,7 @@ var Tile = React.createClass({
     var r = p.relay;
     if (r.id && r.id.index === p.tab.index) {
       if (r.value === 'close') {
-        this.handleCloseTab(r[1].id);
+        this.handleCloseTab(p.tab.id);
       } else if (r.value === 'closeAll') {
         this.handleCloseAll(p.tab);
       } else if (r.value === 'pin') {

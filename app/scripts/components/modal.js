@@ -63,7 +63,7 @@ var ModalHandler = React.createClass({
         onClose={()=>state.set({modal: {state: false}})}
         size="full"
         header="Settings"
-        closeBtnStyle={{color: p.theme.bodyText}}
+        closeBtnStyle={{color: p.theme.darkBtnText}}
         backdropStyle={{
           zIndex: 11, 
           backgroundColor: p.settings === 'theming' ? 'rgba(255, 255, 255, 0)' : '#000', 
@@ -73,7 +73,7 @@ var ModalHandler = React.createClass({
         dialogStyle={{
           zIndex: '50'
         }}
-        headerStyle={{backgroundColor: p.theme.headerBg}}
+        headerStyle={{backgroundColor: p.theme.headerBg, color: p.theme.darkBtnText}}
         bodyStyle={{
           backgroundColor: p.theme.settingsBg,
           maxHeight: p.settings === 'theming' ? '300px' : `${window.innerHeight - 200}px`,

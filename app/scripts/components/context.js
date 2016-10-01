@@ -1,12 +1,11 @@
 import React from 'react';
 import _ from 'lodash';
-import onClickOutside from 'react-onclickoutside';
 
-import {Btn} from './bootstrap';
+import {Context} from './bootstrap';
 import state from './stores/state';
 import {actionStore} from './stores/main';
 
-var ContextMenu = onClickOutside(React.createClass({
+var ContextMenu = React.createClass({
   getInitialState(){
     var p = this.props;
     return {
@@ -16,6 +15,7 @@ var ContextMenu = onClickOutside(React.createClass({
     };
   },
   componentDidMount(){
+    this.handleOptions(this.props);
     _.defer(()=>{
       console.log('context visible? ',v('#main > div > div > div.ntg-context').inViewport());
       var positionedDiv = v('#main > div > div > div.ntg-context > div');
@@ -30,12 +30,121 @@ var ContextMenu = onClickOutside(React.createClass({
     if (!_.isEqual(nextProps.actions, p.actions)) {
       this.setState({actions: nextProps.actions});
     }
-  },
-  shouldComponentUpdate(){
-    return !this.props.context[0];
+    if (!_.isEqual(nextProps.context, p.context)) {
+      this.handleOptions(nextProps);
+    }
   },
   handleClickOutside(e){
-    state.set({context:{value: null}});
+    var p = this.props;
+    p.context.value = null;
+    state.set({context: p.context});
+  },
+  handleOptions(p){
+    var s = this.state;
+    var close = p.prefs.mode !== 'apps' && p.prefs.mode !== 'tabs' && !s.openTab ? 'Remove' : 'Close';
+    var notBookmarksHistorySessAppsExt = p.prefs.mode !== 'bookmarks' && p.prefs.mode !== 'history' && p.prefs.mode !== 'sessions' && p.prefs.mode !== 'apps' && p.prefs.mode !== 'extensions';
+    var notAppsExt = p.prefs.mode !== 'apps' && p.prefs.mode !== 'extensions';
+    var actionsStatus = this.getStatus('actions');
+    var contextOptions = [
+      {
+        argument: notAppsExt,
+        onClick: ()=>this.handleRelay('close'),
+        icon: `icon-${p.prefs.mode !== 'tabs' && !s.openTab ? 'eraser' : 'cross2'}`,
+        label: close,
+        divider: null
+      },
+      {
+        argument: p.prefs.mode === 'tabs',
+        onClick: ()=>this.handleRelay('closeAll'),
+        icon: 'icon-stack-cancel',
+        label: `${close} all from ${p.context.id.url.split('/')[2]}`,
+        divider: null
+      },
+      {
+        argument: notAppsExt && this.getStatus('duplicate'),
+        onClick: ()=>this.handleRelay('closeAllDupes'),
+        icon: 'icon-svg',
+        label: `${close} duplicates from ${p.context.id.url.split('/')[2]}`,
+        divider: null
+      },
+      {
+        argument: notAppsExt && p.prefs.mode !== 'sessions' && p.search.length > 0,
+        onClick: ()=>this.handleRelay('closeSearched'),
+        icon: 'icon-svg',
+        label: `${close} all search results`,
+        divider: null
+      },
+      {
+        argument: p.context.id.openTab || notBookmarksHistorySessAppsExt,
+        onClick: ()=>this.handleRelay('pin'),
+        icon: 'icon-pushpin',
+        label: p.context.id.pinned ? 'Unpin' : 'Pin',
+        divider: null
+      },
+      {
+        argument: p.chromeVersion >= 46 && (p.context.id.openTab || notBookmarksHistorySessAppsExt),
+        onClick: ()=>this.handleRelay('mute'),
+        icon: `icon-${p.context.id.mutedInfo.muted ? 'volume-medium' : 'volume-mute'}`,
+        label: p.context.id.mutedInfo.muted ? 'Unmute' : 'Mute',
+        divider: null
+      },
+      {
+        argument: notAppsExt && p.prefs.actions && actionsStatus,
+        onClick: ()=>this.handleRelay('actions'),
+        icon: 'icon-undo',
+        label: `Undo ${actionsStatus}`,
+        divider: null
+      },
+      {
+        argument: (p.prefs.mode === 'apps' || p.prefs.mode === 'extensions') && p.context.id.enabled,
+        onClick: ()=>this.handleRelay('launchApp'),
+        icon: 'icon-play4',
+        label: p.context.id.title,
+        divider: null
+      },
+      {
+        argument: p.prefs.mode === 'apps' && p.context.id.enabled,
+        onClick: ()=>this.handleRelay('createAppShortcut'),
+        icon: 'icon-forward',
+        label: 'Create Shortcut',
+        divider: null
+      },
+    ];
+    if (p.prefs.mode === 'apps' && p.context.id.enabled) {
+      _.filter(p.context.id.availableLaunchTypes, (launchType)=>{
+        if (launchType !== p.context.id.launchType) {
+          var launchOption = {
+            argument: true,
+            onClick: ()=>this.handleRelay(launchType),
+            icon: 'icon-gear',
+            label: _.endsWith(launchType, 'SCREEN') ? 'Open full screen' : _.endsWith(launchType, 'PINNED_TAB') ? 'Open as a pinned tab' : 'Open as a '+_.last(_.words(launchType.toLowerCase())),
+            divider: null
+          };
+          contextOptions.push(launchOption);
+        }
+      });
+    }
+    if (p.context.id.mayDisable && (p.prefs.mode === 'apps' || p.prefs.mode === 'extensions')) {
+      var appToggleOptions = [
+        {
+          argument: true,
+          onClick: ()=>this.handleRelay('toggleEnable'),
+          switch: p.context.id.enabled,
+          label: p.context.id.enabled ? 'Disable' : 'Enable',
+          divider: null
+        },
+        {
+          argument: true,
+          onClick: ()=>this.handleRelay('uninstallApp'),
+          icon: 'icon-trash',
+          label: 'Uninstall',
+          divider: null
+        },
+      ];
+      contextOptions = _.concat(contextOptions, appToggleOptions);
+    }
+    p.context.options = contextOptions;
+    state.set({context: p.context});
   },
   handleRelay(opt){
     if (opt === 'actions') {
@@ -49,7 +158,6 @@ var ContextMenu = onClickOutside(React.createClass({
   },
   getStatus(opt){
     var p = this.props;
-    var s = this.state;
     console.log(p.context.id);
     if (opt === 'muted') {
       return p.context.id.mutedInfo.muted;
@@ -88,32 +196,19 @@ var ContextMenu = onClickOutside(React.createClass({
   render: function() {
     var p = this.props;
     var s = this.state;
-    var close = p.prefs.mode !== 'apps' && p.prefs.mode !== 'tabs' && !s.openTab ? ' Remove ' : ' Close ';
-    var notBookmarksHistorySessAppsExt = p.prefs.mode !== 'bookmarks' && p.prefs.mode !== 'history' && p.prefs.mode !== 'sessions' && p.prefs.mode !== 'apps' && p.prefs.mode !== 'extensions';
-    var notAppsExt = p.prefs.mode !== 'apps' && p.prefs.mode !== 'extensions';
     return (
       <div ref="context" className="ntg-context">
         <div style={{left: s.cursor.page.x, top: s.cursor.page.y}} className="ntg-context-menu">
-          {notAppsExt ? <Btn onClick={()=>this.handleRelay('close')} className="ntg-context-btn" fa={p.prefs.mode !== 'tabs' && !s.openTab ? "eraser" : "times"}>{close}</Btn> : null}
-          {p.prefs.mode === 'tabs' ? <Btn onClick={()=>this.handleRelay('closeAll')} className="ntg-context-btn-close-all" fa="asterisk">{close+'all from ' + p.context.id.url.split('/')[2]}</Btn> : null}
-          {notAppsExt && this.getStatus('duplicate') ? <Btn onClick={()=>this.handleRelay('closeAllDupes')} className="ntg-context-btn-close-all" fa="asterisk">{close+'duplicates from '+p.context.id.url.split('/')[2]}</Btn> : null}
-          {notAppsExt && p.prefs.mode !== 'sessions' && p.search.length > 0 ? <Btn onClick={()=>this.handleRelay('closeSearched')} className="ntg-context-btn-close-all" fa="asterisk">{close+'all search results'}</Btn> : null }
-          {p.context.id.openTab || notBookmarksHistorySessAppsExt ? <Btn onClick={()=>this.handleRelay('pin')} className="ntg-context-btn" fa="map-pin">{p.context.id.pinned ? 'Unpin' : 'Pin'}</Btn> : null}
-          {p.chromeVersion >= 46 ? p.context.id.openTab || notBookmarksHistorySessAppsExt ? <Btn onClick={()=>this.handleRelay('mute')} className="ntg-context-btn" fa={p.context.id.mutedInfo.muted ? 'volume-up' : 'volume-off'}>{p.context.id.mutedInfo.muted ? 'Unmute' : 'Mute'}</Btn> : null : null}
-          {notAppsExt && p.prefs.actions && this.getStatus('actions') ? <Btn onClick={()=>this.handleRelay('actions')} className="ntg-context-btn" fa="history">{' Undo'+this.getStatus('actions')} </Btn> : null}
-          {p.context.id.enabled ? p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ? <Btn onClick={()=>this.handleRelay('launchApp')} className="ntg-context-btn" style={{fontWeight: 600}} fa="external-link-square">{p.context.id.title}</Btn> : null : null}
-          {p.prefs.mode === 'apps' && p.context.id.enabled ? p.context.id.availableLaunchTypes.map((type, i)=>{
-            if (type !== p.context.id.launchType) {
-              return <Btn key={i} onClick={()=>this.handleRelay(type)} className="ntg-context-btn" fa="gear">{_.endsWith(type, 'SCREEN') ? 'Open full screen' : _.endsWith(type, 'PINNED_TAB') ? 'Open as a pinned tab' : 'Open as a '+_.last(_.words(type.toLowerCase()))}</Btn>;
-            }
-          }) : null}
-          {p.prefs.mode === 'apps' && p.context.id.enabled ? <Btn onClick={()=>this.handleRelay('createAppShortcut')} className="ntg-context-btn" fa="plus-square-o">Create Shortcut</Btn> : null}
-          {p.context.id.mayDisable ? p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ? <Btn onClick={()=>this.handleRelay('toggleEnable')} className="ntg-context-btn" fa={p.context.id.enabled ? 'toggle-on' : 'toggle-off'}>{p.context.id.enabled ? ' Disable' : ' Enable'}</Btn> : null : null}
-          {p.context.id.mayDisable ? p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ? <Btn onClick={()=>this.handleRelay('uninstallApp')} className="ntg-context-btn" fa="trash-o">Uninstall</Btn> : null : null}
+          <Context
+          textFieldBorder={p.theme.textFieldBorder}
+          darkBtnBg={p.theme.darkBtnBg}
+          darkBtnText={p.theme.darkBtnText}
+          options={p.context.options}
+          onClickOutside={this.handleClickOutside} />
         </div>
       </div>
     );
   }
-}));
+});
 
 export default ContextMenu;

@@ -26,7 +26,8 @@ var state = Reflux.createStore({
       tileLimit: 50,
       context: {
         value: null,
-        id: null
+        id: null,
+        options: []
       },
       relay: {
         value: '',

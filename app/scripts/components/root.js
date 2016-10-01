@@ -863,7 +863,7 @@ var Root = React.createClass({
           {options ? <Preferences options={true} settingsMax={true} prefs={p.s.prefs} tabs={p.s.tabs} theme={s.theme} /> : s.load ? <Loading sessions={p.s.sessions} /> 
           : 
           <div>
-            {p.s.context.value ? <ContextMenu search={p.s.search} actions={s.actions} tabs={p.s[p.s.prefs.mode]} prefs={p.s.prefs} cursor={cursor} context={p.s.context} chromeVersion={p.s.chromeVersion} duplicateTabs={p.s.duplicateTabs}/> : null}
+            {p.s.context.value ? <ContextMenu search={p.s.search} actions={s.actions} tabs={p.s[p.s.prefs.mode]} prefs={p.s.prefs} cursor={cursor} context={p.s.context} chromeVersion={p.s.chromeVersion} duplicateTabs={p.s.duplicateTabs} theme={s.theme} /> : null}
             {p.s.modal ? 
               <ModalHandler 
               modal={p.s.modal} 
