@@ -503,12 +503,14 @@ var Tile = React.createClass({
                   fontSize: `${titleFontSize}px`, 
                   color: p.theme.tileText, 
                   transition: 'font-size 0.2s'
-                }}>{p.tab.title}</a>
+                }}>{p.tab.title.length > 0 ? p.tab.title : p.tab.domain ? p.tab.domain : null}</a>
               </div>
               {p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ? 
               <div className="text-muted text-size-small" style={{whiteSpace: s.hover ? 'initial' : 'nowrap', WebkitTransition: 'white-space 0.1s'}}>{p.tab.description}</div> : null}
-              {p.prefs.mode === 'tabs' ? 
+              {p.prefs.mode === 'tabs' || p.prefs.mode === 'history' ? 
               <div className="text-muted text-size-small" style={{whiteSpace: 'nowrap', WebkitTransition: 'white-space 0.1s', position: 'absolute', top: `${p.prefs.tabSizeHeight - 40}px`, right: '0'}}>{p.tab.domain}</div> : null}
+              {p.prefs.mode === 'history' ? 
+              <div className="text-muted text-size-small" style={{whiteSpace: 'nowrap', WebkitTransition: 'white-space 0.1s', position: 'absolute', top: `${p.prefs.tabSizeHeight - 40}px`, left: '0'}}>{_.capitalize(moment(p.tab.lastVisitTime).fromNow())}</div> : null}
             </div>
         </div>
       }
@@ -613,7 +615,7 @@ var Tile = React.createClass({
           opacity: s.hover ? '0' : '1',
           zIndex: s.hover ? '-1' : '1'
         }}>
-          {p.tab.title[0].toUpperCase()}
+          {p.tab.title.length > 0 ? p.tab.title.replace(/[^a-z0-9]/gi,'')[0].toUpperCase() : p.tab.domain ? p.tab.domain.replace(/[^a-z0-9]/gi,'')[0].toUpperCase() : null}
         </div>
         : null}
       </Panel>
@@ -807,7 +809,6 @@ var TileGrid = React.createClass({
       this.nodePlacement = 'before';
       parent.parentNode.insertBefore(this.placeholder, e.target.parentNode);
     }
-    
   },
   render: function() {
     var p = this.props;

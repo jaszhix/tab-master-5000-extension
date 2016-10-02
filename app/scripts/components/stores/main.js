@@ -481,10 +481,11 @@ export var historyStore = Reflux.createStore({
     return new Promise((resolve, reject)=>{
       chrome.history.search({text: '', maxResults: 1000}, (h)=>{
         console.log(h);
-        var t = state.get().tabs;
+        var s = state.get();
         var openTab = 0;
         var openTabObj = null;
         for (var i = h.length - 1; i >= 0; i--) {
+          var urlMatch = h[i].url.match(s.domainRegEx);
           _.assign(h[i], {
             openTab: null,
             id: parseInt(h[i].id),
@@ -492,6 +493,7 @@ export var historyStore = Reflux.createStore({
             audible: false,
             active: false,
             favIconUrl: '',
+            domain: urlMatch ? urlMatch[1] : false,
             highlighted: false,
             pinned: false,
             selected: false,
@@ -499,10 +501,10 @@ export var historyStore = Reflux.createStore({
             index: i,
             windowId: utilityStore.get_window()
           });
-          for (var y = t.length - 1; y >= 0; y--) {
-            openTabObj = _.find(t, {windowId: utilityStore.get_window()});
-            if (h[i].url === t[y].url) {
-              h[i] = _.assignIn(h[i], _.cloneDeep(t[y]));
+          for (var y = s.tabs.length - 1; y >= 0; y--) {
+            openTabObj = _.find(s.tabs, {windowId: utilityStore.get_window()});
+            if (h[i].url === s.tabs[y].url) {
+              h[i] = _.assignIn(h[i], _.cloneDeep(s.tabs[y]));
               h[i].openTab = ++openTab;
             } 
           }
