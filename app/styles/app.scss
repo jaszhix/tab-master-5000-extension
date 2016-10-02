@@ -36,17 +36,12 @@ body {
     position: relative;
     height: 24px;
 }
-.container-fluid.ntg-form {
+.tm-nav.ntg-form {
     box-shadow: rgb(133, 132, 132) 1px 1px 3px -1px;
 }
 .tile-container {
     margin-right: auto;
     margin-left: auto;
-}
-
-.tile-child-container {
-    padding-top: 5px;
-    margin-left: 5px;
 }
 
 .tile-body {
@@ -110,7 +105,6 @@ body {
 }
 
 .ntg-form {
-    padding-top: 14px;
     background-color: #ededed;
 }
 .ntg-title {

@@ -548,6 +548,8 @@ var Tile = React.createClass({
         </div>
       }
       style={{
+        position: 'relative',
+        display: 'block',
         height: p.prefs.tabSizeHeight, 
         width: `${p.prefs.tabSizeHeight + 80}px`, 
         float: 'left', 
@@ -641,10 +643,12 @@ var Sidebar = onClickOutside(React.createClass({
       maxWidth: '168px',
       height: '100%',
       position: 'fixed',
-      top: '66px',
-      left: '0px',
+      top: '52px',
+      opacity: p.enabled ? '1' : '0',
+      left: p.enabled ? '0px' : '-168px',
       zIndex: '300',
-      backgroundColor: p.theme.headerBg
+      backgroundColor: p.theme.headerBg,
+      WebkitTransition: p.prefs.animations ? 'left 0.2s, opacity 0.2s' : 'initial'
     };
     const faStyle = {
       width: iconCollapse ? '12px' : 'initial'
@@ -840,8 +844,8 @@ var TileGrid = React.createClass({
     var footerHeightOnHover = p.s.prefs.tabSizeHeight - _.round(p.s.prefs.tabSizeHeight / 7.44);
     return (
       <div className="tile-body">
-        {p.sidebar ? 
-        <Sidebar 
+        <Sidebar
+        enabled={p.sidebar}
         prefs={p.s.prefs} 
         tabs={p.s[p.s.modeKey]} 
         labels={labels} 
@@ -851,9 +855,8 @@ var TileGrid = React.createClass({
         search={p.s.search} 
         theme={p.theme}
         disableSidebarClickOutside={p.disableSidebarClickOutside}
-        
         faStyle={faStyle}
-        btnStyle={btnStyle} /> : null}
+        btnStyle={btnStyle} />
           <div id="grid" ref="grid">
             {p.s.prefs.format === 'tile' ? p.data.map((tab, i)=> {
               if (i <= p.s.tileLimit && p.s.prefs.mode !== 'tabs' || p.s.prefs.mode === 'tabs') {

@@ -891,7 +891,14 @@ var Root = React.createClass({
                 event={s.event}
                 topLoad={s.topLoad} 
                 theme={s.theme}  />
-                <div style={{marginTop: '67px'}} className="tile-child-container">
+                <div style={{
+                  position: 'absolute',
+                  left: '5px',
+                  right: '5px',
+                  margin: '0px auto',
+                  width: `${p.s.width}px`,
+                  top: '57px'
+                }}>
                   {s.grid ? 
                     <TileGrid
                     s={p.s}

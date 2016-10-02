@@ -2,7 +2,6 @@ import Reflux from 'reflux';
 import _ from 'lodash';
 
 import state from './state';
-import tabStore from './tab';
 import {utilityStore} from './main';
 
 var screenshotStore = Reflux.createStore({
