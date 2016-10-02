@@ -163,11 +163,19 @@ var Search = React.createClass({
   },
   render: function() {
     var p = this.props;
-    const headerStyle = p.s.prefs && p.s.prefs.screenshot && p.s.prefs.screenshotBg ? {backgroundColor: this.state.theme.headerBg, position: 'fixed', top: '0px', width: '100%', zIndex: '50', boxShadow: `${p.theme.tileShadow} 1px 1px 3px -1px`} : {backgroundColor: this.state.theme.headerBg, position: 'fixed', top: '0px', width: '100%', zIndex: '50', boxShadow: `${p.theme.tileShadow} 1px 1px 3px -1px`};
+    const headerStyle = {
+      backgroundColor: this.state.theme.headerBg, 
+      position: 'fixed', 
+      top: '0px', 
+      width: '100%', 
+      zIndex: '50', 
+      boxShadow: `${p.theme.tileShadow} 1px 1px 3px -1px`, 
+      maxHeight: '52px'
+    };
 
     return (
-      <Container fluid={true} style={headerStyle} className="ntg-form">
-        <Row>
+      <div className="tm-nav ntg-form" style={headerStyle}>
+        <Row style={{position: 'relative', top: '8px', maxHeight: '35px'}}>
           <Col size={p.s.width <= 825 ? p.s.width <= 630 ? p.s.width <= 514 ? '10' : '8' : '6' : '4'}>
             <div style={{display: 'flex', width: '100%', paddingLeft: '0px', paddingRight: '0px'}}>
               <Btn onClick={this.handleSidebar} onMouseEnter={()=>state.set({disableSidebarClickOutside: true})} onMouseLeave={()=>state.set({disableSidebarClickOutside: false})} style={{marginRight: '0px', padding: '9px 13px'}} className="ntg-top-btn" fa="reorder" />
@@ -189,7 +197,7 @@ var Search = React.createClass({
             {p.s.context.id === 'dlFavicons' && p.topLoad ? <div><p className="tm5k-info pull-right" style={{color: p.theme.darkBtnText, textShadow: `2px 2px ${p.theme.darkBtnTextShadow}`, position: 'relative', top: '2px', marginRight: '8px'}}> {p.s.width <= 841 ? '' : 'Downloading and caching favicons...'}</p></div> : null}
           </Col>  
         </Row>
-      </Container>
+      </div>
     );
   }
 });
