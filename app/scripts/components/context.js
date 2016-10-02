@@ -37,7 +37,10 @@ var ContextMenu = React.createClass({
   handleClickOutside(e){
     var p = this.props;
     p.context.value = null;
-    state.set({context: p.context});
+    state.set({
+      context: p.context, 
+      disableSidebarClickOutside: false
+    });
   },
   handleOptions(p){
     var s = this.state;
@@ -144,7 +147,10 @@ var ContextMenu = React.createClass({
       contextOptions = _.concat(contextOptions, appToggleOptions);
     }
     p.context.options = contextOptions;
-    state.set({context: p.context});
+    state.set({
+      context: p.context, 
+      disableSidebarClickOutside: true
+    });
   },
   handleRelay(opt){
     if (opt === 'actions') {
@@ -152,7 +158,10 @@ var ContextMenu = React.createClass({
     } else {
       var p = this.props;
       console.log('relay '+opt+': ',p.context.id);
-      state.set({relay: {value: opt, id: p.context.id}});
+      state.set({
+        relay: {value: opt, id: p.context.id},
+        disableSidebarClickOutside: false
+      });
     }
     this.handleClickOutside();
   },
@@ -200,9 +209,7 @@ var ContextMenu = React.createClass({
       <div ref="context" className="ntg-context">
         <div style={{left: s.cursor.page.x, top: s.cursor.page.y}} className="ntg-context-menu">
           <Context
-          textFieldBorder={p.theme.textFieldBorder}
-          darkBtnBg={p.theme.darkBtnBg}
-          darkBtnText={p.theme.darkBtnText}
+          theme={p.theme}
           options={p.context.options}
           onClickOutside={this.handleClickOutside} />
         </div>

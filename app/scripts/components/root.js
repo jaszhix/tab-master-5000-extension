@@ -363,7 +363,6 @@ var Root = React.createClass({
       .nav-tabs>li.active>a, .nav-tabs>li.active>a:focus {
         color: ${tc.isReadable(tc(e.theme.darkBtnText).toHexString(), tc(e.theme.settingsBg).toHexString(), {}) ? e.theme.darkBtnText : e.theme.lightBtnText};
         background-color: ${e.theme.settingsBg};
-        
       }
       .nav-tabs>li.active>a:hover {
         color: ${e.theme.darkBtnText};
@@ -373,10 +372,8 @@ var Root = React.createClass({
       .nav-tabs>li:hover {
         background-color: ${e.theme.lightBtnBgHover};
       }
-      .ntg-tile-disabled, .ntg-tile-hover, .ntg-tile-moving { 
-        color: ${e.theme.tileText};
-        background-color: ${e.theme.tileBg};
-        box-shadow: ${e.theme.tileShadow} 1px 1px 3px -1px;
+      .dropdown-menu>li>a:hover, .dropdown-menu>li>a:focus {
+        background-color: ${e.theme.settingsItemHover};
       }
       .ntg-x {
         color: ${e.theme.tileX};

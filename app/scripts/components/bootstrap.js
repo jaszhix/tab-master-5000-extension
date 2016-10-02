@@ -347,20 +347,22 @@ export var Context = onClickOutside(React.createClass({
       options: null
     };
   },
-  getInitialState(){
-    return {
-      dropdownOpen: false,
-      clickAction: false
-    };
-  },
   handleClickOutside(){
     this.props.onClickOutside();
-    //this.setState({dropdownOpen: false});
   },
   render(){
     var p = this.props;
     return (
-      <ul className="dropdown-menu dropdown-menu-xs" style={{display: 'block', position: 'relative', width: '100%', marginTop: '0', float: 'none', padding: '1px', borderRadius: '1px'}}>
+      <ul className="dropdown-menu dropdown-menu-xs" style={{
+        display: 'block', 
+        position: 'relative', 
+        width: '100%', 
+        marginTop: '0', 
+        float: 'none', 
+        padding: '1px', 
+        borderRadius: '1px',
+        backgroundColor: p.theme.bodyBg
+      }}>
         {p.options ? p.options.map((option, i)=>{
           if (option.divider) {
             return <li key={i} className="divider"></li>;
@@ -370,15 +372,22 @@ export var Context = onClickOutside(React.createClass({
               return (
                 <li key={i} className="checkbox checkbox-switchery switchery-xs">
                   <label style={{paddingLeft: '47px', paddingTop: '6px', paddingBottom: '6px'}} onClick={option.onClick}>
-                    <span className="switchery switchery-default" style={{left: '8px',backgroundColor: option.switch ? p.darkBtnBg : 'rgba(255, 255, 255, 0)', borderColor: option.switch ? p.darkBtnBg : p.textFieldBorder, boxShadow: `${option.switch ? p.darkBtnBg : p.textFieldBorder} 0px 0px 0px 8px inset`, WebkitTransition: 'border 0.4s, box-shadow 0.4s, background-color 1.2s'}}>
-                      <small style={{left: option.switch ? '14px' : '0px', WebkitTransition: 'background-color 0.4s, left 0.2s', backgroundColor: option.switch ? p.darkBtnText : 'initial'}} />
+                    <span className="switchery switchery-default" style={{
+                      left: '8px',
+                      backgroundColor: option.switch ? p.theme.darkBtnBg : 'rgba(255, 255, 255, 0)', 
+                      borderColor: option.switch ? p.theme.darkBtnBg : p.theme.textFieldBorder, 
+                      boxShadow: `${option.switch ? p.theme.darkBtnBg : p.theme.textFieldBorder} 0px 0px 0px 8px inset`, 
+                      WebkitTransition: 'border 0.4s, box-shadow 0.4s, background-color 1.2s',
+                      color: p.theme.bodyText
+                    }}>
+                      <small style={{left: option.switch ? '14px' : '0px', WebkitTransition: 'background-color 0.4s, left 0.2s', backgroundColor: option.switch ? p.theme.darkBtnText : 'initial'}} />
                     </span>
                      {option.label}
                   </label>
                 </li>
               );
             } else {
-              return <li key={i}><a style={{cursor: 'pointer'}} onClick={option.onClick}><i style={{color: '#000'}} className={option.icon} /> {option.label}</a></li>; 
+              return <li key={i}><a style={{cursor: 'pointer', color: p.theme.bodyText}} onClick={option.onClick}><i style={{color: p.theme.bodyText}} className={option.icon} /> {option.label}</a></li>; 
             }
           } else {
             return null;
