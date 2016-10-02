@@ -692,7 +692,7 @@ var Root = React.createClass({
     tabStore.promise().then((Tabs)=>{
       var blacklisted = [];
       _.each(Tabs, (tVal, tKey)=>{
-        var urlMatch = tVal.url.match(/^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n]+)/im);
+        var urlMatch = tVal.url.match(p.s.domainRegEx);
         _.assign(Tabs[tKey], {
           timeStamp: new Date(Date.now()).getTime(),
           domain: urlMatch ? urlMatch[1] : false

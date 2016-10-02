@@ -61,6 +61,7 @@ var state = Reflux.createStore({
       allTabs: null,
       newTabs: null,
       duplicateTabs: null,
+      domainRegEx: /^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n]+)/im,
       bookmarks: null,
       history: null,
       apps: [],
@@ -68,7 +69,7 @@ var state = Reflux.createStore({
       favicons: [],
       screenshots: [],
       sort: 'index',
-      direction: 'asc'
+      direction: 'asc',
     };
   },
   set(obj){
