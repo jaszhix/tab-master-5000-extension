@@ -918,7 +918,7 @@ var Root = React.createClass({
                 {p.s.modal && !p.s.modal.state && p.s.prefs.tooltip ? 
                 <ReactTooltip 
                 effect="solid" 
-                place="right"
+                place="bottom"
                 multiline={true}
                 html={true}
                 offset={{top: 0, left: 6}} /> : null}

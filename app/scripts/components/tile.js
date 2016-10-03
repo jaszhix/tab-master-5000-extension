@@ -622,7 +622,7 @@ var Tile = React.createClass({
     );
   }
 });
-
+import {SidebarMenu} from './sidebar';
 var Sidebar = onClickOutside(React.createClass({
   componentDidUpdate(){
     ReactTooltip.rebuild();
@@ -637,47 +637,27 @@ var Sidebar = onClickOutside(React.createClass({
   },
   render: function() {
     var p = this.props;
-    var iconCollapse = p.width <= 1135;
     const sideStyle = {
-      width: iconCollapse ? '66px' : '13%',
-      textAlign: iconCollapse ? 'center' : 'initial',
-      marginRight: !iconCollapse ? '2px' : 'initial',
-      maxWidth: '168px',
+      width: '280px',
+      maxWidth: '280px',
       height: '100%',
       position: 'fixed',
-      top: '52px',
+      top: '53px',
       opacity: p.enabled ? '1' : '0',
       left: p.enabled ? '0px' : '-168px',
       zIndex: '300',
-      backgroundColor: p.theme.headerBg,
+      backgroundColor: themeStore.opacify(p.theme.headerBg, 0.9),
       WebkitTransition: p.prefs.animations ? 'left 0.2s, opacity 0.2s' : 'initial'
     };
-    const faStyle = {
-      width: iconCollapse ? '12px' : 'initial'
-    };
-    _.merge(faStyle, _.cloneDeep(p.faStyle));
-    const sortButton = {
-      marginBottom: '20px'
-    };
-    _.merge(sortButton, _.cloneDeep(p.btnStyle));
-    var formatBtnLabel = `Format: ${p.prefs.format === 'tile' ? 'Table' : 'Tile'}`;
     return (
       <div className="side-div" style={sideStyle}>
-        <Btn onClick={()=>state.set({modal: {state: true, type: 'settings'}})} className="ntg-apply-btn" fa="cogs" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? 'Settings' : null}>{!iconCollapse ? 'Settings' : ''}</Btn>
-        <Btn onClick={()=>msgStore.setPrefs({format: p.prefs.format === 'tile' ? 'table' : 'tile'})} className="ntg-apply-btn" icon={p.prefs.format === 'tile' ? 'list' : 'grid'} faStyle={faStyle} data-place="right" data-tip={iconCollapse ? formatBtnLabel : null}>{!iconCollapse ? formatBtnLabel : ''}</Btn>
-        <Btn onClick={this.handleSort} className="ntg-apply-btn" style={sortButton} fa="sort-amount-asc" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? 'Sort Tabs' : null}>{!iconCollapse ? 'Sort Tabs' : ''}</Btn>
-          {p.prefs.sort ? <div>
-              {p.labels}
-              {p.prefs.mode === 'tabs' && p.search.length === 0 ? <Btn onClick={()=>state.set({applyTabOrder: true, massUpdate: true})} className="ntg-apply-btn" style={p.btnStyle} fa="sort" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? 'Apply' : null}>{iconCollapse ? '' : 'Apply'}</Btn> : null}
-            </div> : null}
-          <div className="mode-container">
-            {p.prefs.mode !== 'tabs' ? <Btn onClick={()=>utilityStore.handleMode('tabs')} className="ntg-apply-btn" style={p.btnStyle} fa="square" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? 'Tabs' : null}>{iconCollapse ? '' : 'Tabs'}</Btn> : null}
-            {p.prefs.mode !== 'bookmarks' ? <Btn onClick={()=>utilityStore.handleMode('bookmarks')} className="ntg-apply-btn" style={p.btnStyle} fa="bookmark" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? 'Bookmarks' : null}>{iconCollapse ? '' : 'Bookmarks'}</Btn> : null}
-            {p.prefs.mode !== 'history' ? <Btn onClick={()=>utilityStore.handleMode('history')} className="ntg-apply-btn" style={p.btnStyle} fa="history" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? 'History' : null}>{iconCollapse ? '' : 'History'}</Btn> : null}
-            {p.prefs.mode !== 'sessions' ? <Btn onClick={()=>utilityStore.handleMode('sessions')} className="ntg-apply-btn" style={p.btnStyle} fa="book" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? 'Sessions' : null}>{iconCollapse ? '' : 'Sessions'}</Btn> : null}
-            {p.prefs.mode !== 'apps' ? <Btn onClick={()=>utilityStore.handleMode('apps')} className="ntg-apply-btn" style={p.btnStyle} fa="th" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? 'Apps' : null}>{iconCollapse ? '' : 'Apps'}</Btn> : null}
-            {p.prefs.mode !== 'extensions' ? <Btn onClick={()=>utilityStore.handleMode('extensions')} className="ntg-apply-btn" style={p.btnStyle} fa="puzzle-piece" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? 'Extensions' : null}>{iconCollapse ? '' : 'Extensions'}</Btn> : null}
-          </div>
+        <SidebarMenu
+        prefs={p.prefs}
+        theme={p.theme}
+        labels={p.labels}
+        keys={p.keys}
+        sort={p.sort}
+        direction={p.direction}/>
       </div>
     );
   }
@@ -852,7 +832,10 @@ var TileGrid = React.createClass({
         enabled={p.sidebar}
         prefs={p.s.prefs} 
         tabs={p.s[p.s.modeKey]} 
-        labels={labels} 
+        labels={p.labels}
+        keys={p.keys}
+        sort={p.s.sort}
+        direction={p.s.direction}
         width={p.width} 
         collapse={p.collapse} 
         ssBg={ssBg} 

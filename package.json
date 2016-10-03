@@ -40,6 +40,8 @@
     "colorformat": "^1.2.3",
     "css-loader": "^0.17.0",
     "del": "^2.2.0",
+    "eslint": "^3.7.0",
+    "eslint-plugin-react": "^6.3.0",
     "exports-loader": "^0.6.3",
     "file-loader": "^0.8.4",
     "filesaver.js": "^0.2.0",

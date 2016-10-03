@@ -108,17 +108,11 @@ a.badge,
   width: 100%;
   display: none;
 }
-.sidebar .sidebar-content {
-  background-color: #263238;
-  -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-}
-@media (min-width: 369px) {
+@media (min-width: 0px) {
   .sidebar {
     display: table-cell;
     vertical-align: top;
     width: 280px;
-    padding-right: 20px;
   }
 }
 .sidebar-main {
@@ -131,7 +125,7 @@ a.badge,
   display: none;
   z-index: 97;
 }
-@media (min-width: 369px) {
+@media (min-width: 0px) {
   .sidebar-opposite-visible .sidebar-opposite {
     display: table-cell;
     padding-right: 0;
@@ -142,7 +136,7 @@ a.badge,
   color: #333333;
 }
 .sidebar-default .sidebar-content {
-  background-color: #fff;
+  background-color: rgba(255, 255, 255, 0);
 }
 .sidebar-content {
   position: relative;
@@ -611,7 +605,7 @@ a.badge,
   padding-bottom: 6px;
   min-height: 32px;
 }
-@media (min-width: 369px) {
+@media (min-width: 0px) {
   .sidebar-fixed.affix {
     position: fixed;
     width: 260px;
@@ -667,7 +661,7 @@ a.badge,
 .sidebar-fixed-expanded .content-wrapper {
   padding-left: 76px;
 }
-@media (min-width: 369px) {
+@media (min-width: 0px) {
   .sidebar-separate .sidebar-content {
     background-color: transparent;
   }
@@ -688,7 +682,7 @@ a.badge,
     background-color: #fff;
   }
 }
-@media (min-width: 369px) {
+@media (min-width: 0px) {
   .sidebar-xs .sidebar-main {
     width: 76px;
   }
@@ -963,7 +957,7 @@ a.badge,
 .sidebar .nav-tabs {
   border-width: 0 0 1px 0;
 }
-@media (min-width: 369px) {
+@media (min-width: 0px) {
   .sidebar .nav-tabs {
     border-width: 1px;
   }
@@ -1017,7 +1011,7 @@ a.badge,
   top: 0;
   margin-top: 4px;
 }
-@media (min-width: 369px) {
+@media (min-width: 0px) {
   .sidebar-default .nav-tabs > li > a {
     background-color: #fafafa;
     border-bottom-color: #ddd;
@@ -1027,12 +1021,6 @@ a.badge,
   .sidebar-default .nav-tabs > li > a:focus {
     color: #333333;
     border-bottom-color: #ddd;
-  }
-  .sidebar-default .nav-tabs > li:first-child > a {
-    border-top-left-radius: 3px;
-  }
-  .sidebar-default .nav-tabs > li:last-child > a {
-    border-top-right-radius: 3px;
   }
   .sidebar-default .nav-tabs > .active > a,
   .sidebar-default .nav-tabs > .active > a:hover,
@@ -1053,7 +1041,7 @@ a.badge,
     border-bottom-color: #ddd;
   }
 }
-@media (min-width: 369px) {
+@media (min-width: 0px) {
   .sidebar-default .nav-justified > li:first-child .dropdown-menu:not(.dropdown-menu-right) {
     left: -1px;
   }
@@ -1075,7 +1063,7 @@ a.badge,
 .page-header + .page-container {
   padding-top: 0;
 }
-@media (min-width: 369px) {
+@media (min-width: 0px) {
   .page-container {
     width: 100%;
     display: table;
@@ -1087,7 +1075,7 @@ a.badge,
     }
   }
 }
-@media (min-width: 369px) {
+@media (min-width: 0px) {
   .page-content {
     display: table-row;
   }
@@ -1095,7 +1083,7 @@ a.badge,
 .content-wrapper {
   width: 100%;
 }
-@media (min-width: 369px) {
+@media (min-width: 0px) {
   .content-wrapper {
     display: table-cell;
     vertical-align: top;
@@ -1109,7 +1097,7 @@ a.badge,
   margin-left: auto;
   margin-right: auto;
 }
-@media (min-width: 369px) {
+@media (min-width: 0px) {
   .layout-boxed .navbar:not(.navbar-component) {
     padding-left: 0;
     padding-right: 0;
@@ -1130,7 +1118,7 @@ a.badge,
     right: 20px;
   }
 }
-@media (min-width: 369px) {
+@media (min-width: 0px) {
   .layout-boxed .page-container,
   .layout-boxed .navbar .navbar-boxed,
   .layout-boxed .page-header .breadcrumb-boxed,
@@ -4086,7 +4074,7 @@ a.editable-empty:focus {
 .ranges .range_inputs .btn + .btn {
   margin-top: 16px;
 }
-@media (min-width: 369px) {
+@media (min-width: 0px) {
   .ranges {
     margin: 8px;
   }
@@ -5734,7 +5722,7 @@ img ~ .legitRipple-ripple {
 .fab-menu-inner > li .status-mark {
   position: absolute;
 }
-@media (min-width: 369px) {
+@media (min-width: 0px) {
   .fab-menu-inner > li .badge,
   .fab-menu-inner > li .label,
   .fab-menu-inner > li .status-mark {
@@ -6021,7 +6009,7 @@ img ~ .legitRipple-ripple {
   -webkit-box-shadow: none;
   box-shadow: none;
 }
-@media (min-width: 369px) {
+@media (min-width: 0px) {
   .file-input .btn > [class*=icon-],
   .file-input .btn > .glyphicon {
     margin-right: 5px;
@@ -6368,7 +6356,7 @@ img ~ .legitRipple-ripple {
 .sidebar .dropzone .dz-default.dz-message > span {
   margin-top: 130px;
 }
-@media (min-width: 369px) {
+@media (min-width: 0px) {
   .dropzone {
     min-height: 320px;
   }
@@ -6423,7 +6411,7 @@ img ~ .legitRipple-ripple {
   color: #ccc;
   font-size: 15px;
 }
-@media (min-width: 369px) {
+@media (min-width: 0px) {
   .dropzone .dz-default.dz-message:before {
     font-size: 80px;
     top: 48px;
@@ -6664,7 +6652,7 @@ img ~ .legitRipple-ripple {
   vertical-align: middle;
   border-radius: 2px;
 }
-@media (min-width: 369px) {
+@media (min-width: 0px) {
   .eg-preview .preview {
     display: inline-block;
     margin-left: 0;
@@ -6694,7 +6682,7 @@ img ~ .legitRipple-ripple {
   width: 40px;
   height: 40px;
 }
-@media (min-width: 369px) {
+@media (min-width: 0px) {
   .eg-preview {
     white-space: nowrap;
     max-width: 100%;
@@ -6903,7 +6891,7 @@ img ~ .legitRipple-ripple {
   opacity: 0;
   filter: alpha(opacity=0);
 }
-@media (min-width: 369px) {
+@media (min-width: 0px) {
   .cropper-point {
     width: 15px;
     height: 15px;
@@ -10122,7 +10110,7 @@ thead .htCollapseButton:after {
   border-left-color: inherit;
   border-bottom: 5px solid transparent;
 }
-@media (min-width: 369px) {
+@media (min-width: 0px) {
   .chat-list .media {
     margin-right: 20%;
   }
@@ -10228,7 +10216,7 @@ thead .htCollapseButton:after {
 .breadcrumb-elements-toggle > i {
   top: 0;
 }
-@media (min-width: 369px) {
+@media (min-width: 0px) {
   .heading-elements-toggle,
   .breadcrumb-elements-toggle {
     display: none;
@@ -10257,60 +10245,13 @@ thead .htCollapseButton:after {
   margin-top: 16px;
   z-index: 10;
 }
-// Theme modification - Adjust button positioning in panel footers at collapse resolutions
-@media (max-width: 768px) {
-  .panel-footer > .heading-elements > .pull-right {
-    float: none!important;
-    text-align: center;
-  }
-  .panel-footer {
-    margin-top: 11px;
-  }
-  //Hide menu icon in panel footer during collapse
-  .heading-elements-toggle > .icon-more {
-    display: none;
-  }
-}
-@media (max-width: 446px) {
-  .panel-footer > .heading-elements > .pull-right > button, .panel-footer > .heading-elements > .pull-right > div > button {
-    font-size: 10px;
-    padding: 7px 11px;
-  }
-  .panel-footer > .heading-elements > .pull-right > button > b, .panel-footer > .heading-elements > .pull-right > div > button > b {
-    display: none;
-  }
-  .panel-footer-transparent {
-    padding-bottom: 0px;
-  },
-  .panel-body {
-    padding: 10px;
-  }
-}
-@media (max-width: 320px) {
-  .panel-footer > .heading-elements > .pull-right > button {
-    padding: 6px 7px;
-  }
-  .panel-footer > .heading-elements > .pull-right > button > b, .registration-form > .panel-body > .text-right > button > b {
-    display: none;
-  }
-  .panel-footer-transparent {
-    padding-bottom: 0px;
-  }
-  .registration-form > .panel-body > .text-right {
-    text-align: center;
-  }
-  .registration-form > .panel-body > .text-right > button {
-    font-size: 10px;
-    padding: 7px 11px;
-  }
-}
-@media (min-width: 369px) {
+@media (min-width: 0px) {
   .panel-footer > .heading-elements {
     position: static;
     margin-top: 0;
   }
 }
-@media (min-width: 369px) {
+@media (min-width: 0px) {
   .panel-footer-bordered .heading-elements {
     margin-left: -20px;
   }
@@ -10397,7 +10338,7 @@ thead .htCollapseButton:after {
 .heading-elements .heading-btn-group > .btn + .btn:not(.btn-link) {
   margin-left: 10px;
 }
-@media (min-width: 369px) {
+@media (min-width: 0px) {
   .heading-elements .heading-text,
   .heading-elements .heading-btn,
   .heading-elements .ui-slider,
@@ -10538,7 +10479,7 @@ thead .htCollapseButton:after {
 .heading-form .input-group.input-group-xs .btn {
   margin-top: 0;
 }
-@media (min-width: 369px) {
+@media (min-width: 0px) {
   .heading-form .form-group {
     float: left;
   }
@@ -10581,7 +10522,7 @@ thead .htCollapseButton:after {
     float: right;
   }
 }
-@media (min-width: 369px) {
+@media (min-width: 0px) {
   .pull-right-sm {
     float: right;
   }
@@ -10905,7 +10846,7 @@ label.display-block {
 .full-width {
   width: 100%;
 }
-@media (min-width: 369px) {
+@media (min-width: 0px) {
   .width-200 {
     min-width: 200px;
   }
