@@ -767,8 +767,11 @@ var TileGrid = React.createClass({
   dragStart: function(e, i) {
     this.dragged = {el: e.currentTarget, i: i};
     e.dataTransfer.effectAllowed = 'move';
-    this.placeholder = v(this.dragged.el).clone().n;
+    this.placeholder = v(this.dragged.el).clone().empty().n;
     v(this.placeholder).allChildren().removeAttr('data-reactid');
+    v(this.placeholder).css({
+      opacity: 0.5
+    });
     this.placeholder.removeAttribute('id');
     this.placeholder.classList.add('tileClone');
   },
