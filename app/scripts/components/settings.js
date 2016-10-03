@@ -438,7 +438,6 @@ var Sessions = React.createClass({
   },
   componentWillUnmount(){
     faviconStore.clean();
-    state.set({modal: {footer: null}});
   },
   labelSession(session){
     session.label = this.state.sessionLabelValue;

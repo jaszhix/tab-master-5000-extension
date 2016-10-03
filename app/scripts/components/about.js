@@ -122,11 +122,6 @@ var About = React.createClass({
     );
     state.set({modal: p.modal});
   },
-  componentWillUnmount(){
-    var p = this.props;
-    p.modal.footer = null;
-    state.set({modal: p.modal});
-  },
   render: function() {
     var p = this.props;
     var s = this.state;

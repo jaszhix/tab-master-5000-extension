@@ -141,9 +141,6 @@ var Preferences = React.createClass({
     );
     state.set({modal: p.modal});
   },
-  componentWillUnmount(){
-    state.set({modal: {footer: null}});
-  },
   getBytesInUse(){
     if (this.props.prefs.screenshot) {
       utilityStore.get_bytesInUse('screenshots').then((bytes)=>{

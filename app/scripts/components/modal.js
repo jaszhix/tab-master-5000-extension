@@ -59,7 +59,7 @@ var ModalHandler = React.createClass({
     if (p.modal.state && p.modal.type === 'settings') {
       return (
         <ModalOverlay
-        clickOutside={p.settings !== 'theming'}
+        clickOutside={true}
         onClose={()=>state.set({modal: {state: false}})}
         size="full"
         header="Settings"
