@@ -168,7 +168,7 @@ var Search = React.createClass({
       position: 'fixed', 
       top: '0px', 
       width: '100%', 
-      zIndex: '50', 
+      zIndex: '500', 
       boxShadow: `${p.theme.tileShadow} 1px 1px 3px -1px`, 
       maxHeight: '52px'
     };
