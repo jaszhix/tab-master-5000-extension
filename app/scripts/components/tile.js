@@ -365,7 +365,6 @@ var Tile = React.createClass({
         this.handleCloseTab(p.stores.tabs[i].id);
       }
     }
-    state.set({search: ''});
   },
   applyTabOrder() {
     // Apply the sorted tab grid state to the Chrome window.

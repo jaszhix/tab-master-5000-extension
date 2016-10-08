@@ -265,7 +265,6 @@ var Root = React.createClass({
       nP.s.context.id = 'dlFavicons';
       state.set({context: nP.s.context});
     }
- 
     /*var themeStates = ['theme', 'savedThemes', 'wallpapers', 'currentWallpaper'];
     for (let i = themeStates.length - 1; i >= 0; i--) {
       if (!_.isEqual(nP.s[themeStates[i]], p.s[themeStates[i]])) {
@@ -597,6 +596,9 @@ var Root = React.createClass({
           synchronizeSession(p.s.sessions, p.s.prefs, tabsList);
         }
         stateUpdate[key] = tabsList;
+        if (stateUpdate[key].length === 0 && p.s.search.length > 0) {
+          stateUpdate.search = '';
+        }
         state.set(stateUpdate);
       }  
     };
