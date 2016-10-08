@@ -175,21 +175,29 @@ var Tile = React.createClass({
   handleClick(id, e) {
     var s = this.state;
     var p = this.props;
+    var stateUpdate = {};
     this.setState({
       render: false
     });
-    var active = ()=>{
-      if (p.search.length > 0) {
-        searchStore.set_search('');
-      }
+    var active = (cb)=>{
       chrome.tabs.update(id, {active: true});
+      if (cb !== undefined) {
+        cb();
+      }
     };
     // Navigate to a tab when its clicked from the grid.
     if (!s.xHover || !s.pHover) {
       if (!s.close) {
         if (s.bookmarks || s.history || s.sessions) {
-          if (s.openTab) {
+          if (p.tab.hasOwnProperty('openTab') && p.tab.openTab) {
             active();
+          } else if (p.tab.hasOwnProperty('openTab') && !p.tab.openTab) {
+            chrome.tabs.create({url: p.tab.url}, (t)=>{
+              _.merge(p[p.modeKey][p.i], t);
+              p[p.modeKey][p.i].openTab = true;
+              stateUpdate[p.modeKey] = p[p.modeKey];
+              state.set(stateUpdate);
+            });
           } else {
             tabStore.create(p.tab.url);
           }
@@ -252,10 +260,11 @@ var Tile = React.createClass({
   handleCloseTab(id, search) {
     var p = this.props;
     var s = this.state;
+    var stateUpdate = {};
     var reRender = (defer)=>{
       state.set({reQuery: {state: true, type: defer ? 'cycle' : 'create', id: p.stores.tabs[0].id}});
     };
-    var close = ()=>{
+    var close = (openTab=null)=>{
       chrome.tabs.remove(id, ()=>{
         if (p.prefs.mode !== 'tabs') {
           _.defer(()=>{
@@ -268,8 +277,11 @@ var Tile = React.createClass({
       this.setState({close: true});
     }
     if (p.prefs.mode !== 'tabs') {
-      if (s.openTab) {
-        close();
+      if (p.tab.hasOwnProperty('openTab') && p.tab.openTab) {
+        close(true);
+        p[p.modeKey][p.i].openTab = null;
+        stateUpdate[p.modeKey] = p[p.modeKey];
+        state.set(stateUpdate);
       } else {
         if (s.bookmarks) {
           var bookmarkId = search ? id.bookmarkId : p.tab.bookmarkId;
@@ -472,11 +484,11 @@ var Tile = React.createClass({
     var appHomepage = p.prefs.tabSizeHeight >= 170 ? p.prefs.tabSizeHeight + 5 : 170;
     var appOfflineEnabled = p.prefs.tabSizeHeight >= 170 ? p.prefs.tabSizeHeight - 10 : 158;
     var titleFontSize = p.tab.title.length >= 115 ? 13 : 14;
-
+    var openTab = p.tab.hasOwnProperty('openTab') && p.tab.openTab;
     var sanitize = (str)=>{
       var result = str.replace(/[^a-z0-9]/gi,'')[0];
       if (result !== undefined) {
-        return result;
+        return result.toUpperCase();
       } else {
         return '';
       }
@@ -514,14 +526,14 @@ var Tile = React.createClass({
               {p.prefs.mode === 'tabs' || p.prefs.mode === 'history' ? 
               <div className="text-muted text-size-small" style={{whiteSpace: 'nowrap', WebkitTransition: 'white-space 0.1s', position: 'absolute', top: `${p.prefs.tabSizeHeight - 40}px`, right: '0'}}>{p.tab.domain}</div> : null}
               {p.prefs.mode === 'history' ? 
-              <div className="text-muted text-size-small" style={{whiteSpace: 'nowrap', WebkitTransition: 'white-space 0.1s', position: 'absolute', top: `${p.prefs.tabSizeHeight - 40}px`, left: '0'}}>{_.capitalize(moment(p.tab.lastVisitTime).fromNow())}</div> : null}
+              <div className="text-muted text-size-small" style={{whiteSpace: 'nowrap', WebkitTransition: 'white-space 0.1s', position: 'absolute', top: `${p.prefs.tabSizeHeight - 55}px`, right: '0'}}>{_.capitalize(moment(p.tab.lastVisitTime).fromNow())}</div> : null}
             </div>
         </div>
       }
       header={
-        <div style={{position: 'relative'}}>
+        <div style={{position: 'relative', minHeight: '18px'}}>
           <ul className="icons-list" style={{float: 'right'}}>
-            {p.chromeVersion >= 46 && s.openTab || p.chromeVersion >= 46 && p.prefs.mode === 'tabs' ?
+            {p.chromeVersion >= 46 && openTab || p.chromeVersion >= 46 && p.prefs.mode === 'tabs' ?
             <li>
               <i 
               style={{display: 'block', cursor: 'pointer', color: s.mHover ? p.theme.tileMuteHover : p.theme.tileMute, opacity: s.hover || p.tab.mutedInfo.muted || p.tab.audible ? '1' : '0',}} 
@@ -531,7 +543,7 @@ var Tile = React.createClass({
               onClick={() => this.handleMuting(p.tab)} />
             </li>
             : null}
-            {s.openTab || p.prefs.mode === 'tabs' ?
+            {openTab || p.prefs.mode === 'tabs' ?
             <li>
               <i 
               style={{display: 'block', cursor: 'pointer', color: s.pHover ? p.theme.tilePinHover : p.theme.tilePin, opacity: s.hover || p.tab.pinned ? '1' : '0'}} 
@@ -866,6 +878,7 @@ var TileGrid = React.createClass({
                   sessionTabs={p.s.sessionTabs}
                   apps={p.s.apps}
                   extensions={p.s.extensions}
+                  modeKey={p.s.modeKey}
                   stores={p.stores} 
                   render={p.render} 
                   i={i}  

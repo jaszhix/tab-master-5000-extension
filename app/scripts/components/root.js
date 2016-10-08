@@ -67,15 +67,13 @@ var Loading = React.createClass({
   },
   componentDidMount(){
     window.onerror = (err)=>{
-      console.log(err);
-      _.delay(()=>{
-        this.setState({
-          failSafe: true,
-          error: `${err}
-            ${chrome.runtime.lastError ? 'chrome.runtime: '+chrome.runtime.lastError : ''}
-            ${chrome.extension.lastError ? 'chrome.extension: '+chrome.extension.lastError : ''}`
-        });
-      },1000);
+      console.log('Loading: ', err);
+      this.setState({
+        failSafe: true,
+        error: `${err}
+          ${chrome.runtime.lastError ? 'chrome.runtime: '+chrome.runtime.lastError : ''}
+          ${chrome.extension.lastError ? 'chrome.extension: '+chrome.extension.lastError : ''}`
+      });
     };
   },
   handleReset(){
