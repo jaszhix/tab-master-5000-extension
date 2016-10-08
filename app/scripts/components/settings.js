@@ -237,7 +237,6 @@ var Theming = React.createClass({
     var themeFields1 = themeFields.slice(0, themeFieldsSlice);
     var themeFields2 = themeFields.slice(themeFieldsSlice, _.round(themeFields.length * 0.66));
     var themeFields3 = themeFields.slice(_.round(themeFields.length * 0.66), themeFields.length);
-
     return (
       <div className="theming">
         <input children={undefined} type="file" onChange={(e)=>themeStore.import(e)} accept=".json" ref="import" style={style.hiddenInput} />
@@ -709,7 +708,7 @@ var Settings = React.createClass({
           <Theming 
           settingsMax={s.settingsMax} 
           prefs={p.prefs} 
-          
+          theme={p.theme} 
           modal={p.modal} 
           savedThemes={p.savedThemes} 
           standardThemes={p.standardThemes} 

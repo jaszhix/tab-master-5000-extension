@@ -93,9 +93,6 @@ var ReleaseNotes = React.createClass({
         <img className="ntg-about" src={p.tm5kLogo}/>
         <a href="https://trackjs.com" target="_blank"><img style={{borderRadius: '2px', position: 'absolute', top: '0px', right:'5%', opacity: '0.7'}} src={TrackJSBadge} height="40px" alt="Protected by TrackJS JavaScript Error Monitoring" /></a>
         <img style={{position: 'absolute', top: '50px', right:'8%', height: '120px', opacity: '0.7'}} src={EFFBadge} />
-        <div className="ntg-about">
-          <h3 className="ntg-about">Tab Master 5000</h3>
-        </div>
         <Col size="2" />
         <Col size="8" className="ntg-release">
           <div dangerouslySetInnerHTML={createMarkup()} />
