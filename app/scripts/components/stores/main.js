@@ -91,8 +91,14 @@ var reRender = (type, id, s) => {
     }
   };
   if (type !== 'remove') {
+    if (_.isString(tId)) {
+      tId = parseInt(tId);
+    }
     tabStore.getSingleTab(tId).then((targetTab)=>{
-      _.defer(()=>handleUpdate(targetTab));
+      if (typeof targetTab === 'undefined') {
+        return;
+      }
+      handleUpdate(targetTab);
     }).catch((e)=>{
         var wId = utilityStore.get_window();
         console.log('Exception...', e);
@@ -107,8 +113,10 @@ var reRender = (type, id, s) => {
         }
     });  
   } else {
-    var targetTab = _.find(s.tabs, {id: tId});
-    handleUpdate(targetTab);
+    var targetTab = _.findIndex(s.tabs, {id: tId});
+    if (targetTab !== -1) {
+      handleUpdate(s.tabs[targetTab]);
+    }
   }
   
 };
