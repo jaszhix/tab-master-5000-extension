@@ -56,9 +56,8 @@ export var SidebarMenu = React.createClass({
       ]
     ];
     var sidebarTabs = [
-    {label: 'Settings', icon: 'icon-gear', onClick: ()=>state.set({modal: {state: true, type: 'settings'}})},
-      {label: `${p.prefs.format === 'tile' ? 'Table' : 'Tile'} Format`, icon: `icon-${p.prefs.format === 'tile' ? 'list' : 'grid'}`, onClick: ()=>msgStore.setPrefs({format: p.prefs.format === 'tile' ? 'table' : 'tile'})},
-      {label: 'Sessions', icon: 'icon-windows2'}
+      {label: 'Settings', icon: 'icon-gear', onClick: ()=>state.set({modal: {state: true, type: 'settings'}})},
+      {label: `${p.prefs.format === 'tile' ? 'Table' : 'Tile'} Format`, icon: `icon-${p.prefs.format === 'tile' ? 'list' : 'grid'}`, onClick: ()=>msgStore.setPrefs({format: p.prefs.format === 'tile' ? 'table' : 'tile'})}
     ];
     return (
       <div className="sidebar sidebar-secondary sidebar-default" style={{
