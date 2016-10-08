@@ -474,7 +474,7 @@ var Tile = React.createClass({
     var appOfflineEnabled = p.prefs.tabSizeHeight >= 170 ? p.prefs.tabSizeHeight - 10 : 158;
     var titleFontSize = p.tab.title.length >= 115 ? 13 : 14;
 
-    var santize = (str)=>{
+    var sanitize = (str)=>{
       var result = str.replace(/[^a-z0-9]/gi,'')[0];
       if (result !== undefined) {
         return result;
@@ -620,7 +620,7 @@ var Tile = React.createClass({
           opacity: s.hover ? '0' : '1',
           zIndex: s.hover ? '-1' : '1'
         }}>
-          {p.tab.title.length > 0 && p.tab.title? santize(p.tab.title) : p.tab.domain ? sanitize(p.tab.domain) : null}
+          {p.tab.title.length > 0 && p.tab.title? sanitize(p.tab.title) : p.tab.domain ? sanitize(p.tab.domain) : null}
         </div>
         : null}
       </Panel>
