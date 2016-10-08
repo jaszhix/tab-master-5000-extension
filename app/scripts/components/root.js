@@ -578,19 +578,32 @@ var Root = React.createClass({
     if (p.s.init) {
       return;
     }
+    var stateUpdate = {}; 
+    var selectedTabs = [p.s.tabs];
+    if (p.s.search.length > 0) {
+      selectedTabs.push(p.s.tileCache);
+    }
     console.log('removeSingleItem:', e);
-    var tabToUpdate = _.findIndex(p.s.tabs, {id: e});
-    if (tabToUpdate > -1) {
-      var s = this.state;
-      if (p.s.prefs.actions) {
-        actionStore.set_action('remove', p.s.tabs[tabToUpdate]);
-      }
-      _.pullAt(p.s.tabs, tabToUpdate);
-      p.s.tabs = _.orderBy(_.uniqBy(p.s.tabs, 'id'), ['pinned'], ['desc']);
-      if (p.s.prefs.sessionsSync) {
-        synchronizeSession(p.s.sessions, p.s.prefs, p.s.tabs);
-      }
-      state.set({tabs: p.s.tabs});
+    var removeTab = (tabsList, key)=>{
+      var tabToUpdate = _.findIndex(tabsList, {id: e});
+      if (tabToUpdate > -1) {
+        var s = this.state;
+        if (p.s.prefs.actions) {
+          actionStore.set_action('remove', tabsList[tabToUpdate]);
+        }
+        _.pullAt(tabsList, tabToUpdate);
+        p.s.tabs = _.orderBy(_.uniqBy(tabsList, 'id'), ['pinned'], ['desc']);
+        if (p.s.prefs.sessionsSync && key === 'tabs') {
+          synchronizeSession(p.s.sessions, p.s.prefs, tabsList);
+        }
+        stateUpdate[key] = tabsList;
+        state.set(stateUpdate);
+      }  
+    };
+
+    for (let i = selectedTabs.length - 1; i >= 0; i--) {
+      var key = i === 0 ? 'tabs' : 'tileCache';
+      removeTab(selectedTabs[i], key)
     }
   },
   updateSingleItem(e){
