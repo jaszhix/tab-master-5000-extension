@@ -51,9 +51,6 @@ var Tile = React.createClass({
   componentDidMount() {
     this.initMethods();
   },
-  shouldComponentUpdate() {
-    return this.state.render;
-  },
   componentWillReceiveProps(nP){
     var p = this.props;
     this.setTabMode();
@@ -303,7 +300,6 @@ var Tile = React.createClass({
     } else {
       close();
     }
-    _.delay(()=>this.setState({render: false}), 200);
   },
   handlePinning(tab, opt) {
     var s = this.state;
@@ -477,9 +473,18 @@ var Tile = React.createClass({
     var appHomepage = p.prefs.tabSizeHeight >= 170 ? p.prefs.tabSizeHeight + 5 : 170;
     var appOfflineEnabled = p.prefs.tabSizeHeight >= 170 ? p.prefs.tabSizeHeight - 10 : 158;
     var titleFontSize = p.tab.title.length >= 115 ? 13 : 14;
+
+    var santize = (str)=>{
+      var result = str.replace(/[^a-z0-9]/gi,'')[0];
+      if (result !== undefined) {
+        return result;
+      } else {
+        return '';
+      }
+    };
     if (s.hover) {
       titleFontSize--;
-    } 
+    }
     return (
       <Panel
       draggable="true"
@@ -615,7 +620,7 @@ var Tile = React.createClass({
           opacity: s.hover ? '0' : '1',
           zIndex: s.hover ? '-1' : '1'
         }}>
-          {p.tab.title.length > 0 ? p.tab.title.replace(/[^a-z0-9]/gi,'')[0].toUpperCase() : p.tab.domain ? p.tab.domain.replace(/[^a-z0-9]/gi,'')[0].toUpperCase() : null}
+          {p.tab.title.length > 0 && p.tab.title? santize(p.tab.title) : p.tab.domain ? sanitize(p.tab.domain) : null}
         </div>
         : null}
       </Panel>
@@ -642,7 +647,7 @@ var Sidebar = onClickOutside(React.createClass({
       maxWidth: '280px',
       height: '100%',
       position: 'fixed',
-      top: '53px',
+      top: '52px',
       opacity: p.enabled ? '1' : '0',
       left: p.enabled ? '0px' : '-168px',
       zIndex: '300',
@@ -651,13 +656,14 @@ var Sidebar = onClickOutside(React.createClass({
     };
     return (
       <div className="side-div" style={sideStyle}>
+        {p.enabled ?
         <SidebarMenu
         prefs={p.prefs}
         theme={p.theme}
         labels={p.labels}
         keys={p.keys}
         sort={p.sort}
-        direction={p.direction}/>
+        direction={p.direction}/> : null}
       </div>
     );
   }
@@ -854,10 +860,13 @@ var TileGrid = React.createClass({
                   onDragOver={(e)=>this.dragOver(e, i)}
                   key={i}
                   prefs={p.s.prefs}
+                  tabs={p.s.tabs}
                   bookmarks={p.s.bookmarks}
                   history={p.s.history}
                   sessions={p.s.sessions}
                   sessionTabs={p.s.sessionTabs}
+                  apps={p.s.apps}
+                  extensions={p.s.extensions}
                   stores={p.stores} 
                   render={p.render} 
                   i={i}  
