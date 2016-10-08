@@ -1,4 +1,5 @@
 import React from 'react';
+import tc from 'tinycolor2';
 
 import state from './stores/state';
 import {utilityStore} from './stores/main';
@@ -89,7 +90,7 @@ var ReleaseNotes = React.createClass({
     return (
       <div>
         
-        <img className="ntg-about" src="../../images/icon-128.png"/>
+        <img className="ntg-about" src={p.tm5kLogo}/>
         <a href="https://trackjs.com" target="_blank"><img style={{borderRadius: '2px', position: 'absolute', top: '0px', right:'5%', opacity: '0.7'}} src={TrackJSBadge} height="40px" alt="Protected by TrackJS JavaScript Error Monitoring" /></a>
         <img style={{position: 'absolute', top: '50px', right:'8%', height: '120px', opacity: '0.7'}} src={EFFBadge} />
         <div className="ntg-about">
@@ -125,6 +126,7 @@ var About = React.createClass({
   render: function() {
     var p = this.props;
     var s = this.state;
+    var tm5kLogo = `../../images/icon-128${tc(p.theme.settingsBg).isDark() ? '-light' : ''}.png`
     return (
       <div>
         <Row className="ntg-tabs">
@@ -143,7 +145,7 @@ var About = React.createClass({
           </div>
         </Row>
         <Col size="12" className="about">
-          {s.tab === 'release' ? <ReleaseNotes settingsMax={p.settingsMax}/> : null}
+          {s.tab === 'release' ? <ReleaseNotes settingsMax={p.settingsMax} tm5kLogo={tm5kLogo}/> : null}
           {s.tab === 'attribution' ? <Attribution /> : null}
           {s.tab === 'donate' ? <Donate /> : null}
         </Col>

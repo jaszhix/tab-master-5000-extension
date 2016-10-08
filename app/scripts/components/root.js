@@ -525,7 +525,6 @@ var Root = React.createClass({
       state.set(stateUpdate);
     } else {
       stateUpdate[p.s.modeKey] = p.s.tileCache;
-      stateUpdate.tileCache = null;
       state.set(stateUpdate);
     }
     _.defer(()=>this.setState({topLoad: false}));

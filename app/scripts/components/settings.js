@@ -709,7 +709,7 @@ var Settings = React.createClass({
           <Theming 
           settingsMax={s.settingsMax} 
           prefs={p.prefs} 
-          theme={p.theme} 
+          
           modal={p.modal} 
           savedThemes={p.savedThemes} 
           standardThemes={p.standardThemes} 
@@ -720,6 +720,7 @@ var Settings = React.createClass({
           {s.settings === 'about' ? 
           <About 
           modal={p.modal}
+          theme={p.theme} 
           settingsMax={s.settingsMax} /> : null}
         </Row>
       </Container>
