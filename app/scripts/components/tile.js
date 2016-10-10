@@ -537,13 +537,15 @@ var Tile = React.createClass({
               </div>
               {p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ? 
               <div className="text-muted text-size-small" style={{whiteSpace: s.hover ? 'initial' : 'nowrap', WebkitTransition: 'white-space 0.1s'}}>{p.tab.description}</div> : null}
-              {p.prefs.mode === 'tabs' || p.prefs.mode === 'history' || p.prefs.mode === 'bookmarks' ? 
+              {p.prefs.mode === 'tabs' || p.prefs.mode === 'history' || p.prefs.mode === 'bookmarks' || p.prefs.mode === 'sessions' ? 
               <div onMouseEnter={()=>this.setState({stHover: true})} onMouseLeave={()=>this.setState({stHover: false})}>
                 <div className="text-muted text-size-small" style={ST1}>{p.tab.domain}</div>
                 {p.prefs.mode === 'history' ? 
                 <div className="text-muted text-size-small" style={ST2}>{_.capitalize(moment(p.tab.lastVisitTime).fromNow())}</div> : null}
                 {p.prefs.mode === 'bookmarks' ? 
                 <div className="text-muted text-size-small" style={ST1}>{p.tab.folder}</div> : null}
+                {p.prefs.mode === 'sessions' ? 
+                <div className="text-muted text-size-small" style={p.tab.hasOwnProperty('domain') && p.tab.domain ? ST2 : ST1}>{p.tab.label ? p.tab.label : _.capitalize(moment(p.tab.sTimeStamp).fromNow())}</div> : null}
               </div> : null}
             </div>
         </div>
