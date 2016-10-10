@@ -210,13 +210,13 @@ var Bg = React.createClass({
       eventState.historyOnVisited = e;
   
       console.log('history onVisited', e, info);
-      sendMsg({e: e, type: 'history'});
+      sendMsg({e: e, type: 'history', action: 'visited'});
     });
     chrome.history.onVisitRemoved.addListener((e, info) => {
       eventState.historyOnVisitRemoved = e;
   
       console.log('history onVisited', e, info);
-      sendMsg({e: e, type: 'history'});
+      sendMsg({e: e, type: 'history', action: 'remove'});
     });
     chrome.management.onEnabled.addListener((details)=>{
       eventState.onEnabled = details;

@@ -512,7 +512,7 @@ var Tile = React.createClass({
     var ST2 = _.merge({top: `${p.prefs.tabSizeHeight - 55}px`}, subTitleStyle);
     return (
       <Panel
-      draggable="true"
+      draggable={p.prefs.mode === 'tabs'}
       onDragEnd={p.onDragEnd}
       onDragStart={p.onDragStart}
       onDragOver={p.onDragOver}
@@ -537,11 +537,13 @@ var Tile = React.createClass({
               </div>
               {p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ? 
               <div className="text-muted text-size-small" style={{whiteSpace: s.hover ? 'initial' : 'nowrap', WebkitTransition: 'white-space 0.1s'}}>{p.tab.description}</div> : null}
-              {p.prefs.mode === 'tabs' || p.prefs.mode === 'history' ? 
+              {p.prefs.mode === 'tabs' || p.prefs.mode === 'history' || p.prefs.mode === 'bookmarks' ? 
               <div onMouseEnter={()=>this.setState({stHover: true})} onMouseLeave={()=>this.setState({stHover: false})}>
                 <div className="text-muted text-size-small" style={ST1}>{p.tab.domain}</div>
                 {p.prefs.mode === 'history' ? 
                 <div className="text-muted text-size-small" style={ST2}>{_.capitalize(moment(p.tab.lastVisitTime).fromNow())}</div> : null}
+                {p.prefs.mode === 'bookmarks' ? 
+                <div className="text-muted text-size-small" style={ST1}>{p.tab.folder}</div> : null}
               </div> : null}
             </div>
         </div>

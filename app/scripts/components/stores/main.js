@@ -121,8 +121,7 @@ var reRender = (type, id, s) => {
   
 };
 var throttled = {
-  screenshot: _.throttle(screenshotStore.capture, 0, {leading: true}),
-  history: _.throttle(reRender, 4000, {leading: true})
+  screenshot: _.throttle(screenshotStore.capture, 0, {leading: true})
 };
 export var msgStore = Reflux.createStore({
   init(){
@@ -132,8 +131,10 @@ export var msgStore = Reflux.createStore({
       console.log('msg: ',msg, 'sender: ', sender);
       if (msg.type === 'prefs') {
         state.set({prefs: msg.e});
-      } else if (msg.type === 'history') {
-        throttled.history(msg.type, msg.e, s);
+      } else if (msg.type === 'bookmarks') {
+        bookmarksStore.get_bookmarks();
+      } else if (msg.type === 'history' && s.prefs.mode === msg.type) {
+        historyStore.get_history();
       } else if (msg.type === 'app') {
         chromeAppStore.set(s.prefs.mode === 'apps');
       } else if (msg.type === 'error') {
@@ -468,18 +469,26 @@ export var bookmarksStore = Reflux.createStore({
     });
   },
   get_bookmarks: function() {
+    var s = state.get();
+    var stateUpdate = {};
     this.set_bookmarks().then((bk)=>{
-      state.set({bookmarks: bk});
+      stateUpdate[s.search.length > 0 && s.bookmarks.length > 0 ? 'tileCache' : 'bookmarks'] = bk;
+      state.set(stateUpdate);
     });
   },
   get_folder(folder){
     return _.filter(this.bookmarks, {folder: folder});
   },
   remove(bookmarks, bookmarkId){
+    var stateUpdate = {};
     var refBookmark = _.findIndex(bookmarks, {bookmarkId: bookmarkId});
     if (refBookmark !== -1) {
       _.pullAt(bookmarks, refBookmark);
-      state.set({bookmarks: bookmarks});
+      stateUpdate.bookmarks = bookmarks;
+      if (bookmarks.length === 0) {
+        stateUpdate.search = '';
+      }
+      state.set(stateUpdate);
     }
   }
 });
@@ -522,15 +531,23 @@ export var historyStore = Reflux.createStore({
     });
   },
   get_history: function() {
+    var s = state.get();
+    var stateUpdate = {};
     this.set_history().then((h)=>{
-      state.set({history: h});
+      stateUpdate[s.search.length > 0 && s.history.length > 0 ? 'tileCache' : 'history'] = h;
+      state.set(stateUpdate);
     });
   },
   remove(history, url){
+    var stateUpdate = {};
     var refHistory = _.findIndex(history, {url: url});
     if (refHistory !== -1) {
       _.pullAt(history, refHistory);
-      state.set({history: history});
+      stateUpdate.history = history;
+      if (history.length === 0) {
+        stateUpdate.search = '';
+      }
+      state.set(stateUpdate);
     }
   }
 });
