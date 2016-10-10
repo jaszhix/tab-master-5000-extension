@@ -28,6 +28,7 @@ var Tile = React.createClass({
       xHover: false,
       pHover: false,
       mHover: false,
+      stHover: false,
       render: true,
       close: false,
       pinning: false,
@@ -496,6 +497,19 @@ var Tile = React.createClass({
     if (s.hover) {
       titleFontSize--;
     }
+    var subTitleStyle = {
+      whiteSpace: 'nowrap', 
+      WebkitTransition: 'white-space 0.1s', 
+      position: 'absolute',
+      right: '0',
+      zIndex: '12',
+      backgroundColor: p.theme.tileBg,
+      paddingLeft: '4px',
+      opacity: s.stHover ? '0.2' : '1',
+      WebkitTransition: 'opacity 0.2s'
+    };
+    var ST1 = _.merge({top: `${p.prefs.tabSizeHeight - 40}px`}, subTitleStyle);
+    var ST2 = _.merge({top: `${p.prefs.tabSizeHeight - 55}px`}, subTitleStyle);
     return (
       <Panel
       draggable="true"
@@ -524,9 +538,11 @@ var Tile = React.createClass({
               {p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ? 
               <div className="text-muted text-size-small" style={{whiteSpace: s.hover ? 'initial' : 'nowrap', WebkitTransition: 'white-space 0.1s'}}>{p.tab.description}</div> : null}
               {p.prefs.mode === 'tabs' || p.prefs.mode === 'history' ? 
-              <div className="text-muted text-size-small" style={{whiteSpace: 'nowrap', WebkitTransition: 'white-space 0.1s', position: 'absolute', top: `${p.prefs.tabSizeHeight - 40}px`, right: '0'}}>{p.tab.domain}</div> : null}
-              {p.prefs.mode === 'history' ? 
-              <div className="text-muted text-size-small" style={{whiteSpace: 'nowrap', WebkitTransition: 'white-space 0.1s', position: 'absolute', top: `${p.prefs.tabSizeHeight - 55}px`, right: '0'}}>{_.capitalize(moment(p.tab.lastVisitTime).fromNow())}</div> : null}
+              <div onMouseEnter={()=>this.setState({stHover: true})} onMouseLeave={()=>this.setState({stHover: false})}>
+                <div className="text-muted text-size-small" style={ST1}>{p.tab.domain}</div>
+                {p.prefs.mode === 'history' ? 
+                <div className="text-muted text-size-small" style={ST2}>{_.capitalize(moment(p.tab.lastVisitTime).fromNow())}</div> : null}
+              </div> : null}
             </div>
         </div>
       }
