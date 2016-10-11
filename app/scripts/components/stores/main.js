@@ -118,10 +118,6 @@ var reRender = (type, id, s) => {
       handleUpdate(s.tabs[targetTab]);
     }
   }
-  
-};
-var throttled = {
-  screenshot: _.throttle(screenshotStore.capture, 0, {leading: true})
 };
 export var msgStore = Reflux.createStore({
   init(){

@@ -5,11 +5,10 @@ import _ from 'lodash';
 import v from 'vquery';
 import moment from 'moment';
 
-import Draggable from 'react-draggable';
 import onClickOutside from 'react-onclickoutside';
 import ReactTooltip from './tooltip/tooltip';
 import state from './stores/state';
-import {msgStore, searchStore, utilityStore, dragStore, draggedStore, historyStore, bookmarksStore} from './stores/main';
+import {msgStore, utilityStore, dragStore, historyStore, bookmarksStore, chromeAppStore} from './stores/main';
 import themeStore from './stores/theme';
 import tabStore from './stores/tab';
 import sessionsStore from './stores/sessions';
@@ -71,6 +70,9 @@ var Tile = React.createClass({
     this.handleRelays(nP);
     if (nP.applyTabOrder) {
       this.applyTabOrder();
+    }
+    if (!_.isEqual(nP.tab, p.tab)) {
+      this.setState({close: false, render: true});
     }
   },
   initMethods(){
@@ -265,16 +267,16 @@ var Tile = React.createClass({
     var reRender = (defer)=>{
       state.set({reQuery: {state: true, type: defer ? 'cycle' : 'create', id: p.stores.tabs[0].id}});
     };
-    var close = (openTab=null)=>{
+    var close = ()=>{
       chrome.tabs.remove(id, ()=>{
         if (p.prefs.mode !== 'tabs') {
           _.defer(()=>{
             reRender(true);
           });
-        }    
+        }
       });
     };
-    if (p.prefs.animations && !s.openTab) {
+    if (!s.openTab) {
       this.setState({close: true});
     }
     if (p.prefs.mode !== 'tabs') {
@@ -588,7 +590,7 @@ var Tile = React.createClass({
       }
       style={{
         position: 'relative',
-        display: 'block',
+        display: s.render ? 'block' : 'none',
         height: p.prefs.tabSizeHeight, 
         width: `${p.prefs.tabSizeHeight + 80}px`, 
         float: 'left', 
@@ -600,7 +602,9 @@ var Tile = React.createClass({
         backgroundSize: s.screenshot ? 'cover' : 'contain',
         backgroundRepeat: s.screenshot ? 'initial' : 'no-repeat',
         overflow: 'hidden',
-        zIndex: '50'
+        zIndex: '50',
+        opacity: s.close ? '0' : '1',
+        WebkitTransition: p.prefs.animations ? 'opacity 0.2s' : 'initial'
       }}
       bodyStyle={{
         height: s.hover ? `${p.bodyHeightOnHover}px` : `${p.prefs.tabSizeHeight - 40}px`, 
