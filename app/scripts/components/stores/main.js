@@ -52,8 +52,8 @@ var reRender = (type, id, s) => {
         actionStore.set_action(type, s.tabs[refOldTab]);
       }
     }
-    console.log('window: ', targetTab.windowId, utilityStore.get_window(), 'state: ',utilityStore.get_systemState(), 'type: ', type, 'id: ',tId, 'item: ', targetTab);
-    if (targetTab.windowId === utilityStore.get_window()) {
+    console.log('window: ', targetTab.windowId, s.windowId, 'state: ',utilityStore.get_systemState(), 'type: ', type, 'id: ',tId, 'item: ', targetTab);
+    if (targetTab.windowId === s.windowId) {
       if (type === 'create' || type === 'attach') {
         state.set({create: id});
       } else if (type === 'remove' || type === 'detach') {
@@ -100,7 +100,7 @@ var reRender = (type, id, s) => {
       }
       handleUpdate(targetTab);
     }).catch((e)=>{
-        var wId = utilityStore.get_window();
+        var wId = s.windowId;
         console.log('Exception...', e);
         if (type === 'remove' || type === 'detach') {
           state.set({remove: tId});
@@ -126,9 +126,7 @@ export var msgStore = Reflux.createStore({
       var s = state.get();
       console.log('msg: ',msg, 'sender: ', sender);
       if (msg.type === 'prefs') {
-        if (!_.isEqual(s.prefs, msg.e)) {
-          state.set({prefs: msg.e});
-        }
+        state.set({prefs: msg.e});
       } else if (msg.type === 'bookmarks') {
         bookmarksStore.get_bookmarks();
       } else if (msg.type === 'history' && s.prefs.mode === msg.type) {
@@ -199,7 +197,6 @@ export var clickStore = Reflux.createStore({
 
 export var utilityStore = Reflux.createStore({
   init: function() {
-    this.window = null;
     this.focusedWindow = null;
     this.version = /Chrome\/([0-9.]+)/.exec(navigator.userAgent)[1].split('.');
     this.cursor = {page: {x: null, y: null}, offset: {x: null, y: null}, keys: {shift: null, ctrl: null}};
@@ -213,13 +210,6 @@ export var utilityStore = Reflux.createStore({
     } else {
       return faviconUrl;
     }
-  },
-  set_window(value){
-    this.window = value;
-    console.log('window ID: ', value);
-  },
-  get_window(){
-    return this.window;
   },
   get_focusedWindow(){
     chrome.windows.getLastFocused((w)=>{
@@ -412,7 +402,7 @@ var defaults = (iteration)=>{
     status: 'complete',
     index: iteration,
     openTab: null,
-    windowId: utilityStore.get_window(),
+    windowId: state.get().windowId,
   };
 };
 export var bookmarksStore = Reflux.createStore({
@@ -513,10 +503,10 @@ export var historyStore = Reflux.createStore({
             selected: false,
             status: 'complete',
             index: i,
-            windowId: utilityStore.get_window()
+            windowId: s.windowId
           });
           for (var y = s.tabs.length - 1; y >= 0; y--) {
-            openTabObj = _.find(s.tabs, {windowId: utilityStore.get_window()});
+            openTabObj = _.find(s.tabs, {windowId: s.windowId});
             if (h[i].url === s.tabs[y].url) {
               h[i] = _.assignIn(h[i], _.cloneDeep(s.tabs[y]));
               h[i].openTab = ++openTab;

@@ -113,9 +113,10 @@ var sessionsStore = Reflux.createStore({
     reader.readAsText(e.target.files[0], "UTF-8");
   },
   flatten(sessions){
+    var s = state.get();
     if (sessions) {
       var allTabs = [];
-      var t = tabStore.get_altTab();
+      var t = s.tabs;
       var openTab = 0;
       var openTabObj = null;
       for (let i = sessions.length - 1; i >= 0; i--) {
@@ -127,7 +128,7 @@ var sessionsStore = Reflux.createStore({
               pinned: openTabObj ? openTabObj.pinned : false,
               mutedInfo: openTabObj ? {muted: openTabObj.mutedInfo.muted} : {muted: false},
               audible: openTabObj ? openTabObj.audible : false,
-              windowId: utilityStore.get_window(),
+              windowId: s.windowId,
               id: openTabObj ? openTabObj.id : utilityStore.now() / Math.random(),
               tabId: sessions[i].tabs[y][z].id,
               label: sessions[i].label,

@@ -726,11 +726,11 @@ var Root = React.createClass({
         tabs: Tabs
       };
       try {
-        utilityStore.set_window(Tabs[0].windowId);
+        state.set({windowId: Tabs[0].windowId});
       } catch (e) {
         chrome.windows.getCurrent((w)=>{
           // Store the Chrome window ID for global reference
-          utilityStore.set_window(w.id);
+          state.set({windowId: w.id});
         });
       }
       this.setState({init: false});
@@ -807,17 +807,7 @@ var Root = React.createClass({
     var s = this.state;
     var p = this.props;
     if (s.theme && p.s.prefs) {
-      var newTabs = tabStore.getNewTabs();
       var cursor = utilityStore.get_cursor();
-      var windowId = utilityStore.get_window();
-      var stores = {
-        tabs: p.s[p.s.prefs.mode],
-        duplicateTabs: p.s.duplicateTabs,
-        screenshots: p.s.screenshots, 
-        newTabs: newTabs,
-        cursor: cursor,
-        windowId: windowId,
-      };
       var keys = [];
       var labels = {};
       if (p.s.prefs.mode === 'bookmarks') {
@@ -889,7 +879,8 @@ var Root = React.createClass({
               prefs={p.s.prefs} 
               favicons={p.s.favicons} 
               collapse={p.s.collapse} 
-              theme={s.theme} 
+              theme={s.theme}
+              colorPickerOpen={p.s.colorPickerOpen}
               savedThemes={s.savedThemes} 
               standardThemes={s.standardThemes}
               wallpaper={s.wallpaper}
@@ -921,7 +912,7 @@ var Root = React.createClass({
                     collapse={p.s.collapse}
                     width={p.s.width}
                     sidebar={p.s.sidebar}
-                    stores={stores}
+                    cursor={cursor}
                     sessions={p.s.sessions}
                     init={s.init}
                     theme={s.theme}
