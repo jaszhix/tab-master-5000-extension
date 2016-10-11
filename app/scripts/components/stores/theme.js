@@ -81,7 +81,7 @@ export var themeStore = Reflux.createStore({
         bodyBg: 'rgba(40, 41, 35, 0.91)',
         bodyText: 'rgba(239, 245, 223, 1)',
         darkBtnBg: 'rgba(64, 66, 59, 0.78)',
-        darkBtnBgHover: 'rgba(69, 71, 60, 1)',
+        darkBtnBgHover: 'rgba(78, 80, 73, 0.8)',
         darkBtnText: 'rgba(239, 245, 223, 1)',
         darkBtnTextShadow: 'rgba(72, 74, 67, 1)',
         headerBg: 'rgba(72, 74, 67, 0.8)',
