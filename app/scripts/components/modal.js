@@ -52,7 +52,7 @@ var ModalHandler = React.createClass({
     if (p.modal.state && p.modal.type === 'settings') {
       return (
         <ModalOverlay
-        clickOutside={true}
+        clickOutside={!p.colorPickerOpen}
         onClose={()=>state.set({modal: {state: false}})}
         size="full"
         header="Settings"
@@ -64,7 +64,9 @@ var ModalHandler = React.createClass({
         }}
         overlayStyle={{top: p.settings === 'theming' ? '55%' : '0'}}
         dialogStyle={{
-          zIndex: '50'
+          zIndex: '50',
+          opacity: p.settings === 'theming' ? '0.9' : '1',
+          WebkitTransition: p.prefs.animations ? 'opacity 0.2s' : 'initial'
         }}
         headerStyle={{backgroundColor: p.theme.headerBg, color: p.theme.darkBtnText}}
         bodyStyle={{
@@ -102,7 +104,8 @@ var ModalHandler = React.createClass({
           effect="solid" 
           place="top"
           multiline={true}
-          html={true} /> : null}
+          html={true}
+          offset={{top: 24, left: 46}} /> : null}
           {/*<Alert enabled={p.prefs.alerts} />*/}
         </ModalOverlay>
       );

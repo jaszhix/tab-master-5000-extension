@@ -1,7 +1,7 @@
 import Reflux from 'reflux';
 import _ from 'lodash';
 import kmp from 'kmp';
-
+import state from './state';
 import {msgStore, utilityStore} from './main';
 
 var tabStore = Reflux.createStore({
@@ -108,20 +108,19 @@ var tabStore = Reflux.createStore({
     });
   },
   closeNewTabs(){
-    msgStore.getPrefs().then((prefs)=>{
-      if (prefs.singleNewTab) {
-        var newTabs = this.getNewTabs();
-        var windowId = utilityStore.get_window();
-        var activeNewTab = _.find(newTabs, {active: true});
-        console.log('activeNewTab',activeNewTab,'newTabs',newTabs);
-        for (var i = newTabs.length - 1; i >= 0; i--) {
-          if (newTabs[i].windowId !== windowId && newTabs[i].id !== activeNewTab.id 
-            || newTabs.length > 1 && newTabs[i].id !== activeNewTab.id && !newTabs[i].active) {
-            this.close(newTabs[i].id);
-          }
+    var s = state.get();
+    if (s.prefs.singleNewTab) {
+      var newTabs = this.getNewTabs();
+      var windowId = s.windowId;
+      var activeNewTab = _.find(newTabs, {active: true});
+      console.log('activeNewTab',activeNewTab,'newTabs',newTabs);
+      for (var i = newTabs.length - 1; i >= 0; i--) {
+        if (newTabs[i].windowId !== windowId && newTabs[i].id !== activeNewTab.id 
+          || newTabs.length > 1 && newTabs[i].id !== activeNewTab.id && !newTabs[i].active) {
+          this.close(newTabs[i].id);
         }
       }
-    });
+    }
   },
   create(href, index){
     chrome.tabs.create({url: href, index: index}, (t)=>{

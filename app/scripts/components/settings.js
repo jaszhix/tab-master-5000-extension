@@ -74,6 +74,8 @@ var ColorPickerContainer = React.createClass({
               animation="slide-up"
               color={s.color ? s.color : '#FFFFFF'}
               mode="RGB"
+              onOpen={()=>state.set({colorPickerOpen: true})}
+              onClose={()=>state.set({colorPickerOpen: false})}
               defaultColor="#FFFFFF"
               defaultAlpha={100}
               alpha={s.alpha}

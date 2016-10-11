@@ -49,8 +49,10 @@ var state = Reflux.createStore({
       savedThemes: null,
       wallpapers: null,
       currentWallpaper: null,
+      colorPickerOpen: false,
       // Chrome data
       chromeVersion: null,
+      windowId: null,
       reQuery: {
         state: null,
         type: null,
