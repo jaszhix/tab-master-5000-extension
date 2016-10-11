@@ -19,7 +19,8 @@ var prefsStore = Reflux.createStore({
       screenshotBgOpacity: 5,
       blacklist: true, 
       sidebar: true, 
-      sort: true, 
+      sort: true,
+      showViewMode: true,
       mode: 'tabs',
       format: 'tile',
       installTime: Date.now(), 
@@ -69,6 +70,7 @@ var prefsStore = Reflux.createStore({
         blacklist: prefs.blacklist,
         sidebar: prefs.sidebar,
         sort: prefs.sort,
+        showViewMode: prefs.showViewMode,
         mode: prefs.mode,
         format: prefs.format,
         animations: prefs.animations,
@@ -85,6 +87,9 @@ var prefsStore = Reflux.createStore({
         tooltip: prefs.tooltip,
         alerts: prefs.alerts
       };
+      if (typeof this.prefs.showViewMode === 'undefined') {
+        this.prefs.showViewMode = true;
+      }
       if (typeof this.prefs.tabSizeHeight === 'undefined' || this.prefs.tabSizeHeight <= 133) {
         this.prefs.tabSizeHeight = 134;
       }

@@ -361,7 +361,7 @@ export var Context = onClickOutside(React.createClass({
         float: 'none', 
         padding: '1px', 
         borderRadius: '1px',
-        backgroundColor: p.theme.bodyBg
+        backgroundColor: p.theme.settingsBg
       }}>
         {p.options ? p.options.map((option, i)=>{
           if (option.divider) {

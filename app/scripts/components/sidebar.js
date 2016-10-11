@@ -2,6 +2,7 @@ import React from 'react';
 
 import state from './stores/state';
 import themeStore from './stores/theme';
+import tc from 'tinycolor2';
 import {utilityStore, msgStore} from './stores/main';
 
 var LargeBtn = React.createClass({
@@ -59,9 +60,11 @@ export var SidebarMenu = React.createClass({
       {label: 'Settings', icon: 'icon-gear', onClick: ()=>state.set({modal: {state: true, type: 'settings'}})},
       {label: `${p.prefs.format === 'tile' ? 'Table' : 'Tile'} Format`, icon: `icon-${p.prefs.format === 'tile' ? 'list' : 'grid'}`, onClick: ()=>msgStore.setPrefs({format: p.prefs.format === 'tile' ? 'table' : 'tile'})}
     ];
+    var borderColor = tc(p.theme.darkBtnBg).isDark() ? p.theme.darkBtnText : p.theme.darkBtnBg;
+    var textColor = tc(p.theme.bodyBg).isDark() && tc(p.theme.bodyText).isLight() ? p.theme.bodyText : tc(p.theme.headerBg).isDark() ? p.theme.darkBtnText : p.theme.lightBtnText;
     return (
       <div className="sidebar sidebar-secondary sidebar-default" style={{
-        color: p.theme.darkBtnText
+        color: textColor
       }}>
         <div className="sidebar-content">
           <div className="tabbable sortable ui-sortable">
@@ -86,13 +89,13 @@ export var SidebarMenu = React.createClass({
             <div className="tab-content">
               <div className="tab-pane no-padding active" id="components-tab">
                 <div className="sidebar-category">
-                  <div className={`category-title ${s.viewMode ? '' : 'category-collapsed'}`} style={{
-                    borderTopColor: p.theme.darkBtnText,
-                    borderTop: `1px solid ${p.theme.darkBtnText}`,
-                    borderBottomColor: p.theme.darkBtnText, 
+                  <div className={`category-title ${p.prefs.showViewMode ? '' : 'category-collapsed'}`} style={{
+                    borderTopColor: borderColor,
+                    borderTop: `1px solid ${borderColor}`,
+                    borderBottomColor: borderColor, 
                     cursor: 'pointer'
                   }} 
-                    onClick={()=>this.setState({viewMode: !s.viewMode})}>
+                    onClick={()=>msgStore.setPrefs({showViewMode: !p.prefs.showViewMode})}>
                     <span>View Mode</span>
                     <ul className="icons-list">
                       <li>
@@ -101,7 +104,7 @@ export var SidebarMenu = React.createClass({
                     </ul>
                   </div>
 
-                  {s.viewMode ?
+                  {p.prefs.showViewMode ?
                   <div className="category-content" style={{height: s.viewMode ? 'initial' : '0px', WebkitTransition: 'height 0.2s'}}>
                     <div className="row" onMouseLeave={()=>this.setState({lgBtnHover: ''})}>
                       {lgBtnOptions.map((row, i)=>{
@@ -138,7 +141,10 @@ export var SidebarMenu = React.createClass({
                   </div> : null}
                 </div>
                 <div className="sidebar-category">
-                  <div className={`category-title ${s.sortBy ? '' : 'category-collapsed'}`} style={{borderBottomColor: p.theme.bodyText, cursor: 'pointer'}} onClick={()=>this.setState({sortBy: !s.sortBy})}>
+                  <div 
+                  className={`category-title ${p.prefs.sort ? '' : 'category-collapsed'}`} 
+                  style={{borderBottomColor: borderColor, cursor: 'pointer'}} 
+                  onClick={()=>msgStore.setPrefs({sort: !p.prefs.sort})}>
                     <span>Sort By</span>
                     <ul className="icons-list">
                       <li>
@@ -147,7 +153,7 @@ export var SidebarMenu = React.createClass({
                     </ul>
                   </div>
 
-                  {s.sortBy ?
+                  {p.prefs.sort ?
                   <div className="category-content" style={{display: 'block'}}>
                     <form action="#">
                         <div className="form-group">
@@ -156,7 +162,7 @@ export var SidebarMenu = React.createClass({
                               <div key={i} className="radio">
                                 <label>
                                   <div className="choice">
-                                    <span className={p.sort === key ? 'checked' : ''} style={{border: `2px solid ${p.theme.darkBtnText}`}}>
+                                    <span className={p.sort === key ? 'checked' : ''} style={{border: `2px solid ${textColor}`}}>
                                       <input 
                                       type="radio" 
                                       name="radio-group" 
