@@ -299,7 +299,6 @@ var Tile = React.createClass({
     }
     var subTitleStyle = {
       whiteSpace: 'nowrap', 
-      WebkitTransition: 'white-space 0.1s', 
       position: 'absolute',
       right: '0',
       zIndex: '12',
@@ -308,7 +307,7 @@ var Tile = React.createClass({
       paddingLeft: '4px',
       paddingRight: '4px',
       opacity: s.stHover ? '0.2' : '1',
-      WebkitTransition: 'opacity 0.2s'
+      WebkitTransition: 'opacity 0.2s, white-space 0.1s'
     };
     var ST1 = _.merge({top: `${p.prefs.tabSizeHeight - 40}px`}, subTitleStyle);
     var ST2 = _.merge({top: `${p.prefs.tabSizeHeight - 55}px`}, subTitleStyle);
@@ -690,10 +689,10 @@ var TileGrid = React.createClass({
               if (i <= p.s.tileLimit && p.s.prefs.mode !== 'tabs' || p.s.prefs.mode === 'tabs') {
                 return (
                   <Tile
+                  key={tab.id}
                   onDragEnd={this.dragEnd}
                   onDragStart={(e)=>this.dragStart(e, i)}
                   onDragOver={(e)=>this.dragOver(e, i)}
-                  key={i}
                   prefs={p.s.prefs}
                   tabs={p.s.tabs}
                   duplicateTabs={p.s.duplicateTabs}

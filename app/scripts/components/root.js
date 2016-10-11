@@ -47,7 +47,7 @@ import themeStore from './stores/theme';
 import tabStore from './stores/tab';
 import sessionsStore from './stores/sessions';
 import screenshotStore from './stores/screenshot';
-import utils from './utils';
+import * as utils from './stores/tileUtils';
 import {Btn, Col, Row, Container} from './bootstrap';
 import TileGrid from './tile';
 import ModalHandler from './modal';
@@ -271,7 +271,6 @@ var Root = React.createClass({
         this.faviconsChange(nP.s[themeStates[i]]);
       }
     }*/
-
     if (!_.isEqual(nP.s.reQuery, p.s.reQuery) && nP.s.reQuery.state) {
       this.reQuery(nP.s.reQuery);
       state.set({reQuery: {state: false}});
@@ -299,9 +298,6 @@ var Root = React.createClass({
     if (s.init) {
       
       // Init methods called here after prefs are loaded from Chrome storage.
-      if (e.mode !== 'tabs') {
-        _.defer(()=>utilityStore.handleMode(e.mode));
-      }
       this.captureTabs('init');
     }
     if (e.keyboardShortcuts) {
@@ -680,27 +676,17 @@ var Root = React.createClass({
     } else {
       state.set({tabs: p.s.tabs});
     }
-  },
-  checkFavicons(p, tab, key, tabs){
-    if (p.s.favicons.length > 0) {
-      var match = false;
-      _.each(p.s.favicons, (fVal, fKey)=>{
-        if (tab.url.indexOf(fVal.domain) !== -1) {
-          match = true;
-          tabs[key].favIconUrl = fVal.favIconUrl;
-        }
-      });
-      if (!match) {
-        faviconStore.set_favicon(tab, 0, 0);
-      }
-    } else {
-      faviconStore.set_favicon(tab, 0, 0);
+    if (p.s.prefs.mode !== 'tabs') {
+      utilityStore.handleMode(p.s.prefs.mode);
     }
-    return tabs;
   },
   captureTabs(opt) {
     var s = this.state;
     var p = this.props;
+    if (p.s.prefs.mode === 'sessions' && opt !== 'init') {
+      state.set({sessionTabs: sessionsStore.flatten(p.s.sessions)});
+      return;
+    }
     this.setState({topLoad: true});
     // Query current Chrome window for tabs.
     
@@ -715,16 +701,14 @@ var Root = React.createClass({
         if (tVal.url.indexOf('chrome://newtab/') !== -1) {
           blacklisted.push(tKey);
         }
-        Tabs = this.checkFavicons(p, tVal, tKey, Tabs);
+        Tabs = utils.checkFavicons(p, tVal, tKey, Tabs);
       });
 
       for (let i = blacklisted.length - 1; i >= 0; i--) {
         _.pullAt(Tabs, blacklisted[i]);
       }
      
-      var stateUpdate = {
-        tabs: Tabs
-      };
+      var stateUpdate = {};
       try {
         state.set({windowId: Tabs[0].windowId});
       } catch (e) {
@@ -744,20 +728,20 @@ var Root = React.createClass({
           this.setState({grid: false});
         }
       }
-      var tabs = [];
       // Handle session view querying, and set it to tabs var.
       if (p.s.prefs.mode === 'sessions') {
-        tabs = sessionsStore.flatten(p.s.sessions);
+        var tabs = sessionsStore.flatten(p.s.sessions);
         for (let i = tabs.length - 1; i >= 0; i--) {
-          tabs = this.checkFavicons(p, tabs[i], i, tabs);
+          tabs = utils.checkFavicons(p, tabs[i], i, tabs);
         }
         stateUpdate.sessionTabs = tabs;
+      } else if (p.s.prefs.mode !== 'tabs') {
+        _.defer(()=>utilityStore.handleMode(p.s.prefs.mode, Tabs));
       }
-      tabs = Tabs;
       // Avoid setting tabs state here if the mode is not tabs or sessions. updateTabState will handle other modes.
       if (p.s.prefs.mode === 'tabs' || p.s.prefs.mode === 'sessions') {
         if (p.s.search.length === 0) {
-          stateUpdate.tabs = tabs;
+          stateUpdate.tabs = Tabs;
         } else {
           this.searchChange(p.s.search, tabs);
         }
@@ -794,8 +778,6 @@ var Root = React.createClass({
   },
   reQuery(e) {
     console.log('### reQuery', e);
-    // Method triggered by Chrome event listeners.
-    var p = this.props;
     if (!clickStore.get_click()) {
       if (e.state) {
         // Treat attaching/detaching and created tabs with a full re-render.

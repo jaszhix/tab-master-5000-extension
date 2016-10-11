@@ -6,6 +6,7 @@ import mouseTrap from 'mousetrap';
 import tabStore from './tab';
 import screenshotStore from './screenshot';
 import state from './state';
+import * as utils from './tileUtils';
 
 export var tabs = (opt)=>{
   if (opt === 'alt') {
@@ -257,14 +258,14 @@ export var utilityStore = Reflux.createStore({
     chrome.runtime.sendMessage({method: 'reload'}, (response)=>{
     });
   },
-  handleMode(mode){
-    this.reloadBg();
+  handleMode(mode, tabs=null){
+    //this.reloadBg();
     if (mode === 'apps' || mode === 'extensions') {
       chromeAppStore.set(mode === 'apps');
     } else if (mode === 'bookmarks') {
-      bookmarksStore.get_bookmarks();
+      bookmarksStore.get_bookmarks(tabs);
     } else if (mode === 'history') {
-      historyStore.get_history();
+      historyStore.get_history(tabs);
     }
     msgStore.setPrefs({mode: mode});
     state.set({sort: 'index', prefs: {mode: mode}, modeKey: mode === 'sessions' ? 'sessionTabs' : mode});
@@ -406,12 +407,13 @@ var defaults = (iteration)=>{
   };
 };
 export var bookmarksStore = Reflux.createStore({
-  set_bookmarks: function(value) {
+  set_bookmarks(tabs) {
     return new Promise((resolve, reject)=>{
       chrome.bookmarks.getTree((bk)=>{
         var bookmarks = [];
         var folders = [];
-        var t = state.get().tabs;
+        var s = state.get();
+        s.tabs = tabs ? tabs : s.tabs;
         var openTab = 0;
         var iter = -1;
         var addBookmarkChildren = (bookmarkLevel, title='')=> {
@@ -425,8 +427,8 @@ export var bookmarksStore = Reflux.createStore({
             bookmarks.push(bookmarkLevel);
           } else {
             folders.push(bookmarkLevel);
-            for (var i = bookmarks.length - 1; i >= 0; i--) {
-              for (var x = folders.length - 1; x >= 0; x--) {
+            for (let i = bookmarks.length - 1; i >= 0; i--) {
+              for (let x = folders.length - 1; x >= 0; x--) {
                 if (bookmarks[i].parentId === folders[x].id) {
                   bookmarks[i].folder = folders[x].title;
                 }
@@ -438,10 +440,10 @@ export var bookmarksStore = Reflux.createStore({
           }
         };
         addBookmarkChildren(bk[0]);
-        for (var i = bookmarks.length - 1; i >= 0; i--) {
-          for (var y = t.length - 1; y >= 0; y--) {
-            if (bookmarks[i].url === t[y].url) {
-              bookmarks[i] = _.merge(bookmarks[i], t[y]);
+        for (let i = bookmarks.length - 1; i >= 0; i--) {
+          for (let y = s.tabs.length - 1; y >= 0; y--) {
+            if (bookmarks[i].url === s.tabs[y].url) {
+              bookmarks[i] = _.merge(bookmarks[i], s.tabs[y]);
               bookmarks[i].openTab = ++openTab;
             } else {
               bookmarks[i] = _.merge(bookmarks[i], defaults(iter));
@@ -450,15 +452,18 @@ export var bookmarksStore = Reflux.createStore({
         }
         bookmarks = _.chain(bookmarks).orderBy(['openTab'], ['asc']).uniqBy('id').value();
         if (bookmarks) {
+          for (let i = bookmarks.length - 1; i >= 0; i--) {
+            bookmarks = utils.checkFavicons({s: s}, bookmarks[i], i, bookmarks);
+          }
           resolve(bookmarks);
         }
       });
     });
   },
-  get_bookmarks: function() {
+  get_bookmarks(tabs) {
     var s = state.get();
     var stateUpdate = {};
-    this.set_bookmarks().then((bk)=>{
+    this.set_bookmarks(tabs).then((bk)=>{
       stateUpdate[s.search.length > 0 && s.bookmarks.length > 0 ? 'tileCache' : 'bookmarks'] = bk;
       state.set(stateUpdate);
     });
@@ -481,11 +486,12 @@ export var bookmarksStore = Reflux.createStore({
 });
 
 export var historyStore = Reflux.createStore({
-  set_history: function(value) {
+  set_history(tabs) {
     return new Promise((resolve, reject)=>{
       chrome.history.search({text: '', maxResults: 1000}, (h)=>{
         console.log(h);
         var s = state.get();
+        s.tabs = tabs ? tabs : s.tabs;
         var openTab = 0;
         var openTabObj = null;
         for (var i = h.length - 1; i >= 0; i--) {
@@ -513,14 +519,17 @@ export var historyStore = Reflux.createStore({
             } 
           }
         }
+        for (let i = h.length - 1; i >= 0; i--) {
+          h = utils.checkFavicons({s: s}, h[i], i, h);
+        }
         resolve(h);
       });
     });
   },
-  get_history: function() {
+  get_history(tabs) {
     var s = state.get();
     var stateUpdate = {};
-    this.set_history().then((h)=>{
+    this.set_history(tabs).then((h)=>{
       stateUpdate[s.search.length > 0 && s.history.length > 0 ? 'tileCache' : 'history'] = h;
       state.set(stateUpdate);
     });
