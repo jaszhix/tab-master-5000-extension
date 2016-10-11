@@ -405,20 +405,21 @@ var Tile = React.createClass({
   handleApp(opt){
     var p = this.props;
     if (opt === 'toggleEnable') {
-      chrome.management.setEnabled(p.tab.id, !p.tab.enabled, ()=>{
-        state.set({reQuery: {state: true, type: 'cycle'}});
-      });
+      chrome.management.setEnabled(p.tab.id, !p.tab.enabled);
     } else if (opt === 'uninstallApp') {
-      chrome.management.uninstall(p.tab.id);
+      chrome.management.uninstall(p.tab.id, ()=>{
+        chromeAppStore.set(p.prefs.mode === 'apps');
+      });
     } else if (opt  === 'createAppShortcut') {
       chrome.management.createAppShortcut(p.tab.id);
     } else if (opt  === 'launchApp') {
       this.handleClick(p.tab.id);
     } else if (_.first(_.words(opt)) === 'OPEN') {
       chrome.management.setLaunchType(p.tab.id, opt);
-      state.set({reQuery: {state: true, type: 'update'}});
     }
-
+    if (opt !== 'launchApp' && opt !== 'uninstallApp') {
+      chromeAppStore.set(p.prefs.mode === 'apps');
+    }
   },
   handleRelays(p){
     var r = p.relay;
