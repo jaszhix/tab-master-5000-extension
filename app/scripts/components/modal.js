@@ -4,8 +4,6 @@ import _ from 'lodash';
 import Modal from 'react-modal';
 import ReactTooltip from './tooltip/tooltip';
 
-import style from './style';
-
 import Settings from './settings';
 
 import state from './stores/state';
@@ -50,11 +48,6 @@ var ModalHandler = React.createClass({
   render: function() {
     var s = this.state;
     var p = this.props;
-    _.merge(style.modal.content, {
-      background: s.modal.type !== 'theming' ? p.theme.settingsBg : 'initial',
-      border: `1px solid ${p.theme.textFieldsPlaceholderText}`,
-      WebkitBoxShadow: `2px 2px 15px -2px ${p.theme.tileShadow}`
-    });
     var tabOptions = [{label: 'Sessions'}, {label: 'Preferences'}, {label: 'Theming'}, {label: 'About'}];
     if (p.modal.state && p.modal.type === 'settings') {
       return (
@@ -104,12 +97,13 @@ var ModalHandler = React.createClass({
           wallpapers={p.wallpapers}
           settings={p.settings}
           height={p.height} />
+          {p.prefs.tooltip ?
           <ReactTooltip 
           effect="solid" 
           place="top"
           multiline={true}
-          html={true} />
-          <Alert enabled={p.prefs.alerts} />
+          html={true} /> : null}
+          {/*<Alert enabled={p.prefs.alerts} />*/}
         </ModalOverlay>
       );
     } else {

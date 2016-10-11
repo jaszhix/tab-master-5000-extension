@@ -939,7 +939,7 @@ var Root = React.createClass({
                 offset={{top: 0, left: 6}} /> : null}
               </div> : null}
             </div>}
-            {p.s.modal && !p.s.modal.state && p.s.prefs.tooltip ? <Alert enabled={p.s.prefs.alerts} /> : null}
+            {p.s.prefs.alerts ? <Alert enabled={p.s.prefs.alerts} /> : null}
         </div>
       );
     } else {
