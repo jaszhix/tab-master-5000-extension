@@ -580,7 +580,7 @@ var Tile = React.createClass({
             <li>
               <i 
               style={{display: 'block', cursor: 'pointer', color: s.xHover ? p.theme.tileXHover : p.theme.tileX, opacity: s.hover ? '1' : '0',}} 
-              className="icon-cross2 ntg-x"
+              className={`icon-${p.prefs.mode === 'tabs' || openTab ? 'cross2' : 'eraser'} ntg-x`}
               onMouseEnter={this.handleTabCloseHoverIn} 
               onMouseLeave={this.handleTabCloseHoverOut} 
               onClick={()=>this.handleCloseTab(p.tab.id)} />
