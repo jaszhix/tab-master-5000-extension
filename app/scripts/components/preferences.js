@@ -26,7 +26,7 @@ var Slide = React.createClass({
       <div onMouseEnter={()=>this.setState({hover: true})} onMouseLeave={()=>this.setState({hover: false})} style={s.hover ? {backgroundColor: p.hoverBg, borderRadius: '3px'} : null} data-place="bottom" data-tip={`<div style="max-width: 350px;">${p['data-tip']}</div>`}>
         <Row className={p.className} onMouseEnter={p.onMouseEnter}>
           <span>{p.label}</span>
-          <Slider min={p.min} max={p.max} defaultValue={p.defaultValue} value={p.value} onChange={p.onChange} />
+          <Slider min={p.min} max={p.max} defaultValue={p.defaultValue} value={p.value} onChange={p.onChange} onAfterChange={p.onAfterChange} />
         </Row>
       </div>
     );
@@ -155,18 +155,27 @@ var Preferences = React.createClass({
     var p = this.props;
     var obj = {};
     obj[opt] = !p.prefs[opt];
-    msgStore.setPrefs(obj);
-    if (opt === 'screenshot') {
-      utilityStore.restartNewTab();
-    }
-    if (opt === 'animations') {
-      themeStore.set(p.theme);
-    }
+    state.set({prefs: obj});
+
+    _.defer(()=>{
+      msgStore.setPrefs(obj);
+      if (opt === 'screenshot') {
+        utilityStore.restartNewTab();
+      }
+      if (opt === 'animations') {
+        themeStore.set(p.theme);
+      }
+    });
   },
   handleSlide(e, opt){
     var obj = {};
     obj[opt] = e;
-    msgStore.setPrefs(obj);
+    state.set({prefs: obj});
+  },
+  handleSlideAfterChange(e, opt){
+    var obj = {};
+    obj[opt] = e;
+    msgStore.setPrefs(obj)
   },
   render: function() {
     var s = this.state;
@@ -260,7 +269,8 @@ var Preferences = React.createClass({
                 min={0} max={10}
                 defaultValue={p.prefs.screenshotBgOpacity}
                 value={p.prefs.screenshotBgOpacity}
-                onChange={(e)=>msgStore.setPrefs({screenshotBgOpacity: e})} 
+                onChange={(e)=>this.handleSlide(e, 'screenshotBgOpacity')}
+                onAfterChange={(e)=>this.handleSlideAfterChange(e, 'screenshotBgOpacity')}
                 onMouseEnter={()=>this.handleToggle('screenshotBgOpacity')}
                 hoverBg={p.theme.settingsItemHover}
                 data-tip="Controls the strength of the opacity of background screenshots and wallpaper." /> 
@@ -270,7 +280,8 @@ var Preferences = React.createClass({
                 min={0} max={15}
                 defaultValue={p.prefs.screenshotBgBlur}
                 value={p.prefs.screenshotBgBlur}
-                onChange={(e)=>msgStore.setPrefs({screenshotBgBlur: e})} 
+                onChange={(e)=>this.handleSlide(e, 'screenshotBgBlur')}
+                onAfterChange={(e)=>this.handleSlideAfterChange(e, 'screenshotBgBlur')}
                 onMouseEnter={()=>this.handleToggle('screenshotBgBlur')}
                 hoverBg={p.theme.settingsItemHover}
                 data-tip="Controls the strength of the blur of background screenshots and wallpaper."/> 
@@ -280,7 +291,7 @@ var Preferences = React.createClass({
                 defaultValue={p.prefs.tabSizeHeight}
                 value={p.prefs.tabSizeHeight}
                 onChange={(e)=>this.handleSlide(e, 'tabSizeHeight')}
-                onAfterChange={()=>state.set({reQuery: {state: true, type: 'cycle', id: this.props.tabs[0].id}})}
+                onAfterChange={(e)=>this.handleSlideAfterChange(e, 'tabSizeHeight')}
                 onMouseEnter={()=>this.handleToggle('tabSizeHeight')}
                 step={20}
                 dots={true}

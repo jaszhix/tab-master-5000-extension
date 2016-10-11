@@ -126,7 +126,9 @@ export var msgStore = Reflux.createStore({
       var s = state.get();
       console.log('msg: ',msg, 'sender: ', sender);
       if (msg.type === 'prefs') {
-        state.set({prefs: msg.e});
+        if (!_.isEqual(s.prefs, msg.e)) {
+          state.set({prefs: msg.e});
+        }
       } else if (msg.type === 'bookmarks') {
         bookmarksStore.get_bookmarks();
       } else if (msg.type === 'history' && s.prefs.mode === msg.type) {
@@ -158,7 +160,6 @@ export var msgStore = Reflux.createStore({
         this.response = response.prefs;
         this.trigger(this.response);
         console.log('setPrefs: ', obj);
-        state.set({reQuery: {state: true, type: 'create'}});
       }
     });
   },
