@@ -125,7 +125,7 @@ export var themeStore = Reflux.createStore({
         lightBtnBgHover: 'rgba(209, 219, 184, 0.87)',
         lightBtnText: 'rgba(56, 32, 32, 1)',
         lightBtnTextShadow: 'rgba(255, 255, 255, 0.28)',
-        settingsBg: 'rgba(237, 212, 180, 0.73)',
+        settingsBg: 'rgba(237, 212, 180, 0.83)',
         settingsItemHover: 'rgba(227, 199, 148, 0.35)',
         textFieldsBg: 'rgba(255, 255, 255, 0.58)',
         textFieldsBorder: 'rgba(140, 81, 80, 0.58)',
