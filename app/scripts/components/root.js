@@ -372,6 +372,9 @@ var Root = React.createClass({
       .dropdown-menu>li>a:hover, .dropdown-menu>li>a:focus {
         background-color: ${e.theme.settingsItemHover};
       }
+      .dropdown-menu>li>label:hover, .dropdown-menu>li>label:focus {
+        background-color: ${e.theme.settingsItemHover};
+      }
       .ntg-x {
         color: ${e.theme.tileX};
       }

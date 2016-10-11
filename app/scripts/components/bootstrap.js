@@ -371,16 +371,15 @@ export var Context = onClickOutside(React.createClass({
             if (option.hasOwnProperty('switch')) {
               return (
                 <li key={i} className="checkbox checkbox-switchery switchery-xs">
-                  <label style={{paddingLeft: '47px', paddingTop: '6px', paddingBottom: '6px'}} onClick={option.onClick}>
+                  <label style={{paddingLeft: '47px', paddingTop: '6px', paddingBottom: '6px', color: p.theme.bodyText}} onClick={option.onClick}>
                     <span className="switchery switchery-default" style={{
                       left: '8px',
                       backgroundColor: option.switch ? p.theme.darkBtnBg : 'rgba(255, 255, 255, 0)', 
                       borderColor: option.switch ? p.theme.darkBtnBg : p.theme.textFieldBorder, 
                       boxShadow: `${option.switch ? p.theme.darkBtnBg : p.theme.textFieldBorder} 0px 0px 0px 8px inset`, 
                       WebkitTransition: 'border 0.4s, box-shadow 0.4s, background-color 1.2s',
-                      color: p.theme.bodyText
                     }}>
-                      <small style={{left: option.switch ? '14px' : '0px', WebkitTransition: 'background-color 0.4s, left 0.2s', backgroundColor: option.switch ? p.theme.darkBtnText : 'initial'}} />
+                      <small style={{left: option.switch ? '14px' : '0px', WebkitTransition: 'background-color 0.4s, left 0.2s', backgroundColor: option.switch ? p.theme.darkBtnText : p.theme.bodyText}} />
                     </span>
                      {option.label}
                   </label>
