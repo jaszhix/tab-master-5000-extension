@@ -296,7 +296,6 @@ var Root = React.createClass({
   prefsChange(e){
     var s = this.state;
     if (s.init) {
-      
       // Init methods called here after prefs are loaded from Chrome storage.
       this.captureTabs('init');
     }
@@ -677,7 +676,7 @@ var Root = React.createClass({
       state.set({tabs: p.s.tabs});
     }
     if (p.s.prefs.mode !== 'tabs') {
-      utilityStore.handleMode(p.s.prefs.mode);
+      utilityStore.handleMode(p.s.prefs.mode, p.s.tabs);
     }
   },
   captureTabs(opt) {
@@ -730,11 +729,11 @@ var Root = React.createClass({
       }
       // Handle session view querying, and set it to tabs var.
       if (p.s.prefs.mode === 'sessions') {
-        var tabs = sessionsStore.flatten(p.s.sessions);
-        for (let i = tabs.length - 1; i >= 0; i--) {
-          tabs = utils.checkFavicons(p, tabs[i], i, tabs);
+        var sessionTabs = sessionsStore.flatten(p.s.sessions);
+        for (let i = sessionTabs.length - 1; i >= 0; i--) {
+          sessionTabs = utils.checkFavicons(p, sessionTabs[i], i, sessionTabs);
         }
-        stateUpdate.sessionTabs = tabs;
+        stateUpdate.sessionTabs = sessionTabs;
       } else if (p.s.prefs.mode !== 'tabs') {
         _.defer(()=>utilityStore.handleMode(p.s.prefs.mode, Tabs));
       }
@@ -743,7 +742,7 @@ var Root = React.createClass({
         if (p.s.search.length === 0) {
           stateUpdate.tabs = Tabs;
         } else {
-          this.searchChange(p.s.search, tabs);
+          this.searchChange(p.s.search, Tabs);
         }
         this.checkDuplicateTabs(Tabs);
       }
@@ -869,7 +868,6 @@ var Root = React.createClass({
               wallpapers={s.wallpapers}
               settings={p.s.settings}
               height={p.s.height} /> : null}
-              {p.s[p.s.modeKey] ? 
               <div className="tile-container">
                 <Search
                 s={p.s}
@@ -884,7 +882,7 @@ var Root = React.createClass({
                   width: `${p.s.width}px`,
                   top: '57px'
                 }}>
-                  {s.grid ? 
+                  {s.grid && p.s[p.s.modeKey] ? 
                     <TileGrid
                     s={p.s}
                     data={p.s[p.s.modeKey]}
@@ -910,7 +908,7 @@ var Root = React.createClass({
                 multiline={true}
                 html={true}
                 offset={{top: 0, left: 6}} /> : null}
-              </div> : null}
+              </div>
             </div>}
             {p.s.prefs.alerts ? <Alert enabled={p.s.prefs.alerts} /> : null}
         </div>

@@ -2,7 +2,7 @@ import React from 'react';
 import Reflux from 'reflux';
 import _ from 'lodash';
 
-import utils from './utils';
+import * as utils from './stores/tileUtils';
 
 import Slider from 'rc-slider';
 import ReactTooltip from './tooltip/tooltip';

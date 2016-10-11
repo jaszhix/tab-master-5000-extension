@@ -126,9 +126,11 @@ export var msgStore = Reflux.createStore({
     chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       var s = state.get();
       console.log('msg: ',msg, 'sender: ', sender);
-      if (msg.type === 'prefs') {
-        state.set({prefs: msg.e});
-      } else if (msg.type === 'bookmarks') {
+      if (msg.type === 'prefs' && msg.e.mode === 'sessions') {
+        reRender(msg.type, msg.e, s);
+        return;
+      }
+      if (msg.type === 'bookmarks') {
         bookmarksStore.get_bookmarks();
       } else if (msg.type === 'history' && s.prefs.mode === msg.type) {
         historyStore.get_history();
@@ -147,17 +149,13 @@ export var msgStore = Reflux.createStore({
       } else if (msg.type === 'checkSSCapture') {
         console.log('checkSSCapture: Sending screenshot to '+sender.tab.url);
         sendResponse(screenshotStore.tabHasScreenshot(sender.tab.url));
-      } else if (msg.e !== undefined) {
-        console.log(`${msg.type}: `,msg.e);
-        reRender(msg.type, msg.e, s);
       }
     });
   },
   setPrefs(obj){
+    state.set({prefs: obj});
     chrome.runtime.sendMessage(chrome.runtime.id, {method: 'setPrefs', obj: obj}, (response)=>{
       if (response && response.prefs) {
-        this.response = response.prefs;
-        this.trigger(this.response);
         console.log('setPrefs: ', obj);
       }
     });
@@ -268,7 +266,7 @@ export var utilityStore = Reflux.createStore({
       historyStore.get_history(tabs);
     }
     msgStore.setPrefs({mode: mode});
-    state.set({sort: 'index', prefs: {mode: mode}, modeKey: mode === 'sessions' ? 'sessionTabs' : mode});
+    state.set({sort: 'index', modeKey: mode === 'sessions' ? 'sessionTabs' : mode});
   },
   now(){
     return new Date(Date.now()).getTime();
@@ -716,14 +714,6 @@ export var chromeAppStore = Reflux.createStore({
 });
 
 export var keyboardStore = Reflux.createStore({
-  init(){
-    this.key = '';
-    msgStore.getPrefs().then((prefs)=>{
-      if (prefs.keyboardShortcuts) {
-        this.set(prefs);
-      }
-    });
-  },
   state(key){
     if (this.key === key) {
       this.key = '';

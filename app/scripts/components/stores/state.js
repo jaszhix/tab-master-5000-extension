@@ -10,7 +10,7 @@ var state = Reflux.createStore({
       modeKey: 'tabs',
       lastUpdate: [],
       sessions: [],
-      sessionTabs: null,
+      sessionTabs: [],
       // Single item states
       move: null,
       update: null,
@@ -58,16 +58,16 @@ var state = Reflux.createStore({
         type: null,
         id: null
       },
-      tabsCache: null,
-      tabs: null,
+      tileCache: null,
+      tabs: [],
       allTabs: null,
       newTabs: null,
       duplicateTabs: null,
       domainRegEx: /^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n]+)/im,
-      bookmarks: null,
-      history: null,
+      bookmarks: [],
+      history: [],
       apps: [],
-      extensions: null,
+      extensions: [],
       favicons: [],
       screenshots: [],
       sort: 'index',
@@ -86,6 +86,7 @@ var state = Reflux.createStore({
     
     console.log('STATE: ', this.state);
     this.trigger(this.state);
+    
     if (obj.hasOwnProperty(this.state.modeKey)) {
       this.trigger(this.state);
     }
