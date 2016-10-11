@@ -2,9 +2,86 @@ import React from 'react';
 import _ from 'lodash';
 import v from 'vquery';
 import mouseTrap from 'mousetrap';
+
 import state from './stores/state';
 import {alertStore} from './stores/main';
 import tabStore from './stores/tab';
+import * as utils from './stores/tileUtils';
+
+var Row = React.createClass({
+  componentWillReceiveProps(nP){
+    var p = this.props;
+    if (!_.isEqual(nP.s.relay, p.s.relay)) {
+      var cT = _.cloneDeep(this);
+      _.assignIn(cT.props, {relay: nP.s.relay, prefs: nP.s.prefs, mode: nP.s.mode, tab: nP.row});
+      utils.handleRelays(cT, cT.props);
+    }
+  },
+  handleContext(e){
+    var p = this.props;
+    e.preventDefault();
+    if (p.s.prefs.context) {
+      state.set({context: {value: true, id: p.row}})
+    }
+  },
+  render(){
+    var p = this.props;
+    var textOverflow = {
+      whiteSpace: 'nowrap',
+      width: `${p.s.width <= 1186 ? p.s.width / 3 : p.s.width <= 1015 ? p.s.width / 6 : p.s.width / 2}px`,
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      display: 'inline-block'
+    };
+    return (
+      <tr 
+      className={p.className} 
+      style={p.style} 
+      onMouseEnter={p.onMouseEnter}
+      draggable={p.draggable}
+      onDragEnd={p.onDragEndD}
+      onDragStart={p.onDragStart}
+      onDragOver={p.onDragOver}
+      onClick={p.onClick}
+      onContextMenu={this.handleContext}
+      >
+        {p.columns.map((column, z)=>{
+          if (p.row.hasOwnProperty(column)) {
+            if (column === 'title' || column === 'name') {
+              return (
+                <td key={z} style={{maxWidth: p.s.width <= 950 ? '300px' : p.s.width <= 1015 ? '400px' : '700px'}}>
+                  <div className="media-left media-middle">
+                    <img src={p.row.favIconUrl && p.row.domain !== 'chrome' ? p.row.favIconUrl : '../images/file_paper_blank_document.png' } style={{width: '16px', height: '16px'}}/>
+                  </div>
+                  <div className="media-left">
+                    <div style={textOverflow}><a style={{cursor: 'pointer', fontSize: '14px'}} onClick={()=>p.handleTitleClick(p.row)} className="text-default text-semibold">{p.row[column]}</a></div>
+                    {p.s.prefs.mode === 'apps' || p.s.prefs.mode === 'extensions' ? 
+                    <div className="text-muted text-size-small" style={{whiteSpace: 'nowrap'}}>{p.row.description}</div> : null}
+                  </div>
+                  {p.row.audible ?
+                  <div className="media-right media-middle" style={{right: '20px'}}>
+                    <i className="icon-volume-medium"/>
+                  </div> : null}
+                </td>
+              );
+
+            } else if (p.s.prefs.mode === 'apps' && column === 'domain') {
+              return <td key={z}><i className={`icon-${_.isString(p.row[column]) ? 'check2' : 'cross'}`} /></td>;
+            } else if (_.isBoolean(p.row[column]) || column === 'mutedInfo') {
+              var bool = column === 'mutedInfo' ? p.row[column].muted : p.row[column];
+              var toggleBool = ['pinned', 'enabled', 'mutedInfo'];
+              return <td key={z}><i className={`icon-${bool ? 'check2' : 'cross'}`} style={{cursor: toggleBool.indexOf(column) !== -1 ? 'pointer' : 'initial'}} onClick={toggleBool.indexOf(column) !== -1 ? ()=>p.handleBooleanClick(column) : null} /></td>;
+            } else if (column === 'launchType') {
+              return <td key={z}>{p.row[column].indexOf('TAB') !== -1 ? 'Tab' : 'Window'}</td>;
+            } else {
+              return <td key={z} >{column === 'mutedInfo' ? p.row[column].muted : p.row[column]}</td>;
+            }
+          }
+        })}
+      </tr>
+    );
+  }
+});
 
 export var Table = React.createClass({
   getInitialState(){
@@ -175,7 +252,6 @@ export var Table = React.createClass({
     
   },
   handleSelect(i){
-
     var s = this.state;
     var p = this.props;
     console.log('p.cursor', p.cursor);
@@ -216,7 +292,6 @@ export var Table = React.createClass({
         }
 
       }
-      //this.setState({shiftRange: s.shiftRange});
     } else {
       s.selectedItems = [];
       s.shiftRange = null;
@@ -234,13 +309,7 @@ export var Table = React.createClass({
   render(){
     var s = this.state;
     var p = this.props;
-    var textOverflow = {
-      whiteSpace: 'nowrap',
-      width: `${p.s.width <= 1186 ? p.s.width / 3 : p.s.width <= 1015 ? p.s.width / 6 : p.s.width / 2}px`,
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      display: 'inline-block'
-    };
+    console.log('rows: ', s.rows);
     if (s.columns && s.rows) {
       return (
         <div className="datatable-scroll">
@@ -258,50 +327,22 @@ export var Table = React.createClass({
             <tbody onMouseLeave={()=>this.setState({rowHover: -1})}>
             {s.rows.map((row, i)=>{
               return (
-                <tr 
-                key={i} 
-                className={i % 2 === 0 ? 'even' : 'odd'} 
-                style={{fontSize: '14px', backgroundColor: s.rowHover === i || s.selectedItems.indexOf(i) !== -1 ? p.theme.settingsBg : 'initial'}} 
-                onMouseEnter={()=>this.setState({rowHover: i})}
-                draggable="true"
-                onDragEnd={this.dragEnd}
-                onDragStart={(e)=>this.dragStart(e, i)}
-                onDragOver={(e)=>this.dragOver(e, i)}
-                onClick={()=>this.handleSelect(i)}
-                >
-                  {s.columns.map((column, z)=>{
-                    if (row.hasOwnProperty(column)) {
-                      if (column === 'title' || column === 'name') {
-                        return (
-                          <td key={z} style={{maxWidth: p.s.width <= 950 ? '300px' : p.s.width <= 1015 ? '400px' : '700px'}}>
-                            <div className="media-left media-middle">
-                              <img src={row.favIconUrl && row.domain !== 'chrome' ? row.favIconUrl : '../images/file_paper_blank_document.png' } style={{width: '16px', height: '16px'}}/>
-                            </div>
-                            <div className="media-left">
-                              <div style={textOverflow}><a style={{cursor: 'pointer'}} onClick={()=>this.handleTitleClick(row)} className="text-default text-semibold">{row[column]}</a></div>
-                              {p.s.prefs.mode === 'apps' || p.s.prefs.mode === 'extensions' ? <div className="text-muted text-size-small" style={{whiteSpace: 'nowrap'}}>{row.description}</div> : null}
-                            </div>
-                            {row.audible ?
-                            <div className="media-right media-middle" style={{right: '20px'}}>
-                              <i className="icon-volume-medium"/>
-                            </div> : null}
-                          </td>
-                        );
-
-                      } else if (p.s.prefs.mode === 'apps' && column === 'domain') {
-                        return <td key={z}><i className={`icon-${_.isString(row[column]) ? 'check2' : 'cross'}`} /></td>;
-                      } else if (_.isBoolean(row[column]) || column === 'mutedInfo') {
-                        var bool = column === 'mutedInfo' ? row[column].muted : row[column];
-                        var toggleBool = ['pinned', 'enabled', 'mutedInfo'];
-                        return <td key={z}><i className={`icon-${bool ? 'check2' : 'cross'}`} style={{cursor: toggleBool.indexOf(column) !== -1 ? 'pointer' : 'initial'}} onClick={toggleBool.indexOf(column) !== -1 ? ()=>this.handleBooleanClick(column, row) : null} /></td>;
-                      } else if (column === 'launchType') {
-                        return <td key={z}>{row[column].indexOf('TAB') !== -1 ? 'Tab' : 'Window'}</td>;
-                      } else {
-                        return <td key={z} >{column === 'mutedInfo' ? row[column].muted : row[column]}</td>;
-                      }
-                    }
-                  })}
-                </tr>
+                <Row
+                  s={p.s}
+                  key={i}
+                  className={i % 2 === 0 ? 'even' : 'odd'} 
+                  style={{fontSize: '14px', backgroundColor: s.rowHover === i || s.selectedItems.indexOf(i) !== -1 ? p.theme.settingsBg : 'initial'}} 
+                  onMouseEnter={()=>this.setState({rowHover: i})}
+                  draggable={p.s.prefs.mode === 'tabs'}
+                  onDragEnd={this.dragEnd}
+                  onDragStart={(e)=>this.dragStart(e, i)}
+                  onDragOver={(e)=>this.dragOver(e, i)}
+                  onClick={()=>this.handleSelect(i)}
+                  handleTitleClick={this.handleTitleClick}
+                  handleBooleanClick={(column)=>this.handleBooleanClick(column, row)}
+                  row={row}
+                  columns={s.columns}
+                />
               );
             })}
             </tbody>
