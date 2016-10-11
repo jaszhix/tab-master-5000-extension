@@ -321,11 +321,11 @@ var Root = React.createClass({
     this.setState({apps: e});
   },
   themeChange(e){
-    var s = this.state;
     var p = this.props;
-    s.standardThemes = themeStore.getStandardThemes();
+    var stateUpdate = {};
+    stateUpdate.standardThemes = themeStore.getStandardThemes();
     if (e.savedThemes) {
-      s.savedThemes = e.savedThemes;
+      stateUpdate.savedThemes = e.savedThemes;
     }
     if (e.theme) {
       var sessionFieldColor = themeStore.balance(e.theme.settingsBg);
@@ -483,7 +483,7 @@ var Root = React.createClass({
         backgroundColor: e.theme.bodyBg,
       });
       v('#bgImg').css({backgroundColor: e.theme.bodyBg});
-      s.theme = e.theme;
+      stateUpdate.theme = e.theme;
     }
     if (e.currentWallpaper && typeof e.currentWallpaper.data !== 'undefined') {
       if (e.currentWallpaper.data !== -1) {
@@ -491,18 +491,18 @@ var Root = React.createClass({
           backgroundImage: `url('${e.currentWallpaper.data}')`,
           backgroundSize: 'cover'
         });
-        s.wallpaper = e.currentWallpaper;
+        stateUpdate.wallpaper = e.currentWallpaper;
       } else {
         v('#bgImg').css({
           backgroundImage: 'none'
         });
-        s.wallpaper = null;
+        stateUpdate.wallpaper = null;
       }
     }
     if (e.wallpapers) {
-      s.wallpapers = e.wallpapers;
+      stateUpdate.wallpapers = e.wallpapers;
     }
-    this.setState(s);
+    this.setState(stateUpdate);
   },
   searchChange(e, update) {
     var search = e;
