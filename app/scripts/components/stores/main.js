@@ -26,7 +26,6 @@ export var bgSetPrefs = (obj)=>{
 var massUpdateItems = 0;
 // Chrome event listeners set to trigger re-renders.
 var reRender = (type, id, s) => {
-  //debugger;
   if (s.massUpdate && type === 'move') {
     ++massUpdateItems;
     console.log(massUpdateItems, s.tabs.length);
@@ -34,7 +33,10 @@ var reRender = (type, id, s) => {
       state.set({massUpdate: null});
     }
     return;
-  } 
+  }
+  if (!_.isNumber(id)) {
+    return;
+  }
   var idIsObject = _.isObject(id);
   var tId = typeof id.tabId !== 'undefined' ? id.tabId : idIsObject ? id.id : id;
   var handleUpdate = (targetTab)=>{
