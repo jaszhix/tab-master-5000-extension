@@ -138,17 +138,15 @@ export var msgStore = Reflux.createStore({
         chromeAppStore.set(s.prefs.mode === 'apps');
       } else if (msg.type === 'error') {
         utilityStore.reloadBg();
-      } else if (msg.type === 'newVersion') {
-        state.set({value: null, id: 'newVersion'});
-      } else if (msg.type === 'installed') {
-        state.set({value: null, id: 'installed'});
-      } else if (msg.type === 'versionUpdate') {
-        state.set({value: null, id: 'versionUpdate'});
+      } else if (msg.type === 'appState') {
+        state.set({topNavButton: msg.action});
       } else if (msg.type === 'screenshot') {
         screenshotStore.capture(sender.tab.id, sender.tab.windowId, msg.image, msg.type);
       } else if (msg.type === 'checkSSCapture') {
         console.log('checkSSCapture: Sending screenshot to '+sender.tab.url);
         sendResponse(screenshotStore.tabHasScreenshot(sender.tab.url));
+      } else if (msg.type !== 'prefs') {
+        reRender(msg.type, msg.e, s);
       }
     });
   },

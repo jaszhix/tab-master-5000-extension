@@ -24,7 +24,8 @@ var state = Reflux.createStore({
       height: window.innerHeight,
       collapse: window.innerWidth >= 1565,
       tileLimit: 100,
-      hasScrollbar: false,
+      hasScrollbar: true,
+      topNavButton: null,
       context: {
         value: null,
         id: null,

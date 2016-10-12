@@ -124,17 +124,16 @@ var Bg = React.createClass({
         chrome.tabs.create({active: true}, (tab)=>{
           setTimeout(()=>{
             if (eventState.onInstalled.reason === 'install') {
-              sendMsg({e: eventState.onInstalled, type: 'installed'});
+              sendMsg({e: eventState.onInstalled, type:'appState', action: 'installed'});
             } else if (eventState.onInstalled.reason === 'update') {
-              sendMsg({e: eventState.onInstalled, type: 'versionUpdate'});
+              sendMsg({e: eventState.onInstalled, type:'appState', action: 'versionUpdate'});
             }
           },500);
         });
       }
     }
     if (eventState.onUpdateAvailable) {
-  
-      sendMsg({e: eventState.onUpdateAvailable, type: 'newVersion'});
+      sendMsg({e: eventState.onUpdateAvailable, type:'appState', action: 'newVersion'});
     }
     chrome.tabs.onCreated.addListener((e, info) => {
       console.log('onCreated: ', e, info);

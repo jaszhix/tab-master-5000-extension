@@ -158,6 +158,10 @@ var Search = React.createClass({
       this.handleWebSearch(e);
     }
   },
+  handleTopNavButtonClick(cb){
+    state.set({topNavButton: null});
+    cb();
+  },
   render: function() {
     var p = this.props;
     const headerStyle = {
@@ -169,12 +173,23 @@ var Search = React.createClass({
       boxShadow: `${p.theme.tileShadow} 1px 1px 3px -1px`, 
       maxHeight: '52px'
     };
+    const topNavButtonStyle = {
+      fontSize: p.s.width <= 841 ? '20px' : '14px', 
+      marginRight: 'initial'
+    };
     return (
       <div className="tm-nav ntg-form" style={headerStyle}>
-        <Row style={{position: 'relative', top: '8px', maxHeight: '35px'}}>
+        <Row style={{position: 'relative', top: '9px', maxHeight: '35px'}}>
           <Col size={p.s.width <= 825 ? p.s.width <= 630 ? p.s.width <= 514 ? '10' : '8' : '6' : '4'}>
             <div style={{display: 'flex', width: '100%', paddingLeft: '0px', paddingRight: '0px'}}>
-              <Btn onClick={this.handleSidebar} onMouseEnter={()=>state.set({disableSidebarClickOutside: true})} onMouseLeave={()=>state.set({disableSidebarClickOutside: false})} style={{marginRight: '0px', padding: '9px 13px'}} className="ntg-top-btn" fa="reorder" />
+              <Btn 
+              onClick={this.handleSidebar} 
+              onMouseEnter={()=>state.set({disableSidebarClickOutside: true})} 
+              onMouseLeave={()=>state.set({disableSidebarClickOutside: false})} 
+              style={{marginRight: '0px', padding: '9px 12px 7px 12px'}} 
+              className="ntg-top-btn" 
+              icon="menu7"
+              noIconPadding={true} />
               <input 
                 type="text"
                 value={p.s.search}
@@ -186,11 +201,11 @@ var Search = React.createClass({
           </Col>
           <Col size={p.s.width <= 825 ? p.s.width <= 630 ? p.s.width <= 514 ? '2' : '4' : '6' : '8'} style={{float: 'right'}}>
             {p.s.search.length > 3 ? <span style={{color: p.theme.textFieldsPlaceholder}} className="search-msg ntg-search-google-text">Press Enter to Search Google</span> : null}
-            {p.s.context.id === 'newVersion' ? <Btn onClick={()=>chrome.runtime.reload()} style={{fontSize: p.s.width <= 841 ? '20px' : '14px', marginRight: 'initial'}} className="ntg-sort-btn pull-right" fa="rocket" data-place="bottom" data-tip={p.s.width <= 841 ? 'New Version Available' : null}>{p.s.width <= 841 ? '' : 'New Version Available'}</Btn> : null}
-            {p.s.context.id === 'versionUpdate' ? <Btn onClick={this.openAbout} style={{fontSize: p.s.width <= 841 ? '20px' : '14px', marginLeft: '8px',  marginRight: 'initial'}} className="ntg-sort-btn pull-right" fa="info-circle" data-place="bottom" data-tip={p.s.width <= 841 ? `Updated to ${utilityStore.get_manifest().version}` : null}>{p.s.width <= 841 ? '' : `Updated to ${utilityStore.get_manifest().version}`}</Btn> : null}
-            {p.s.context.id === 'installed' ? <Btn onClick={this.openAbout} style={{fontSize: p.s.width <= 841 ? '20px' : '14px'}} className="ntg-sort-btn pull-right" fa="thumbs-o-up" data-place="bottom" data-tip={p.s.width <= 841 ? 'Thank you for installing TM5K' : null}>{p.s.width <= 841 ? '' : 'Thank you for installing TM5K'}</Btn> : null}
+            {p.s.topNavButton === 'newVersion' ? <Btn onClick={()=>this.handleTopNavButtonClick(()=>chrome.runtime.reload())} style={topNavButtonStyle} className="ntg-sort-btn pull-right" fa="rocket" data-place="bottom" data-tip={p.s.width <= 841 ? 'New Version Available' : null}>{p.s.width <= 841 ? '' : 'New Version Available'}</Btn> : null}
+            {p.s.topNavButton === 'versionUpdate' ? <Btn onClick={()=>this.handleTopNavButtonClick(()=>this.openAbout())} style={topNavButtonStyle} className="ntg-sort-btn pull-right" icon="info3" data-place="bottom" data-tip={p.s.width <= 841 ? `Updated to ${utilityStore.get_manifest().version}` : null}>{p.s.width <= 841 ? '' : `Updated to ${utilityStore.get_manifest().version}`}</Btn> : null}
+            {p.s.topNavButton === 'installed' ? <Btn onClick={()=>this.handleTopNavButtonClick(()=>this.openAbout())} style={topNavButtonStyle} className="ntg-sort-btn pull-right" fa="thumbs-o-up" data-place="bottom" data-tip={p.s.width <= 841 ? 'Thank you for installing TM5K' : null}>{p.s.width <= 841 ? '' : 'Thank you for installing TM5K'}</Btn> : null}
             {p.topLoad ? <Loading top={true} /> : null}
-            {p.s.context.id === 'dlFavicons' && p.topLoad ? <div><p className="tm5k-info pull-right" style={{color: p.theme.darkBtnText, textShadow: `2px 2px ${p.theme.darkBtnTextShadow}`, position: 'relative', top: '2px', marginRight: '8px'}}> {p.s.width <= 841 ? '' : 'Downloading and caching favicons...'}</p></div> : null}
+            {p.s.topNavButton === 'dlFavicons' && p.topLoad ? <div><p className="tm5k-info pull-right" style={{color: p.theme.darkBtnText, textShadow: `2px 2px ${p.theme.darkBtnTextShadow}`, position: 'relative', top: '2px', marginRight: '8px'}}> {p.s.width <= 841 ? '' : 'Downloading and caching favicons...'}</p></div> : null}
           </Col>  
         </Row>
       </div>
@@ -258,8 +273,7 @@ var Root = React.createClass({
     }
     if (!_.isEqual(nP.s.favicons, p.s.favicons)) {
       this.faviconsChange(nP.s.favicons);
-      nP.s.context.id = 'dlFavicons';
-      state.set({context: nP.s.context});
+      state.set({topNavButton: 'dlFavicons'});
     }
     /*var themeStates = ['theme', 'savedThemes', 'wallpapers', 'currentWallpaper'];
     for (let i = themeStates.length - 1; i >= 0; i--) {
@@ -731,7 +745,10 @@ var Root = React.createClass({
         for (let i = sessionTabs.length - 1; i >= 0; i--) {
           sessionTabs = utils.checkFavicons(p, sessionTabs[i], i, sessionTabs);
         }
-        stateUpdate.sessionTabs = sessionTabs;
+        _.assignIn(stateUpdate, {
+          modeKey: 'sessionTabs',
+          sessionTabs: sessionTabs
+        });
       } else if (p.s.prefs.mode !== 'tabs') {
         _.defer(()=>utilityStore.handleMode(p.s.prefs.mode, Tabs));
       }
@@ -761,6 +778,7 @@ var Root = React.createClass({
       } else if (opt === 'cycle') {
         this.setState({grid: true});
       }
+      _.defer(()=>state.set({hasScrollbar: utils.scrollbarVisible(document.body)}));
     });
   },
   checkDuplicateTabs(tabs){
