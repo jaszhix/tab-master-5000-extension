@@ -129,7 +129,7 @@ export var msgStore = Reflux.createStore({
       var s = state.get();
       console.log('msg: ',msg, 'sender: ', sender);
       if (msg.type === 'prefs' && msg.e.mode === 'sessions') {
-        reRender(msg.type, msg.e, s);
+        state.set({reQuery: {state: true, type: 'cycle'}});
         return;
       }
       if (msg.type === 'bookmarks') {
