@@ -285,7 +285,10 @@ var Tile = React.createClass({
     var appHomepage = p.prefs.tabSizeHeight >= 170 ? p.prefs.tabSizeHeight + 5 : 170;
     var appOfflineEnabled = p.prefs.tabSizeHeight >= 170 ? p.prefs.tabSizeHeight - 10 : 158;
     var titleFontSize = p.tab.title.length >= 115 ? 13 : 14;
+
     var openTab = p.tab.hasOwnProperty('openTab') && p.tab.openTab;
+    var isTab = p.prefs.mode === 'tabs' || openTab;
+
     var sanitize = (str)=>{
       var result = str.replace(/[^a-z0-9]/gi,'')[0];
       if (result !== undefined) {
@@ -300,7 +303,7 @@ var Tile = React.createClass({
     var subTitleStyle = {
       whiteSpace: 'nowrap', 
       position: 'absolute',
-      right: '0',
+      right: '9px',
       zIndex: '12',
       color: themeStore.opacify(p.theme.tileText, 0.6),
       backgroundColor: p.theme.tileBg,
@@ -326,7 +329,7 @@ var Tile = React.createClass({
               <div style={{
                 color: p.theme.tileText, 
                 textShadow: `2px 2px ${p.theme.tileTextShadow}`, 
-                width: p.prefs.tabSizeHeight+30, 
+                width: p.prefs.tabSizeHeight+40, 
                 overflow: 'hidden',
                 cursor: 'pointer'
               }}>
@@ -356,7 +359,7 @@ var Tile = React.createClass({
           <ul className="icons-list" style={{
             display: 'flex', 
             position: 'relative', 
-            left: `${p.prefs.tabSizeHeight + 26}px`,
+            left: `${p.prefs.tabSizeHeight + (isTab ? 27 : 62)}px`,
             top: '1px'
           }}>
             {p.chromeVersion >= 46 && openTab || p.chromeVersion >= 46 && p.prefs.mode === 'tabs' ?
@@ -378,7 +381,7 @@ var Tile = React.createClass({
               onClick={()=>utils.mute(this, p.tab)} />
             </li>
             : null}
-            {openTab || p.prefs.mode === 'tabs' ?
+            {isTab ?
             <li>
               <i 
               style={{
@@ -404,9 +407,13 @@ var Tile = React.createClass({
                 display: 'block', 
                 cursor: 'pointer', 
                 color: s.xHover ? p.theme.tileXHover : p.theme.tileX, 
-                opacity: s.hover ? '1' : '0'
+                opacity: s.hover ? '1' : '0',
+                position: 'relative',
+                top: isTab ? '-1px' : '1px',
+                right: isTab ? 'initial' : '0px',
+                fontSize: isTab ? '16px' : '12px'
               }} 
-              className={`icon-${p.prefs.mode === 'tabs' || openTab ? 'cross2' : 'eraser'} ntg-x`}
+              className={`icon-${isTab ? 'cross2' : 'eraser'} ntg-x`}
               onMouseEnter={this.handleTabCloseHoverIn} 
               onMouseLeave={this.handleTabCloseHoverOut} 
               onClick={()=>utils.closeTab(this, p.tab.id)} />
@@ -753,12 +760,13 @@ var TileGrid = React.createClass({
                 );
               }
             })
-            :
+            : null}
+            {p.s.prefs.format === 'table' ?
             <Table 
             s={p.s}
             theme={p.theme}
             cursor={p.cursor}
-            />}
+            /> : null}
           </div>
       </div>
     );
