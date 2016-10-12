@@ -261,3 +261,7 @@ export var formatBytes = (bytes, decimals)=>{
   var i = Math.floor(Math.log(bytes) / Math.log(k));
   return (bytes / Math.pow(k, i)).toPrecision(dm) + ' ' + sizes[i];
 };
+
+export var scrollbarVisible = (element)=>{
+  return element.scrollHeight > element.clientHeight;
+};

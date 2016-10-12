@@ -768,6 +768,19 @@ var TileGrid = React.createClass({
             cursor={p.cursor}
             /> : null}
           </div>
+          {!p.s.hasScrollbar && p.s.prefs.format === 'tile' && p.s[p.s.modeKey].length > p.s.tileLimit ? 
+          <Btn 
+          onClick={()=>state.set({tileLimit: p.s.tileLimit + 50})} 
+          style={{
+            position: 'fixed',
+            left: '0px',
+            right: '0px',
+            margin: '0px auto',
+            bottom: '0px'
+          }}
+          className="ntg-btn" 
+          data-place="top" 
+          data-tip={'Load more tiles.'}>Load More</Btn> : null}
       </div>
     );
   }

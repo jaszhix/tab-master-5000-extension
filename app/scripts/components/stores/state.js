@@ -24,6 +24,7 @@ var state = Reflux.createStore({
       height: window.innerHeight,
       collapse: window.innerWidth >= 1565,
       tileLimit: 100,
+      hasScrollbar: false,
       context: {
         value: null,
         id: null,
@@ -86,7 +87,7 @@ var state = Reflux.createStore({
     
     console.log('STATE: ', this.state);
     this.trigger(this.state);
-    
+
     if (obj.hasOwnProperty(this.state.modeKey)) {
       this.trigger(this.state);
     }

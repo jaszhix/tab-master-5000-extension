@@ -169,7 +169,6 @@ var Search = React.createClass({
       boxShadow: `${p.theme.tileShadow} 1px 1px 3px -1px`, 
       maxHeight: '52px'
     };
-
     return (
       <div className="tm-nav ntg-form" style={headerStyle}>
         <Row style={{position: 'relative', top: '8px', maxHeight: '35px'}}>
@@ -939,7 +938,8 @@ var App = React.createClass({
     var stateUpdate = {
       collapse: e.width >= 1565,
       width: e.width,
-      height: e.height
+      height: e.height,
+      hasScrollbar: utils.scrollbarVisible(document.body)
     };
     if (s.init) {
       _.merge(stateUpdate, _stateUpdate);
@@ -952,8 +952,10 @@ var App = React.createClass({
   },
   onViewportChange(viewport) {
     var wrapper = document.body;
-    if (wrapper.scrollTop + window.innerHeight >= wrapper.scrollHeight - 200) {
-      this.setState({tileLimit: this.state.tileLimit + 50});
+    if (this.state.hasScrollbar) {
+      if (wrapper.scrollTop + window.innerHeight >= wrapper.scrollHeight - 200) {
+        this.setState({tileLimit: this.state.tileLimit + 50});
+      }
     }
   },
   render(){
