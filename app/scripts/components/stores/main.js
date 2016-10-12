@@ -462,6 +462,7 @@ export var bookmarksStore = Reflux.createStore({
     this.set_bookmarks(tabs).then((bk)=>{
       stateUpdate[s.search.length > 0 && s.bookmarks.length > 0 ? 'tileCache' : 'bookmarks'] = bk;
       state.set(stateUpdate);
+      _.defer(()=>state.set({hasScrollbar: utils.scrollbarVisible(document.body)}));
     });
   },
   get_folder(folder){
@@ -528,6 +529,7 @@ export var historyStore = Reflux.createStore({
     this.set_history(tabs).then((h)=>{
       stateUpdate[s.search.length > 0 && s.history.length > 0 ? 'tileCache' : 'history'] = h;
       state.set(stateUpdate);
+      _.defer(()=>state.set({hasScrollbar: utils.scrollbarVisible(document.body)}));
     });
   },
   remove(history, url){
