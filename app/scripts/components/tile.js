@@ -33,7 +33,6 @@ var Tile = React.createClass({
       close: false,
       pinning: false,
       dataUrl: null,
-      focus: false,
       duplicate: false,
       drag: null,
       screenshot: null,
@@ -60,9 +59,6 @@ var Tile = React.createClass({
     }
     if (nP.prefs.screenshot) {
       this.updateScreenshot('init', nP);
-    }
-    if (nP.tab.pinned) {
-      this.handleFocus(null, null, nP);
     }
     if (nP.i !== p.i) {
       this.setState({i: nP.i});
@@ -249,23 +245,6 @@ var Tile = React.createClass({
       state.set({context: {value: true, id: this.props.tab}});
     }
   },
-  handleFocus(opt, bool, props){
-    var s = this.state;
-    var p = this.props;
-    if (p.prefs.animations) {
-      if (opt === 'duplicate') {
-        if (p.prefs.mode === 'tabs') {
-          this.setState({focus: bool, duplicate: bool});
-        }
-      } else {
-        this.setState({focus: true});
-        v('#subTile-'+s.i).on('animationend', function animationEnd(e){
-          this.setState({focus: false});
-          v('#subTile-'+s.i).off('animationend', animationEnd);
-        }.bind(this));
-      }
-    }
-  },
   render: function() {
     var s = this.state;
     var p = this.props;
@@ -421,6 +400,7 @@ var Tile = React.createClass({
           </ul>
         </div>
       }
+      className={s.duplicate && !s.hover ? 'animated flash' : null}
       style={{
         position: 'relative',
         display: s.render ? 'block' : 'none',
@@ -437,7 +417,9 @@ var Tile = React.createClass({
         overflow: 'hidden',
         zIndex: '50',
         opacity: s.close ? '0' : '1',
-        WebkitTransition: p.prefs.animations ? 'opacity 0.2s' : 'initial'
+        WebkitTransition: p.prefs.animations ? 'opacity 0.2s' : 'initial',
+        WebkitAnimationIterationCount: s.duplicate ? 'infinite' : 'initial', 
+        WebkitAnimationDuration: s.duplicate ? '5s' : '0.2s'
       }}
       bodyStyle={{
         height: s.hover ? `${p.bodyHeightOnHover}px` : `${p.prefs.tabSizeHeight - 40}px`, 
@@ -776,7 +758,8 @@ var TileGrid = React.createClass({
             left: '0px',
             right: '0px',
             margin: '0px auto',
-            bottom: '0px'
+            bottom: '0px',
+            zIndex: '50'
           }}
           className="ntg-btn" 
           data-place="top" 

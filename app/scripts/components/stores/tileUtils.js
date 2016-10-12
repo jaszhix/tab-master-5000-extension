@@ -59,7 +59,9 @@ export var closeTab = (t, id, search)=>{
   } else {
     close();
   }
-  _.delay(()=>t.setState({render: false}), 200);
+  if (p.prefs.format === 'tile') {
+    _.delay(()=>t.setState({render: false}), 200);
+  }
 };
 
 export var closeAll = (t, tab)=>{
@@ -135,7 +137,7 @@ export var mute = (t, tab)=>{
 };
 
 export var checkDuplicateTabs = (t, p, opt)=>{
-  if (p.prefs.duplicate) {
+  if (p.prefs.duplicate && p.prefs.mode === 'tabs') {
     var s = t.state;
     var first;
     if (opt === 'closeAllDupes') {
@@ -161,7 +163,7 @@ export var checkDuplicateTabs = (t, p, opt)=>{
           if (opt === 'closeDupes') {
             closeTab(t, tabs[i].id, s.i);
           } else if (p.duplicateTabs.length > 0) {
-            t.handleFocus('duplicate', true, p);
+            t.setState({duplicate: true});
           }
         }
       }

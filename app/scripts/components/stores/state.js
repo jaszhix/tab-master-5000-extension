@@ -64,7 +64,7 @@ var state = Reflux.createStore({
       tabs: [],
       allTabs: null,
       newTabs: null,
-      duplicateTabs: null,
+      duplicateTabs: [],
       domainRegEx: /^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n]+)/im,
       bookmarks: [],
       history: [],
