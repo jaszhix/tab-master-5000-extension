@@ -39,7 +39,7 @@ var Row = React.createClass({
       style={p.style} 
       onMouseEnter={p.onMouseEnter}
       draggable={p.draggable}
-      onDragEnd={p.onDragEndD}
+      onDragEnd={p.onDragEnd}
       onDragStart={p.onDragStart}
       onDragOver={p.onDragOver}
       onClick={p.onClick}
@@ -300,8 +300,12 @@ export var Table = React.createClass({
   },
   removeSelectedItems(){
     var s = this.state;
+    var p = this.props;
+    var cT = _.cloneDeep(this);
+    cT.props.prefs = p.s.prefs;
     for (var i = s.selectedItems.length - 1; i >= 0; i--) {
-      chrome.tabs.remove(s.rows[s.selectedItems[i]].id);
+      cT.props.tab = s.rows[s.selectedItems[i]];
+      utils.closeTab(cT, s.rows[s.selectedItems[i]].id)
       _.pullAt(s.rows, s.selectedItems[i]);
     }
     this.setState({rows: s.rows, selectedItems: [], shiftRange: null});
@@ -309,7 +313,6 @@ export var Table = React.createClass({
   render(){
     var s = this.state;
     var p = this.props;
-    console.log('rows: ', s.rows);
     if (s.columns && s.rows) {
       return (
         <div className="datatable-scroll">
