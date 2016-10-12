@@ -1,4 +1,5 @@
 import React from 'react';
+import _ from 'lodash';
 
 import state from './stores/state';
 import themeStore from './stores/theme';
@@ -32,6 +33,10 @@ export var SidebarMenu = React.createClass({
       sortBy: true
     };
   },
+  handleFormat(){
+    var p = this.props;
+    msgStore.setPrefs({format: p.prefs.format === 'tile' ? 'table' : 'tile'});
+  },
   render(){
     var p = this.props;
     var s = this.state;
@@ -58,7 +63,7 @@ export var SidebarMenu = React.createClass({
     ];
     var sidebarTabs = [
       {label: 'Settings', icon: 'icon-gear', onClick: ()=>state.set({modal: {state: true, type: 'settings'}})},
-      {label: `${p.prefs.format === 'tile' ? 'Table' : 'Tile'} Format`, icon: `icon-${p.prefs.format === 'tile' ? 'list' : 'grid'}`, onClick: ()=>msgStore.setPrefs({format: p.prefs.format === 'tile' ? 'table' : 'tile'})}
+      {label: `${p.prefs.format === 'tile' ? 'Table' : 'Tile'} Format`, icon: `icon-${p.prefs.format === 'tile' ? 'list' : 'grid'}`, onClick: ()=>this.handleFormat()}
     ];
     var borderColor = tc(p.theme.darkBtnBg).isDark() ? p.theme.darkBtnText : p.theme.darkBtnBg;
     var textColor = tc(p.theme.bodyBg).isDark() && tc(p.theme.bodyText).isLight() ? p.theme.bodyText : tc(p.theme.headerBg).isDark() ? p.theme.darkBtnText : p.theme.lightBtnText;
