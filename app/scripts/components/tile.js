@@ -353,11 +353,25 @@ var Tile = React.createClass({
       }
       header={
         <div style={{position: 'relative', minHeight: '18px'}}>
-          <ul className="icons-list" style={{float: 'right'}}>
+          <ul className="icons-list" style={{
+            display: 'flex', 
+            position: 'relative', 
+            left: `${p.prefs.tabSizeHeight + 26}px`,
+            top: '1px'
+          }}>
             {p.chromeVersion >= 46 && openTab || p.chromeVersion >= 46 && p.prefs.mode === 'tabs' ?
             <li>
               <i 
-              style={{display: 'block', cursor: 'pointer', color: s.mHover ? p.theme.tileMuteHover : p.theme.tileMute, opacity: s.hover || p.tab.mutedInfo.muted || p.tab.audible ? '1' : '0',}} 
+              style={{
+                display: 'block', 
+                cursor: 'pointer', 
+                color: s.mHover ? p.theme.tileMuteHover : p.theme.tileMute, 
+                opacity: s.hover || p.tab.mutedInfo.muted || p.tab.audible ? '1' : '0',
+                position: 'relative',
+                top: '2px',
+                right: '2px',
+                fontSize: '13.5px'
+              }} 
               className={`icon-volume-${p.tab.mutedInfo.muted ? 'mute2' : p.tab.audible ? 'medium' : 'mute'}`}
               onMouseEnter={this.handleTabMuteHoverIn} 
               onMouseLeave={this.handleTabMuteHoverOut} 
@@ -367,7 +381,16 @@ var Tile = React.createClass({
             {openTab || p.prefs.mode === 'tabs' ?
             <li>
               <i 
-              style={{display: 'block', cursor: 'pointer', color: s.pHover ? p.theme.tilePinHover : p.theme.tilePin, opacity: s.hover || p.tab.pinned ? '1' : '0'}} 
+              style={{
+                display: 'block', 
+                cursor: 'pointer', 
+                color: s.pHover ? p.theme.tilePinHover : p.theme.tilePin, 
+                opacity: s.hover || p.tab.pinned ? '1' : '0',
+                position: 'relative',
+                top: '2px',
+                right: '2px',
+                fontSize: '12px'
+              }} 
               className="icon-pushpin"
               onMouseEnter={this.handlePinHoverIn} 
               onMouseLeave={this.handlePinHoverOut}
@@ -377,7 +400,12 @@ var Tile = React.createClass({
             {p.prefs.mode !== 'apps' && p.prefs.mode !== 'extensions' ?
             <li>
               <i 
-              style={{display: 'block', cursor: 'pointer', color: s.xHover ? p.theme.tileXHover : p.theme.tileX, opacity: s.hover ? '1' : '0',}} 
+              style={{
+                display: 'block', 
+                cursor: 'pointer', 
+                color: s.xHover ? p.theme.tileXHover : p.theme.tileX, 
+                opacity: s.hover ? '1' : '0'
+              }} 
               className={`icon-${p.prefs.mode === 'tabs' || openTab ? 'cross2' : 'eraser'} ntg-x`}
               onMouseEnter={this.handleTabCloseHoverIn} 
               onMouseLeave={this.handleTabCloseHoverOut} 
