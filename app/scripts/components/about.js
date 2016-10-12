@@ -7,8 +7,6 @@ import {utilityStore} from './stores/main';
 import {Btn, Col, Row} from './bootstrap';
 
 import changelog from 'html!markdown!../../../changelog.md';
-import EFFBadge from '../../images/eff.png';
-import TrackJSBadge from '../../images/trackjs.gif';
 
 var Donate = React.createClass({
   render:function(){
@@ -91,8 +89,8 @@ var ReleaseNotes = React.createClass({
       <div>
         
         <img className="ntg-about" src={p.tm5kLogo}/>
-        <a href="https://trackjs.com" target="_blank"><img style={{borderRadius: '2px', position: 'absolute', top: '0px', right:'5%', opacity: '0.7'}} src={TrackJSBadge} height="40px" alt="Protected by TrackJS JavaScript Error Monitoring" /></a>
-        <img style={{position: 'absolute', top: '50px', right:'8%', height: '120px', opacity: '0.7'}} src={EFFBadge} />
+        <a href="https://trackjs.com" target="_blank"><img style={{borderRadius: '2px', position: 'absolute', top: '0px', right:'5%', opacity: '0.7'}} src="../../images/trackjs.gif" height="40px" alt="Protected by TrackJS JavaScript Error Monitoring" /></a>
+        <img style={{position: 'absolute', top: '50px', right:'8%', height: '120px', opacity: '0.7'}} src="../../images/eff.png" />
         <Col size="2" />
         <Col size="8" className="ntg-release">
           <div dangerouslySetInnerHTML={createMarkup()} />
