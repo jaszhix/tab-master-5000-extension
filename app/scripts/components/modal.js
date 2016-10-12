@@ -65,7 +65,7 @@ var ModalHandler = React.createClass({
         overlayStyle={{top: p.settings === 'theming' ? '55%' : '0'}}
         dialogStyle={{
           zIndex: '50',
-          opacity: p.settings === 'theming' ? '0.9' : '1',
+          opacity: p.settings === 'theming' ? '0.95' : '1',
           WebkitTransition: p.prefs.animations ? 'opacity 0.2s' : 'initial'
         }}
         headerStyle={{backgroundColor: p.theme.headerBg, color: p.theme.darkBtnText}}

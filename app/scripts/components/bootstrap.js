@@ -8,6 +8,13 @@ import themeStore from './stores/theme';
 
 export var Btn = React.createClass({
   mixins: [Reflux.ListenerMixin],
+  getDefaultProps(){
+    return {
+      style: {},
+      faStyle: {},
+      noIconPadding: false
+    }
+  },
   getInitialState(){
     return {
       theme: null,
@@ -69,6 +76,10 @@ export var Btn = React.createClass({
         opacity: '1'
       });
       _.merge(style, _.cloneDeep(p.style));
+      var faStyle = {
+        paddingRight: !p.noIconPadding ? '6px' : null
+      };
+      _.merge(faStyle, _.cloneDeep(p.faStyle));
       return (
         <button 
           data-tip={p['data-tip'] ? `<div style="max-width: 350px;">${p['data-tip']}</div>` : null} 
@@ -79,7 +90,7 @@ export var Btn = React.createClass({
           onClick={p.onClick}
           id={p.id} 
           className={p.className}>
-            <div className="btn-label">{p.fa || p.icon ? <i className={`${p.fa ? 'fa fa-'+p.fa : ''}${p.icon ? ' icon-'+p.icon : ''}`} style={p.faStyle}></i> : null}{p.fa ? ' ' : null}{p.children}</div>
+            <div className="btn-label">{p.fa || p.icon ? <i style={{paddingRight: '2px'}} className={`${p.fa ? 'fa fa-'+p.fa : ''}${p.icon ? ' icon-'+p.icon : ''}`} style={faStyle}></i> : null}{p.fa ? ' ' : null}{p.children}</div>
           </button>
       );
     } else {
@@ -375,8 +386,8 @@ export var Context = onClickOutside(React.createClass({
                     <span className="switchery switchery-default" style={{
                       left: '8px',
                       backgroundColor: option.switch ? p.theme.darkBtnBg : 'rgba(255, 255, 255, 0)', 
-                      borderColor: option.switch ? p.theme.darkBtnBg : p.theme.textFieldBorder, 
-                      boxShadow: `${option.switch ? p.theme.darkBtnBg : p.theme.textFieldBorder} 0px 0px 0px 8px inset`, 
+                      borderColor: option.switch ? p.theme.textFieldBorder : p.theme.darkBtnBg, 
+                      boxShadow: `${option.switch ? p.theme.textFieldBorder : p.theme.darkBtnBg} 0px 0px 0px 8px inset`, 
                       WebkitTransition: 'border 0.4s, box-shadow 0.4s, background-color 1.2s',
                     }}>
                       <small style={{left: option.switch ? '14px' : '0px', WebkitTransition: 'background-color 0.4s, left 0.2s', backgroundColor: option.switch ? p.theme.darkBtnText : p.theme.bodyText}} />
