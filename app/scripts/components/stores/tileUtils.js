@@ -59,6 +59,7 @@ export var closeTab = (t, id, search)=>{
   } else {
     close();
   }
+  _.delay(()=>t.setState({render: false}), 200);
 };
 
 export var closeAll = (t, tab)=>{
