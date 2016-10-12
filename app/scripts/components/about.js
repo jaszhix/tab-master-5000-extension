@@ -22,7 +22,7 @@ var Donate = React.createClass({
         <form  action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank">
           <input type="hidden" name="cmd" value="_s-xclick" />
           <input type="hidden" name="hosted_button_id" value="8VL34HHRFN3LS" />
-          <Btn className="ntg-top-btn" name="submit" fa="paypal">PayPal</Btn>
+          <Btn className="ntg-top-btn" name="submit">PayPal</Btn>
         </form>
       </div>
     );
@@ -111,8 +111,8 @@ var About = React.createClass({
     var p = this.props;
     p.modal.footer = (
       <div>
-        <Btn onClick={()=>utilityStore.createTab('https://github.com/jaszhix/tab-master-5000-chrome-extension')} className="ntg-setting-btn" fa="github-square">Github</Btn>
-        <Btn onClick={()=>utilityStore.createTab('https://chrome.google.com/webstore/detail/tab-master-5000-tab-swiss/mippmhcfjhliihkkdobllhpdnmmciaim')} className="ntg-setting-btn" fa="chrome">Chrome Web Store</Btn>
+        <Btn onClick={()=>utilityStore.createTab('https://github.com/jaszhix/tab-master-5000-chrome-extension')} className="ntg-setting-btn" icon="github">Github</Btn>
+        <Btn onClick={()=>utilityStore.createTab('https://chrome.google.com/webstore/detail/tab-master-5000-tab-swiss/mippmhcfjhliihkkdobllhpdnmmciaim')} className="ntg-setting-btn" icon="chrome">Chrome Web Store</Btn>
         <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" src="https://i.creativecommons.org/l/by/4.0/88x31.png" className="pull-right" /></a>
       </div>
     );
@@ -128,13 +128,13 @@ var About = React.createClass({
           <div role="tabpanel"> 
             <ul className="nav nav-tabs" style={{borderBottom: 'initial', position: 'absolute', zIndex: '9999'}} >
               <li style={{padding: '0px'}} className={`${s.tab === 'release' ? 'active' : ''}`}>
-                  <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({tab: 'release'})}><i className="settings-fa fa fa-sticky-note-o"/>  Release Notes</a>
+                  <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({tab: 'release'})}>Release Notes</a>
               </li>
               <li style={{padding: '0px'}} className={`${s.tab === 'attribution' ? 'active' : ''}`}>
-                  <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({tab: 'attribution'})}><i className="settings-fa fa fa-star-o"/>  Attribution</a>
+                  <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({tab: 'attribution'})}>Attribution</a>
               </li>
               <li style={{padding: '0px'}} className={`${s.tab === 'donate' ? 'active' : ''}`}>
-                  <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({tab: 'donate'})}><i className="settings-fa fa fa-thumbs-o-up"/>  Donate</a>
+                  <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({tab: 'donate'})}>Donate</a>
               </li>
             </ul>
           </div>
