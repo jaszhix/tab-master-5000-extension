@@ -39,7 +39,6 @@ import kmp from 'kmp';
 import ReactUtils from 'react-utils';
 import ReactTooltip from './tooltip/tooltip';
 import '../../styles/app.scss';
-import '../../styles/icons/icomoon/styles.css';
 window.v = v;
 import state from './stores/state';
 import {keyboardStore, chromeAppStore, actionStore, historyStore, bookmarksStore, clickStore, utilityStore, faviconStore} from './stores/main';
