@@ -504,7 +504,7 @@ var Sessions = React.createClass({
             var tabsCount = getTabsCount();
             var sessionTitle = `${session.label ? session.label : _time}: ${session.tabs.length} Window${session.tabs.length > 1 ? 's' : ''}, ${tabsCount} Tab${tabsCount > 1 ? 's' : ''}`;
             return (
-              <Row onMouseEnter={()=>this.handleSessionHoverIn(i)} onMouseLeave={()=>this.handleSessionHoverOut(i)} key={i} className="ntg-session-row" style={{backgroundColor: s.sessionHover === i ? p.theme.darkBtnBg : i % 2 ? p.theme.settingsItemHover : 'initial', color: s.sessionHover === i ? p.theme.darkBtnText : 'initial'}}>
+              <Row onMouseEnter={()=>this.handleSessionHoverIn(i)} onMouseLeave={()=>this.handleSessionHoverOut(i)} key={i} className="ntg-session-row" style={{backgroundColor: s.sessionHover === i ? p.theme.settingsItemHover  : i % 2 ? p.theme.lightBtnBg : 'initial', color: s.sessionHover === i ? p.theme.lightBtnText : 'initial'}}>
                 <Row>
                   <div style={{width: 'auto', float: 'left', display: 'inline'}}>
                     <div onClick={(e)=>this.expandSelectedSession(i, e)} className={"ntg-session-text session-text-"+i} style={s.expandedSession === i ? {paddingBottom: '4px'} : null}>
@@ -603,7 +603,7 @@ var Sessions = React.createClass({
                             }
                             var fvData = _.result(_.find(p.favicons, { domain: t.url.split('/')[2] }), 'favIconUrl');
                             return (
-                              <Row onMouseEnter={()=>this.handleSelectedSessionTabHoverIn(x)} onMouseLeave={()=>this.handleSelectedSessionTabHoverOut(x)} key={x} style={{backgroundColor: s.selectedSessionTabHover === x ? p.theme.darkBtnBg : x % 2 ? p.theme.settingsItemHover : 'initial', color: s.selectedSessionTabHover === x ? p.theme.darkBtnText : p.theme.bodyText}}>
+                              <Row onMouseEnter={()=>this.handleSelectedSessionTabHoverIn(x)} onMouseLeave={()=>this.handleSelectedSessionTabHoverOut(x)} key={x} style={{backgroundColor: s.selectedSessionTabHover === x ? p.theme.settingsItemHover : x % 2 ? p.theme.lightBtnBg : 'initial', color: s.selectedSessionTabHover === x ? p.theme.lightBtnText : p.theme.bodyText}}>
                                 <Col size="8">
                                   <span title={t.title} onClick={()=>utilityStore.createTab(t.url)} style={{cursor: 'pointer'}}>
                                     <img className="ntg-small-favicon" src={fvData ? fvData : '../images/file_paper_blank_document.png' } /> 
