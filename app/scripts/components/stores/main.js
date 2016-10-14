@@ -132,7 +132,9 @@ export var msgStore = Reflux.createStore({
         state.set({reQuery: {state: true, type: 'cycle'}});
         return;
       }
-      if (msg.type === 'bookmarks') {
+      if (msg.hasOwnProperty('windows')) {
+        state.set({reQuery: {state: true, bg: msg}});
+      } else if (msg.type === 'bookmarks') {
         bookmarksStore.get_bookmarks();
       } else if (msg.type === 'history' && s.prefs.mode === msg.type) {
         historyStore.get_history();
@@ -165,6 +167,17 @@ export var msgStore = Reflux.createStore({
       chrome.runtime.sendMessage(chrome.runtime.id, {method: 'prefs'}, (response)=>{
         if (response && response.prefs) {
           resolve(response.prefs);
+        }
+      });
+    });
+  },
+  getTabs(){
+    return new Promise((resolve, reject)=>{
+      chrome.runtime.sendMessage(chrome.runtime.id, {method: 'getTabs'}, (response)=>{
+        if (response && response.windows) {
+          resolve(response);
+        } else {
+          reject([]);
         }
       });
     });

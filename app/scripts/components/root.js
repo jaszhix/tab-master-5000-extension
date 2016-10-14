@@ -41,7 +41,7 @@ import ReactTooltip from './tooltip/tooltip';
 import '../../styles/app.scss';
 window.v = v;
 import state from './stores/state';
-import {keyboardStore, chromeAppStore, actionStore, historyStore, bookmarksStore, clickStore, utilityStore, faviconStore} from './stores/main';
+import {keyboardStore, chromeAppStore, actionStore, historyStore, bookmarksStore, clickStore, utilityStore, faviconStore, msgStore} from './stores/main';
 import themeStore from './stores/theme';
 import tabStore from './stores/tab';
 import sessionsStore from './stores/sessions';
@@ -272,14 +272,6 @@ var Root = React.createClass({
       this.faviconsChange(nP.s.favicons);
       state.set({topNavButton: 'dlFavicons'});
     }
-    /*var themeStates = ['theme', 'savedThemes', 'wallpapers', 'currentWallpaper'];
-    for (let i = themeStates.length - 1; i >= 0; i--) {
-      if (!_.isEqual(nP.s[themeStates[i]], p.s[themeStates[i]])) {
-        var themeChangeInput = {};
-        themeChangeInput[themeStates[i]] = nP.s[themeStates[i]];
-        this.faviconsChange(nP.s[themeStates[i]]);
-      }
-    }*/
     if (!_.isEqual(nP.s.reQuery, p.s.reQuery) && nP.s.reQuery.state) {
       this.reQuery(nP.s.reQuery);
       state.set({reQuery: {state: false}});
@@ -298,7 +290,6 @@ var Root = React.createClass({
     }
   },
   init(p){
-    _.delay(()=>state.set({allTabs: tabStore.getAllTabsByWindow()}), 500);
     sessionsStore.load();
     this.setState({screenshots: screenshotStore.get_ssIndex()});
   },
@@ -533,137 +524,6 @@ var Root = React.createClass({
     }
     _.defer(()=>this.setState({topLoad: false}));
   },
-  createSingleItem(e){
-    var s = this.state;
-    var p = this.props;
-    if (p.s.init) {
-      return;
-    }
-    tabStore.closeNewTabs();
-    var tab = e;
-    _.each(p.s.favicons, (fVal, fKey)=>{
-      if (tab.url.indexOf(fVal.domain) !== -1) {
-        tab.favIconUrl = fVal.favIconUrl;
-      } else {
-        faviconStore.set_favicon(tab, 0, 0);
-      }
-    });
-    _.assign(tab, {
-      timeStamp: new Date(Date.now()).getTime(),
-      favIconUrl: _.find(p.s.favicons, (fv)=>{
-        if (tab.url.indexOf(fv.domain) !== -1) {
-          return fv.favIconUrl;
-        }
-      })
-    });
-    if (typeof p.s.tabs[tab.index] !== 'undefined') {
-      for (var i = p.s.tabs.length - 1; i >= 0; i--) {
-        if (i > tab.index) {
-          if (i <= p.s.tabs.length) {
-            p.s.tabs[i].index = i + 1;
-          }
-        }
-      }
-      p.s.tabs.push(tab);
-      utils.arrayMove(p.s.tabs, _.findIndex(p.s.tabs, _.last(p.s.tabs)), tab.index);   
-    } else {
-      p.s.tabs.push(tab);
-    }
-    p.s.tabs = _.orderBy(_.uniqBy(p.s.tabs, 'id'), ['pinned'], ['desc']);
-    console.log('Single tab to update:', tab);
-    if (p.s.prefs.sessionsSync) {
-      synchronizeSession(p.s.sessions, p.s.prefs, p.s.tabs);
-    }
-    this.checkDuplicateTabs(p.s.tabs);
-    state.set({tabs: p.s.tabs});
-  },
-  removeSingleItem(e){
-    var p = this.props;
-    if (p.s.init) {
-      return;
-    }
-    var stateUpdate = {}; 
-    var selectedTabs = [p.s.tabs];
-    if (p.s.search.length > 0) {
-      selectedTabs.push(p.s.tileCache);
-    }
-    console.log('removeSingleItem:', e);
-    var removeTab = (tabsList, key)=>{
-      var tabToUpdate = _.findIndex(tabsList, {id: e});
-      if (tabToUpdate > -1) {
-        var s = this.state;
-        if (p.s.prefs.actions) {
-          actionStore.set_action('remove', tabsList[tabToUpdate]);
-        }
-        _.pullAt(tabsList, tabToUpdate);
-        p.s.tabs = _.orderBy(_.uniqBy(tabsList, 'id'), ['pinned'], ['desc']);
-        if (p.s.prefs.sessionsSync && key === 'tabs') {
-          synchronizeSession(p.s.sessions, p.s.prefs, tabsList);
-        }
-        stateUpdate[key] = tabsList;
-        if (stateUpdate[key].length === 0 && p.s.search.length > 0) {
-          stateUpdate.search = '';
-        }
-        state.set(stateUpdate);
-      }  
-    };
-
-    for (let i = selectedTabs.length - 1; i >= 0; i--) {
-      var key = i === 0 ? 'tabs' : 'tileCache';
-      removeTab(selectedTabs[i], key)
-    }
-  },
-  updateSingleItem(e){
-    var p = this.props;
-    if (p.s.init) {
-      return;
-    }
-    console.log('updateSingleItem', p.s.updateType);
-    _.merge(e, {
-      timeStamp: new Date(Date.now()).getTime()
-    });
-    var orderBy = ['pinned'];
-    var tabToUpdate = _.findIndex(p.s.tabs, {id: e.id});
-
-    if (tabToUpdate > -1) {
-      p.s.tabs[tabToUpdate] = e;
-      if (e.pinned) {
-        p.s.tabs = _.orderBy(_.uniqBy(p.s.tabs, 'id'), ['pinned'], ['desc']);
-      } else {
-        p.s.tabs = _.orderBy(p.s.tabs, ['pinned'], ['desc']);
-      }
-      console.log('Single tab to update:', e);
-      if (p.s.prefs.sessionsSync) {
-        synchronizeSession(p.s.sessions, p.s.prefs, p.s.tabs);
-      }
-      state.set({tabs: p.s.tabs});
-    }
-  },
-  moveSingleItem(e){
-    var p = this.props;
-    if (p.s.init) {
-      return;
-    }
-    console.log('moveSingleItem', e);
-
-    var tabToUpdate = _.findIndex(p.s.tabs, {id: e.id});
-
-    if (tabToUpdate > -1) {
-      var s = this.state;
-      console.log('Move indexes: ', tabToUpdate, e.index);
-      p.s.tabs = v(p.s.tabs).move(tabToUpdate, e.index).ns;
-      p.s.tabs[tabToUpdate].timeStamp = new Date(Date.now()).getTime();
-      if (e.pinned) {
-        p.s.tabs = _.orderBy(_.uniqBy(p.s.tabs, 'id'), ['pinned'], ['desc']);
-      } else {
-        p.s.tabs = _.orderBy(p.s.tabs, ['pinned'], ['desc']);
-      }
-      if (p.s.prefs.sessionsSync) {
-        synchronizeSession(p.s.sessions, p.s.prefs, p.s.tabs);
-      }
-      state.set({tabs: p.s.tabs});
-    }
-  },
   updateTabState(e, opt){
     var p = this.props;
     console.log('updateTabState: ',e);
@@ -688,7 +548,7 @@ var Root = React.createClass({
       utilityStore.handleMode(p.s.prefs.mode, p.s.tabs);
     }
   },
-  captureTabs(opt) {
+  captureTabs(opt, bg) {
     var s = this.state;
     var p = this.props;
     if (p.s.prefs.mode === 'sessions' && opt !== 'init') {
@@ -696,85 +556,86 @@ var Root = React.createClass({
       return;
     }
     this.setState({topLoad: true});
+
     // Query current Chrome window for tabs.
-    
-    tabStore.promise().then((Tabs)=>{
-      var blacklisted = [];
-      _.each(Tabs, (tVal, tKey)=>{
-        var urlMatch = tVal.url.match(p.s.domainRegEx);
-        _.assign(Tabs[tKey], {
-          timeStamp: new Date(Date.now()).getTime(),
-          domain: urlMatch ? urlMatch[1] : false
-        });
-        if (tVal.url.indexOf('chrome://newtab/') !== -1) {
-          blacklisted.push(tKey);
+    var stateUpdate = {};
+    var allTabs = [];
+
+    var handleWindows = (res)=>{
+      _.each(res.windows, (Window)=>{
+        allTabs.push(Window.tabs);
+        stateUpdate.allTabs = allTabs;
+        if (Window.id === res.windowId) {
+
+          _.each(Window.tabs, (tVal, tKey)=>{
+            Window.tabs = utils.checkFavicons(p, tVal, tKey, Window.tabs);
+          });
+
+          stateUpdate.windowId = res.windowId;
+
+          this.setState({init: false});
+          if (opt !== 'init') {
+            // Render state is toggled to false on the subsequent re-renders only.
+            // tile opt forces the tiles to update, cycle forces the grid to update.
+            if (opt === 'tile') {
+              this.setState({render: false});
+            } else if (opt === 'cycle') {
+              this.setState({grid: false});
+            }
+          }
+          // Handle session view querying, and set it to tabs var.
+          if (p.s.prefs.mode === 'sessions') {
+            var sessionTabs = sessionsStore.flatten(p.s.sessions);
+            for (let i = sessionTabs.length - 1; i >= 0; i--) {
+              sessionTabs = utils.checkFavicons(p, sessionTabs[i], i, sessionTabs);
+            }
+            _.assignIn(stateUpdate, {
+              modeKey: 'sessionTabs',
+              sessionTabs: sessionTabs
+            });
+          } else if (p.s.prefs.mode !== 'tabs') {
+            _.defer(()=>utilityStore.handleMode(p.s.prefs.mode, Window.tabs));
+          }
+          // Avoid setting tabs state here if the mode is not tabs or sessions. updateTabState will handle other modes.
+          if (p.s.prefs.mode === 'tabs' || p.s.prefs.mode === 'sessions') {
+            if (p.s.search.length === 0) {
+              stateUpdate.tabs = Window.tabs;
+            } else {
+              this.searchChange(p.s.search, Window.tabs);
+            }
+            this.checkDuplicateTabs(Window.tabs);
+          }
+
+          state.set(stateUpdate);
+
+          this.setState({topLoad: false});
+          // Querying is complete, allow the component to render.
+          if (opt === 'init' || opt === 'tile') {
+            v('section').remove();
+            this.setState({render: true});
+            if (opt === 'init') {
+              utilityStore.initTrackJs(p.s.prefs, s.savedThemes);
+              this.setState({load: false});
+              actionStore.set_state(false);
+            }
+          } else if (opt === 'cycle') {
+            this.setState({grid: true});
+          }
+          if (p.s.prefs.sessionsSync) {
+            synchronizeSession(p.s.sessions, p.s.prefs, Window.tabs);
+          }
+          _.defer(()=>state.set({hasScrollbar: utils.scrollbarVisible(document.body)}));
         }
-        Tabs = utils.checkFavicons(p, tVal, tKey, Tabs);
       });
+    }
 
-      for (let i = blacklisted.length - 1; i >= 0; i--) {
-        _.pullAt(Tabs, blacklisted[i]);
-      }
-     
-      var stateUpdate = {};
-      try {
-        state.set({windowId: Tabs[0].windowId});
-      } catch (e) {
-        chrome.windows.getCurrent((w)=>{
-          // Store the Chrome window ID for global reference
-          state.set({windowId: w.id});
-        });
-      }
-      this.setState({init: false});
-      if (opt !== 'init') {
-        // Render state is toggled to false on the subsequent re-renders only.
-        // tile opt forces the tiles to update, cycle forces the grid to update.
-        if (opt === 'tile') {
-          this.setState({render: false});
-        } else if (opt === 'cycle') {
-          this.setState({grid: false});
-        }
-      }
-      // Handle session view querying, and set it to tabs var.
-      if (p.s.prefs.mode === 'sessions') {
-        var sessionTabs = sessionsStore.flatten(p.s.sessions);
-        for (let i = sessionTabs.length - 1; i >= 0; i--) {
-          sessionTabs = utils.checkFavicons(p, sessionTabs[i], i, sessionTabs);
-        }
-        _.assignIn(stateUpdate, {
-          modeKey: 'sessionTabs',
-          sessionTabs: sessionTabs
-        });
-      } else if (p.s.prefs.mode !== 'tabs') {
-        _.defer(()=>utilityStore.handleMode(p.s.prefs.mode, Tabs));
-      }
-      // Avoid setting tabs state here if the mode is not tabs or sessions. updateTabState will handle other modes.
-      if (p.s.prefs.mode === 'tabs' || p.s.prefs.mode === 'sessions') {
-        if (p.s.search.length === 0) {
-          stateUpdate.tabs = Tabs;
-        } else {
-          this.searchChange(p.s.search, Tabs);
-        }
-        this.checkDuplicateTabs(Tabs);
-      }
-
-      state.set(stateUpdate);
-
-      this.setState({topLoad: false});
-      // Querying is complete, allow the component to render.
-      if (opt === 'init' || opt === 'tile') {
-        v('section').remove();
-        this.setState({render: true});
-        if (opt === 'init') {
-          utilityStore.initTrackJs(p.s.prefs, s.savedThemes);
-          this.setState({load: false});
-          actionStore.set_state(false);
-        }
-      } else if (opt === 'cycle') {
-        this.setState({grid: true});
-      }
-      _.defer(()=>state.set({hasScrollbar: utils.scrollbarVisible(document.body)}));
-    });
+    if (opt === 'bg') {
+      handleWindows(bg);
+    } else {
+      msgStore.getTabs().then((res)=>{
+        handleWindows(res);
+      });
+    }
   },
   checkDuplicateTabs(tabs){
     let tabUrls = [];
@@ -791,7 +652,11 @@ var Root = React.createClass({
     if (!clickStore.get_click()) {
       if (e.state) {
         // Treat attaching/detaching and created tabs with a full re-render.
-        this.captureTabs(e.type);
+        if (e.hasOwnProperty('bg')) {
+          this.captureTabs('bg', e.bg);
+        } else {
+          this.captureTabs(e.type);
+        }
       }
     }
   },
@@ -858,7 +723,7 @@ var Root = React.createClass({
       var options = v('#options').n;
       return (
         <div className="container-main">
-          {options ? <Preferences options={true} settingsMax={true} prefs={p.s.prefs} tabs={p.s.tabs} theme={s.theme} /> : s.load ? <Loading sessions={p.s.sessions} /> 
+          {options ? <Preferences options={true} settingsMax={true} prefs={p.s.prefs} tabs={p.s.tabs} theme={s.theme} /> 
           : 
           <div>
             {p.s.context.value ? <ContextMenu search={p.s.search} actions={s.actions} tabs={p.s[p.s.prefs.mode]} prefs={p.s.prefs} cursor={cursor} context={p.s.context} chromeVersion={p.s.chromeVersion} duplicateTabs={p.s.duplicateTabs} theme={s.theme} /> : null}

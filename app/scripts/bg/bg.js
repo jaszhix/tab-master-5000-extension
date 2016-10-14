@@ -31,6 +31,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Reflux from 'reflux';
 import _ from 'lodash';
+import v from 'vquery';
 import prefsStore from '../components/stores/prefs';
 var checkChromeErrors = (err)=>{
   if (chrome.runtime.lastError) {
@@ -87,11 +88,125 @@ var Bg = React.createClass({
     return {
       eventState: eventState,
       prefs: null,
-      init: true
+      init: true,
+      windows: [],
+      allTabs: []
     };
   },
   componentDidMount(){
     this.listenTo(prefsStore, this.prefsChange);
+    this.queryTabs();
+  },
+  queryTabs(){
+    chrome.windows.getAll({populate: true}, (w)=>{
+      _.each(w, (Window, wKey)=>{
+        var blacklisted = [];
+        _.each(Window.tabs, (tab, tKey)=>{
+          var urlMatch = tab.url.match(/^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n]+)/im);
+          _.assign(w[wKey].tabs[tKey], {
+            timeStamp: new Date(Date.now()).getTime(),
+            domain: urlMatch ? urlMatch[1] : false
+          });
+          if (tab.url.indexOf('chrome://newtab/') !== -1) {
+            blacklisted.push(tKey);
+          }
+        });
+        for (let i = blacklisted.length - 1; i >= 0; i--) {
+          _.pullAt(w[wKey].tabs, blacklisted[i]);
+        }
+      });
+      this.setState({windows: w})
+    });
+  },
+  getSingleTab(id){
+    if (_.isObject(id)) {
+      id = id.tabId;
+    }
+    return new Promise((resolve, reject)=>{
+      chrome.tabs.get(id, (tab)=>{
+        if (chrome.runtime.lastError) {
+          reject();
+        }
+        if (tab) {
+          resolve(tab);
+        } else {
+          reject();
+        }
+      });
+    });
+  },
+  createSingleItem(e){
+    var refWindow = _.findIndex(this.state.windows, {id: e.windowId});
+      _.assign(e, {
+        timeStamp: new Date(Date.now()).getTime(),
+      });
+      if (typeof this.state.windows[refWindow].tabs[e.index] !== 'undefined') {
+        for (var i = this.state.windows[refWindow].tabs.length - 1; i >= 0; i--) {
+          if (i > e.index) {
+            if (i <= this.state.windows[refWindow].tabs.length) {
+              this.state.windows[refWindow].tabs[i].index = i + 1;
+            }
+          }
+        }
+        this.state.windows[refWindow].tabs.push(e);
+        this.state.windows[refWindow].tabs = v(this.state.windows[refWindow].tabs).move(_.findIndex(this.state.windows[refWindow].tabs, _.last(this.state.windows[refWindow].tabs)), e.index).ns;  
+      } else {
+        this.state.windows[refWindow].tabs.push(e);
+      }
+      this.state.windows[refWindow].tabs = _.orderBy(_.uniqBy(this.state.windows[refWindow].tabs, 'id'), ['pinned'], ['desc']);
+      this.setState({windows: this.state.windows});
+      sendMsg({windows: this.state.windows, windowId: e.windowId});
+  },
+  removeSingleItem(e, windowId){
+    var refWindow = _.findIndex(this.state.windows, {id: windowId});
+    var refTab = _.findIndex(this.state.windows[refWindow].tabs, {id: e});
+
+    if (refTab > -1) {
+      _.pullAt(this.state.windows[refWindow].tabs, refTab);
+      this.state.windows[refWindow].tabs = _.orderBy(_.uniqBy(this.state.windows[refWindow].tabs, 'id'), ['pinned'], ['desc']);
+
+      this.setState({windows: this.state.windows});
+      sendMsg({windows: this.state.windows, windowId: windowId});
+    }
+  },
+  updateSingleItem(id){
+    this.getSingleTab(id).then((e)=>{
+      var refWindow = _.findIndex(this.state.windows, {id: e.windowId});
+      var refTab = _.findIndex(this.state.windows[refWindow].tabs, {id: e.id});
+
+      _.merge(e, {
+        timeStamp: new Date(Date.now()).getTime()
+      });
+
+      if (refTab > -1) {
+        this.state.windows[refWindow].tabs[refTab] = e;
+        if (e.pinned) {
+          this.state.windows[refWindow].tabs = _.orderBy(_.uniqBy(this.state.windows[refWindow].tabs, 'id'), ['pinned'], ['desc']);
+        } else {
+          this.state.windows[refWindow].tabs = _.orderBy(this.state.windows[refWindow].tabs, ['pinned'], ['desc']);
+        }
+        this.setState({windows: this.state.windows});
+        sendMsg({windows: this.state.windows, windowId: e.windowId});
+      }
+    });
+  },
+  moveSingleItem(id){
+    this.getSingleTab(id).then((e)=>{
+      var refWindow = _.findIndex(this.state.windows, {id: e.windowId});
+      var refTab = _.findIndex(this.state.windows[refWindow].tabs, {id: e.id});
+
+      if (refTab > -1) {
+        this.state.windows[refWindow].tabs = v(this.state.windows[refWindow].tabs).move(refTab, e.index).ns;
+        this.state.windows[refWindow].tabs[refTab].timeStamp = new Date(Date.now()).getTime();
+        if (e.pinned) {
+          this.state.windows[refWindow].tabs = _.orderBy(_.uniqBy(this.state.windows[refWindow].tabs, 'id'), ['pinned'], ['desc']);
+        } else {
+          this.state.windows[refWindow].tabs = _.orderBy(this.state.windows[refWindow].tabs, ['pinned'], ['desc']);
+        }
+        this.setState({windows: this.state.windows});
+        sendMsg({windows: this.state.windows, windowId: e.windowId});
+      }
+    });
   },
   prefsChange(e){
     var s = this.state;
@@ -106,7 +221,6 @@ var Bg = React.createClass({
   },
   attachListeners(state){
     var s = this.state.init ? state : this.state;
-    //chrome.tabs.create({active: true}, (tab)=>{});
     if (eventState.onStartup) {
       _.defer(()=>{
     
@@ -114,7 +228,6 @@ var Bg = React.createClass({
       });
     }
     if (eventState.onInstalled) {
-  
       if (eventState.onInstalled.reason === 'update' || eventState.onInstalled.reason === 'install') {
         chrome.tabs.query({title: 'New Tab'},(tabs)=>{
           for (var i = 0; i < tabs.length; i++) {
@@ -135,92 +248,68 @@ var Bg = React.createClass({
     if (eventState.onUpdateAvailable) {
       sendMsg({e: eventState.onUpdateAvailable, type:'appState', action: 'newVersion'});
     }
+    chrome.windows.onRemoved.addListener((windowId)=>{
+      var refWindow = _.findIndex(this.state.allTabs, {windowId: windowId});
+      if (refWindow !== -1) {
+        _.pullAt(this.state.allTabs, refWindow)
+        this.setState({allTabs: this.state.allTabs});
+      }
+    })
     chrome.tabs.onCreated.addListener((e, info) => {
-      console.log('onCreated: ', e, info);
       eventState.onCreated = e;
-  
-      /*if (e.url === 'chrome://newtab/') {
-        console.log('New Tab created...');
-        _.delay(()=>sendMsg({e: s.prefs, type: 'prefs'}), 500);
-      }*/
+      this.createSingleItem(e);
       sendMsg({e: e, type: 'create'});
     });
     chrome.tabs.onRemoved.addListener((e, info) => {
       eventState.onRemoved = e;
-  
-      sendMsg({e: e, type: 'remove'});
+      this.removeSingleItem(e, info.windowId);
     });
     chrome.tabs.onActivated.addListener((e, info) => {
       eventState.onActivated = e;
-  
       sendMsg({e: e, type: 'activate'});
     });
     chrome.tabs.onUpdated.addListener((e, info) => {
       eventState.onUpdated = e;
-  
-      if (e.url === 'chrome://newtab/') {
-        console.log('New Tab updated...');
-      }
-      sendMsg({e: e, type: 'update'});
+      this.updateSingleItem(e);
     });
     chrome.tabs.onMoved.addListener((e, info) => {
       eventState.onMoved = e;
-  
-      console.log('onMoved', e, info);
-      sendMsg({e: e, type: 'move'});
+      this.moveSingleItem(e);
     });
     chrome.tabs.onAttached.addListener((e, info) => {
       eventState.onAttached = e;
-  
-      console.log('onAttached', e, info);
       sendMsg({e: e, type: 'attach'});
     });
     chrome.tabs.onDetached.addListener((e, info) => {
       eventState.onDetached = e;
-  
-      console.log('onDetached', e, info);
       sendMsg({e: e, type: 'detach'});
     });
     chrome.bookmarks.onCreated.addListener((e, info) => {
       eventState.bookmarksOnCreated = e;
-  
-      console.log('bookmarks onCreated', e, info);
       sendMsg({e: e, type: 'bookmarks'});
     });
     chrome.bookmarks.onRemoved.addListener((e, info) => {
       eventState.bookmarksOnRemoved = e;
-  
-      console.log('bookmarks onRemoved', e, info);
       sendMsg({e: e, type: 'bookmarks'});
     });
     chrome.bookmarks.onChanged.addListener((e, info) => {
-      eventState.bookmarksOnChanged= e;
-  
-      console.log('bookmarks onChanged', e, info);
+      eventState.bookmarksOnChanged= e;;
       sendMsg({e: e, type: 'bookmarks'});
     });
     chrome.bookmarks.onMoved.addListener((e, info) => {
       eventState.bookmarksOnMoved= e;
-  
-      console.log('bookmarks onMoved', e, info);
       sendMsg({e: e, type: 'bookmarks'});
     });
     chrome.history.onVisited.addListener((e, info) => {
       eventState.historyOnVisited = e;
-  
-      console.log('history onVisited', e, info);
       sendMsg({e: e, type: 'history', action: 'visited'});
     });
     chrome.history.onVisitRemoved.addListener((e, info) => {
       eventState.historyOnVisitRemoved = e;
-  
-      console.log('history onVisited', e, info);
       sendMsg({e: e, type: 'history', action: 'remove'});
     });
     chrome.management.onEnabled.addListener((details)=>{
       eventState.onEnabled = details;
-  
-      console.log('app enabled', details);
       sendMsg({e: details, type: 'app'});
     });
     this.attachMessageListener(s);
@@ -228,6 +317,7 @@ var Bg = React.createClass({
   },
   attachMessageListener(s){
     chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+      console.log('Message from front-end: ', msg, sender);
       // requests from front-end javascripts
       if (msg.method === 'captureTabs') {
         var capture = new Promise((resolve, reject)=>{
@@ -279,22 +369,15 @@ var Bg = React.createClass({
       } else if (msg.method === 'setPrefs') {
         prefsStore.set_prefs(msg.obj);
         sendResponse({'prefs': prefsStore.get_prefs()});
-      } else if (msg.method === 'tabs') {
-        chrome.tabs.query({
-          windowId: chrome.windows.WINDOW_ID_CURRENT,
-          currentWindow: true
-        }, (Tab) => {
-          if (Tab) {
-            sendResponse({'tabs': Tab});
-          }
-        });
+      } else if (msg.method === 'getTabs') {
+        sendResponse({windows: this.state.windows, windowId: sender.tab.windowId});
       }
       return true;
     });
   },
-  render:function(){
+  render(){
     var s = this.state;
-    console.log('BG STATE: ',s);
+    console.log('BG STATE: ',s.windows);
     return null;
   }
 });

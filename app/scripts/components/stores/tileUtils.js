@@ -125,7 +125,6 @@ export var mute = (t, tab)=>{
     if (s.muteInit) {
       var refTab = _.findIndex(p.tabs, {id: tab.id});
       p.tabs[refTab].mutedInfo.muted = !tab.mutedInfo.muted;
-      tabStore.set_tab(p.tabs);
       t.setState({muteInit: false});
     }
   });
