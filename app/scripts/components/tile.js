@@ -480,8 +480,22 @@ var Tile = React.createClass({
 });
 import {SidebarMenu} from './sidebar';
 var Sidebar = onClickOutside(React.createClass({
-  componentDidUpdate(){
+  getInitialState(){
+    return {
+      enabled: false
+    };
+  },
+  componentWillReceiveProps(nP){
     ReactTooltip.rebuild();
+    if (!_.isEqual(nP.enabled, this.props.enabled)) {
+      if (nP.enabled) {
+        this.setState({enabled: true});
+      } else {
+        _.delay(()=>{
+          this.setState({enabled: false});
+        }, 200);
+      }
+    }
   },
   handleClickOutside(){
     if (!this.props.disableSidebarClickOutside) {
@@ -493,6 +507,7 @@ var Sidebar = onClickOutside(React.createClass({
   },
   render: function() {
     var p = this.props;
+    var s = this.state;
     const sideStyle = {
       width: '280px',
       maxWidth: '280px',
@@ -501,13 +516,13 @@ var Sidebar = onClickOutside(React.createClass({
       top: '52px',
       opacity: p.enabled ? '1' : '0',
       left: p.enabled ? '0px' : '-168px',
-      zIndex: p.enabled ? '300' : '-999',
+      zIndex: s.enabled ? '3000' : '-999',
       backgroundColor: themeStore.opacify(p.theme.headerBg, 0.9),
       WebkitTransition: p.prefs.animations ? 'left 0.2s, opacity 0.2s' : 'initial'
     };
     return (
       <div className="side-div" style={sideStyle}>
-        {p.enabled ?
+        {s.enabled ?
         <SidebarMenu
         prefs={p.prefs}
         theme={p.theme}
