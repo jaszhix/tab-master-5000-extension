@@ -231,9 +231,6 @@ var Root = React.createClass({
       wallpapers: []
     };
   },
-  componentWillMount(){
-    v('#main').css({cursor: 'wait'});
-  },
   componentDidMount() {
     // Initialize Reflux listeners.
     //screenshotStore.init();
@@ -730,7 +727,6 @@ var Root = React.createClass({
       }
       this.setState({init: false});
       if (opt !== 'init') {
-        v('#main').css({cursor: 'wait'});
         // Render state is toggled to false on the subsequent re-renders only.
         // tile opt forces the tiles to update, cycle forces the grid to update.
         if (opt === 'tile') {
@@ -765,7 +761,6 @@ var Root = React.createClass({
       state.set(stateUpdate);
 
       this.setState({topLoad: false});
-      v('#main').css({cursor: 'default'});
       // Querying is complete, allow the component to render.
       if (opt === 'init' || opt === 'tile') {
         v('section').remove();
