@@ -630,6 +630,9 @@ var TileGrid = React.createClass({
   dragEnd: function(e) {
     var p = this.props;
     var start = this.dragged.i;
+    if (this.over === undefined) {
+      return;
+    }
     var end = this.over.i;
     if (start === end) {
       this.dragged.el.style.display = 'block';

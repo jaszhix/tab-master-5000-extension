@@ -4,7 +4,7 @@ import v from 'vquery';
 import mouseTrap from 'mousetrap';
 
 import state from './stores/state';
-import {alertStore} from './stores/main';
+import {alertStore, msgStore} from './stores/main';
 import tabStore from './stores/tab';
 import * as utils from './stores/tileUtils';
 
@@ -208,23 +208,19 @@ export var Table = React.createClass({
   dragEnd: function(e) {
     var s = this.state;
     var start = this.dragged.i;
+    if (this.over === undefined) {
+      return;
+    }
     var end = this.over.i;
     this.dragged.el.style.display = 'table-row';
     if (start < end) {
       end--;
     }
-    if (this.nodePlacement === 'after') {
-      end++;
-    }
-    console.log(s.rows[start].index, s.rows[end].index);
-    if (s.rows[start].pinned !== s.rows[end -1].pinned) {
-      s.rows[end - 1].index = _.chain(s.rows).filter({pinned: true}).last().value().index;
-    }
-    chrome.tabs.move(s.rows[start].id, {index: s.rows[end - 1].index}, (t)=>{
-      console.log('MOVE: ', t);
-      state.set({reQuery: {state: true, type: 'cycle', id: s.rows[end - 1].id}});
-      //state.set({move: t})
-      _.defer(()=>this.dragged.el.parentNode.removeChild(this.placeholder));
+    chrome.tabs.move(s.rows[start].id, {index: s.rows[end].index}, (t)=>{
+      _.defer(()=>{
+        msgStore.queryTabs();
+        this.dragged.el.parentNode.removeChild(this.placeholder)
+      });
     });
   },
   dragOver: function(e, i) {

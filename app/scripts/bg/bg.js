@@ -375,6 +375,8 @@ var Bg = React.createClass({
         sendResponse({'prefs': prefsStore.get_prefs()});
       } else if (msg.method === 'getTabs') {
         sendResponse({windows: this.state.windows, windowId: sender.tab.windowId});
+      } else if (msg.method === 'queryTabs') {
+        this.queryTabs(true);
       } else if (msg.method === 'getSessions') {
         sendResponse({sessions: this.state.sessions});
       } else if (msg.method === 'getScreenshots') {
@@ -406,12 +408,15 @@ var Bg = React.createClass({
     }
     return tabs;
   },
-  queryTabs(){
+  queryTabs(send=null){
     chrome.windows.getAll({populate: true}, (w)=>{
       _.each(w, (Window, wKey)=>{
         Window.tabs = this.formatTabs(Window.tabs);
       });
       this.setState({windows: w})
+      if (send) {
+        sendMsg({windows: this.state.windows});
+      }
     });
   },
   convertV1Sessions(_item){

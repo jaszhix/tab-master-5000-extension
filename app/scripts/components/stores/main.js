@@ -71,6 +71,9 @@ export var msgStore = Reflux.createStore({
       });
     });
   },
+  queryTabs(){
+    chrome.runtime.sendMessage(chrome.runtime.id, {method: 'queryTabs'});
+  },
   getSessions(){
     return new Promise((resolve, reject)=>{
       chrome.runtime.sendMessage(chrome.runtime.id, {method: 'getSessions'}, (response)=>{
