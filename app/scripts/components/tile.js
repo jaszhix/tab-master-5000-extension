@@ -422,7 +422,7 @@ var Tile = React.createClass({
         WebkitAnimationDuration: s.duplicate ? '5s' : '0.2s'
       }}
       bodyStyle={{
-        height: s.hover ? `${p.bodyHeightOnHover}px` : `${p.prefs.tabSizeHeight - 40}px`, 
+        height: s.hover ? `18px` : `${p.prefs.tabSizeHeight - 40}px`, 
         width: p.prefs.tabSizeHeight+80,
         padding: s.hover ? '0px' : 'initial',
         backgroundImage: `url('${p.tab.favIconUrl}')`, 
@@ -442,9 +442,9 @@ var Tile = React.createClass({
         width: p.prefs.tabSizeHeight+80, 
         position: 'absolute', 
         padding: `${s.hover ? 4 : 0}px 6px`, 
-        minHeight: s.hover ? `${p.footerHeightOnHover}px` : '40px', 
-        height: s.hover ? `${p.footerHeightOnHover}px` : '40px',
-        maxHeight: s.hover ? `${p.footerHeightOnHover}px` : '40px',
+        minHeight: s.hover ? `100%` : '40px', 
+        height: s.hover ? `100%` : '40px',
+        maxHeight: s.hover ? `100%` : '40px',
         WebkitTransition: p.prefs.animations ? 'padding 0.1s, height 0.1s, min-height 0.1s, max-height 0.1s, background-color 0.2s' : 'initial',
         WebkitTransitionTimingFunction: 'ease-in-out',
         overflow: 'hidden', 
@@ -469,7 +469,9 @@ var Tile = React.createClass({
           fontSize: '70px',
           textAlign: 'center',
           opacity: s.hover ? '0' : '1',
-          zIndex: s.hover ? '-1' : '1'
+          zIndex: s.hover ? '-1' : '1',
+          position: 'relative',
+          top: `${p.tab.pinned && p.prefs.tabSizeHeight <= 140 ? 0 : p.tileLetterTopPos}%`
         }}>
           {p.tab.title.length > 0 && p.tab.title? sanitize(p.tab.title) : p.tab.domain ? sanitize(p.tab.domain) : null}
         </div>
@@ -699,8 +701,7 @@ var TileGrid = React.createClass({
         </div>
       );
     });
-    var bodyHeightOnHover = p.s.prefs.tabSizeHeight - _.round(_.round(p.s.prefs.tabSizeHeight / 7.44) * 6.449);
-    var footerHeightOnHover = p.s.prefs.tabSizeHeight - _.round(p.s.prefs.tabSizeHeight / 7.44);
+    var tileLetterTopPos = p.s.prefs.tabSizeHeight >= 175 ? parseInt((p.s.prefs.tabSizeHeight + 80).toString()[0]+(p.s.prefs.tabSizeHeight + 80).toString()[1]) - 10 : p.s.prefs.tabSizeHeight <= 136 ? -5 : p.s.prefs.tabSizeHeight <= 150 ? 0 : p.s.prefs.tabSizeHeight <= 160 ? 5 : 10;
     return (
       <div className="tile-body">
         <Sidebar
@@ -755,8 +756,7 @@ var TileGrid = React.createClass({
                   sort={p.s.sort}
                   windowId={p.s.windowId}
                   chromeVersion={p.s.chromeVersion}
-                  bodyHeightOnHover={bodyHeightOnHover}
-                  footerHeightOnHover={footerHeightOnHover} />
+                  tileLetterTopPos={tileLetterTopPos} />
                 );
               }
             })
