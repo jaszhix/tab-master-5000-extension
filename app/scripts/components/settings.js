@@ -664,7 +664,7 @@ var Sessions = React.createClass({
             return (
               <Row key={i} className="ntg-session-row" style={{backgroundColor: s.currentSessionHover === i ? p.theme.settingsItemHover : 'initial'}} onMouseEnter={()=>this.setState({currentSessionHover: i})} onMouseLeave={()=>this.setState({currentSessionTabHover: -1})}>
                 <Row className="ntg-session-text">
-                  <span title={windowTitle} className="ntg-session-text" onClick={()=>this.setState({selectedCurrentSessionWindow: s.selectedCurrentSessionWindow === i ? -1 : i})}>{windowTitle}</span>
+                  <span title={windowTitle} className="ntg-session-text" onClick={()=>this.setState({selectedCurrentSessionWindow: s.selectedCurrentSessionWindow === i ? -1 : i})} style={{cursor: 'pointer'}}>{windowTitle}</span>
                   <div style={{width: 'auto', float: 'right', display: 'inline', position: 'relative', right: '5px'}}>
                     {s.currentSessionHover === i && _window.length > 0 ? 
                     <Btn 
@@ -685,7 +685,7 @@ var Sessions = React.createClass({
                   var fvData = _.result(_.find(p.favicons, { domain: t.url.split('/')[2] }), 'favIconUrl');
                   return (
                     <Row className="ntg-session-text" key={i} style={{backgroundColor: s.currentSessionTabHover === i ? p.theme.settingsItemHover : 'initial', maxHeight: '20px'}} onMouseEnter={()=>this.setState({currentSessionTabHover: i})}>
-                      <span title={t.title} onClick={()=>chrome.tabs.update(t.id, {active: true})}>
+                      <span title={t.title} onClick={()=>chrome.tabs.update(t.id, {active: true})} style={{cursor: 'pointer'}}>
                         <img className="ntg-small-favicon" src={fvData ? fvData : '../images/file_paper_blank_document.png' } />  
                         {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {t.title}
                       </span>
