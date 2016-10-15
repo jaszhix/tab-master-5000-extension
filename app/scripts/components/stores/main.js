@@ -195,6 +195,8 @@ export var utilityStore = Reflux.createStore({
       bookmarksStore.get_bookmarks(tabs);
     } else if (mode === 'history') {
       historyStore.get_history(tabs);
+    } else {
+      msgStore.queryTabs();
     }
     msgStore.setPrefs({mode: mode});
     state.set({sort: 'index', modeKey: mode === 'sessions' ? 'sessionTabs' : mode});
