@@ -279,8 +279,10 @@ var Root = React.createClass({
       state.set({sessions: sessions});
     });
     if (p.s.prefs.screenshot) {
-      msgStore.getScreenshots().then((screenshots)=>{
-        state.set({screenshots: screenshots});
+      _.defer(()=>{
+        msgStore.getScreenshots().then((screenshots)=>{
+          state.set({screenshots: screenshots});
+        });
       });
     }
   },
@@ -832,6 +834,10 @@ var App = React.createClass({
       document.getElementById('bgImg').style.width = window.innerWidth + 30;
       document.getElementById('bgImg').style.height = window.innerHeight + 5;
     }
+    v('#bgImg').css({
+      width: window.innerWidth + 30,
+      height: window.innerHeight + 5,
+    });
   },
   onViewportChange(viewport) {
     var wrapper = document.body;
@@ -852,24 +858,6 @@ var App = React.createClass({
 
 var renderApp = (stateUpdate)=>{
   ReactDOM.render(<App stateUpdate={stateUpdate} />, document.getElementById('main'));
-};
-
-var loadScreenshots = (stateUpdate)=>{
-  var save = (index)=>{
-    chrome.storage.local.set({screenshots: index}, (result)=> {
-
-    });
-  };
-  chrome.storage.local.get('screenshots', (shots)=>{
-    var index = [];
-    if (shots && shots.screenshots) {
-      index = shots.screenshots;
-    } else {
-      save([]);
-    }
-    stateUpdate.screenshots = index;
-    renderApp(stateUpdate);
-  });
 };
 
 var loadFavicons = (cb)=>{
@@ -895,11 +883,6 @@ var loadPrefs = ()=>{
     console.log('Prefs loaded: ', response);
     loadFavicons((fv)=>{
       stateUpdate.favicons = fv;
-      /*if (response.prefs.screenshot) {
-        loadScreenshots(stateUpdate);
-      } else {
-        renderApp(stateUpdate);
-      }*/
       renderApp(stateUpdate);
     });
   });
