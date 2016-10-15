@@ -298,7 +298,7 @@ var Tile = React.createClass({
     var ST2 = _.merge({top: `${p.prefs.tabSizeHeight - 55}px`}, subTitleStyle);
     return (
       <Panel
-      draggable={p.prefs.mode === 'tabs'}
+      draggable={p.prefs.mode === 'tabs' && p.prefs.drag}
       onDragEnd={p.onDragEnd}
       onDragStart={p.onDragStart}
       onDragOver={p.onDragOver}

@@ -332,7 +332,7 @@ export var Table = React.createClass({
                   className={i % 2 === 0 ? 'even' : 'odd'} 
                   style={{fontSize: '14px', backgroundColor: s.rowHover === i || s.selectedItems.indexOf(i) !== -1 ? p.theme.settingsBg : 'initial'}} 
                   onMouseEnter={()=>this.setState({rowHover: i})}
-                  draggable={p.s.prefs.mode === 'tabs'}
+                  draggable={p.s.prefs.mode === 'tabs' && p.s.prefs.drag}
                   onDragEnd={this.dragEnd}
                   onDragStart={(e)=>this.dragStart(e, i)}
                   onDragOver={(e)=>this.dragOver(e, i)}
