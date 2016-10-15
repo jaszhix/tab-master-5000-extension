@@ -221,6 +221,78 @@ export var themeStore = Reflux.createStore({
         tileX: 'rgba(34, 50, 66, 1)',
         tileXHover: 'rgba(54, 71, 89, 1)'
       };
+      this.midnightPurple = {
+        bodyBg: 'rgba(34, 50, 66, 0.97)',
+        bodyText: 'rgba(245, 245, 245, 1)',
+        darkBtnBg: 'rgba(98, 79, 107, 0.77)',
+        darkBtnBgHover: 'rgba(101, 83, 110, 0.77)',
+        darkBtnText: 'rgba(200, 192, 207, 1)',
+        darkBtnTextShadow: 'rgba(0, 0, 0, 1)',
+        headerBg: 'rgba(37, 50, 66, 0.93)',
+        lightBtnBg: 'rgba(186, 176, 194, 1)',
+        lightBtnBgHover: 'rgba(200, 192, 207, 0.93)',
+        lightBtnText: 'rgba(37, 50, 66, 1)',
+        lightBtnTextShadow: 'rgba(37, 50, 66, 0.2)',
+        settingsBg: 'rgba(37, 50, 66, 1)',
+        settingsItemHover: 'rgba(82, 90, 125, 0.54)',
+        textFieldsBg: 'rgba(123, 112, 161, 0.51)',
+        textFieldsBorder: 'rgba(204, 204, 204, 0.03)',
+        textFieldsPlaceholder: 'rgba(193, 186, 217, 0.58)',
+        textFieldsText: 'rgba(181, 171, 212, 1)',
+        tileBg: 'rgba(110, 99, 150, 0.92)',
+        tileBgHover: 'rgba(123, 112, 161, 0.92)',
+        tileButtonBg: 'rgba(142, 119, 153, 0.98)',
+        tileMove: 'rgba(34, 50, 66, 1)',
+        tileMoveHover: 'rgba(34, 50, 66, 1)',
+        tileMute: 'rgba(34, 50, 66, 1)',
+        tileMuteAudible: 'rgba(73, 45, 84, 1)',
+        tileMuteAudibleHover: 'rgba(73, 45, 84, 1)',
+        tileMuteHover: 'rgba(34, 50, 66, 1)',
+        tilePin: 'rgba(34, 50, 66, 1)',
+        tilePinHover: 'rgba(34, 50, 66, 1)',
+        tilePinned: 'rgba(72, 45, 84, 1)',
+        tileShadow: 'rgba(123, 112, 161, 0.67)',
+        tileText: 'rgba(235, 235, 242, 1)',
+        tileTextShadow: 'rgba(60, 68, 107, 0.72)',
+        tileX: 'rgba(34, 50, 66, 1)',
+        tileXHover: 'rgba(54, 71, 89, 1)'
+      };
+      this.mintYDark = {
+        bodyBg: "rgba(56, 56, 56, 0.75)",
+        bodyText: "rgba(207, 209, 209, 1)",
+        darkBtnBg: "rgba(129, 153, 103, 0.57)",
+        darkBtnBgHover: "rgba(129, 153, 103, 0.7)",
+        darkBtnText: "rgba(225, 230, 232, 1)",
+        darkBtnTextShadow: "rgba(0, 0, 0, 0)",
+        headerBg: "rgba(46, 46, 46, 0.86)",
+        lightBtnBg: "rgba(64, 64, 64, 1)",
+        lightBtnBgHover: "rgba(74, 74, 74, 0.52)",
+        lightBtnText: "rgba(225, 230, 232, 1)",
+        lightBtnTextShadow: "rgba(255, 255, 255, 0.02)",
+        settingsBg: "rgba(64, 64, 64, 1)",
+        settingsItemHover: "rgba(129, 153, 103, 0.48)",
+        textFieldsBg: "rgba(129, 153, 103, 0.93)",
+        textFieldsBorder: "rgba(129, 153, 103, 0.85)",
+        textFieldsPlaceholder: "rgba(225, 230, 232, 0.71)",
+        textFieldsText: "rgba(225, 230, 232, 1)",
+        tileBg: "rgba(64, 64, 64, 0.97)",
+        tileBgHover: "rgba(74, 74, 74, 0.98)",
+        tileButtonBg: "rgba(255, 255, 255, 1)",
+        tileMove: "rgba(150, 150, 150, 1)",
+        tileMoveHover: "rgba(150, 150, 150, 1)",
+        tileMute: "rgba(124, 128, 110, 1)",
+        tileMuteAudible: "rgba(129, 153, 103, 1)",
+        tileMuteAudibleHover: "rgba(124, 128, 110, 1)",
+        tileMuteHover: "rgba(124, 128, 110, 1)",
+        tilePin: "rgba(124, 128, 110, 1)",
+        tilePinHover: "rgba(124, 128, 110, 1)",
+        tilePinned: "rgba(124, 128, 110, 1)",
+        tileShadow: "rgba(46, 46, 46, 0)",
+        tileText: "rgba(202, 207, 207, 1)",
+        tileTextShadow: "rgba(255, 255, 255, 0)",
+        tileX: "rgba(124, 128, 110, 1)",
+        tileXHover: "rgba(124, 128, 110, 1)"
+      };
       this.standardWallpapers = [
         {
           data: '../../../images/wallpaper1.jpg',
@@ -241,6 +313,10 @@ export var themeStore = Reflux.createStore({
         {
           data: '../../../images/wallpaper4.jpg',
           id: 9004
+        },
+        {
+          data: '../../../images/wallpaper6.jpg',
+          id: 9005
         },
       ];
       var now = utilityStore.now();
@@ -292,6 +368,14 @@ export var themeStore = Reflux.createStore({
           label: 'Leafy',
           theme: this.leafy,
           wallpaper: 9004
+        },
+        {
+          id: 9006,
+          created: -1,
+          modified: now,
+          label: 'Minty Dark',
+          theme: this.mintYDark,
+          wallpaper: 9005
         }
       ];
       this.themeId = 0;
@@ -380,7 +464,7 @@ export var themeStore = Reflux.createStore({
     this.setTriggers({theme: this.theme});
   },
   getStandardThemes(){
-    return this.standardThemes;
+    return _.orderBy(this.standardThemes, 'label');
   },
   getSavedThemes(){
     return new Promise((resolve, reject)=>{
@@ -440,8 +524,6 @@ export var themeStore = Reflux.createStore({
       {themeKey: 'tileMuteHover', label: 'Tile Mute Button (Hover)', group: 'tiles'},
       {themeKey: 'tileMuteAudible', label: 'Tile Audible Button', group: 'tiles'},
       {themeKey: 'tileMuteAudibleHover', label: 'Tile Audible Button (Hover)', group: 'tiles'},
-      {themeKey: 'tileMove', label: 'Tile Move Button', group: 'tiles'},
-      {themeKey: 'tileMoveHover', label: 'Tile Move Button (Hover)', group: 'tiles'},
       {themeKey: 'tileButtonBg', label: 'Tile Button BG', group: 'tiles'},
     ];
   },
