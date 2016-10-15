@@ -370,13 +370,12 @@ export var bookmarksStore = Reflux.createStore({
         };
         addBookmarkChildren(bk[0]);
         for (let i = bookmarks.length - 1; i >= 0; i--) {
-          for (let y = s.tabs.length - 1; y >= 0; y--) {
-            if (bookmarks[i].url === s.tabs[y].url) {
-              bookmarks[i] = _.merge(bookmarks[i], s.tabs[y]);
-              bookmarks[i].openTab = ++openTab;
-            } else {
-              bookmarks[i] = _.merge(bookmarks[i], defaults(iter));
-            }
+          var refOpenTab = _.findIndex(s.tabs, {url: bookmarks[i].url});
+          if (refOpenTab !== -1) {
+            bookmarks[i] = _.assignIn(bookmarks[i], s.tabs[refOpenTab]);
+            bookmarks[i].openTab = ++openTab;
+          } else {
+            bookmarks[i] = _.assignIn(bookmarks[i], _.cloneDeep(defaults(iter)));
           }
         }
         bookmarks = _.chain(bookmarks).orderBy(['openTab'], ['asc']).uniqBy('id').value();
