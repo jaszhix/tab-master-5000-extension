@@ -1,7 +1,8 @@
 import React from 'react';
 import Reflux from 'reflux';
 import _ from 'lodash';
-import Modal from 'react-modal';
+import tc from 'tinycolor2';
+
 import ReactTooltip from './tooltip/tooltip';
 
 import Settings from './settings';
@@ -49,6 +50,7 @@ var ModalHandler = React.createClass({
     var s = this.state;
     var p = this.props;
     var tabOptions = [{label: 'Sessions'}, {label: 'Preferences'}, {label: 'Theming'}, {label: 'About'}];
+    var headerBgIsLight = tc(p.theme.headerBg).isLight();
     if (p.modal.state && p.modal.type === 'settings') {
       return (
         <ModalOverlay
@@ -56,7 +58,7 @@ var ModalHandler = React.createClass({
         onClose={()=>state.set({modal: {state: false}})}
         size="full"
         header="Settings"
-        closeBtnStyle={{color: p.theme.darkBtnText}}
+        closeBtnStyle={{color: headerBgIsLight ? p.theme.lightBtnText : p.theme.darkBtnText}}
         backdropStyle={{
           zIndex: 11, 
           backgroundColor: p.settings === 'theming' ? 'rgba(255, 255, 255, 0)' : '#000', 
@@ -68,7 +70,10 @@ var ModalHandler = React.createClass({
           opacity: p.settings === 'theming' ? '0.95' : '1',
           WebkitTransition: p.prefs.animations ? 'opacity 0.2s' : 'initial'
         }}
-        headerStyle={{backgroundColor: p.theme.headerBg, color: p.theme.darkBtnText}}
+        headerStyle={{
+          backgroundColor: p.theme.headerBg, 
+          color: headerBgIsLight ? p.theme.lightBtnText : p.theme.darkBtnText
+        }}
         bodyStyle={{
           backgroundColor: p.theme.settingsBg,
           maxHeight: p.settings === 'theming' ? '300px' : `${window.innerHeight - 200}px`,

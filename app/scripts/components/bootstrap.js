@@ -279,7 +279,7 @@ export var ModalDefault = onClickOutside(React.createClass({
           <div className="modal-header bg-blue" style={headerStyle}>
             <button type="button" className="close icon-cross2" onClick={p.onClose} style={p.closeBtnStyle}/>
             <div className="col-xs-10">
-              <div className="media-left media-middle" style={{position: 'relative', top: '8px'}}>
+              <div className="media-left media-middle" style={{position: 'relative', top: '8px', fontSize: '16px'}}>
                 {p.header}
               </div>
               <div className="media-right">
