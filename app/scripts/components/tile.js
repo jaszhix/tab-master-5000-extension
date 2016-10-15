@@ -718,7 +718,7 @@ var TileGrid = React.createClass({
         btnStyle={btnStyle} />
           <div id="grid" ref="grid">
             {p.s.prefs.format === 'tile' ? p.data.map((tab, i)=> {
-              if (i <= p.s.tileLimit && p.s.prefs.mode !== 'tabs' || p.s.prefs.mode === 'tabs') {
+              if ((i <= p.s.tileLimit && p.s.prefs.mode !== 'tabs' || p.s.prefs.mode === 'tabs') && tab.url.indexOf('chrome://newtab/') === -1) {
                 return (
                   <Tile
                   key={tab.id}

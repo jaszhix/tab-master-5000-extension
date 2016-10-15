@@ -68,7 +68,7 @@ var ColorPickerContainer = React.createClass({
     var s = this.state;
     var p = this.props;
     return (
-      <Row onMouseEnter={()=>this.setState({hover: true})} onMouseLeave={()=>this.setState({hover: false})} style={{cursor: 'pointer', backgroundColor: s.hover ? p.hoverBg : 'initial', borderRadius: '3px', height: '26px', paddingTop: '3px'}}>
+      <Row onMouseEnter={()=>this.setState({hover: true})} onMouseLeave={()=>this.setState({hover: false})} style={{cursor: 'pointer', backgroundColor: s.hover ? p.hoverBg : 'initial', height: '26px', paddingTop: '3px'}}>
         <Row onMouseEnter={p.onMouseEnter}>
           <span>
             <ColorPicker
@@ -504,7 +504,7 @@ var Sessions = React.createClass({
             var tabsCount = getTabsCount();
             var sessionTitle = `${session.label ? session.label : _time}: ${session.tabs.length} Window${session.tabs.length > 1 ? 's' : ''}, ${tabsCount} Tab${tabsCount > 1 ? 's' : ''}`;
             return (
-              <Row onMouseEnter={()=>this.handleSessionHoverIn(i)} onMouseLeave={()=>this.handleSessionHoverOut(i)} key={i} className="ntg-session-row" style={{backgroundColor: s.sessionHover === i ? p.theme.settingsItemHover  : i % 2 ? p.theme.lightBtnBg : 'initial', color: s.sessionHover === i ? p.theme.lightBtnText : 'initial'}}>
+              <Row onMouseEnter={()=>this.handleSessionHoverIn(i)} onMouseLeave={()=>this.handleSessionHoverOut(i)} key={i} className="ntg-session-row" style={{backgroundColor: s.sessionHover === i ? p.theme.settingsItemHover : 'initial'}}>
                 <Row>
                   <div style={{width: 'auto', float: 'left', display: 'inline'}}>
                     <div onClick={(e)=>this.expandSelectedSession(i, e)} className={"ntg-session-text session-text-"+i} style={s.expandedSession === i ? {paddingBottom: '4px'} : null}>
@@ -603,7 +603,7 @@ var Sessions = React.createClass({
                             }
                             var fvData = _.result(_.find(p.favicons, { domain: t.url.split('/')[2] }), 'favIconUrl');
                             return (
-                              <Row onMouseEnter={()=>this.handleSelectedSessionTabHoverIn(x)} onMouseLeave={()=>this.handleSelectedSessionTabHoverOut(x)} key={x} style={{backgroundColor: s.selectedSessionTabHover === x ? p.theme.settingsItemHover : x % 2 ? p.theme.lightBtnBg : 'initial', color: s.selectedSessionTabHover === x ? p.theme.lightBtnText : p.theme.bodyText}}>
+                              <Row onMouseEnter={()=>this.handleSelectedSessionTabHoverIn(x)} onMouseLeave={()=>this.handleSelectedSessionTabHoverOut(x)} key={x} style={{backgroundColor: s.selectedSessionTabHover === x ? p.theme.settingsItemHover : 'initial'}}>
                                 <Col size="8">
                                   <span title={t.title} onClick={()=>utilityStore.createTab(t.url)} style={{cursor: 'pointer'}}>
                                     <img className="ntg-small-favicon" src={fvData ? fvData : '../images/file_paper_blank_document.png' } /> 

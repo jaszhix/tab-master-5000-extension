@@ -8,32 +8,6 @@ import state from './state';
 import {msgStore, utilityStore, alertStore} from './main';
 
 var sessionsStore = Reflux.createStore({
-  load(){
-    v('div.ReactModalPortal > div').css({cursor: 'wait'});
-    chrome.storage.local.get('sessions',(item)=>{
-      var sessions = [];
-      console.log('item retrieved: ',item);
-      if (item && item.sessions) {
-        // Sort sessionData array to show the newest sessions at the top of the list.
-        //var reverse = _.orderBy(item.sessions, ['timeStamp'], ['desc']);
-        sessions = item.sessions;
-      } else {
-        chrome.storage.local.get('sessionData',(_item)=>{
-          console.log('sessions v1 fall back: ',_item);
-          if (_item && _item.sessionData) {
-            // Backwards compatibility for sessions v1
-            _item = this.convertV1();
-            chrome.storage.local.set({sessions: _item.sessionData});
-          } else {
-            sessions = [];
-          }
-        });
-      }
-      sessions = _.orderBy(sessions, ['timeStamp'], ['desc']);
-      state.set({sessions: sessions});
-      v('div.ReactModalPortal > div').css({cursor: 'default'});
-    });
-  },
   convertV1(_item){
     for (let i = _item.sessionData.length - 1; i >= 0; i--) {
       var session = {
@@ -46,10 +20,9 @@ var sessionsStore = Reflux.createStore({
     }
     return _item;
   },
-  restore(session, ssPref){
+  restore(session){
     // Opens a new chrome window with the selected tabs object.
     console.log('session.tabs: ',session.tabs);
-    var screenshot = ssPref;
     for (let i = session.tabs.length - 1; i >= 0; i--) {
       chrome.windows.create({
         focused: true
@@ -60,9 +33,6 @@ var sessionsStore = Reflux.createStore({
           tabs[z].index = z;
         }
         chrome.runtime.sendMessage(chrome.runtime.id, {method: 'restoreWindow', windowId: Window.id, tabs: tabs}, (response)=>{
-          if (response.reload && screenshot) {
-            //utilityStore.restartNewTab();
-          }
         });
       });
     }
@@ -70,7 +40,7 @@ var sessionsStore = Reflux.createStore({
   exportSessions(sessions){
     // Stringify sessionData and export as JSON.
     var json = JSON.stringify(sessions);
-    var filename = 'TM5K-Session-'+utilityStore.now();
+    var filename = 'TM5K-Sessions-'+utilityStore.now();
     var blob = new Blob([json], {type: "application/json;charset=utf-8"});
     saveAs(blob, filename+'.json');
   },
@@ -95,7 +65,7 @@ var sessionsStore = Reflux.createStore({
           sessions = _.cloneDeep(_sessions.sessions);
           chrome.storage.local.set(_sessions);
         }
-        state.set({sessions: sessions});
+        //state.set({sessions: sessions});
         alertStore.set({
           text: `Successfully imported ${sessions.length} sessions.`,
           tag: 'alert-success',
@@ -157,23 +127,12 @@ var sessionsStore = Reflux.createStore({
       if (sessionTabs.length === 0) {
         stateUpdate.search = '';
       }
-      // TBD
-      /*if (refSessionTab !== -1) {
-        _.pullAt(sessionTabs, refSessionTab);
-        stateUpdate.sessionTabs = sessionTabs;
-      }*/
     }
 
     _.pullAt(sessions[session].tabs[_window], tab);
     chrome.storage.local.set({sessions: sessions}, ()=> {
       console.log('session tab removed', sessions);
     });
-    _.assignIn(stateUpdate, {
-      sessions: sessions,
-      reQuery: {state: true, type: 'cycle'}
-    });
-    stateUpdate.sessions = sessions;
-    state.set(stateUpdate);
   },
   v2Remove(sessions, session){
     var refSession = _.findIndex(sessions, {id: session.id});
@@ -181,7 +140,6 @@ var sessionsStore = Reflux.createStore({
     chrome.storage.local.set({sessions: sessions}, ()=> {
       console.log('session removed', sessions);
     });
-    state.set({sessions: sessions});
   },
   v2Update(sessions, session){
     var refSession = _.findIndex(sessions, {id: session.id});
@@ -189,7 +147,6 @@ var sessionsStore = Reflux.createStore({
     chrome.storage.local.set({sessions: sessions}, (result)=> {
       console.log('session updated', sessions);
     });
-    state.set({sessions: sessions});
   },
   v2Save(opt){
     var session = {
@@ -210,40 +167,10 @@ var sessionsStore = Reflux.createStore({
         sessions.sessions.push(session);
       }
       chrome.storage.local.set({sessions: sessions.sessions}, (result)=> {
-        // Notify that we saved.
-        this.load();
         console.log('session saved...',result);
       });   
     });
   },
-  syncSession(sessions, prefs, tabs=null){
-    if (typeof prefs.syncedSession !== 'undefined' && prefs.syncedSession) {
-      console.log('prefs.syncedSession', prefs.syncedSession);
-      console.log('session syncing', tabs);
-      var refSession = _.findIndex(sessions, {id: prefs.syncedSession});
-      if (!tabs) {
-        sessions[refSession].tabs = tabStore.getAllTabsByWindow();
-      } else {
-        for (let i = 0; i < tabs.length; i++) {
-          if (tabs[i].url === 'chrome://newtab/') {
-            _.pullAt(tabs, i);
-          }
-        }
-        console.log('mutating session state...');
-        for (let i = 0; i < sessions[refSession].tabs.length; i++) {
-          var refTab = _.findIndex(sessions[refSession].tabs[i], {id: tabs[0].id});
-          if (refTab !== -1) {
-            sessions[refSession].tabs[i] = tabs;
-            break;
-          }
-        }
-      }
-      sessions[refSession].timeStamp = utilityStore.now();
-      sessions[refSession] = sessions[refSession];
-      chrome.storage.local.set({sessions: sessions});
-      state.set({sessions: sessions});
-    }
-  }
 });
 window.sessionsStore = sessionsStore;
 export default sessionsStore;

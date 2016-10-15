@@ -17,12 +17,6 @@ var tabStore = Reflux.createStore({
       });
     });
   },
-  // tbd
-  /*getNewTabs(){
-    return _.filter(this.getAllTabs(), (tab)=>{
-      return kmp(tab.url, 'chrome://newtab') !== -1;
-    });
-  },*/
   getSingleTab(id){
     return new Promise((resolve, reject)=>{
       chrome.tabs.get(id, (tab)=>{
@@ -53,22 +47,6 @@ var tabStore = Reflux.createStore({
       console.log(chrome.runtime.lastError);
     });
   },
-  // tbd
-  /*closeNewTabs(){
-    var s = state.get();
-    if (s.prefs.singleNewTab) {
-      var newTabs = this.getNewTabs();
-      var windowId = s.windowId;
-      var activeNewTab = _.find(newTabs, {active: true});
-      console.log('activeNewTab',activeNewTab,'newTabs',newTabs);
-      for (var i = newTabs.length - 1; i >= 0; i--) {
-        if (newTabs[i].windowId !== windowId && newTabs[i].id !== activeNewTab.id 
-          || newTabs.length > 1 && newTabs[i].id !== activeNewTab.id && !newTabs[i].active) {
-          this.close(newTabs[i].id);
-        }
-      }
-    }
-  },*/
   create(href, index){
     chrome.tabs.create({url: href, index: index}, (t)=>{
       console.log('Tab created from tabStore.createTab: ',t);

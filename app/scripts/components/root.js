@@ -212,7 +212,6 @@ var Search = React.createClass({
     );
   }
 });
-var synchronizeSession = _.throttle(sessionsStore.syncSession, 1, {leading: true});
 var Root = React.createClass({
   mixins: [Reflux.ListenerMixin],
   getInitialState() {
@@ -233,7 +232,6 @@ var Root = React.createClass({
   },
   componentDidMount() {
     // Initialize Reflux listeners.
-    //screenshotStore.init();
     themeStore.load(this.props.s.prefs);
     actionStore.clear();
     this.listenTo(themeStore, this.themeChange);
@@ -250,18 +248,6 @@ var Root = React.createClass({
     if (!_.isEqual(nP.s.prefs, p.s.prefs) || this.state.init) {
       this.prefsChange(nP.s.prefs);
     }
-    if (!_.isEqual(nP.s.update, p.s.update)) {
-      this.updateSingleItem(nP.s.update);
-    }
-    if (!_.isEqual(nP.s.remove, p.s.remove)) {
-      this.removeSingleItem(nP.s.remove);
-    }
-    if (!_.isEqual(nP.s.create, p.s.create)) {
-      this.createSingleItem(nP.s.create);
-    }
-    if (!_.isEqual(nP.s.move, p.s.move)) {
-      this.moveSingleItem(nP.s.move);
-    }
     if (!_.isEqual(nP.s.search, p.s.search)) {
       this.searchChange(nP.s.search);
     }
@@ -274,7 +260,6 @@ var Root = React.createClass({
     }
     if (!_.isEqual(nP.s.reQuery, p.s.reQuery) && nP.s.reQuery.state) {
       this.reQuery(nP.s.reQuery);
-      state.set({reQuery: {state: false}});
     }
     if (nP.s.applyTabOrder !== p.s.applyTabOrder) {
       if (nP.s.applyTabOrder) {
@@ -290,8 +275,14 @@ var Root = React.createClass({
     }
   },
   init(p){
-    sessionsStore.load();
-    this.setState({screenshots: screenshotStore.get_ssIndex()});
+    msgStore.getSessions().then((sessions)=>{
+      state.set({sessions: sessions});
+    });
+    if (p.s.prefs.screenshot) {
+      msgStore.getScreenshots().then((screenshots)=>{
+        state.set({screenshots: screenshots});
+      });
+    }
   },
   prefsChange(e){
     var s = this.state;
@@ -346,11 +337,11 @@ var Root = React.createClass({
       .nav-tabs>li {
         background-color: ${e.theme.lightBtnBg};
       }
-      .nav-tabs>li>a {
-         color: ${e.theme.lightBtnText};
-      }
       .nav-tabs>li.active {
         background-color: ${e.theme.settingsBg};
+      }
+      .nav-tabs>li>a, .nav-tabs>li>a:hover, .nav-tabs>li>a:focus {
+        color: ${e.theme.lightBtnText};
       }
       .nav-tabs>li.active>a, .nav-tabs>li.active>a:focus {
         color: ${tc.isReadable(tc(e.theme.darkBtnText).toHexString(), tc(e.theme.settingsBg).toHexString(), {}) ? e.theme.darkBtnText : e.theme.lightBtnText};
@@ -562,16 +553,18 @@ var Root = React.createClass({
     var allTabs = [];
 
     var handleWindows = (res)=>{
-      _.each(res.windows, (Window)=>{
+      _.each(res.windows, (Window, wKey)=>{
         allTabs.push(Window.tabs);
-        stateUpdate.allTabs = allTabs;
-        if (Window.id === res.windowId) {
+        var wId = opt === 'bg' ? p.s.windowId : res.windowId;
+        if (p.s.tabs.length > 0 && Window.id === p.s.tabs[0].windowId || Window.id === wId) {
 
           _.each(Window.tabs, (tVal, tKey)=>{
             Window.tabs = utils.checkFavicons(p, tVal, tKey, Window.tabs);
           });
 
-          stateUpdate.windowId = res.windowId;
+          if (opt === 'init') {
+            stateUpdate.windowId = res.windowId;
+          }
 
           this.setState({init: false});
           if (opt !== 'init') {
@@ -605,28 +598,27 @@ var Root = React.createClass({
             }
             this.checkDuplicateTabs(Window.tabs);
           }
-
-          state.set(stateUpdate);
-
-          this.setState({topLoad: false});
-          // Querying is complete, allow the component to render.
-          if (opt === 'init' || opt === 'tile') {
-            v('section').remove();
-            this.setState({render: true});
-            if (opt === 'init') {
-              utilityStore.initTrackJs(p.s.prefs, s.savedThemes);
-              this.setState({load: false});
-              actionStore.set_state(false);
-            }
-          } else if (opt === 'cycle') {
-            this.setState({grid: true});
-          }
-          if (p.s.prefs.sessionsSync) {
-            synchronizeSession(p.s.sessions, p.s.prefs, Window.tabs);
-          }
-          _.defer(()=>state.set({hasScrollbar: utils.scrollbarVisible(document.body)}));
+          _.defer(()=>state.set({
+            hasScrollbar: utils.scrollbarVisible(document.body),
+            reQuery: {state: false}
+          }));
         }
       });
+      stateUpdate.allTabs = allTabs;
+      state.set(stateUpdate);
+      this.setState({topLoad: false});
+      // Querying is complete, allow the component to render.
+      if (opt === 'init' || opt === 'tile') {
+        v('section').remove();
+        this.setState({render: true});
+        if (opt === 'init') {
+          utilityStore.initTrackJs(p.s.prefs, s.savedThemes);
+          this.setState({load: false});
+          actionStore.set_state(false);
+        }
+      } else if (opt === 'cycle') {
+        this.setState({grid: true});
+      }
     }
 
     if (opt === 'bg') {
@@ -890,11 +882,12 @@ var loadPrefs = ()=>{
     console.log('Prefs loaded: ', response);
     loadFavicons((fv)=>{
       stateUpdate.favicons = fv;
-      if (response.prefs.screenshot) {
+      /*if (response.prefs.screenshot) {
         loadScreenshots(stateUpdate);
       } else {
         renderApp(stateUpdate);
-      }
+      }*/
+      renderApp(stateUpdate);
     });
   });
 };

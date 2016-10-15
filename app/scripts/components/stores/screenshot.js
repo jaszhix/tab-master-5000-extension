@@ -5,23 +5,6 @@ import state from './state';
 import {utilityStore} from './main';
 
 var screenshotStore = Reflux.createStore({
-  init: function() {
-    var save = (index)=>{
-      chrome.storage.local.set({screenshots: index}, (result)=> {
-
-      });
-    };
-    chrome.storage.local.get('screenshots', (shots)=>{
-      var index = [];
-      if (shots && shots.screenshots) {
-        index = shots.screenshots;
-        //this.purge(this.index);
-      } else {
-        save([]);
-      }
-      state.set({screenshots: index});
-    });
-  },
   capture(id, wid, imageData, type){
     console.log('screenshotStore capture:', id, wid, imageData, type);
     var s = state.get();
@@ -75,8 +58,6 @@ var screenshotStore = Reflux.createStore({
           } else {
             s.screenshots.push(screenshot);
           }
-          //s.screenshots = _.chain(s.screenshots).uniqBy('url').uniqBy('data').value();
-
           chrome.storage.local.set({screenshots: s.screenshots}, ()=>{
           });
           state.set({screenshots: s.screenshots});

@@ -173,7 +173,7 @@ var Preferences = React.createClass({
     _.defer(()=>{
       msgStore.setPrefs(obj);
       if (opt === 'screenshot') {
-        utilityStore.restartNewTab();
+        utilityStore.reloadBg();
       }
       if (opt === 'animations') {
         themeStore.set(p.theme);
@@ -215,7 +215,7 @@ var Preferences = React.createClass({
             theme={p.theme}
             onMouseEnter={()=>this.handleToggle('singleNewTab')} 
             onClick={()=>this.handleClick('singleNewTab')} 
-            on={p.prefs.singleNewTab} label="Allow only one New Tab to be open at any time"
+            on={p.prefs.singleNewTab} label="Allow only one New Tab per window"
             hoverBg={p.theme.settingsItemHover}
             data-tip="Enabling this option enforces the closing of all New Tabs except the one that is currently focused. This is useful on older computers." />
             <Toggle 

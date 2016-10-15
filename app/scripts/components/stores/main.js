@@ -8,120 +8,7 @@ import screenshotStore from './screenshot';
 import state from './state';
 import * as utils from './tileUtils';
 
-export var tabs = (opt)=>{
-  if (opt === 'alt') {
-    return tabStore.get_altTab();
-  } else {
-    return tabStore.get_tab();
-  }
-};
-export var bgSetPrefs = (obj)=>{
-  chrome.runtime.sendMessage(chrome.runtime.id, {method: 'setPrefs', obj: obj}, (response)=>{
-    if (response && response.prefs) {
-      console.log('setPrefs: ', obj);
-      state.set({reQuery: {state: true, type: 'create'}});
-    }
-  });
-};
-var massUpdateItems = 0;
 // Chrome event listeners set to trigger re-renders.
-var reRender = (type, id, s) => {
-  if (s.massUpdate && type === 'move') {
-    ++massUpdateItems;
-    console.log(massUpdateItems, s.tabs.length);
-    if (massUpdateItems >= s.tabs.length - 8) {
-      state.set({massUpdate: null});
-    }
-    return;
-  }
-  if (!_.isNumber(id)) {
-    return;
-  }
-  var idIsObject = _.isObject(id);
-  var tId = typeof id.tabId !== 'undefined' ? id.tabId : idIsObject ? id.id : id;
-  var handleUpdate = (targetTab)=>{
-    if (targetTab.url.indexOf('chrome://newtab') !== -1 && !idIsObject) {
-      return;
-    }
-    // If 10MB of RAM or less is available to Chrome, disable rendering.
-    chrome.system.memory.getInfo((info)=>{
-      if (info.availableCapacity <= 10000000) {
-        utilityStore.set_systemState('lowRAM');
-      }
-    });
-    if (s.prefs.actions && !s.massUpdate) {
-      var refOldTab = _.findIndex(s.tabs, {id: tId});
-      if (refOldTab !== -1) {
-        actionStore.set_action(type, s.tabs[refOldTab]);
-      }
-    }
-    console.log('window: ', targetTab.windowId, s.windowId, 'state: ',utilityStore.get_systemState(), 'type: ', type, 'id: ',tId, 'item: ', targetTab);
-    if (targetTab.windowId === s.windowId) {
-      if (type === 'create' || type === 'attach') {
-        state.set({create: id});
-      } else if (type === 'remove' || type === 'detach') {
-        state.set({remove: tId});
-      } else if (type.indexOf('move') !== -1 && !s.massUpdate) {
-        state.set({move: targetTab});
-      } else if (type === 'update') {
-        state.set({update: targetTab, updateType: type});
-      } else if (type === 'activate') {
-        var getImageFromTab = ()=>{
-          console.log('getImageFromTab');
-          if (s.prefs.screenshotChrome) {
-            if (targetTab.active) {
-              screenshotStore.capture(tId, targetTab.windowId, false, type);
-              _.defer(()=>state.set({update: targetTab}));
-            }
-          } else {
-            chrome.tabs.sendMessage(targetTab.id, {type: type});
-            _.delay(()=>state.set({update: targetTab}),1000);
-          }
-        };
-        if (s.prefs.screenshot) {
-          if (targetTab.url.indexOf('chrome://') !== -1 && targetTab.url.indexOf('chrome://newtab') === -1) {
-            if (targetTab.active) {
-              _.defer(()=>screenshotStore.capture(tId, targetTab.windowId, false, type));
-              _.defer(()=>state.set({update: targetTab}));
-            }
-          } else {
-            getImageFromTab();
-          }
-        } else {
-          state.set({update: targetTab});
-        }
-      }
-    }
-  };
-  if (type !== 'remove') {
-    if (_.isString(tId)) {
-      tId = parseInt(tId);
-    }
-    tabStore.getSingleTab(tId).then((targetTab)=>{
-      if (typeof targetTab === 'undefined') {
-        return;
-      }
-      handleUpdate(targetTab);
-    }).catch((e)=>{
-        var wId = s.windowId;
-        console.log('Exception...', e);
-        if (type === 'remove' || type === 'detach') {
-          state.set({remove: tId});
-        } else if (type === 'create' || type === 'attach') {
-          if (id.windowId === wId && id.url.indexOf('chrome://newtab') === -1) {
-            state.set({create: id}); // Full tab object
-          }
-        } else if (s.prefs.mode !== 'tabs') {
-          state.set({reQuery: {state: true, type: type, id: tId}});
-        }
-    });  
-  } else {
-    var targetTab = _.findIndex(s.tabs, {id: tId});
-    if (targetTab !== -1) {
-      handleUpdate(s.tabs[targetTab]);
-    }
-  }
-};
 export var msgStore = Reflux.createStore({
   init(){
     this.response = null;
@@ -134,6 +21,10 @@ export var msgStore = Reflux.createStore({
       }
       if (msg.hasOwnProperty('windows')) {
         state.set({reQuery: {state: true, bg: msg}});
+      } else if (msg.hasOwnProperty('sessions')) {
+        state.set({sessions: msg.sessions});
+      } else if (msg.hasOwnProperty('screenshots')) {
+        state.set({screenshots: msg.screenshots});
       } else if (msg.type === 'bookmarks') {
         bookmarksStore.get_bookmarks();
       } else if (msg.type === 'history' && s.prefs.mode === msg.type) {
@@ -149,8 +40,6 @@ export var msgStore = Reflux.createStore({
       } else if (msg.type === 'checkSSCapture') {
         console.log('checkSSCapture: Sending screenshot to '+sender.tab.url);
         sendResponse(screenshotStore.tabHasScreenshot(sender.tab.url));
-      } else if (msg.type !== 'prefs') {
-        reRender(msg.type, msg.e, s);
       }
     });
   },
@@ -176,6 +65,29 @@ export var msgStore = Reflux.createStore({
       chrome.runtime.sendMessage(chrome.runtime.id, {method: 'getTabs'}, (response)=>{
         if (response && response.windows) {
           resolve(response);
+        } else {
+          reject([]);
+        }
+      });
+    });
+  },
+  getSessions(){
+    return new Promise((resolve, reject)=>{
+      chrome.runtime.sendMessage(chrome.runtime.id, {method: 'getSessions'}, (response)=>{
+        if (response && response.sessions) {
+          resolve(response.sessions);
+        } else {
+          reject([]);
+        }
+      });
+    });
+  },
+  getScreenshots(){
+    return new Promise((resolve, reject)=>{
+      chrome.runtime.sendMessage(chrome.runtime.id, {method: 'getScreenshots'}, (response)=>{
+        console.log(response);
+        if (response && response.screenshots) {
+          resolve(response.screenshots);
         } else {
           reject([]);
         }
