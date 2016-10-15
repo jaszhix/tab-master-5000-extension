@@ -493,7 +493,7 @@ var Root = React.createClass({
   searchChange(e, update) {
     var search = e;
     var p = this.props;
-    var items = update ? update : p.s[p.s.modeKey];
+    var items = update && p.s.prefs.mode === 'tabs' ? update : p.s[p.s.modeKey];
     this.setState({topLoad: true});
     var stateUpdate = {};
     // Mutate the items array and reroute all event methods to searchChanged while search length > 0
@@ -503,10 +503,21 @@ var Root = React.createClass({
       }
       var sourceItems = p.s.tileCache ? p.s.tileCache : items;
       var searchItems = _.filter(sourceItems, (item)=>{
-        if (kmp(item.title.toLowerCase(), search) !== -1 || item.url.indexOf(search) !== -1) {
+        if (kmp(item.title.toLowerCase(), search.toLowerCase()) !== -1 || item.url.toLowerCase().indexOf(search.toLowerCase()) !== -1) {
           return item;
         }
       });
+      if (update && p.s.prefs.mode === 'tabs') {
+        var updatedItems = _.intersectionBy(update, searchItems, 'id');
+        if (updatedItems.length === 0) {
+          stateUpdate[p.s.modeKey] = p.s.tileCache;
+          stateUpdate.search = '';
+          state.set(stateUpdate);
+          return;
+        } else {
+          _.merge(searchItems, updatedItems);
+        }
+      }
       stateUpdate[p.s.modeKey] = _.uniqBy(searchItems, 'id');
       state.set(stateUpdate);
     } else {
@@ -535,7 +546,7 @@ var Root = React.createClass({
     } else {
       state.set({tabs: p.s.tabs});
     }
-    if (p.s.prefs.mode !== 'tabs') {
+    if (p.s.prefs.mode !== 'tabs' && p.s.prefs.mode !== 'bookmarks' && p.s.prefs.mode !== 'sessions') {
       utilityStore.handleMode(p.s.prefs.mode, p.s.tabs);
     }
   },
@@ -594,6 +605,7 @@ var Root = React.createClass({
             if (p.s.search.length === 0) {
               stateUpdate.tabs = Window.tabs;
             } else {
+              stateUpdate.tileCache = Window.tabs;
               this.searchChange(p.s.search, Window.tabs);
             }
             this.checkDuplicateTabs(Window.tabs);
@@ -660,12 +672,13 @@ var Root = React.createClass({
       var keys = [];
       var labels = {};
       if (p.s.prefs.mode === 'bookmarks') {
-        keys = ['url', 'title', 'dateAdded', 'folder', 'index'];
+        keys = ['openTab', 'url', 'title', 'dateAdded', 'folder', 'index'];
         labels = {
           folder: 'Folder',
           dateAdded: 'Date Added',
           url: 'Website',
           title: 'Title',
+          openTab: 'Open',
           index: 'Original Order'
         };
       } else if (p.s.prefs.mode === 'history') {
