@@ -461,8 +461,8 @@ var Tile = React.createClass({
         zIndex: '11',
         WebkitTransition: 'opacity 0.2s, background-color 0.1s'
       }}
-      onMouseEnter={()=>this.setState({hover: true})}
-      onMouseLeave={()=>this.setState({hover: false})}
+      onMouseEnter={this.handleHoverIn}
+      onMouseLeave={this.handleHoverOut}
       onBodyClick={()=>this.handleClick(p.tab.id)}
       onFooterClick={p.prefs.mode !== 'sessions' && p.prefs.mode !== 'bookmarks' ? ()=>this.handleClick(p.tab.id) : null}
       onContextMenu={this.handleContextClick}>
