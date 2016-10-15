@@ -419,7 +419,7 @@ var Tile = React.createClass({
         backgroundRepeat: s.screenshot ? 'initial' : 'no-repeat',
         overflow: 'hidden',
         zIndex: '50',
-        opacity: s.close ? '0' : '1',
+        opacity: s.close ? '0' : p.tab.hasOwnProperty('enabled') && !p.tab.enabled ? '0.35' : '1',
         WebkitTransition: p.prefs.animations ? 'opacity 0.2s' : 'initial',
         WebkitAnimationIterationCount: s.duplicate ? 'infinite' : 'initial', 
         WebkitAnimationDuration: s.duplicate ? '5s' : '0.2s'
