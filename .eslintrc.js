@@ -225,10 +225,7 @@ module.exports = {
         "object-shorthand": "off",
         "one-var": "off",
         "one-var-declaration-per-line": "error",
-        "operator-assignment": [
-            "error",
-            "always"
-        ],
+        "operator-assignment": "off",
         "operator-linebreak": "off",
         "padded-blocks": "off",
         "prefer-arrow-callback": "off",

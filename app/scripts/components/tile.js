@@ -291,7 +291,10 @@ var Tile = React.createClass({
       opacity: s.stHover ? '0.2' : '1',
       WebkitTransition: 'opacity 0.2s, white-space 0.1s'
     };
-    var ST1 = _.merge({top: `${p.prefs.tabSizeHeight - 40}px`}, subTitleStyle);
+    var ST1 = _.merge({
+      top: `${p.prefs.tabSizeHeight - 40}px`,
+      cursor: p.prefs.mode === 'sessions' || p.prefs.mode === 'bookmarks' ? 'pointer' : 'initial'
+    }, subTitleStyle);
     var ST2 = _.merge({top: `${p.prefs.tabSizeHeight - 55}px`}, subTitleStyle);
     return (
       <Panel
@@ -326,9 +329,9 @@ var Tile = React.createClass({
                 {p.prefs.mode === 'history' ? 
                 <div className="text-muted text-size-small" style={ST2}>{_.capitalize(moment(p.tab.lastVisitTime).fromNow())}</div> : null}
                 {p.prefs.mode === 'bookmarks' ? 
-                <div className="text-muted text-size-small" style={ST1}>{p.tab.folder}</div> : null}
+                <div onClick={()=>this.filterFolders(p.tab.folder)} className="text-muted text-size-small" style={ST1}>{p.tab.folder}</div> : null}
                 {p.prefs.mode === 'sessions' ? 
-                <div className="text-muted text-size-small" style={p.tab.hasOwnProperty('domain') && p.tab.domain ? ST2 : ST1}>{p.tab.label ? p.tab.label : _.capitalize(moment(p.tab.sTimeStamp).fromNow())}</div> : null}
+                <div onClick={()=>this.filterFolders(p.tab.originSession)} className="text-muted text-size-small" style={p.tab.hasOwnProperty('domain') && p.tab.domain ? ST2 : ST1}>{p.tab.label ? p.tab.label : _.capitalize(moment(p.tab.sTimeStamp).fromNow())}</div> : null}
               </div> : null}
             </div>
         </div>
@@ -436,7 +439,7 @@ var Tile = React.createClass({
         cursor: 'pointer'
       }}
       footerStyle={{
-        backgroundColor: s.hover ? p.theme.settingsBg : p.theme.tileBg, 
+        backgroundColor: s.hover ? p.theme.tileBgHover : p.theme.tileBg, 
         borderBottomRightRadius: '2px', 
         borderBottomLeftRadius: '2px', 
         width: p.prefs.tabSizeHeight+80, 
@@ -461,7 +464,7 @@ var Tile = React.createClass({
       onMouseEnter={()=>this.setState({hover: true})}
       onMouseLeave={()=>this.setState({hover: false})}
       onBodyClick={()=>this.handleClick(p.tab.id)}
-      onFooterClick={()=>this.handleClick(p.tab.id)}
+      onFooterClick={p.prefs.mode !== 'sessions' && p.prefs.mode !== 'bookmarks' ? ()=>this.handleClick(p.tab.id) : null}
       onContextMenu={this.handleContextClick}>
         {!p.tab.favIconUrl || p.tab.domain === 'chrome' ?
         <div style={{
