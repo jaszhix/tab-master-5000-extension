@@ -67,6 +67,7 @@ export var SidebarMenu = React.createClass({
     ];
     var borderColor = tc(p.theme.darkBtnBg).isDark() ? p.theme.darkBtnText : p.theme.darkBtnBg;
     var textColor = tc(p.theme.bodyBg).isDark() && tc(p.theme.bodyText).isLight() ? p.theme.bodyText : tc(p.theme.headerBg).isDark() ? p.theme.darkBtnText : p.theme.lightBtnText;
+    var lightBtnIsDark = tc(p.theme.lightBtnBg).isDark();
     return (
       <div className="sidebar sidebar-secondary sidebar-default" style={{
         color: textColor
@@ -76,8 +77,8 @@ export var SidebarMenu = React.createClass({
             <ul className="nav nav-lg nav-tabs nav-justified">
               {sidebarTabs.map((tab, i)=>{
                 var tabStyle = {
-                  color: p.theme.bodyText,
-                  backgroundColor: p.theme.settingsBg,
+                  color: lightBtnIsDark ? p.theme.lightBtnText : p.theme.darkBtnText,
+                  backgroundColor: lightBtnIsDark ? p.theme.lightBtnBg : p.theme.darkBtnBg,
                   borderBottom: '0px',
                   cursor: 'pointer'
                 };

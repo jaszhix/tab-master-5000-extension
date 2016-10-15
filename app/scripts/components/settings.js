@@ -271,7 +271,7 @@ var Theming = React.createClass({
                     onMouseEnter={()=>this.setState({themeHover: i})}>
                       <div 
                       className="ntg-session-text" 
-                      style={{width: 'auto', display: 'inline', cursor: p.prefs.theme !== theme.id ? 'pointer' : 'initial', fontWeight: p.prefs.theme === theme.id ? '600' : 'initial'}} 
+                      style={{width: 'auto', display: 'inline', cursor: p.prefs.theme !== theme.id ? 'pointer' : 'initial', fontWeight: p.prefs.theme === theme.id ? '600' : 'initial', color: p.prefs.theme === theme.id ? p.theme.darkBtnText : p.theme.bodyText}} 
                       onClick={s.themeLabel !== i && theme.id !== p.prefs.theme ? ()=>this.handleSelectTheme(theme) : null}>
                         {s.themeLabel === i ? 
                         <input 
@@ -300,11 +300,11 @@ var Theming = React.createClass({
                     <Row 
                     key={i}
                     className="ntg-session-row"
-                    style={p.prefs.theme === theme.id ? {backgroundColor: p.theme.darkBtnBg, color: s.themeHover === i ? p.theme.bodyText : p.theme.darkBtnText} : {backgroundColor: s.themeHover === i ? p.theme.settingsItemHover : 'initial'}} 
+                    style={p.prefs.theme === theme.id ? {backgroundColor: p.theme.darkBtnBg, color: p.theme.lightBtnText} : {backgroundColor: s.themeHover === i ? p.theme.settingsItemHover : 'initial'}} 
                     onMouseEnter={()=>this.setState({themeHover: i})}>
                       <div 
                       className="ntg-session-text" 
-                      style={{width: 'auto', display: 'inline', cursor: p.prefs.theme !== theme.id ? 'pointer' : null, fontWeight: p.prefs.theme === theme.id ? '600' : 'initial'}} 
+                      style={{width: 'auto', display: 'inline', cursor: p.prefs.theme !== theme.id ? 'pointer' : null, fontWeight: p.prefs.theme === theme.id ? '600' : 'initial', color: p.prefs.theme === theme.id ? p.theme.darkBtnText : p.theme.bodyText}} 
                       onClick={()=>this.handleSelectTheme(theme)}>
                         {theme.label}
                       </div>

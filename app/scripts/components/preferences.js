@@ -1,6 +1,7 @@
 import React from 'react';
 import Reflux from 'reflux';
 import _ from 'lodash';
+import tc from 'tinycolor2';
 
 import * as utils from './stores/tileUtils';
 
@@ -124,10 +125,12 @@ var Blacklist = React.createClass({
   },
   render: function() {
     var s = this.state;
+    var p = this.props;
+    var lightTextColorArg = tc(p.theme.settingsBg).isLight() && tc(p.theme.textFieldsPlaceholder).isLight();
     return (
       <Col size="12" style={{marginTop: '3px'}}>
           {s.formatError ? <span style={{width: '350px', color: 'A94442'}}>{s.formatError.join(', ')}</span> : null}
-          <textarea value={s.blacklistValue} onChange={this.setBlacklist} placeholder="Enter a comma separated list of domains..." id="input" className="form-control blacklist session-field" rows="3" style={{width: '100%'}} />
+          <textarea value={s.blacklistValue} onChange={this.setBlacklist} style={{backgroundColor: lightTextColorArg ? p.theme.darkBtnBg : 'initial', color: lightTextColorArg ? p.theme.darkBtnText : 'initial', paddingLeft: lightTextColorArg ? '14px' : 'initial', paddingRight: lightTextColorArg ? '14px' : 'initial', width: '100%'}} placeholder="Enter a comma separated list of domains..." id="input" className="form-control blacklist session-field" rows="3" />
           <Btn style={{marginTop: '7px'}} onClick={this.blacklistSubmit} className="ntg-setting-btn" icon="floppy-disk">Save</Btn>
       </Col>
     );
@@ -377,7 +380,7 @@ var Preferences = React.createClass({
             on={p.prefs.blacklist} label="Enable website blacklist"
             hoverBg={p.theme.settingsItemHover}
             data-tip="Enter a comma separated list of domains, and they will be automatically closed under any circumstance. This is useful for blocking websites which may inhibit productivity, or you simply don't like.">
-              {p.prefs.blacklist ? <Blacklist /> : null} 
+              {p.prefs.blacklist ? <Blacklist theme={p.theme}/> : null} 
             </Toggle>
           </Col>
         </Row>
