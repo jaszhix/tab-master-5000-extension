@@ -94,6 +94,9 @@ export var msgStore = Reflux.createStore({
       });
     });
   },
+  removeSingleWindow(windowId){
+    chrome.runtime.sendMessage(chrome.runtime.id, {method: 'removeSingleWindow', windowId: windowId});
+  },
   get(){
     return this.response;
   }

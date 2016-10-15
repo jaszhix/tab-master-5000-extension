@@ -37,6 +37,21 @@ var sessionsStore = Reflux.createStore({
       });
     }
   },
+  restoreWindow(session, windowIndex){
+    // Opens a new chrome window with the selected tabs object.
+    console.log('session.tabs: ',session);
+    chrome.windows.create({
+      focused: true
+    }, (Window)=>{
+      console.log('restored session...',Window);
+      var tabs = _.orderBy(session.tabs[windowIndex], ['pinned', 'index'], ['desc', 'asc']);
+      for (let z = 0; z < tabs.length; z++) {
+        tabs[z].index = z;
+      }
+      chrome.runtime.sendMessage(chrome.runtime.id, {method: 'restoreWindow', windowId: Window.id, tabs: tabs}, (response)=>{
+      });
+    });
+  },
   exportSessions(sessions){
     // Stringify sessionData and export as JSON.
     var json = JSON.stringify(sessions);

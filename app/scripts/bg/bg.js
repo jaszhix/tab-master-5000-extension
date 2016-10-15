@@ -76,6 +76,9 @@ var syncSession = (sessions, prefs, windows=null, cb)=>{
   var allTabs = [];
   if (typeof prefs.syncedSession !== 'undefined' && prefs.syncedSession && prefs.sessionsSync) {
     var refSession = _.findIndex(sessions, {id: prefs.syncedSession});
+    if (refSession === -1) {
+      return;
+    }
     for (let i = 0; i < windows.length; i++) {
       allTabs.push(windows[i].tabs);
       _.each(windows[i].tabs, (tab, tKey)=>{
@@ -85,6 +88,7 @@ var syncSession = (sessions, prefs, windows=null, cb)=>{
       });
     }
     console.log('Mutating session state...');
+
     sessions[refSession].tabs = allTabs;
     sessions[refSession].timeStamp = new Date(Date.now());
     sessions[refSession] = sessions[refSession];
@@ -121,7 +125,6 @@ var Bg = React.createClass({
       prefs: null,
       init: true,
       windows: [],
-      allTabs: [],
       sessions: [],
       screenshots: []
     };
@@ -189,14 +192,28 @@ var Bg = React.createClass({
         sendMsg({screenshots: changed.screenshots.newValue});
       }
     });
+    /*
+    Windows created
+    */
+    chrome.windows.onCreated.addListener((Window)=>{
+      chrome.tabs.query({windowId: Window.id}, (tabs)=>{
+        _.merge(Window, {
+          tabs: tabs
+        })
+        this.state.windows.push(Window);
+        this.setState({windows: this.state.windows});
+        sendMsg({windows: this.state.windows, windowId: Window.id});
+      });
+    });
     /* 
     Windows removed 
     */
     chrome.windows.onRemoved.addListener((windowId)=>{
-      var refWindow = _.findIndex(this.state.allTabs, {windowId: windowId});
+      var refWindow = _.findIndex(this.state.windows, {windowId: windowId});
       if (refWindow !== -1) {
-        _.pullAt(this.state.allTabs, refWindow)
-        this.setState({allTabs: this.state.allTabs});
+        _.pullAt(this.state.windows, refWindow)
+        this.setState({windows: this.state.windows});
+        sendMsg({windows: this.state.windows});
       }
     })
     /*
@@ -362,6 +379,8 @@ var Bg = React.createClass({
         sendResponse({sessions: this.state.sessions});
       } else if (msg.method === 'getScreenshots') {
         sendResponse({screenshots: this.state.screenshots});
+      } else if (msg.method === 'removeSingleWindow') {
+        this.removeSingleWindow(msg.windowId);
       }
       return true;
     });
@@ -576,6 +595,15 @@ var Bg = React.createClass({
       this.setState({windows: this.state.windows});
       synchronizeSession(this.state.sessions, this.state.prefs, this.state.windows);
       sendMsg({windows: this.state.windows, windowId: windowId});
+    }
+  },
+  removeSingleWindow(id){
+    console.log('removeSingleWindow', id);
+    var refWindow = _.findIndex(this.state.windows, {id: id});
+    if (refWindow !== -1) {
+      _.pullAt(this.state.windows, refWindow)
+      this.setState({windows: this.state.windows});
+      sendMsg({windows: this.state.windows});
     }
   },
   updateSingleItem(id){

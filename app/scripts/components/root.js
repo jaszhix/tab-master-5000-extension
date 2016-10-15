@@ -723,7 +723,7 @@ var Root = React.createClass({
               <ModalHandler 
               modal={p.s.modal} 
               tabs={p.s.tabs}
-              allTabsByWindow={p.s.allTabs}
+              allTabs={p.s.allTabs}
               sessions={p.s.sessions} 
               prefs={p.s.prefs} 
               favicons={p.s.favicons} 

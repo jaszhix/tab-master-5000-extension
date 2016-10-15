@@ -55,27 +55,31 @@ var Attribution = React.createClass({
     return (
       <div style={{marginTop: '49px'}}>
         <h3>TM5K was made possible because of the efforts of the following projects.</h3>
-        <Col size="6">
-          <ul>
-            {s.dependencies ? list1.map((dep, i)=>{
-              var pkg = dep.split(' ');
-              return (
-                <li key={i}><a target="_blank" href={`https://www.npmjs.com/package/${pkg[0]}`}>{pkg[0]}</a>  {pkg[1]}</li>
-              );
-            }) : null}
-          </ul>
-        </Col>
-        <Col size="6">
-          <ul>
-            {s.dependencies ? list2.map((dep, i)=>{
-              var pkg = dep.split(' ');
-              return (
-                <li key={i}><a target="_blank" href={`https://www.npmjs.com/package/${pkg[0]}`}>{pkg[0]}</a>  {pkg[1]}</li>
-              );
-            }) : null}
-          </ul>
-        </Col>
+        <Row>
+          <Col size="6">
+            <ul>
+              {s.dependencies ? list1.map((dep, i)=>{
+                var pkg = dep.split(' ');
+                return (
+                  <li key={i}><a target="_blank" href={`https://www.npmjs.com/package/${pkg[0]}`}>{pkg[0]}</a>  {pkg[1]}</li>
+                );
+              }) : null}
+            </ul>
+          </Col>
+          <Col size="6">
+            <ul>
+              {s.dependencies ? list2.map((dep, i)=>{
+                var pkg = dep.split(' ');
+                return (
+                  <li key={i}><a target="_blank" href={`https://www.npmjs.com/package/${pkg[0]}`}>{pkg[0]}</a>  {pkg[1]}</li>
+                );
+              }) : null}
+            </ul>
+          </Col>
+        </Row>
+        <Row>
         Included wallpapers are licensed under the <a href="https://creativecommons.org/publicdomain/zero/1.0/">Creative Commons Zero (CC0)</a> license.
+        </Row>
       </div>
     );
   }

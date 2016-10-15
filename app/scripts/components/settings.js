@@ -10,6 +10,7 @@ import tc from 'tinycolor2';
 import ColorPicker from 'rc-color-picker';
 import ReactTooltip from './tooltip/tooltip';
 
+import * as utils from './stores/tileUtils';
 import state from './stores/state';
 import {msgStore, faviconStore, clickStore, utilityStore} from './stores/main';
 import themeStore from './stores/theme';
@@ -266,7 +267,7 @@ var Theming = React.createClass({
                     <Row 
                     key={i}
                     className="ntg-session-row"
-                    style={p.prefs.theme === theme.id ? {backgroundColor: themeStore.opacify(p.theme.settingsItemHover, 0.5)} : i % 2 ? null : {backgroundColor: p.theme.settingsItemHover}} 
+                    style={p.prefs.theme === theme.id ? {backgroundColor: p.theme.darkBtnBg, color: s.themeHover === i ? p.theme.bodyText : p.theme.darkBtnText} : {backgroundColor: s.themeHover === i ? p.theme.settingsItemHover : 'initial'}}  
                     onMouseEnter={()=>this.setState({themeHover: i})}>
                       <div 
                       className="ntg-session-text" 
@@ -299,7 +300,7 @@ var Theming = React.createClass({
                     <Row 
                     key={i}
                     className="ntg-session-row"
-                    style={p.prefs.theme === theme.id ? {backgroundColor: themeStore.opacify(p.theme.settingsItemHover, 0.5)} : i % 2 ? null : {backgroundColor: p.theme.settingsItemHover}} 
+                    style={p.prefs.theme === theme.id ? {backgroundColor: p.theme.darkBtnBg, color: s.themeHover === i ? p.theme.bodyText : p.theme.darkBtnText} : {backgroundColor: s.themeHover === i ? p.theme.settingsItemHover : 'initial'}} 
                     onMouseEnter={()=>this.setState({themeHover: i})}>
                       <div 
                       className="ntg-session-text" 
@@ -394,6 +395,9 @@ var Sessions = React.createClass({
       sessions: null,
       sessionHover: null,
       selectedSessionTabHover: null,
+      windowHover: -1,
+      currentSessionHover: -1,
+      currentSessionTabHover: -1,
       expandedSession: null,
       labelSession: null,
       sessionLabelValue: '',
@@ -419,7 +423,7 @@ var Sessions = React.createClass({
       <div>
         <Btn onClick={()=>sessionsStore.exportSessions(p.sessions)} className="ntg-setting-btn" icon="database-export">Export</Btn>
         <Btn onClick={this.triggerInput} className="ntg-setting-btn" icon="database-insert">Import</Btn>
-        <Btn onClick={()=>sessionsStore.v2Save({tabs: p.allTabsByWindow, label: s.sessionLabelValue})} className="ntg-setting-btn pull-right" icon="floppy-disk">Save Session</Btn>
+        <Btn onClick={()=>sessionsStore.v2Save({tabs: p.allTabs, label: s.sessionLabelValue})} className="ntg-setting-btn pull-right" icon="floppy-disk">Save Session</Btn>
       </div>
     );
     state.set({modal: p.modal});
@@ -481,10 +485,18 @@ var Sessions = React.createClass({
       }
     }
   },
+  handleCurrentSessionCloseTab(id){
+    chrome.tabs.remove(id);
+    ReactTooltip.hide();
+  },
+  handleCurrentSessionCloseWindow(id){
+    msgStore.removeSingleWindow(id);
+    chrome.windows.remove(id);
+    ReactTooltip.hide();
+  },
   render: function() {
     var p = this.props;
     var s = this.state;
-    var tabs = p.allTabsByWindow;
     return (
       <div className="sessions">
         <Col size="6" className="session-col" onMouseLeave={()=>this.handleSessionHoverOut(-1)}>
@@ -504,15 +516,15 @@ var Sessions = React.createClass({
             var tabsCount = getTabsCount();
             var sessionTitle = `${session.label ? session.label : _time}: ${session.tabs.length} Window${session.tabs.length > 1 ? 's' : ''}, ${tabsCount} Tab${tabsCount > 1 ? 's' : ''}`;
             return (
-              <Row onMouseEnter={()=>this.handleSessionHoverIn(i)} onMouseLeave={()=>this.handleSessionHoverOut(i)} key={i} className="ntg-session-row" style={{backgroundColor: s.sessionHover === i ? p.theme.settingsItemHover : 'initial'}}>
-                <Row>
-                  <div style={{width: 'auto', float: 'left', display: 'inline'}}>
-                    <div onClick={(e)=>this.expandSelectedSession(i, e)} className={"ntg-session-text session-text-"+i} style={s.expandedSession === i ? {paddingBottom: '4px'} : null}>
+              <Row onMouseEnter={()=>this.handleSessionHoverIn(i)} onMouseLeave={()=>this.handleSessionHoverOut(i)} key={i} className="ntg-session-row" style={{backgroundColor: s.sessionHover === i ? p.theme.settingsItemHover : 'initial', minHeight: '30px'}}>
+                <Row style={{marginBottom: s.expandedSession === i ? '1px' : 'initial'}}>
+                  <div style={{width: 'auto', float: 'left', display: 'inline', position: 'relative', top: '1px'}}>
+                    <div onClick={(e)=>this.expandSelectedSession(i, e)} className={"ntg-session-text session-text-"+i} style={{paddingBottom: s.expandedSession === i ? '4px' : 'initial', cursor: 'pointer'}}>
                       {p.prefs.syncedSession === session.id ? <span title="Synchronized" style={{paddingRight: '5px', color: p.theme.bodyText}}><i className="icon-sync"/></span> : null}
                       {sessionTitle}
                     </div>
                   </div>
-                  <div style={{width: 'auto', float: 'right', display: 'inline'}}>
+                  <div style={{width: 'auto', float: 'right', display: 'inline', position: 'relative', right: '5px', top: '1px'}}>
                     {s.sessionHover === i ? 
                     <Btn 
                     onClick={()=>sessionsStore.v2Remove(p.sessions, session)} 
@@ -556,7 +568,7 @@ var Sessions = React.createClass({
                   </div>
                 </Row>
                 {s.expandedSession === i ? 
-                  <Row fluid={true}>
+                  <Row fluid={true} onMouseLeave={()=>this.setState({windowHover: -1})}>
                     <Row>
                       {s.labelSession === i ? 
                         <div>
@@ -590,12 +602,22 @@ var Sessions = React.createClass({
                   {session.tabs.map((_window, w)=>{
                     var windowTitle = `Window ${w + 1}: ${_window.length} Tabs`;
                     return (
-                      <Row key={w} className="ntg-session-row" style={{backgroundColor: p.theme.settingsBg}}>
-                        <Row className="ntg-session-text" onClick={()=>this.setState({selectedSavedSessionWindow: s.selectedSavedSessionWindow === w ? -1 : w})}>
-                          <span title={windowTitle} className="ntg-session-text">{windowTitle}</span>
+                      <Row key={w} className="ntg-session-row" style={{backgroundColor: s.windowHover === w ? p.theme.settingsItemHover : p.theme.settingsBg}} onMouseEnter={()=>this.setState({windowHover: w})}>
+                        <Row className="ntg-session-text" style={{marginBottom: s.selectedSavedSessionWindow === w || s.search.length > 0 ? '1px' : 'initial', minHeight: '22px'}}>
+                          <span title={windowTitle} style={{position: 'relative', top: '1px', cursor: 'pointer'}} className="ntg-session-text" onClick={()=>this.setState({selectedSavedSessionWindow: s.selectedSavedSessionWindow === w ? -1 : w})}>{windowTitle}</span>
+                          <div style={{width: 'auto', float: 'right', display: 'inline', position: 'relative', right: '5px', top: '1px'}}>
+                            {s.windowHover === w ? 
+                            <Btn 
+                            onClick={()=>sessionsStore.restoreWindow(session, w)} 
+                            className="ntg-session-btn" 
+                            icon="folder-open2"
+                            faStyle={{fontSize: '14px', position: 'relative', top: '0px'}}
+                            noIconPadding={true} 
+                            data-tip="Restore Window"/> : null}
+                          </div>
                         </Row>
                         {s.selectedSavedSessionWindow === w || s.search.length > 0 ?
-                        <Row className="ntg-session-expanded" style={{backgroundColor: p.theme.settingsBg, color: p.theme.bodyText, height: '200px'}} onMouseLeave={()=>this.handleSelectedSessionTabHoverOut(-1)}>
+                        <Row className="ntg-session-expanded" style={{backgroundColor: p.theme.settingsBg, color: p.theme.bodyText, height: '400px'}} onMouseLeave={()=>this.handleSelectedSessionTabHoverOut(-1)}>
                         {_window.map((t, x)=>{
                           if (s.search.length === 0 || kmp(t.title.toLowerCase(), s.search) !== -1) {
                             if (!_.find(p.favicons, {domain: t.url.split('/')[2]})) {
@@ -635,14 +657,24 @@ var Sessions = React.createClass({
           <input children={undefined} type="file" onChange={(e)=>sessionsStore.importSessions(p.sessions, e)} accept=".json" ref="fileInput" style={style.hiddenInput} />
           
         </Col>
-        <Col size="6" className="session-col">
+        <Col size="6" className="session-col" onMouseLeave={()=>this.setState({currentSessionHover: -1})}>
           <h4>Current Session</h4>
-          {tabs.map((_window, i)=>{
+          {p.allTabs.map((_window, i)=>{
             var windowTitle = `Window ${i + 1}: ${_window.length} Tabs`;
             return (
-              <Row key={i} className="ntg-session-row" style={i % 2 ? null : {backgroundColor: p.theme.settingsItemHover}}>
-                <Row className="ntg-session-text" onClick={()=>this.setState({selectedCurrentSessionWindow: s.selectedCurrentSessionWindow === i ? -1 : i})}>
-                  <span title={windowTitle} className="ntg-session-text">{windowTitle}</span>
+              <Row key={i} className="ntg-session-row" style={{backgroundColor: s.currentSessionHover === i ? p.theme.settingsItemHover : 'initial'}} onMouseEnter={()=>this.setState({currentSessionHover: i})} onMouseLeave={()=>this.setState({currentSessionTabHover: -1})}>
+                <Row className="ntg-session-text">
+                  <span title={windowTitle} className="ntg-session-text" onClick={()=>this.setState({selectedCurrentSessionWindow: s.selectedCurrentSessionWindow === i ? -1 : i})}>{windowTitle}</span>
+                  <div style={{width: 'auto', float: 'right', display: 'inline', position: 'relative', right: '5px'}}>
+                    {s.currentSessionHover === i && _window.length > 0 ? 
+                    <Btn 
+                    onClick={()=>this.handleCurrentSessionCloseWindow(_window[0].windowId)} 
+                    className="ntg-session-btn" 
+                    icon="cross"
+                    faStyle={{fontSize: '18px', position: 'relative', top: '0px'}} 
+                    noIconPadding={true} 
+                    data-tip="Close Window" /> : null}
+                  </div>
                 </Row>
                 {s.selectedCurrentSessionWindow === i ?
                 <Row className="ntg-session-expanded" style={{backgroundColor: p.theme.settingsBg, color: p.theme.bodyText, height: '400px'}}>
@@ -652,11 +684,21 @@ var Sessions = React.createClass({
                   }
                   var fvData = _.result(_.find(p.favicons, { domain: t.url.split('/')[2] }), 'favIconUrl');
                   return (
-                    <Row onClick={()=>chrome.tabs.update(t.id, {active: true})} className="ntg-session-text" key={i} style={i % 2 ? null : {backgroundColor: p.theme.settingsItemHover}}>
-                      <span title={t.title}>
+                    <Row className="ntg-session-text" key={i} style={{backgroundColor: s.currentSessionTabHover === i ? p.theme.settingsItemHover : 'initial', maxHeight: '20px'}} onMouseEnter={()=>this.setState({currentSessionTabHover: i})}>
+                      <span title={t.title} onClick={()=>chrome.tabs.update(t.id, {active: true})}>
                         <img className="ntg-small-favicon" src={fvData ? fvData : '../images/file_paper_blank_document.png' } />  
                         {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {t.title}
                       </span>
+                      <div style={{width: 'auto', float: 'right', display: 'inline', position: 'relative', right: '5px'}}>
+                        {s.currentSessionTabHover === i ? 
+                        <Btn 
+                        onClick={()=>this.handleCurrentSessionCloseTab(t.id)} 
+                        className="ntg-session-btn" 
+                        icon="cross"
+                        faStyle={{fontSize: '18px', position: 'relative', top: '0px'}} 
+                        noIconPadding={true} 
+                        data-tip="Close Tab" /> : null}
+                      </div>
                     </Row>
                   );
                 })}
@@ -742,7 +784,7 @@ var Settings = React.createClass({
           favicons={p.favicons} 
           collapse={p.collapse} 
           theme={p.theme} 
-          allTabsByWindow={p.allTabsByWindow} /> : null}
+          allTabs={p.allTabs} /> : null}
           {s.settings === 'preferences' ? 
           <Preferences
           modal={p.modal}

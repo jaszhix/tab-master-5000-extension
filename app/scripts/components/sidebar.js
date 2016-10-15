@@ -76,8 +76,8 @@ export var SidebarMenu = React.createClass({
             <ul className="nav nav-lg nav-tabs nav-justified">
               {sidebarTabs.map((tab, i)=>{
                 var tabStyle = {
-                  color: p.theme.darkBtnText,
-                  backgroundColor: p.theme.darkBtnBg,
+                  color: p.theme.bodyText,
+                  backgroundColor: p.theme.settingsBg,
                   borderBottom: '0px',
                   cursor: 'pointer'
                 };
