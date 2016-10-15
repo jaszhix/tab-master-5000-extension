@@ -56,7 +56,7 @@ var sessionsStore = Reflux.createStore({
     // Stringify sessionData and export as JSON.
     var json = JSON.stringify(sessions);
     var filename = 'TM5K-Sessions-'+utilityStore.now();
-    var blob = new Blob([json], {type: "application/json;charset=utf-8"});
+    var blob = new Blob([json], {type: 'application/json;charset=utf-8'});
     saveAs(blob, filename+'.json');
   },
   importSessions(sessions, e){
@@ -181,7 +181,7 @@ var sessionsStore = Reflux.createStore({
         sessions = item;
         sessions.sessions.push(session);
       }
-      chrome.storage.local.set({sessions: sessions.sessions}, (result)=> {
+      chrome.storage.local.set({sessions: _.orderBy(sessions.sessions, ['timeStamp'], ['desc'])}, (result)=> {
         console.log('session saved...',result);
       });   
     });
