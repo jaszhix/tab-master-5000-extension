@@ -1,5 +1,29 @@
 #### Release Notes
 
+##### v2.0.0 / *10-16-16*
+
+*   New tile UI.
+*   New table mode.
+*   Cached favicons now load properly in history and bookmarks mode.
+*   New favicons are no longer downloaded in sessions mode.
+*   Tab action history, screenshot generation, and synchronized sessions now update persistently in the background. 
+*   Added new optional feature for Chrome 54+ - automatic discarding of tabs from memory. The expiration time before a tab's memory is dumped from Chrome can be adjusted in Preferences.
+*   Added the ability to restore individual windows to the session manager.
+*   Added a "Load More" button underneath the tile grid for users with large displays that cannot use scroll based pagination.
+*   Added new theme, "Minty Dark".
+*   More useful loading screen displays the time instead of loading indicator.
+*   Architectural overhaul enabling faster initialization and better performance overall.
+*   Improved pagination behavior.
+*   Fixed mute indication not changing when a tile is muted.
+*   Fixed favicons from built-in Chrome pages sometimes not loading.
+*   Fixed deleting tabs in stored sessions not working from the tile view.
+*   Fixed backspacing in a search query not re-filtering tiles.
+*   Fixed bookmark tiles not indicating if its an open tab.
+*   Fixed open tabs in history mode not updating correctly.
+*   Known issues:
+  *  Switching to table mode doesn't render anything until clicking outside of the sidebar.
+  *  Reversing the removal of a tab using TM5K's tab action history will result in its tile screenshot being replaced with one of the New Tab.
+
 ##### v1.7.2 / *8-20-16*
 
 *   Fix apps and extensions being enabled not updating the view.

@@ -7,9 +7,10 @@ Tab Master 5K replaces your New Tab page with a full-featured tabs, history, boo
 - Re-order tab tiles by dragging and dropping them.
 - Close all tabs from a specific website.
 - Close duplicate tabs, and optionally make them pulsate.
-- Manage tabs through icons or the right click menu.
+- Manage tabs through icons, the right click menu, or through a table view.
 - Search tabs in the top search bar.
 - Option to sort tabs by website or alphabetical order, and apply the order to your Chrome window.
+- Automatically discard tabs from memory and customize how long they have to be inactive to trigger it.
 
 #### Customization
 - Full control of the New Tab's appearance with a flexible theme editor.

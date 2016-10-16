@@ -82,7 +82,7 @@ gulp.task('build', ['build-bg'], function() {
     uglify();
     config.entry = './app/scripts/components/root.js';
     config.output.filename = 'app.js';
-    config.output.publicPath = 'chrome-extension://phnleeijfhkmlpeljljklabcmjijdoli/';
+    config.output.publicPath = '/';
   }
   return gulp.src('./app/scripts/components/root.js')
     .pipe(webpackStream(config))

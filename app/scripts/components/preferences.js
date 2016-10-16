@@ -179,6 +179,8 @@ var Preferences = React.createClass({
       msgStore.setPrefs(obj);
       if (opt === 'animations') {
         themeStore.set(p.theme);
+      } else if (opt === 'screenshot') {
+        _.defer(()=>chrome.runtime.reload());
       }
     });
   },
