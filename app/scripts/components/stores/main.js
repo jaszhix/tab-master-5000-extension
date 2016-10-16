@@ -149,28 +149,8 @@ export var utilityStore = Reflux.createStore({
     this.systemState = null;
     this.bytesInUse = null;
   },
-  filterFavicons(faviconUrl, tabUrl) {
-    // Work around for Chrome favicon useage restriction.
-    if (faviconUrl.indexOf('chrome://theme/') !== -1) {
-      return `../images/${faviconUrl.split('chrome://theme/')[1]}.png`;
-    } else {
-      return faviconUrl;
-    }
-  },
-  get_focusedWindow(){
-    chrome.windows.getLastFocused((w)=>{
-      this.focusedWindow = w.id;
-    });
-    return this.focusedWindow;
-  },
   chromeVersion(){
     return parseInt(/Chrome\/([0-9.]+)/.exec(navigator.userAgent)[1].split('.'));
-  },
-  set_systemState(value){
-    this.systemState = value;
-  },
-  get_systemState(){
-    return this.systemState;
   },
   get_bytesInUse(item){
     return new Promise((resolve, reject)=>{
@@ -221,68 +201,6 @@ export var utilityStore = Reflux.createStore({
   },
 });
 window.utilityStore = utilityStore;
-
-export var relayStore = Reflux.createStore({
-  init: function() {
-    this.relay = ['', null];
-  },
-  set_relay: function(value, id) {
-    this.relay[0] = value;
-    this.relay[1] = id;
-    console.log('relay: ', value);
-    this.trigger(this.relay);
-  },
-  get_relay: function() {
-    return this.relay;
-  }
-});
-
-export var draggedStore = Reflux.createStore({
-  init(){
-    this.dragged = null;
-  },
-  set_dragged(value){
-    this.dragged = value;
-    this.trigger(this.dragged);
-    console.log('dragged: ',this.dragged);
-  },
-  get_dragged(){
-    return this.dragged;
-  },
-});
-
-export var dragStore = Reflux.createStore({
-  init: function() {
-    this.drag = {left: null, top: null};
-    this.draggedOver = null;
-    this.dragged = null;
-    this.tabIndex = null;
-  },
-  set_drag: function(left, top) {
-    this.drag.left = left;
-    this.drag.top = top;
-    console.log('drag: ', this.drag);
-    this.trigger(this.drag);
-  },
-  get_drag: function() {
-    return this.drag;
-  },
-  set_draggedOver(value){
-    this.hovered = value;
-    console.log('draggedOver: ',this.draggedOver);
-    this.trigger(this.draggedOver);
-  },
-  get_draggedOver(){
-    return this.draggedOver;
-  },
-  set_tabIndex(value){
-    this.tabIndex = value;
-    console.log('tabIndex: ',this.tabIndex);
-  },
-  get_tabIndex(){
-    return this.tabIndex;
-  },
-});
 
 export var blacklistStore = Reflux.createStore({
   init: function() {
@@ -492,29 +410,11 @@ export var historyStore = Reflux.createStore({
 });
 
 export var faviconStore = Reflux.createStore({
-  init: function() {
-    /*var getFavicons = new Promise((resolve, reject)=>{
-      chrome.storage.local.get('favicons', (fv)=>{
-        if (fv && fv.favicons) {
-          resolve(fv);
-        } else {
-          reject();
-        }
-      });
-    });
-    getFavicons.then((fv)=>{
-      console.log('load favicons');
-      state.set({favicons: fv.favicons});
-    }).catch(()=>{
-      console.log('init favicons');
-      chrome.storage.local.set({favicons: []}, (result)=> {
-        console.log('Init favicons saved.');
-      });
-    });*/
-  },
   set_favicon: function(tab, queryLength, i) {
-    //debugger;
     var s = state.get();
+    if (tab.url.indexOf('chrome://') !== -1) {
+      return;
+    }
     var domain = tab.url.split('/')[2];
     if (tab && tab.favIconUrl && !_.find(s.favicons, {domain: domain})) {
       var sourceImage = new Image();
@@ -543,7 +443,7 @@ export var faviconStore = Reflux.createStore({
           }
         }
       };
-      sourceImage.src = utilityStore.filterFavicons(tab.favIconUrl, tab.url);
+      sourceImage.src = tab.favIconUrl;
     }
   },
   clean(){
@@ -566,7 +466,7 @@ export var chromeAppStore = Reflux.createStore({
       if (_apps) {
         for (let i = _apps.length - 1; i >= 0; i--) {
           _.assign(_apps[i], {
-            favIconUrl: _apps[i].icons ? utilityStore.filterFavicons(_.last(_apps[i].icons).url, _.last(_apps[i].icons).url) : '../images/IDR_EXTENSIONS_FAVICON@2x.png',
+            favIconUrl: _apps[i].icons ? utils.filterFavicons(_.last(_apps[i].icons).url, _.last(_apps[i].icons).url) : '../images/IDR_EXTENSIONS_FAVICON@2x.png',
             id: _apps[i].id,
             url: app ? _apps[i].appLaunchUrl : _apps[i].optionsUrl,
             title: _apps[i].name

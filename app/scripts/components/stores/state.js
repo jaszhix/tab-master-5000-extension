@@ -8,7 +8,6 @@ var state = Reflux.createStore({
       init: true,
       prefs: null,
       modeKey: 'tabs',
-      lastUpdate: [],
       sessions: [],
       sessionTabs: [],
       actions: [],
@@ -79,20 +78,14 @@ var state = Reflux.createStore({
   },
   set(obj){
     console.log('STATE INPUT: ', obj);
-    var lastUpdate = _.keys(obj);
     if (obj.hasOwnProperty('prefs')) {
       _.merge(this.state, obj);
     } else {
       _.assignIn(this.state, obj);  
     }
-    this.state.lastUpdate = lastUpdate;
     
     console.log('STATE: ', this.state);
     this.trigger(this.state);
-
-    if (obj.hasOwnProperty(this.state.modeKey)) {
-      this.trigger(this.state);
-    }
   },
   get(){
     return this.state;
