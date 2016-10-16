@@ -7,16 +7,17 @@ import {utilityStore} from './stores/main';
 import {Btn, Col, Row} from './bootstrap';
 
 import changelog from 'html!markdown!../../../changelog.md';
+import support from 'html!markdown!../../../support.md';
 
-var Donate = React.createClass({
+var Contribute = React.createClass({
   render:function(){
     return (
       <div style={{marginTop: '49px'}}>
-        <h4>Why donate?</h4>
-        <p>Tab Master 5000 is free of cost and doesn't generate any revenue directly. If you are a happier Chrome user because of this extension, and would like to see more frequent updates, a donation will help me ration more time to this project. As a developer, I have to choose my time wisely, and while I love working on it, it is not always easy to sit down and improve the extension while I have other obligations.</p>
+        <h4>Why contribute?</h4>
+        <p>Tab Master 5000 is free of cost and doesn't generate any revenue directly. If you are a happier Chrome user because of this extension, a donation will help me ration more time to this project. As a developer, I have to choose my time wisely, and while I love working on it, it is not always easy to sit down and improve the extension while I have other obligations.</p>
         <p>If you are a developer and would like to contribute time to this project, you can submit pull requests to this project's master branch on Github.</p>
         <p>Submitting bug reports and suggesting new features on Github or the Chrome Web Store is also helpful.</p>
-        <p>All donors will be listed on this page after each extension update unless they opt out.</p>
+        <p>All contributors will be listed on this page after each extension update unless they opt out.</p>
         <p>Thanks for using Tab Master!</p>
         <p>Jason Hicks</p>
         <form  action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank">
@@ -24,6 +25,37 @@ var Donate = React.createClass({
           <input type="hidden" name="hosted_button_id" value="8VL34HHRFN3LS" />
           <Btn className="ntg-top-btn" name="submit">PayPal</Btn>
         </form>
+        <h4>Special Thanks</h4>
+        <ul>
+          <li>reset77</li>
+          <li>Martin Lichtblau</li>
+          <li>volcano99</li>
+          <li><a href="https://trackjs.com" target="_blank">TrackJS</a></li>
+          <li><a href="https://google.com" target="_blank">Google</a></li>
+        </ul>
+      </div>
+    );
+  }
+});
+
+var Support = React.createClass({
+  componentDidMount(){
+    var deps = require('json!../../../package.json');
+    var state = [];
+    for (var key in deps.devDependencies) {
+      state.push(`${key} ${deps.devDependencies[key].split('^')[1]}`);
+    }
+    this.setState({dependencies: state});
+  },
+  render(){
+    function createMarkup() { return {__html: support};}
+    return (
+      <div style={{marginTop: '49px'}}>
+        <Col size="2" />
+        <Col size="8" className="ntg-release">
+          <div dangerouslySetInnerHTML={createMarkup()} />
+        </Col>
+        <Col size="2"/>
       </div>
     );
   }
@@ -54,31 +86,35 @@ var Attribution = React.createClass({
     }
     return (
       <div style={{marginTop: '49px'}}>
-        <h3>TM5K was made possible because of the efforts of the following projects.</h3>
+        <h3 style={{textAlign: 'center'}}>TM5K was made possible because of the efforts of the following projects.</h3>
         <Row>
-          <Col size="6">
-            <ul>
-              {s.dependencies ? list1.map((dep, i)=>{
-                var pkg = dep.split(' ');
-                return (
-                  <li key={i}><a target="_blank" href={`https://www.npmjs.com/package/${pkg[0]}`}>{pkg[0]}</a>  {pkg[1]}</li>
-                );
-              }) : null}
-            </ul>
+          <Col size="2" />
+          <Col size="8">
+            <Col size="6">
+              <ul>
+                {s.dependencies ? list1.map((dep, i)=>{
+                  var pkg = dep.split(' ');
+                  return (
+                    <li key={i}><a target="_blank" href={`https://www.npmjs.com/package/${pkg[0]}`}>{pkg[0]}</a>  {pkg[1]}</li>
+                  );
+                }) : null}
+              </ul>
+            </Col>
+            <Col size="6">
+              <ul>
+                {s.dependencies ? list2.map((dep, i)=>{
+                  var pkg = dep.split(' ');
+                  return (
+                    <li key={i}><a target="_blank" href={`https://www.npmjs.com/package/${pkg[0]}`}>{pkg[0]}</a>  {pkg[1]}</li>
+                  );
+                }) : null}
+              </ul>
+            </Col>
           </Col>
-          <Col size="6">
-            <ul>
-              {s.dependencies ? list2.map((dep, i)=>{
-                var pkg = dep.split(' ');
-                return (
-                  <li key={i}><a target="_blank" href={`https://www.npmjs.com/package/${pkg[0]}`}>{pkg[0]}</a>  {pkg[1]}</li>
-                );
-              }) : null}
-            </ul>
-          </Col>
+          <Col size="2" />
         </Row>
-        <Row>
-        Included wallpapers are licensed under the <a href="https://creativecommons.org/publicdomain/zero/1.0/">Creative Commons Zero (CC0)</a> license.
+        <Row style={{textAlign: 'center'}}>
+          Included wallpapers are licensed under the <a href="https://creativecommons.org/publicdomain/zero/1.0/">Creative Commons Zero (CC0)</a> license.
         </Row>
       </div>
     );
@@ -134,19 +170,23 @@ var About = React.createClass({
               <li style={{padding: '0px'}} className={`${s.tab === 'release' ? 'active' : ''}`}>
                   <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({tab: 'release'})}>Release Notes</a>
               </li>
+              <li style={{padding: '0px'}} className={`${s.tab === 'support' ? 'active' : ''}`}>
+                  <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({tab: 'support'})}>Support</a>
+              </li>
               <li style={{padding: '0px'}} className={`${s.tab === 'attribution' ? 'active' : ''}`}>
                   <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({tab: 'attribution'})}>Attribution</a>
               </li>
-              <li style={{padding: '0px'}} className={`${s.tab === 'donate' ? 'active' : ''}`}>
-                  <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({tab: 'donate'})}>Donate</a>
+              <li style={{padding: '0px'}} className={`${s.tab === 'Contribute' ? 'active' : ''}`}>
+                  <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({tab: 'Contribute'})}>Contribute</a>
               </li>
             </ul>
           </div>
         </Row>
         <Col size="12" className="about">
           {s.tab === 'release' ? <ReleaseNotes settingsMax={p.settingsMax} tm5kLogo={tm5kLogo}/> : null}
+          {s.tab === 'support' ? <Support /> : null}
           {s.tab === 'attribution' ? <Attribution /> : null}
-          {s.tab === 'donate' ? <Donate /> : null}
+          {s.tab === 'Contribute' ? <Contribute /> : null}
         </Col>
       </div>
     );
