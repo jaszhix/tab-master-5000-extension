@@ -67,7 +67,7 @@ var ContextMenu = React.createClass({
         argument: notAppsExt && this.getStatus('duplicate'),
         onClick: ()=>this.handleRelay('closeAllDupes'),
         icon: 'icon-svg',
-        label: `${close} duplicates from ${p.context.id.url.split('/')[2]}`,
+        label: `${close} all duplicates`,
         divider: null
       },
       {
@@ -208,7 +208,8 @@ var ContextMenu = React.createClass({
           <Context
           theme={p.theme}
           options={p.context.options}
-          onClickOutside={this.handleClickOutside} />
+          onClickOutside={this.handleClickOutside}
+          animations={p.prefs.animations} />
         </div>
       </div>
     );
