@@ -41,7 +41,7 @@ import ReactTooltip from './tooltip/tooltip';
 import '../../styles/app.scss';
 window.v = v;
 import state from './stores/state';
-import {keyboardStore, chromeAppStore, actionStore, historyStore, bookmarksStore, clickStore, utilityStore, faviconStore, msgStore} from './stores/main';
+import {keyboardStore, chromeAppStore, historyStore, bookmarksStore, clickStore, utilityStore, faviconStore, msgStore} from './stores/main';
 import themeStore from './stores/theme';
 import tabStore from './stores/tab';
 import sessionsStore from './stores/sessions';
@@ -233,12 +233,10 @@ var Root = React.createClass({
   componentDidMount() {
     // Initialize Reflux listeners.
     themeStore.load(this.props.s.prefs);
-    actionStore.clear();
     this.listenTo(themeStore, this.themeChange);
     this.listenTo(bookmarksStore, this.updateTabState);
     this.listenTo(historyStore, this.updateTabState);
     this.listenTo(chromeAppStore, this.updateTabState);
-    this.listenTo(actionStore, this.actionsChange);
     window._trackJs.version = utilityStore.get_manifest().version;
     this.init(this.props);
     
@@ -283,6 +281,9 @@ var Root = React.createClass({
         msgStore.getScreenshots().then((screenshots)=>{
           state.set({screenshots: screenshots});
         });
+        msgStore.getActions().then((actions)=>{
+          state.set({actions: actions});
+        });
       });
     }
   },
@@ -301,9 +302,6 @@ var Root = React.createClass({
   faviconsChange(e){
     this.setState({topLoad: true});
     _.defer(()=>this.setState({topLoad: false}));
-  },
-  actionsChange(e){
-    this.setState({actions: e});
   },
   chromeAppChange(e){
     this.setState({apps: e});
@@ -628,7 +626,6 @@ var Root = React.createClass({
         if (opt === 'init') {
           utilityStore.initTrackJs(p.s.prefs, s.savedThemes);
           this.setState({load: false});
-          actionStore.set_state(false);
         }
       } else if (opt === 'cycle') {
         this.setState({grid: true});
@@ -733,7 +730,8 @@ var Root = React.createClass({
           {options ? <Preferences options={true} settingsMax={true} prefs={p.s.prefs} tabs={p.s.tabs} theme={s.theme} /> 
           : 
           <div>
-            {p.s.context.value ? <ContextMenu search={p.s.search} actions={s.actions} tabs={p.s[p.s.prefs.mode]} prefs={p.s.prefs} cursor={cursor} context={p.s.context} chromeVersion={p.s.chromeVersion} duplicateTabs={p.s.duplicateTabs} theme={s.theme} /> : null}
+            {p.s.context.value ? 
+            <ContextMenu actions={p.s.actions} search={p.s.search} tabs={p.s[p.s.prefs.mode]} prefs={p.s.prefs} cursor={cursor} context={p.s.context} chromeVersion={p.s.chromeVersion} duplicateTabs={p.s.duplicateTabs} theme={s.theme} /> : null}
             {p.s.modal ? 
               <ModalHandler 
               modal={p.s.modal} 
@@ -750,7 +748,8 @@ var Root = React.createClass({
               wallpaper={s.wallpaper}
               wallpapers={s.wallpapers}
               settings={p.s.settings}
-              height={p.s.height} /> : null}
+              height={p.s.height}
+              chromeVersion={p.s.chromeVersion} /> : null}
               <div className="tile-container">
                 <Search
                 s={p.s}

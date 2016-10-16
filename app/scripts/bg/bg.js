@@ -45,6 +45,7 @@ var checkChromeErrors = (err)=>{
     window.trackJs.track(err);
   }
 };
+
 var checkChromeErrorsThrottled = _.throttle(checkChromeErrors, 2000, {leading: true});
 
 var sendMsg = (msg, res) => {
@@ -96,6 +97,18 @@ var syncSession = (sessions, prefs, windows=null, cb)=>{
   }
 }
 
+var checkAutoDiscard = (windows, prefs)=>{
+  if (prefs.autoDiscard) {
+    _.each(windows, (Window)=>{
+      _.each(Window.tabs, (tab)=>{ 
+        if (tab.hasOwnProperty('timeStamp') && tab.timeStamp + prefs.autoDiscardTime < Date.now()) {
+          chrome.tabs.discard(tab.id);
+          console.log('Discarding: ', tab.title);
+        }
+      });
+    });
+  }
+};
 
 const eventState = {
   onStartup: null,
@@ -126,7 +139,9 @@ var Bg = React.createClass({
       init: true,
       windows: [],
       sessions: [],
-      screenshots: []
+      screenshots: [],
+      actions: [],
+      chromeVersion: parseInt(/Chrome\/([0-9.]+)/.exec(navigator.userAgent)[1].split('.'))
     };
   },
   componentDidMount(){
@@ -344,15 +359,12 @@ var Bg = React.createClass({
         }).catch((e)=>{
           if (s.prefs.mode !== 'tabs') {
             chrome.tabs.update(msg.id, {active: true});
-            reload('Screenshot capture error.');
           } else {
             sendMsg({e: sender.id, type: 'error'});
           }
         });
       } else if (msg.method === 'close') {
         close(sender.tab.id);
-      } else if (msg.method === 'reload') {
-        reload('Messaged by front-end script to reload...');
       } else if (msg.method === 'restoreWindow') {
         for (var i = 0; i < msg.tabs.length; i++) {
           chrome.tabs.create({
@@ -383,6 +395,11 @@ var Bg = React.createClass({
         sendResponse({screenshots: this.state.screenshots});
       } else if (msg.method === 'removeSingleWindow') {
         this.removeSingleWindow(msg.windowId);
+      } else if (msg.method === 'undoAction') {
+        var refWindow = _.findIndex(this.state.windows, {id: msg.windowId});
+        this.undoAction(this.state.windows[refWindow].tabs, this.state.chromeVersion);
+      } else if (msg.method === 'getActions') {
+        sendResponse({actions: this.state.actions});
       }
       return true;
     });
@@ -544,6 +561,88 @@ var Bg = React.createClass({
       chrome.tabs.update(info.tabId, {active: true});
     });
   },
+  keepNewTabOpen() {
+    // Work around to prevent losing focus of New Tab page when a tab is closed or pinned from the grid.
+    chrome.tabs.query({
+      title: 'New Tab',
+      active: true
+    }, function(Tab) {
+      for (var i = Tab.length - 1; i >= 0; i--) {
+        chrome.tabs.update(Tab[i].id, {
+          active: true
+        });
+      }
+    });
+  },
+  setAction(type, oldTabInstance, newTabInstance=null) {
+    if (this.state.prefs && !this.state.prefs.actions) {
+      return;
+    }
+    if (this.state.actions.length > 30) {
+      var firstAction = _.findIndex(this.state.actions, {id: _.first(this.state.actions).id});
+      if (firstAction !== -1) {
+        _.pullAt(this.state.actions, firstAction);
+      }
+    }
+    if (newTabInstance && newTabInstance.title !== 'New Tab') {
+      var action = {
+        type: type, 
+        item: _.cloneDeep(type === 'update' ? newTabInstance : oldTabInstance),
+        id: uuid.v4()
+      };
+      if (type === 'update') {
+        if (oldTabInstance.mutedInfo.muted !== newTabInstance.mutedInfo.muted) {
+          action.type = newTabInstance.mutedInfo.muted ? 'mute' : 'unmute';
+        } else if (oldTabInstance.pinned !== newTabInstance.pinned) {
+          action.type = newTabInstance.pinned ? 'pin' : 'unpin';
+        }
+      }
+      this.state.actions.push(action);
+      this.setState({actions: this.state.actions});
+      sendMsg({actions: this.state.actions, windowId: oldTabInstance.windowId});
+    }
+  },
+  undoAction(tabs, chromeVersion){
+    var removeLastAction = (lastAction)=>{
+      if (lastAction !== undefined) {
+        var refAction = _.findIndex(this.state.actions, {id: lastAction.id});
+        if (refAction !== -1) {
+          _.pullAt(this.state.actions, refAction);
+        }
+      }
+    };
+    var undo = ()=>{
+      var lastAction = _.last(this.state.actions);
+      if (lastAction) {
+        if (lastAction.type === 'remove') {
+          this.keepNewTabOpen();
+
+          chrome.tabs.create({url: lastAction.item.url, index: lastAction.item.index}, (t)=>{
+            console.log('Tab created from tabStore.createTab: ',t);
+          });
+        } else if (lastAction.type === 'update') {
+          // TODO: hard revert tab state
+          this.state.actions = _.without(this.state.actions, _.last(this.state.actions));
+          undo();
+        } else if (lastAction.type.indexOf('mut') !== -1 && chromeVersion >= 46) {
+          chrome.tabs.update(lastAction.item.id, {muted: !lastAction.item.mutedInfo.muted});
+        } else if (lastAction.type.indexOf('pin') !== -1) {
+          chrome.tabs.update(lastAction.item.id, {pinned: !lastAction.item.pinned});
+        } else if (lastAction.type === 'create') {
+          chrome.tabs.remove(lastAction.item.id);
+        } else if (lastAction.type === 'move') {
+          chrome.tabs.move(lastAction.item.id, {index: lastAction.item.index});
+        } else {
+          removeLastAction(lastAction);
+          undo();
+        }
+      }
+      removeLastAction(lastAction);
+      this.setState({actions: this.state.actions});
+      sendMsg({actions: this.state.actions, windowId: tabs[0].windowId});
+    };
+    undo();
+  },
   getSingleTab(id){
     if (_.isObject(id)) {
       id = id.tabId;
@@ -582,6 +681,7 @@ var Bg = React.createClass({
     this.state.windows[refWindow].tabs = _.orderBy(_.uniqBy(this.state.windows[refWindow].tabs, 'id'), ['pinned'], ['desc']);
     this.state.windows[refWindow].tabs = this.formatTabs(this.state.windows[refWindow].tabs);
     this.setState({windows: this.state.windows});
+    this.setAction('create', e);
     synchronizeSession(this.state.sessions, this.state.prefs, this.state.windows);
     sendMsg({windows: this.state.windows, windowId: e.windowId});
   },
@@ -591,7 +691,7 @@ var Bg = React.createClass({
       return;
     }
     var refTab = _.findIndex(this.state.windows[refWindow].tabs, {id: e});
-
+    this.setAction('remove', this.state.windows[refWindow].tabs[refTab]);
     if (refTab > -1) {
       _.pullAt(this.state.windows[refWindow].tabs, refTab);
       this.state.windows[refWindow].tabs = _.orderBy(_.uniqBy(this.state.windows[refWindow].tabs, 'id'), ['pinned'], ['desc']);
@@ -618,7 +718,7 @@ var Bg = React.createClass({
         return;
       }
       var refTab = _.findIndex(this.state.windows[refWindow].tabs, {id: e.id});
-
+      this.setAction('update', this.state.windows[refWindow].tabs[refTab], e);
       _.merge(e, {
         timeStamp: new Date(Date.now()).getTime()
       });
@@ -632,6 +732,7 @@ var Bg = React.createClass({
         }
         this.setState({windows: this.state.windows});
         synchronizeSession(this.state.sessions, this.state.prefs, this.state.windows);
+        checkAutoDiscard(this.state.windows, this.state.prefs);
         sendMsg({windows: this.state.windows, windowId: e.windowId});
       }
     });
@@ -643,7 +744,7 @@ var Bg = React.createClass({
         return;
       }
       var refTab = _.findIndex(this.state.windows[refWindow].tabs, {id: e.id});
-
+      this.setAction('move', this.state.windows[refWindow].tabs[refTab], e);
       if (refTab > -1) {
         this.state.windows[refWindow].tabs = v(this.state.windows[refWindow].tabs).move(refTab, e.index).ns;
         this.state.windows[refWindow].tabs[refTab].timeStamp = new Date(Date.now()).getTime();
@@ -654,7 +755,7 @@ var Bg = React.createClass({
         }
         this.setState({windows: this.state.windows});
         synchronizeSession(this.state.sessions, this.state.prefs, this.state.windows);
-        sendMsg({windows: this.state.windows, windowId: e.windowId});
+        sendMsg({windows: this.state.windows, windowId: e.windowId});   
       }
     });
   },

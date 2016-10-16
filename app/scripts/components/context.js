@@ -3,7 +3,7 @@ import _ from 'lodash';
 
 import {Context} from './bootstrap';
 import state from './stores/state';
-import {actionStore} from './stores/main';
+import {msgStore} from './stores/main';
 
 var ContextMenu = React.createClass({
   getInitialState(){
@@ -154,7 +154,7 @@ var ContextMenu = React.createClass({
   },
   handleRelay(opt){
     if (opt === 'actions') {
-      actionStore.undoAction();
+      msgStore.undoAction();
     } else {
       var p = this.props;
       console.log('relay '+opt+': ',p.context.id);
@@ -177,21 +177,18 @@ var ContextMenu = React.createClass({
       var lastAction = _.last(p.actions);
       console.log('lastAction: ',lastAction);
       if (lastAction) {
-        var lastActionTab = _.find(p.tabs, { id: lastAction.item.id });
         if (lastAction.type === 'remove') {
         return ' removal of '+lastAction.item.title;
         } else if (lastAction.type === 'create') {
-          return ' creation of '+lastActionTab.title;
-        } else if (lastAction.type === 'update') {
-          if (lastActionTab) {
-            if (lastActionTab.pinned !== lastAction.item.pinned) {
-              var pinning = lastActionTab.pinned ? 'pinning' : 'unpinning';
-              return ' '+pinning+' of '+lastAction.item.title+' ';
-            } else if (p.chromeVersion >= 46 && lastActionTab.mutedInfo.muted !== lastAction.item.mutedInfo.muted) {
-              var muting = lastActionTab.pinned ? 'muting' : 'unmuting';
-              return ' '+muting+' of '+lastAction.item.title+' ';
-            }
-          }
+          return ' creation of '+lastAction.item.title;
+        } else if (lastAction.type === 'mute') {
+          return ` muting of ${lastAction.item.title}`;
+        } else if (lastAction.type === 'unmute') {
+          return ` unmuting of ${lastAction.item.title}`;
+        } else if (lastAction.type === 'pin') {
+          return ` pinning of ${lastAction.item.title}`;
+        } else if (lastAction.type === 'pin') {
+          return ` unpinning of ${lastAction.item.title}`;
         } else if (lastAction.type === 'move') {
           return ' moving of '+lastAction.item.title;
         }

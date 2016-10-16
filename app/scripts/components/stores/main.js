@@ -3,7 +3,6 @@ import _ from 'lodash';
 import v from 'vquery';
 import mouseTrap from 'mousetrap';
 
-import tabStore from './tab';
 import screenshotStore from './screenshot';
 import state from './state';
 import * as utils from './tileUtils';
@@ -25,14 +24,14 @@ export var msgStore = Reflux.createStore({
         state.set({sessions: msg.sessions});
       } else if (msg.hasOwnProperty('screenshots')) {
         state.set({screenshots: msg.screenshots});
+      } else if (msg.hasOwnProperty('actions')) {
+        state.set({actions: msg.actions});
       } else if (msg.type === 'bookmarks') {
         bookmarksStore.get_bookmarks();
       } else if (msg.type === 'history' && s.prefs.mode === msg.type) {
         historyStore.get_history();
       } else if (msg.type === 'app') {
         chromeAppStore.set(s.prefs.mode === 'apps');
-      } else if (msg.type === 'error') {
-        utilityStore.reloadBg();
       } else if (msg.type === 'appState') {
         state.set({topNavButton: msg.action});
       } else if (msg.type === 'screenshot') {
@@ -99,6 +98,23 @@ export var msgStore = Reflux.createStore({
   },
   removeSingleWindow(windowId){
     chrome.runtime.sendMessage(chrome.runtime.id, {method: 'removeSingleWindow', windowId: windowId});
+  },
+  undoAction(){
+    var s = state.get();
+    chrome.runtime.sendMessage(chrome.runtime.id, {method: 'undoAction', windowId: s.windowId});
+  },
+  getActions(){
+    return new Promise((resolve, reject)=>{
+      chrome.runtime.sendMessage(chrome.runtime.id, {method: 'getActions'}, (response)=>{
+        console.log(response);
+        if (response && response.actions) {
+          console.log(response, '#AA');
+          resolve(response.actions);
+        } else {
+          reject([]);
+        }
+      });
+    });
   },
   get(){
     return this.response;
@@ -183,12 +199,7 @@ export var utilityStore = Reflux.createStore({
       console.log('Tab created from utilityStore.createTab: ',t);
     });
   },
-  reloadBg(){
-    chrome.runtime.sendMessage({method: 'reload'}, (response)=>{
-    });
-  },
   handleMode(mode, tabs=null){
-    //this.reloadBg();
     if (mode === 'apps' || mode === 'extensions') {
       chromeAppStore.set(mode === 'apps');
     } else if (mode === 'bookmarks') {
@@ -480,73 +491,6 @@ export var historyStore = Reflux.createStore({
   }
 });
 
-export var actionStore = Reflux.createStore({
-  init: function() {
-    this.ready = false;
-    this.actions = [];
-  },
-  set_action: function(type, object) {
-    if (object && !this.undoActionState && object.title !== 'New Tab') {
-      this.actions.push({type: type, item: _.cloneDeep(object)});
-      console.log('action: ', {type: type, item: object});
-      this.trigger(this.actions);
-    }
-  },
-  get_lastAction: function() {
-    if (this.ready) {
-      return _.last(this.actions);
-    }
-  },
-  set_state(value){
-    this.undoActionState = value;
-  },
-  undoAction(){
-    var s = state.get();
-    console.log('this.actions: ',this.actions);
-    this.undoActionState = true;
-    var removeLastAction = ()=>{
-      this.actions = _.without(this.actions, _.last(this.actions));
-    };
-    var undo = ()=>{
-      var lastAction = _.last(this.actions);
-      console.log('lastAction: ',lastAction);
-      if (lastAction) {
-        var tab = _.find(s.tabs, { id: lastAction.item.id });
-        if (lastAction.type === 'remove') {
-          tabStore.keepNewTabOpen();
-          tabStore.create(lastAction.item.url, lastAction.item.index);
-        } else if (lastAction.type === 'update') {
-          if (tab && tab.pinned !== lastAction.item.pinned) {
-            tabStore.pin(tab);
-          } else if (utilityStore.chromeVersion() >= 46 && tab && tab.mutedInfo.muted !== lastAction.item.mutedInfo.muted ) {
-            tabStore.mute(tab);
-          } else {
-            this.actions = _.without(this.actions, _.last(this.actions));
-            undo();
-          }
-        } else if (lastAction.type === 'create') {
-          tabStore.close(lastAction.item.id);
-        } else if (lastAction.type === 'move') {
-          tabStore.move(lastAction.item.id, lastAction.item.index);
-        } else {
-          removeLastAction();
-          undo();
-        }
-      }
-      removeLastAction();
-      this.trigger(this.actions);
-    };
-    undo();
-    _.delay(()=>{
-      this.undoActionState = false;
-    },500);
-  },
-  clear(){
-    this.actions = [];
-    this.trigger(this.actions);
-  }
-});
-
 export var faviconStore = Reflux.createStore({
   init: function() {
     /*var getFavicons = new Promise((resolve, reject)=>{
@@ -660,7 +604,7 @@ export var keyboardStore = Reflux.createStore({
   set(prefs){
     mouseTrap.bind('ctrl+z', ()=>{
       if (prefs.actions) {
-        actionStore.undoAction();
+        msgStore.undoAction();
       }
     });
     mouseTrap.bind('ctrl+f', (e)=>{
