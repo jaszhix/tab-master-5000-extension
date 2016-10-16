@@ -235,7 +235,7 @@ export var ModalOverlay = React.createClass({
   render(){
     var s = this.state;
     var p = this.props;
-    var overlayStyle = {display: 'block', paddingRight: '15px', WebkitTransition: 'top 0.2s'};
+    var overlayStyle = {display: 'block', paddingRight: '15px', WebkitTransition: p.animations ? 'top 0.2s' : 'initial'};
     overlayStyle = _.assignIn(overlayStyle, p.overlayStyle);
     return (
       <div className={`modal fade${s.fadeIn ? ' in' : ''}`} style={overlayStyle}>
@@ -251,7 +251,8 @@ export var ModalOverlay = React.createClass({
         headerStyle={p.headerStyle}
         bodyStyle={p.bodyStyle}
         dialogStyle={p.dialogStyle}
-        footerStyle={p.footerStyle}>
+        footerStyle={p.footerStyle}
+        animations={p.animations}>
         {p.children}
         </ModalDefault>
         <div className={`modal-backdrop fade${s.fadeIn ? ' in' : ''}`} style={p.backdropStyle} />
@@ -269,7 +270,7 @@ export var ModalDefault = onClickOutside(React.createClass({
   render(){
     var p = this.props;
     var heightOffset = p.heightOffset ? p.heightOffset : p.footerComponent ? 200 : 140;
-    var bodyStyle = {maxHeight: `${window.innerHeight - heightOffset}px`, overflowY: 'auto', WebkitTransition: 'max-height 0.2s'};
+    var bodyStyle = {maxHeight: `${window.innerHeight - heightOffset}px`, overflowY: 'auto', WebkitTransition: p.animations ? 'max-height 0.2s' : 'initial'};
     bodyStyle = _.assignIn(bodyStyle, _.cloneDeep(p.bodyStyle));
     var headerStyle = {paddingTop: '0px'};
     headerStyle = _.assignIn(headerStyle, _.cloneDeep(p.headerStyle));
@@ -388,9 +389,9 @@ export var Context = onClickOutside(React.createClass({
                       backgroundColor: option.switch ? p.theme.darkBtnBg : 'rgba(255, 255, 255, 0)', 
                       borderColor: option.switch ? p.theme.textFieldBorder : p.theme.darkBtnBg, 
                       boxShadow: `${option.switch ? p.theme.textFieldBorder : p.theme.darkBtnBg} 0px 0px 0px 8px inset`, 
-                      WebkitTransition: 'border 0.4s, box-shadow 0.4s, background-color 1.2s',
+                      WebkitTransition: p.animations ? 'border 0.4s, box-shadow 0.4s, background-color 1.2s' : 'initial',
                     }}>
-                      <small style={{left: option.switch ? '14px' : '0px', WebkitTransition: 'background-color 0.4s, left 0.2s', backgroundColor: option.switch ? p.theme.darkBtnText : p.theme.bodyText}} />
+                      <small style={{left: option.switch ? '14px' : '0px', WebkitTransition: p.animations ? 'background-color 0.4s, left 0.2s' : 'initial', backgroundColor: option.switch ? p.theme.darkBtnText : p.theme.bodyText}} />
                     </span>
                      {option.label}
                   </label>

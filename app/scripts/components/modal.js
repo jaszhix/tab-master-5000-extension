@@ -8,6 +8,7 @@ import ReactTooltip from './tooltip/tooltip';
 import Settings from './settings';
 
 import state from './stores/state';
+import {msgStore} from './stores/main';
 import themeStore from './stores/theme';
 
 import {ModalOverlay, Tabs} from './bootstrap';
@@ -46,6 +47,10 @@ var ModalHandler = React.createClass({
   componentWillUnmount(){
     mount = false;
   },
+  handleClose(){
+    msgStore.queryTabs();
+    state.set({modal: {state: false}});
+  },
   render: function() {
     var s = this.state;
     var p = this.props;
@@ -55,14 +60,15 @@ var ModalHandler = React.createClass({
       return (
         <ModalOverlay
         clickOutside={!p.colorPickerOpen}
-        onClose={()=>state.set({modal: {state: false}})}
+        onClose={this.handleClose}
         size="full"
         header="Settings"
         closeBtnStyle={{color: headerBgIsLight ? p.theme.lightBtnText : p.theme.darkBtnText}}
+        animations={p.prefs.animations}
         backdropStyle={{
           zIndex: 11, 
           backgroundColor: p.settings === 'theming' ? 'rgba(255, 255, 255, 0)' : '#000', 
-          WebkitTransition: 'background-color 0.2s'
+          WebkitTransition: p.prefs.animations ? 'background-color 0.2s' : 'initial'
         }}
         overlayStyle={{top: p.settings === 'theming' ? '55%' : '0'}}
         dialogStyle={{
@@ -103,7 +109,8 @@ var ModalHandler = React.createClass({
           wallpaper={p.wallpaper}
           wallpapers={p.wallpapers}
           settings={p.settings}
-          height={p.height} />
+          height={p.height}
+          chromeVersion={p.chromeVersion} />
           {p.prefs.tooltip ?
           <ReactTooltip 
           effect="solid" 
