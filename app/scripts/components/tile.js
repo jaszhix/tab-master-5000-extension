@@ -8,17 +8,15 @@ import moment from 'moment';
 import onClickOutside from 'react-onclickoutside';
 import ReactTooltip from './tooltip/tooltip';
 import state from './stores/state';
-import {msgStore, utilityStore, dragStore, historyStore, bookmarksStore, chromeAppStore} from './stores/main';
+import {msgStore} from './stores/main';
 import themeStore from './stores/theme';
 import tabStore from './stores/tab';
-import sessionsStore from './stores/sessions';
 
 import {Table} from './table';
 import {Btn, Col, Row, Panel} from './bootstrap';
 import style from './style';
 import * as utils from './stores/tileUtils';
 
-var tileDrag = null;
 var Tile = React.createClass({
   mixins: [Reflux.ListenerMixin],
   getInitialState() {
@@ -36,12 +34,7 @@ var Tile = React.createClass({
       duplicate: false,
       drag: null,
       screenshot: null,
-      favicon: null,
       openTab: false,
-      bookmarks: false,
-      history: false,
-      sessions: false,
-      apps: false,
       tab: p.tab,
       i: p.i,
       muteInit: true
@@ -52,47 +45,40 @@ var Tile = React.createClass({
   },
   componentWillReceiveProps(nP){
     var p = this.props;
-    this.setTabMode();
-    this.updateFavicons(nP);
     if (nP.prefs.mode === 'tabs') {
       utils.checkDuplicateTabs(this, nP, '');
     }
-    if (nP.prefs.screenshot) {
+    if (!_.isEqual(nP.screenshots, p.screenshots) && nP.prefs.screenshot) {
       this.updateScreenshot('init', nP);
     }
     if (nP.i !== p.i) {
-      this.setState({i: nP.i});
+      this.setState({i: nP.i, duplicate: false});
+      v(ReactDOM.findDOMNode(this)).removeClass('animated')
     }
-    utils.handleRelays(this, nP)
+    if (!_.isEqual(nP.relay, p.relay)) {
+      utils.handleRelays(this, nP)
+    }
     if (nP.applyTabOrder) {
       this.applyTabOrder();
     }
+    /* Reset tab state after close */
     if (!_.isEqual(nP.tab, p.tab)) {
-      this.setState({close: false, render: true});
+      this.setState({close: false, render: true, duplicate: false});
     }
   },
   initMethods(){
     var p = this.props;
-    this.setTabMode();
-    this.updateFavicons(p);
     this.updateScreenshot('init', p);
     if (p.prefs.mode === 'tabs') {
       utils.checkDuplicateTabs(this, p, '');
     }
   },
-  updateFavicons(p){
-    var fvData = _.result(_.find(p.favicons, {domain: p.tab.url.split('/')[2] }), 'favIconUrl');
-    if (fvData) {
-      this.setState({favicon: fvData});
-    }
-  },
-  updateScreenshot(opt, props){
-    var p = this.props;
+  updateScreenshot(opt, p){
     var setScreeenshot = ()=>{
       if (p.prefs.screenshot) {
-        var ssData = _.result(_.find(p.screenshots, { url: p.tab.url }), 'data');
-        if (ssData) {
-          this.setState({screenshot: ssData});
+        var refSS = _.findIndex(p.screenshots, {url: p.tab.url});
+        if (refSS !== -1) {
+          this.setState({screenshot: p.screenshots[refSS].data});
         }
       }
     };
@@ -104,35 +90,6 @@ var Tile = React.createClass({
       }
     }
   },
-  setTabMode(){
-    var p = this.props;
-    if (p.prefs.mode === 'bookmarks') {
-      this.setState({bookmarks: true});
-    } else {
-      this.setState({bookmarks: false});
-    }
-    if (p.prefs.mode === 'history') {
-      this.setState({history: true});
-    } else {
-      this.setState({history: false});
-    }
-    if (p.prefs.mode === 'sessions') {
-      this.setState({sessions: true});
-    } else {
-      this.setState({sessions: false});
-    }
-    if (p.prefs.mode === 'apps' || p.prefs.mode === 'extensions') {
-      this.setState({apps: true});
-    } else {
-      this.setState({apps: false});
-    }
-    if (p.prefs.mode === 'sessions' && p.tab.openTab|| p.prefs.mode === 'bookmarks' && p.tab.openTab || p.prefs.mode === 'history' && p.tab.openTab) {
-      this.setState({openTab: true});
-    } else {
-      this.setState({openTab: false});
-    }
-  },
-  
   filterFolders(folderName){
     var p = this.props;
     state.set({folder: p.folder ? false : folderName});
@@ -141,9 +98,7 @@ var Tile = React.createClass({
     var s = this.state;
     var p = this.props;
     var stateUpdate = {};
-    this.setState({
-      render: false
-    });
+    this.setState({render: false});
     var active = (cb)=>{
       chrome.tabs.update(id, {active: true});
       if (cb !== undefined) {
@@ -153,7 +108,7 @@ var Tile = React.createClass({
     // Navigate to a tab when its clicked from the grid.
     if (!s.xHover || !s.pHover) {
       if (!s.close) {
-        if (s.bookmarks || s.history || s.sessions) {
+        if (p.prefs.mode === 'bookmarks' || p.prefs.mode === 'history' || p.prefs.mode === 'sessions') {
           if (p.tab.hasOwnProperty('openTab') && p.tab.openTab) {
             active();
           } else if (p.tab.hasOwnProperty('openTab') && !p.tab.openTab) {
@@ -166,7 +121,7 @@ var Tile = React.createClass({
           } else {
             tabStore.create(p.tab.url);
           }
-        } else if (s.apps) {
+        } else if (p.prefs.mode === 'apps') {
           if (p.tab.enabled) {
             if (p.prefs.mode === 'extensions' || p.tab.launchType === 'OPEN_AS_REGULAR_TAB') {
               if (p.tab.url.length > 0) {
@@ -179,7 +134,11 @@ var Tile = React.createClass({
             }
           }
         } else {
-          active();
+          active(()=>{
+            if (p.prefs.screenshot && p.prefs.screenshotChrome) {
+              chrome.tabs.update(id, {active: true});
+            }
+          });
         }
       }
     }
@@ -190,7 +149,7 @@ var Tile = React.createClass({
     var s = this.state;
     var p = this.props;
     this.setState({hover: true});
-    if (p.prefs.screenshot && p.prefs.screenshotBg && s.screenshot && !s.apps) {
+    if (p.prefs.screenshot && p.prefs.screenshotBg && s.screenshot && p.prefs.mode !== 'apps') {
       document.getElementById('bgImg').style.backgroundImage = `url("${s.screenshot}")`;
       document.getElementById('bgImg').style.WebkitFilter = `blur(${p.prefs.screenshotBgBlur}px)`;
     } else {
@@ -255,14 +214,6 @@ var Tile = React.createClass({
       color: p.theme.tilePinned,
       backgroundColor: p.theme.tileButtonBg
     }));
-    var titleLimit = s.bookmarks || s.history ? 70 : 86;
-    var drag = dragStore.get_drag();
-    var remove = p.prefs.mode !== 'tabs' && !s.openTab;
-    var lowerLeft = p.prefs.tabSizeHeight >= 205 ? -40 : -40;
-    var lowerTop = p.prefs.tabSizeHeight - 25;
-    var lowerStyle = s.screenshot ? {backgroundColor: s.hover ? p.theme.tileBgHover : p.theme.tileBg, borderRadius: '3px', left: lowerLeft.toString()+'px', top: lowerTop.toString()+'px'} : {top: lowerTop.toString()+'px'};
-    var appHomepage = p.prefs.tabSizeHeight >= 170 ? p.prefs.tabSizeHeight + 5 : 170;
-    var appOfflineEnabled = p.prefs.tabSizeHeight >= 170 ? p.prefs.tabSizeHeight - 10 : 158;
     var titleFontSize = p.tab.title.length >= 115 ? 13 : 14;
 
     var openTab = p.tab.hasOwnProperty('openTab') && p.tab.openTab;
@@ -289,13 +240,14 @@ var Tile = React.createClass({
       paddingLeft: '4px',
       paddingRight: '4px',
       opacity: s.stHover ? '0.2' : '1',
-      WebkitTransition: 'opacity 0.2s, white-space 0.1s'
+      WebkitTransition: p.prefs.animations ? 'opacity 0.2s, white-space 0.1s' : 'initial'
     };
     var ST1 = _.merge({
       top: `${p.prefs.tabSizeHeight - 40}px`,
       cursor: p.prefs.mode === 'sessions' || p.prefs.mode === 'bookmarks' ? 'pointer' : 'initial'
     }, subTitleStyle);
     var ST2 = _.merge({top: `${p.prefs.tabSizeHeight - 55}px`}, subTitleStyle);
+    var favIconUrl = p.tab.favIconUrl ? utils.filterFavicons(p.tab.favIconUrl, p.tab.url) : '../images/file_paper_blank_document.png';
     return (
       <Panel
       draggable={p.prefs.mode === 'tabs' && p.prefs.drag}
@@ -305,7 +257,7 @@ var Tile = React.createClass({
       footerLeft={
         <div>
             <div className="media-left" style={{paddingRight: '6px'}}>
-              <img src={p.tab.favIconUrl && p.tab.domain !== 'chrome' ? p.tab.favIconUrl : '../images/file_paper_blank_document.png' } style={{width: '16px', height: '16px'}}/>
+              <img src={favIconUrl} style={{width: '16px', height: '16px'}}/>
             </div>
             <div className="media-left">
               <div style={{
@@ -318,20 +270,26 @@ var Tile = React.createClass({
                 <a style={{
                   fontSize: `${titleFontSize}px`, 
                   color: p.theme.tileText, 
-                  transition: 'font-size 0.2s'
+                  WebkitTransition: p.prefs.animations ? 'font-size 0.2s' : 'initial'
                 }}>{p.tab.title.length > 0 ? p.tab.title : p.tab.domain ? p.tab.domain : null}</a>
               </div>
               {p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ? 
-              <div className="text-muted text-size-small" style={{whiteSpace: s.hover ? 'initial' : 'nowrap', WebkitTransition: 'white-space 0.1s'}}>{p.tab.description}</div> : null}
+              <div className="text-muted text-size-small" style={{whiteSpace: s.hover ? 'initial' : 'nowrap', WebkitTransition: p.prefs.animations ? 'white-space 0.1s' : 'initial'}}>{p.tab.description}</div> : null}
               {p.prefs.mode === 'tabs' || p.prefs.mode === 'history' || p.prefs.mode === 'bookmarks' || p.prefs.mode === 'sessions' ? 
               <div onMouseEnter={()=>this.setState({stHover: true})} onMouseLeave={()=>this.setState({stHover: false})}>
                 <div className="text-muted text-size-small" style={ST1}>{p.tab.domain}</div>
+                {isTab && p.chromeVersion >= 54 && p.tab.discarded ?
+                <div className="text-muted text-size-small" style={ST2}>Discarded</div> : null}
                 {p.prefs.mode === 'history' ? 
                 <div className="text-muted text-size-small" style={ST2}>{_.capitalize(moment(p.tab.lastVisitTime).fromNow())}</div> : null}
                 {p.prefs.mode === 'bookmarks' ? 
                 <div onClick={()=>this.filterFolders(p.tab.folder)} className="text-muted text-size-small" style={ST1}>{p.tab.folder}</div> : null}
                 {p.prefs.mode === 'sessions' ? 
                 <div onClick={()=>this.filterFolders(p.tab.originSession)} className="text-muted text-size-small" style={p.tab.hasOwnProperty('domain') && p.tab.domain ? ST2 : ST1}>{p.tab.label ? p.tab.label : _.capitalize(moment(p.tab.sTimeStamp).fromNow())}</div> : null}
+              </div> : null}
+              {p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ? 
+              <div onMouseEnter={()=>this.setState({stHover: true})} onMouseLeave={()=>this.setState({stHover: false})}>
+                <div onClick={()=>this.filterFolders(p.tab.originSession)} className="text-muted text-size-small" style={ST1}>{`v${p.tab.version}`}</div>
               </div> : null}
             </div>
         </div>
@@ -341,16 +299,17 @@ var Tile = React.createClass({
           <ul className="icons-list" style={{
             display: 'flex', 
             position: 'relative', 
-            left: `${p.prefs.tabSizeHeight + (isTab ? 27 : 62)}px`,
+            left: `${p.prefs.tabSizeHeight + (isTab ? 27 : p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ? 46 : 62)}px`,
             top: '1px'
           }}>
             {p.chromeVersion >= 46 && openTab || p.chromeVersion >= 46 && p.prefs.mode === 'tabs' ?
             <li>
               <i 
+              title={`${p.tab.mutedInfo.muted ? 'Unmute' : 'Mute'} Tab${p.tab.audible ? ' (Audible)' : ''}`}
               style={{
                 display: 'block', 
                 cursor: 'pointer', 
-                color: s.mHover ? p.theme.tileMuteHover : p.theme.tileMute, 
+                color: s.mHover ? p.tab.audible ? p.theme.tileMuteAudibleHover : p.theme.tileMuteHover : p.tab.audible ? p.theme.tileMuteAudible : p.theme.tileMute, 
                 opacity: s.hover || p.tab.mutedInfo.muted || p.tab.audible ? '1' : '0',
                 position: 'relative',
                 top: '2px',
@@ -365,7 +324,8 @@ var Tile = React.createClass({
             : null}
             {isTab ?
             <li>
-              <i 
+              <i
+              title={`${p.tab.pinned ? 'Unp' : 'P'}in Tab`}
               style={{
                 display: 'block', 
                 cursor: 'pointer', 
@@ -384,7 +344,8 @@ var Tile = React.createClass({
             : null}
             {p.prefs.mode !== 'apps' && p.prefs.mode !== 'extensions' ?
             <li>
-              <i 
+              <i
+              title={`${isTab ? 'Close' : 'Remove'} ${_.trimEnd(_.upperFirst(p.prefs.mode), 's')}${p.prefs.mode === 'sessions' ? ' Tab' : ''}`}
               style={{
                 display: 'block', 
                 cursor: 'pointer', 
@@ -400,6 +361,45 @@ var Tile = React.createClass({
               onMouseLeave={this.handleTabCloseHoverOut} 
               onClick={()=>utils.closeTab(this, p.tab.id)} />
             </li> : null}
+            {(p.prefs.mode === 'apps' || p.prefs.mode === 'extensions') ?
+            <li>
+              <i
+              title="Offline Enabled"
+              style={{
+                display: 'block', 
+                cursor: 'pointer', 
+                color: s.pHover ? p.theme.tilePinHover : p.theme.tilePin, 
+                opacity: p.tab.offlineEnabled ? '1' : '0',
+                position: 'relative',
+                top: '2px',
+                right: '2px',
+                fontSize: '12px'
+              }} 
+              className="icon-power2"
+              onMouseEnter={this.handlePinHoverIn} 
+              onMouseLeave={this.handlePinHoverOut}
+              onClick={()=>utils.pin(this, p.tab)} />
+            </li>
+            : null}
+            {(p.prefs.mode === 'apps' || p.prefs.mode === 'extensions') ?
+            <li>
+              <i
+              title={`${_.trimEnd(_.upperFirst(p.prefs.mode), 's')} Homepage`}
+              style={{
+                display: 'block', 
+                cursor: 'pointer', 
+                color: s.xHover ? p.theme.tileXHover : p.theme.tileX, 
+                opacity: s.hover ? '1' : '0',
+                position: 'relative',
+                top: isTab ? '-1px' : '1px',
+                right: isTab ? 'initial' : '0px',
+                fontSize: isTab ? '16px' : '12px'
+              }} 
+              className={`icon-home5 ntg-x`}
+              onMouseEnter={this.handleTabCloseHoverIn} 
+              onMouseLeave={this.handleTabCloseHoverOut} 
+              onClick={()=>chrome.tabs.create({url: p.tab.homepageUrl})} />
+            </li> : null}
           </ul>
         </div>
       }
@@ -412,14 +412,14 @@ var Tile = React.createClass({
         float: 'left', 
         margin: '6px', 
         backgroundColor: s.hover ? p.theme.tileBgHover : p.theme.tileBg, 
-        backgroundImage: `url('${s.screenshot ? s.screenshot : p.tab.favIconUrl}')`, 
+        backgroundImage: `url('${s.screenshot ? s.screenshot : favIconUrl}')`, 
         backgroundBlendMode: s.screenshot ? 'multiply, lighten' : 'luminosity',
         backgroundPosition: 'center',
         backgroundSize: s.screenshot ? 'cover' : 'contain',
         backgroundRepeat: s.screenshot ? 'initial' : 'no-repeat',
         overflow: 'hidden',
         zIndex: '50',
-        opacity: s.close ? '0' : p.tab.hasOwnProperty('enabled') && !p.tab.enabled ? '0.35' : '1',
+        opacity: s.close ? '0' : p.tab.hasOwnProperty('enabled') && !p.tab.enabled ? '0.5' : p.chromeVersion >= 54 && p.tab.discarded ? '0.5' : '1',
         WebkitTransition: p.prefs.animations ? 'opacity 0.2s' : 'initial',
         WebkitAnimationIterationCount: s.duplicate ? 'infinite' : 'initial', 
         WebkitAnimationDuration: s.duplicate ? '5s' : '0.2s'
@@ -428,7 +428,7 @@ var Tile = React.createClass({
         height: s.hover ? `18px` : `${p.prefs.tabSizeHeight - 40}px`, 
         width: p.prefs.tabSizeHeight+80,
         padding: s.hover ? '0px' : 'initial',
-        backgroundImage: `url('${p.tab.favIconUrl}')`, 
+        backgroundImage: `url('${favIconUrl}')`, 
         backgroundBlendMode: 'luminosity',
         backgroundPosition: 'center',
         backgroundSize: '1px, auto, contain',
@@ -459,14 +459,14 @@ var Tile = React.createClass({
         backgroundColor: s.hover ? p.theme.tileBg : p.tab.pinned || p.tab.mutedInfo.muted || p.tab.audible ? themeStore.opacify(p.theme.tileBg, 0.8) : 'rgba(255, 255, 255, 0)',
         position: 'absolute',
         zIndex: '11',
-        WebkitTransition: 'opacity 0.2s, background-color 0.1s'
+        WebkitTransition: p.prefs.animations ? 'opacity 0.2s, background-color 0.1s' : 'initial'
       }}
       onMouseEnter={this.handleHoverIn}
       onMouseLeave={this.handleHoverOut}
       onBodyClick={()=>this.handleClick(p.tab.id)}
       onFooterClick={p.prefs.mode !== 'sessions' && p.prefs.mode !== 'bookmarks' ? ()=>this.handleClick(p.tab.id) : null}
       onContextMenu={this.handleContextClick}>
-        {!p.tab.favIconUrl || p.tab.domain === 'chrome' ?
+        {!favIconUrl || p.tab.domain === 'chrome' ?
         <div style={{
           color: p.theme.tileText,
           fontSize: '70px',
@@ -503,7 +503,7 @@ var Sidebar = onClickOutside(React.createClass({
     }
   },
   handleClickOutside(){
-    if (!this.props.disableSidebarClickOutside) {
+    if (!this.props.disableSidebarClickOutside && this.props.enabled) {
       state.set({sidebar: false});
     }
   },
@@ -534,7 +534,7 @@ var Sidebar = onClickOutside(React.createClass({
         labels={p.labels}
         keys={p.keys}
         sort={p.sort}
-        direction={p.direction}/> : null}
+        direction={p.direction} /> : null}
       </div>
     );
   }
@@ -559,9 +559,6 @@ var TileGrid = React.createClass({
   },
   componentDidMount(){
     this.prefsInit(this.props);
-  },
-  componentWillUnmount(){
-    utilityStore.reloadBg();
   },
   prefsInit(p){
     if (p.s.prefs.screenshotBg || p.s.prefs.screenshot || p.wallpaper && p.wallpaper.data !== -1) {
@@ -675,35 +672,6 @@ var TileGrid = React.createClass({
   },
   render: function() {
     var p = this.props;
-    var ssBg = p.prefs && p.prefs.screenshot && p.prefs.screenshotBg;
-    var iconCollapse = p.width <= 1135;
-    const faStyle = {
-      float: 'left',
-      marginTop: !iconCollapse ? '3px' : 'initial'
-    };
-    const btnStyle = {
-      width: iconCollapse ? 'auto' : '100%'
-    };
-    var labels = p.keys.map((key, i)=> {
-      var label = p.labels[key] || key;
-      var cLabel = p.width <= 1135 ? '' : label;
-      return (
-        <div key={i} onClick={()=>state.set({sort: key, direction: p.s.direction === 'desc' ? 'asc' : 'desc'})}>
-          {label === 'Tab Order' || label === 'Original Order' ? <Btn className="ntg-btn" style={btnStyle} fa="history" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
-          {label === 'Website' ? <Btn className="ntg-btn" style={btnStyle} fa="external-link" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
-          {label === 'Title' ? <Btn onClick={this.handleTitleIcon} className="ntg-btn" style={btnStyle} fa={p.s.direction === 'asc' ? 'sort-alpha-asc' : 'sort-alpha-desc'} faStyle={faStyle} data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
-          {label === 'Audible' ? <Btn className="ntg-btn" style={btnStyle} fa="volume-up" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
-          {label === 'Updated' ? <Btn className="ntg-btn" style={btnStyle} fa="hourglass" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
-          {label === 'Open' ? <Btn className="ntg-btn" style={btnStyle} fa="folder-open" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
-          {label === 'Folder' ? <Btn className="ntg-btn" style={btnStyle} fa="folder" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
-          {label === 'Label' ? <Btn className="ntg-btn" style={btnStyle} fa="folder" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
-          {label === 'Date Added' ? <Btn className="ntg-btn" style={btnStyle} fa="hourglass" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
-          {label === 'Last Visit' ? <Btn className="ntg-btn" style={btnStyle} fa="hourglass" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
-          {label === 'Most Visited' ? <Btn className="ntg-btn" style={btnStyle} fa="line-chart" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
-          {label === 'Offline Enabled' ? <Btn className="ntg-btn" style={btnStyle} fa="bolt" faStyle={faStyle} data-place="right" data-tip={iconCollapse ? label : null}>{cLabel}</Btn> : null}
-        </div>
-      );
-    });
     var tileLetterTopPos = p.s.prefs.tabSizeHeight >= 175 ? parseInt((p.s.prefs.tabSizeHeight + 80).toString()[0]+(p.s.prefs.tabSizeHeight + 80).toString()[1]) - 10 : p.s.prefs.tabSizeHeight <= 136 ? -5 : p.s.prefs.tabSizeHeight <= 150 ? 0 : p.s.prefs.tabSizeHeight <= 160 ? 5 : 10;
     return (
       <div className="tile-body">
@@ -717,18 +685,15 @@ var TileGrid = React.createClass({
         direction={p.s.direction}
         width={p.width} 
         collapse={p.collapse} 
-        ssBg={ssBg} 
         search={p.s.search} 
         theme={p.theme}
-        disableSidebarClickOutside={p.disableSidebarClickOutside}
-        faStyle={faStyle}
-        btnStyle={btnStyle} />
+        disableSidebarClickOutside={p.disableSidebarClickOutside} />
           <div id="grid" ref="grid">
             {p.s.prefs.format === 'tile' ? p.data.map((tab, i)=> {
               if ((i <= p.s.tileLimit && p.s.prefs.mode !== 'tabs' || p.s.prefs.mode === 'tabs') && tab.url.indexOf('chrome://newtab/') === -1) {
                 return (
                   <Tile
-                  key={tab.id}
+                  key={i}
                   onDragEnd={this.dragEnd}
                   onDragStart={(e)=>this.dragStart(e, i)}
                   onDragOver={(e)=>this.dragOver(e, i)}
