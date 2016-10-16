@@ -12,7 +12,7 @@ import ReactTooltip from './tooltip/tooltip';
 
 import * as utils from './stores/tileUtils';
 import state from './stores/state';
-import {msgStore, faviconStore, clickStore, utilityStore} from './stores/main';
+import {msgStore, faviconStore, utilityStore} from './stores/main';
 import themeStore from './stores/theme';
 import tabStore from './stores/tab';
 import sessionsStore from './stores/sessions';
@@ -363,16 +363,26 @@ var Theming = React.createClass({
                     onClick={p.prefs.wallpaper !== wp.id ? ()=>themeStore.selectWallpaper(s.selectedTheme.id, wp.id, true) : null} 
                     className="wallpaper-tile" 
                     style={{
-                      backgroundColor: p.theme.lightBtnBg, 
-                      backgroundImage: `url('${wp.data}')`, 
+                      backgroundColor: selectedWallpaper ? p.theme.darkBtnBg : p.theme.lightBtnBg, 
+                      backgroundImage: `url('${wp.data}')`,
                       backgroundSize: 'cover', 
                       height: '73px', 
                       width: '130px', 
                       padding: '6px', 
                       display: 'inline-block', 
                       margin: '8px', 
-                      border: selectedWallpaper ? `2px solid ${p.theme.lightBtnBg}` : 'initial', 
-                      cursor: selectedWallpaper ? null : 'pointer'}} />
+                      border: selectedWallpaper ? `4px solid ${p.theme.darkBtnBg}` : 'initial', 
+                      cursor: selectedWallpaper ? null : 'pointer'}}>
+                        {selectedWallpaper ? <i className="icon-checkmark3" style={{
+                          position: 'relative', 
+                          top: '8px', 
+                          left: '37.5px', 
+                          display: 'table', 
+                          color: '#FFF',
+                          textShadow: '1px 2px #000',
+                          fontSize: '36px'
+                        }}/> : null}
+                      </div>
                   );
                 }) : null}
               </Col>
@@ -391,7 +401,6 @@ var Theming = React.createClass({
 var Sessions = React.createClass({
   getInitialState(){
     return {
-      tabs: [],
       sessions: null,
       sessionHover: null,
       selectedSessionTabHover: null,
@@ -416,7 +425,6 @@ var Sessions = React.createClass({
     };
   },
   componentDidMount(){
-    this.setTabSource();
     var p = this.props;
     var s = this.state;
     p.modal.footer = (
@@ -427,20 +435,35 @@ var Sessions = React.createClass({
       </div>
     );
     state.set({modal: p.modal});
+    this.handleSessionsState(p);
   },
   componentDidUpdate(){
     ReactTooltip.rebuild();
   },
-  setTabSource(){
-    var p = this.props;
-    if (p.prefs.mode !== 'tabs') {
-      this.setState({tabs: p.tabs});
-    } else {
-      this.setState({tabs: p.tabs});
-    }
+  handleSessionsState(p){
+    _.each(p.sessions, (session, sKey)=>{
+      _.each(session.tabs, (Window, wKey)=>{
+        _.each(Window, (tab, tKey)=>{
+          if (tab) {
+            if (tab.url.indexOf('chrome://newtab/') === -1) {
+              if (!_.find(p.favicons, {domain: tab.url.split('/')[2]}) && tab.url.indexOf('127.0.0.1') === -1) {
+                faviconStore.set_favicon(tab, session.tabs.length, tKey);
+              }
+              var fvData = _.result(_.find(p.favicons, { domain: tab.url.split('/')[2] }), 'favIconUrl');
+              p.sessions[sKey].tabs[wKey][tKey].favIconUrl = fvData ? fvData : utils.filterFavicons(tab.favIconUrl, tab.url, 'settings');
+            } else {
+              _.pullAt(p.sessions[sKey].tabs[wKey], tKey);
+            }
+          }
+          this.setState({sessions: p.sessions});
+        });
+      });
+    })
   },
-  componentWillReceiveProps(nextProps){
-    this.setState({tabs: nextProps.tabs});
+  componentWillReceiveProps(nP){
+    if (!_.isEqual(nP.sessions, this.props.sessions) || !_.isEqual(nP.favicons, this.props.favicons)) {
+      this.handleSessionsState(nP);
+    }
   },
   componentWillUnmount(){
     faviconStore.clean();
@@ -499,9 +522,10 @@ var Sessions = React.createClass({
     var s = this.state;
     return (
       <div className="sessions">
+        {s.sessions ?
         <Col size="6" className="session-col" onMouseLeave={()=>this.handleSessionHoverOut(-1)}>
-          <h4>Saved Sessions {p.sessions.length > 0 ? `(${p.sessions.length})` : null}</h4>
-          {p.sessions ? p.sessions.map((session, i)=>{
+          <h4>Saved Sessions {s.sessions.length > 0 ? `(${s.sessions.length})` : null}</h4>
+          {s.sessions.map((session, i)=>{
             var time = _.capitalize(moment(session.timeStamp).fromNow());
             var _time = time === 'A few seconds ago' ? 'Seconds ago' : time;
             var getTabsCount = ()=>{
@@ -620,15 +644,15 @@ var Sessions = React.createClass({
                         <Row className="ntg-session-expanded" style={{backgroundColor: p.theme.settingsBg, color: p.theme.bodyText, height: '400px'}} onMouseLeave={()=>this.handleSelectedSessionTabHoverOut(-1)}>
                         {_window.map((t, x)=>{
                           if (s.search.length === 0 || kmp(t.title.toLowerCase(), s.search) !== -1) {
-                            if (!_.find(p.favicons, {domain: t.url.split('/')[2]})) {
+                            if (!_.find(p.favicons, {domain: t.url.split('/')[2]}) && t.url.indexOf('127.0.0.1') === -1) {
                               faviconStore.set_favicon(t, session.tabs.length, x);
                             }
-                            var fvData = _.result(_.find(p.favicons, { domain: t.url.split('/')[2] }), 'favIconUrl');
+                            var favIconUrl = t.favIconUrl ? utils.filterFavicons(t.favIconUrl, t.url) : '../images/file_paper_blank_document.png';
                             return (
                               <Row onMouseEnter={()=>this.handleSelectedSessionTabHoverIn(x)} onMouseLeave={()=>this.handleSelectedSessionTabHoverOut(x)} key={x} style={{backgroundColor: s.selectedSessionTabHover === x ? p.theme.settingsItemHover : 'initial'}}>
                                 <Col size="8">
                                   <span title={t.title} onClick={()=>utilityStore.createTab(t.url)} style={{cursor: 'pointer'}}>
-                                    <img className="ntg-small-favicon" src={fvData ? fvData : '../images/file_paper_blank_document.png' } /> 
+                                    <img className="ntg-small-favicon" src={favIconUrl} /> 
                                     {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {p.settingsMax ? t.title : _.truncate(t.title, {length: 40})}
                                   </span>
                                 </Col>
@@ -652,11 +676,11 @@ var Sessions = React.createClass({
                   })} </Row> : null}
               </Row>
             );
-          }) : null}
+          })}
 
           <input children={undefined} type="file" onChange={(e)=>sessionsStore.importSessions(p.sessions, e)} accept=".json" ref="fileInput" style={style.hiddenInput} />
           
-        </Col>
+        </Col> : null}
         <Col size="6" className="session-col" onMouseLeave={()=>this.setState({currentSessionHover: -1})}>
           <h4>Current Session</h4>
           {p.allTabs.map((_window, i)=>{
@@ -679,14 +703,15 @@ var Sessions = React.createClass({
                 {s.selectedCurrentSessionWindow === i ?
                 <Row className="ntg-session-expanded" style={{backgroundColor: p.theme.settingsBg, color: p.theme.bodyText, height: '400px'}}>
                 {_window.map((t, i)=>{
-                  if (!_.find(p.favicons, {domain: t.url.split('/')[2]})) {
-                    faviconStore.set_favicon(t, _window.length, i);
+                  var favIconUrl = t.favIconUrl ? utils.filterFavicons(t.favIconUrl, t.url) : '../images/file_paper_blank_document.png';
+                  if (t.url.indexOf('chrome://newtab/') !== -1) {
+                    _.pullAt(_window, i);
+                    return;
                   }
-                  var fvData = _.result(_.find(p.favicons, { domain: t.url.split('/')[2] }), 'favIconUrl');
                   return (
                     <Row className="ntg-session-text" key={i} style={{backgroundColor: s.currentSessionTabHover === i ? p.theme.settingsItemHover : 'initial', maxHeight: '20px'}} onMouseEnter={()=>this.setState({currentSessionTabHover: i})}>
                       <span title={t.title} onClick={()=>chrome.tabs.update(t.id, {active: true})} style={{cursor: 'pointer'}}>
-                        <img className="ntg-small-favicon" src={fvData ? fvData : '../images/file_paper_blank_document.png' } />  
+                        <img className="ntg-small-favicon" src={favIconUrl} />  
                         {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {t.title}
                       </span>
                       <div style={{width: 'auto', float: 'right', display: 'inline', position: 'relative', right: '5px'}}>
@@ -762,10 +787,8 @@ var Settings = React.createClass({
   },
   handleTabClick(opt){
     state.set({settings: opt});
-    clickStore.set_click(true, false);
   },
   handleMaxBtn(){
-    clickStore.set_click(true, false);
     msgStore.setPrefs({settingsMax: !this.state.settingsMax});
   },
   render: function() {
@@ -790,7 +813,8 @@ var Settings = React.createClass({
           modal={p.modal}
           settingsMax={s.settingsMax} 
           prefs={p.prefs} tabs={p.tabs} 
-          theme={p.theme} /> : null}
+          theme={p.theme}
+          chromeVersion={p.chromeVersion} /> : null}
           {s.settings === 'theming' ? 
           <Theming 
           settingsMax={s.settingsMax} 
