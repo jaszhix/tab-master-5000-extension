@@ -2,12 +2,12 @@ import _ from 'lodash';
 import v from 'vquery';
 import state from './state';
 import {historyStore, bookmarksStore, chromeAppStore, faviconStore} from './main';
-import tabStore from './tab';
 import sessionsStore from './sessions';
 
 export var closeTab = (t, id, search)=>{
   var p = t.props;
   var stateUpdate = {};
+  t.setState({duplicate: false});
   var reRender = (defer)=>{
     state.set({reQuery: {state: true, type: defer ? 'cycle' : 'create', id: p.tabs[0].id}});
   };
@@ -59,9 +59,6 @@ export var closeTab = (t, id, search)=>{
   } else {
     close();
   }
-  if (p.prefs.format === 'tile') {
-    _.delay(()=>t.setState({render: false}), 200);
-  }
 };
 
 export var closeAll = (t, tab)=>{
@@ -101,6 +98,7 @@ export var pin = (t, tab, opt)=>{
   } else {
     id = tab.id;
   }
+
   if (p.prefs.animations) {
     t.setState({pinning: true});
   }
@@ -133,6 +131,10 @@ export var mute = (t, tab)=>{
     var refItem = _.findIndex(p[p.modeKey], tab);
     p[p.modeKey][refItem].mutedInfo.muted = !p[p.modeKey][refItem].mutedInfo.muted;
   }
+};
+
+export var discard = (id)=>{
+  chrome.tabs.discard(id);
 };
 
 export var checkDuplicateTabs = (t, p, opt)=>{
@@ -238,6 +240,31 @@ export var checkFavicons = (p, tab, key, tabs)=>{
   }
   return tabs;
 };
+
+export var filterFavicons = (faviconUrl, tabUrl, mode=null)=>{
+  // Work around for Chrome favicon useage restriction.
+  var urlPart;
+  var isStandardChromePage = chromePage === 'DOWNLOADADS' || chromePage === 'EXTENSIONS' || chromePage === 'HISTORY' || chromePage === 'SETTINGS';
+  if (faviconUrl !== undefined && faviconUrl && faviconUrl.length > 0 && faviconUrl.indexOf('chrome://theme/') !== -1) {
+    urlPart = faviconUrl.split('chrome://theme/')[1];
+    if (isStandardChromePage) {
+      return `../images/${urlPart}.png`;
+    } else {
+      return `../images/IDR_SETTINGS_FAVICON@2x.png`;
+    }
+    
+  } else if (tabUrl && tabUrl.indexOf('chrome://') !== -1 && mode === 'settings') {
+    urlPart = tabUrl.split('chrome://')[1];
+    var chromePage = urlPart.indexOf('/') !== -1 ? urlPart.split('/')[0] : urlPart;
+    if (isStandardChromePage) {
+      return `../images/IDR_${chromePage.toUpperCase()}_FAVICON@2x.png`;
+    } else {
+      return `../images/IDR_SETTINGS_FAVICON@2x.png`;
+    }
+  } else {
+    return faviconUrl;
+  }
+}
 
 export var hasDuplicates = (array)=>{
   return (new Set(array)).size !== array.length;

@@ -33,6 +33,7 @@ var Row = React.createClass({
       textOverflow: 'ellipsis',
       display: 'inline-block'
     };
+    var favIconUrl = p.row.favIconUrl ? utils.filterFavicons(p.row.favIconUrl, p.row.url) : '../images/file_paper_blank_document.png';
     return (
       <tr 
       className={p.className} 
@@ -51,7 +52,7 @@ var Row = React.createClass({
               return (
                 <td key={z} style={{maxWidth: p.s.width <= 950 ? '300px' : p.s.width <= 1015 ? '400px' : '700px'}}>
                   <div className="media-left media-middle">
-                    <img src={p.row.favIconUrl && p.row.domain !== 'chrome' ? p.row.favIconUrl : '../images/file_paper_blank_document.png' } style={{width: '16px', height: '16px'}}/>
+                    <img src={favIconUrl} style={{width: '16px', height: '16px'}}/>
                   </div>
                   <div className="media-left">
                     <div style={textOverflow}><a style={{cursor: 'pointer', fontSize: '14px'}} onClick={()=>p.handleTitleClick(p.row)} className="text-default text-semibold">{p.row[column]}</a></div>
@@ -325,24 +326,26 @@ export var Table = React.createClass({
             </thead>
             <tbody onMouseLeave={()=>this.setState({rowHover: -1})}>
             {s.rows.map((row, i)=>{
-              return (
-                <Row
-                  s={p.s}
-                  key={i}
-                  className={i % 2 === 0 ? 'even' : 'odd'} 
-                  style={{fontSize: '14px', backgroundColor: s.rowHover === i || s.selectedItems.indexOf(i) !== -1 ? p.theme.settingsBg : 'initial'}} 
-                  onMouseEnter={()=>this.setState({rowHover: i})}
-                  draggable={p.s.prefs.mode === 'tabs' && p.s.prefs.drag}
-                  onDragEnd={this.dragEnd}
-                  onDragStart={(e)=>this.dragStart(e, i)}
-                  onDragOver={(e)=>this.dragOver(e, i)}
-                  onClick={()=>this.handleSelect(i)}
-                  handleTitleClick={this.handleTitleClick}
-                  handleBooleanClick={(column)=>this.handleBooleanClick(column, row)}
-                  row={row}
-                  columns={s.columns}
-                />
-              );
+              if ((i <= p.s.tileLimit && p.s.prefs.mode !== 'tabs' || p.s.prefs.mode === 'tabs') && row.url.indexOf('chrome://newtab/') === -1) {
+                return (
+                  <Row
+                    s={p.s}
+                    key={i}
+                    className={i % 2 === 0 ? 'even' : 'odd'} 
+                    style={{fontSize: '14px', backgroundColor: s.rowHover === i || s.selectedItems.indexOf(i) !== -1 ? p.theme.settingsBg : 'initial'}} 
+                    onMouseEnter={()=>this.setState({rowHover: i})}
+                    draggable={p.s.prefs.mode === 'tabs' && p.s.prefs.drag}
+                    onDragEnd={this.dragEnd}
+                    onDragStart={(e)=>this.dragStart(e, i)}
+                    onDragOver={(e)=>this.dragOver(e, i)}
+                    onClick={()=>this.handleSelect(i)}
+                    handleTitleClick={this.handleTitleClick}
+                    handleBooleanClick={(column)=>this.handleBooleanClick(column, row)}
+                    row={row}
+                    columns={s.columns}
+                  />
+                );
+              }
             })}
             </tbody>
           </table>
