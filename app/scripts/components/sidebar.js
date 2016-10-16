@@ -6,6 +6,8 @@ import themeStore from './stores/theme';
 import tc from 'tinycolor2';
 import {utilityStore, msgStore} from './stores/main';
 
+import {Btn} from './bootstrap';
+
 var LargeBtn = React.createClass({
   render(){
     var p = this.props;
@@ -184,6 +186,10 @@ export var SidebarMenu = React.createClass({
                           })}
                         </div>
                     </form>
+                  </div> : null}
+                  {p.sort !== 'index' && p.prefs.mode === 'tabs' ?
+                  <div style={{textAlign: 'center'}}>
+                    <Btn className="ntg-top-btn"  onClick={()=>state.set({applyTabOrder: true})}>Apply</Btn> 
                   </div> : null}
                 </div>
               </div>
