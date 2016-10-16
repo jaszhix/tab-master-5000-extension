@@ -41,11 +41,9 @@ import ReactTooltip from './tooltip/tooltip';
 import '../../styles/app.scss';
 window.v = v;
 import state from './stores/state';
-import {keyboardStore, chromeAppStore, historyStore, bookmarksStore, clickStore, utilityStore, faviconStore, msgStore} from './stores/main';
+import {keyboardStore, chromeAppStore, historyStore, bookmarksStore, utilityStore, msgStore} from './stores/main';
 import themeStore from './stores/theme';
-import tabStore from './stores/tab';
 import sessionsStore from './stores/sessions';
-import screenshotStore from './stores/screenshot';
 import * as utils from './stores/tileUtils';
 import {Btn, Col, Row, Container} from './bootstrap';
 import TileGrid from './tile';
@@ -65,14 +63,15 @@ var Loading = React.createClass({
     };
   },
   componentDidMount(){
+    this.error = null;
     window.onerror = (err)=>{
       console.log('Loading: ', err);
-      this.setState({
+      this.error = {
         failSafe: true,
         error: `${err}
           ${chrome.runtime.lastError ? 'chrome.runtime: '+chrome.runtime.lastError : ''}
           ${chrome.extension.lastError ? 'chrome.extension: '+chrome.extension.lastError : ''}`
-      });
+      };
     };
   },
   handleReset(){
@@ -101,7 +100,7 @@ var Loading = React.createClass({
           <div className="sk-cube sk-cube8"></div>
           <div className="sk-cube sk-cube9"></div>
         </div>
-        {s.failSafe && !p.top ?
+        {this.error && !p.top ?
           <div className="container">
             <div className="row">Tab Master encountered an error and was unable to initialize. Sorry for the inconvenience. Please report this to the Support tab in the <a style={errorLink} href="https://chrome.google.com/webstore/detail/tab-master-5000-tab-swiss/mippmhcfjhliihkkdobllhpdnmmciaim/support">Chrome Web Store</a>, or as an issue on <a style={errorLink} href="https://github.com/jaszhix/tab-master-5000-chrome-extension/issues">Github</a>, so this issue can be investigated. Thank you! </div>
             
@@ -262,8 +261,6 @@ var Root = React.createClass({
     if (nP.s.applyTabOrder !== p.s.applyTabOrder) {
       if (nP.s.applyTabOrder) {
         _.defer(()=>state.set({applyTabOrder: false}));
-      } else {
-        this.reQuery(true, 'cycle');
       }
     }
   },
@@ -652,14 +649,12 @@ var Root = React.createClass({
   },
   reQuery(e) {
     console.log('### reQuery', e);
-    if (!clickStore.get_click()) {
-      if (e.state) {
-        // Treat attaching/detaching and created tabs with a full re-render.
-        if (e.hasOwnProperty('bg')) {
-          this.captureTabs('bg', e.bg);
-        } else {
-          this.captureTabs(e.type);
-        }
+    if (e.state && !this.props.s.modal.state) {
+      // Treat attaching/detaching and created tabs with a full re-render.
+      if (e.hasOwnProperty('bg')) {
+        this.captureTabs('bg', e.bg);
+      } else {
+        this.captureTabs(e.type);
       }
     }
   },
@@ -731,7 +726,16 @@ var Root = React.createClass({
           : 
           <div>
             {p.s.context.value ? 
-            <ContextMenu actions={p.s.actions} search={p.s.search} tabs={p.s[p.s.prefs.mode]} prefs={p.s.prefs} cursor={cursor} context={p.s.context} chromeVersion={p.s.chromeVersion} duplicateTabs={p.s.duplicateTabs} theme={s.theme} /> : null}
+            <ContextMenu 
+            actions={p.s.actions}
+            search={p.s.search} 
+            tabs={p.s[p.s.prefs.mode]} 
+            prefs={p.s.prefs} 
+            cursor={cursor} 
+            context={p.s.context} 
+            chromeVersion={p.s.chromeVersion} 
+            duplicateTabs={p.s.duplicateTabs} 
+            theme={s.theme} /> : null}
             {p.s.modal ? 
               <ModalHandler 
               modal={p.s.modal} 
@@ -840,9 +844,9 @@ var App = React.createClass({
   },
   onViewportChange(viewport) {
     var wrapper = document.body;
-    if (this.state.hasScrollbar) {
-      if (wrapper.scrollTop + window.innerHeight >= wrapper.scrollHeight - 200) {
-        this.setState({tileLimit: this.state.tileLimit + 50});
+    if (this.state.hasScrollbar && this.state.tileLimit < this.state[this.state.modeKey].length) {
+      if (wrapper.scrollTop + window.innerHeight >= wrapper.scrollHeight + wrapper.offsetTop - 200) {
+        state.set({tileLimit: this.state.tileLimit + 50});
       }
     }
   },
