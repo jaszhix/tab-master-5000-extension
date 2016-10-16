@@ -98,16 +98,19 @@ var syncSession = (sessions, prefs, windows=null, cb)=>{
 }
 
 var checkAutoDiscard = (windows, prefs)=>{
+  var discards = 0;
   if (prefs.autoDiscard) {
     _.each(windows, (Window)=>{
       _.each(Window.tabs, (tab)=>{ 
         if (tab.hasOwnProperty('timeStamp') && tab.timeStamp + prefs.autoDiscardTime < Date.now()) {
+          ++discards;
           chrome.tabs.discard(tab.id);
           console.log('Discarding: ', tab.title);
         }
       });
     });
   }
+  return discards;
 };
 
 const eventState = {
@@ -250,9 +253,7 @@ var Bg = React.createClass({
     */
     chrome.tabs.onActivated.addListener((e, info) => {
       eventState.onActivated = e;
-      if (this.state.prefs && this.state.prefs.screenshot) {
-        this.createScreenshot(e);
-      }
+      this.handleActivation(e);
     });
     /*
     Tabs updated
@@ -490,20 +491,13 @@ var Bg = React.createClass({
       this.setState({screenshots: index});
     });
   },
-  createScreenshot(info){
-    var refWindow = _.findIndex(this.state.windows, {id: info.windowId});
-    if (refWindow === -1) {
-      console.log('screenshot refWindow -1');
-      return;
-    }
-    var refTab = _.findIndex(this.state.windows[refWindow].tabs, {id: info.tabId});
-    if (refTab === -1) {
-      console.log('screenshot refTab -1');
-      return;
-    }
+  createScreenshot(refWindow, refTab){
     if (this.state.windows[refWindow].tabs[refTab].url.indexOf('chrome://newtab/') !== -1) {
       console.log('screenshot caught new tab activation');
       return;
+    }
+    if (this.state.screenshots === undefined) {
+      this.state.screenshots = [];
     }
     var capture = new Promise((resolve, reject)=>{
       try {
@@ -558,8 +552,29 @@ var Bg = React.createClass({
         });
       });
     }).catch((e)=>{
-      chrome.tabs.update(info.tabId, {active: true});
+      return;
     });
+  },
+  handleActivation(e){
+    var refWindow = _.findIndex(this.state.windows, {id: e.windowId});
+    if (refWindow === -1) {
+      return;
+    }
+    var refTab = _.findIndex(this.state.windows[refWindow].tabs, {id: e.tabId});
+    if (refTab === -1) {
+      return;
+    }
+    if (this.state.windows[refWindow].tabs[refTab].url.indexOf('chrome://newtab/') !== -1) {
+      return;
+    }
+    // Update timestamp for auto-discard feature's accuracy.
+    _.merge(this.state.windows[refWindow].tabs[refTab], {
+      timeStamp: new Date(Date.now()).getTime()
+    });
+    this.setState({windows: this.state.windows});
+    if (this.state.prefs && this.state.prefs.screenshot && this.state.prefs.screenshotChrome) {
+      this.createScreenshot(refWindow, refTab);
+    }
   },
   keepNewTabOpen() {
     // Work around to prevent losing focus of New Tab page when a tab is closed or pinned from the grid.
@@ -590,7 +605,7 @@ var Bg = React.createClass({
         item: _.cloneDeep(type === 'update' ? newTabInstance : oldTabInstance),
         id: uuid.v4()
       };
-      if (type === 'update') {
+      if (type === 'update' && oldTabInstance !== undefined) {
         if (oldTabInstance.mutedInfo.muted !== newTabInstance.mutedInfo.muted) {
           action.type = newTabInstance.mutedInfo.muted ? 'mute' : 'unmute';
         } else if (oldTabInstance.pinned !== newTabInstance.pinned) {
@@ -732,8 +747,12 @@ var Bg = React.createClass({
         }
         this.setState({windows: this.state.windows});
         synchronizeSession(this.state.sessions, this.state.prefs, this.state.windows);
-        checkAutoDiscard(this.state.windows, this.state.prefs);
-        sendMsg({windows: this.state.windows, windowId: e.windowId});
+        var discards = checkAutoDiscard(this.state.windows, this.state.prefs);
+        if (discards > 0) {
+          this.queryTabs(true);
+        } else {
+          sendMsg({windows: this.state.windows, windowId: e.windowId});
+        }
       }
     });
   },

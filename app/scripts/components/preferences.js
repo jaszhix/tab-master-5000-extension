@@ -149,13 +149,15 @@ var Preferences = React.createClass({
     this.listenTo(screenshotStore, this.getBytesInUse);
     this.getBytesInUse();
     var p = this.props;
-    p.modal.footer = (
-      <div>
-        <Btn onClick={()=>this.handleSlide(134, 'tabSizeHeight')} className="ntg-setting-btn" icon="reset" faStyle={{position: 'relative', top: '-2px'}}>Reset Tile Size</Btn>
-        {p.prefs.screenshot ? <Btn onClick={()=>screenshotStore.clear()} className="ntg-setting-btn" icon="trash" faStyle={{paddingRight: '8px'}}>Clear Screenshot Cache</Btn> : null}
-      </div>
-    );
-    state.set({modal: p.modal});
+    if (!p.options) {
+      p.modal.footer = (
+        <div>
+          <Btn onClick={()=>this.handleSlide(134, 'tabSizeHeight')} className="ntg-setting-btn" icon="reset" faStyle={{position: 'relative', top: '-2px'}}>Reset Tile Size</Btn>
+          {p.prefs.screenshot ? <Btn onClick={()=>screenshotStore.clear()} className="ntg-setting-btn" icon="trash" faStyle={{paddingRight: '8px'}}>Clear Screenshot Cache</Btn> : null}
+        </div>
+      );
+      state.set({modal: p.modal});
+    }
   },
   getBytesInUse(){
     if (this.props.prefs.screenshot) {
@@ -175,9 +177,6 @@ var Preferences = React.createClass({
 
     _.defer(()=>{
       msgStore.setPrefs(obj);
-      if (opt === 'screenshot') {
-        utilityStore.reloadBg();
-      }
       if (opt === 'animations') {
         themeStore.set(p.theme);
       }
@@ -193,9 +192,17 @@ var Preferences = React.createClass({
     obj[opt] = e;
     msgStore.setPrefs(obj)
   },
+  handleAutoDiscardTime(e){
+    var discardTime = parseInt(e.target.value.split(' ')[0]);
+    var isMinute = e.target.value.indexOf('Minute') !== -1;
+    var output = isMinute && discardTime === 30 ? 0.5 : isMinute && discardTime === 15 ? 0.25 : discardTime; 
+    msgStore.setPrefs({autoDiscardTime: output * 3600000});
+  },
   render: function() {
     var s = this.state;
     var p = this.props;
+    var autoDiscardTimeOptions = [15, 30, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24];
+    var autoDiscardTimeHourDivided = p.prefs.autoDiscardTime / 3600000;
     return (
       <div className="preferences">
         <Row>
@@ -221,6 +228,29 @@ var Preferences = React.createClass({
             on={p.prefs.singleNewTab} label="Allow only one New Tab per window"
             hoverBg={p.theme.settingsItemHover}
             data-tip="Enabling this option enforces the closing of all New Tabs except the one that is currently focused. This is useful on older computers." />
+            {p.chromeVersion >= 54 ?
+            <Toggle 
+            theme={p.theme}
+            onMouseEnter={()=>this.handleToggle('autoDiscard')} 
+            onClick={()=>this.handleClick('autoDiscard')} 
+            on={p.prefs.autoDiscard} label="Enable automatic discarding of tabs from memory"
+            hoverBg={p.theme.settingsItemHover}
+            data-tip="This option allows TM5K to automatically clear tabs from memory after they have been inactive for a set amount of time. Clearing tabs from memory will not close the tabs, but Chrome will have to reload them upon activation.">
+              {p.prefs.autoDiscard ?
+              <div>
+                Clear tabs from memory if inactive for:
+                <select 
+                className="form-control"
+                style={{backgroundColor: p.theme.settingsBg, color: p.theme.bodyText, width: '100px', marginTop: '6px', paddingLeft: '6px'}}
+                placeholder="Time" 
+                value={`${p.prefs.autoDiscardTime < 1800000 ? '15' : p.prefs.autoDiscardTime < 3600000 ? '30' : autoDiscardTimeHourDivided} ${p.prefs.autoDiscardTime < 3600000 ? 'Minutes' : 'Hour'}${autoDiscardTimeHourDivided > 1 && p.prefs.autoDiscardTime >= 3600000 ? 's' : ''}`} 
+                onChange={this.handleAutoDiscardTime}>
+                  {autoDiscardTimeOptions.map((option, x)=>{
+                    return <option key={x}>{`${option} ${x >= 2 ? 'Hour' : 'Minute'}${option > 1 ? 's' : ''}`}</option>;
+                  })}
+                </select>
+              </div> : null}
+            </Toggle> : null}
             <Toggle 
             theme={p.theme}
             onMouseEnter={()=>this.handleToggle('animations')} 

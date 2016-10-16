@@ -5,6 +5,8 @@ var prefsStore = Reflux.createStore({
   init: function() {
     this.prefs = {};
     this.defaultPrefs = {
+      autoDiscard: false,
+      autoDiscardTime: 3600000,
       tabSizeHeight: 134,
       settingsMax: false, 
       drag: true, 
@@ -57,6 +59,8 @@ var prefsStore = Reflux.createStore({
     });
     getPrefs.then((prefs)=>{
       this.prefs = {
+        autoDiscard: prefs.autoDiscard,
+        autoDiscardTime: prefs.autoDiscardTime,
         tabSizeHeight: prefs.tabSizeHeight,
         drag: prefs.drag, 
         context: prefs.context,
@@ -87,6 +91,12 @@ var prefsStore = Reflux.createStore({
         tooltip: prefs.tooltip,
         alerts: prefs.alerts
       };
+      if (typeof this.prefs.autoDiscard === 'undefined') {
+        this.prefs.autoDiscard = false;
+      }
+      if (typeof this.prefs.autoDiscardTime === 'undefined') {
+        this.prefs.autoDiscardTime = 3600000;
+      }
       if (typeof this.prefs.showViewMode === 'undefined') {
         this.prefs.showViewMode = true;
       }
@@ -139,7 +149,6 @@ var prefsStore = Reflux.createStore({
       this.trigger(this.prefs);
     }).catch((err)=>{
       console.log('chrome.extension.lastError: ',err);
-      //utilityStore.reloadBg();
     });
   },
   set_prefs(obj, init) {
