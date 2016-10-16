@@ -64,7 +64,7 @@ export var themeStore = Reflux.createStore({
         tileText: 'rgba(103, 112, 115, 1)',
         tileTextShadow: 'rgba(255, 255, 255, 1)',
         tileShadow: 'rgba(185, 187, 189, 0)',
-        tileX: 'rgba(51, 51, 51, 1)',
+        tileX: 'rgba(150, 150, 150, 1)',
         tileXHover: 'rgba(150, 150, 150, 1)',
         tilePin: 'rgba(150, 150, 150, 1)',
         tilePinHover: 'rgba(150, 150, 150, 1)',
