@@ -1,5 +1,11 @@
 #### Release Notes
 
+##### v2.0.1 / *10-16-16*
+
+*   Sessions, history, and bookmarks modes will now show open tabs across all open Chrome windows. Clicking a tab from another window will focus that window.
+*   Fixed session tiles not closing (regression).
+*   Fixed app/extensions tile subtitle not being themed.
+
 ##### v2.0.0 / *10-16-16*
 
 *   New tile UI.

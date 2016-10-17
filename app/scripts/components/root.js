@@ -245,7 +245,7 @@ var Root = React.createClass({
     if (!_.isEqual(nP.s.prefs, p.s.prefs) || this.state.init) {
       this.prefsChange(nP.s.prefs);
     }
-    if (nP.s.modeKey !== p.s.modeKey && (nP.s.prefs.mode === nP.s.modeKey || nP.s.modeKey === 'sessionTabs')) {
+    if (nP.s.modeKey !== p.s.modeKey && nP.s.prefs.mode === p.s.prefs.mode) {
       var sort = 'index';
       var direction = 'desc';
       if (nP.s.prefs.mode === 'sessions') {
@@ -555,7 +555,7 @@ var Root = React.createClass({
     } else {
       state.set({tabs: p.s.tabs});
     }
-    if (p.s.prefs.mode !== 'tabs' && p.s.prefs.mode !== 'bookmarks' && p.s.prefs.mode !== 'sessions') {
+    if (p.s.prefs.mode !== 'tabs' && p.s.prefs.mode !== 'sessions') {
       utilityStore.handleMode(p.s.prefs.mode, _.flatten(p.s.allTabs));
     }
   },
@@ -563,6 +563,11 @@ var Root = React.createClass({
     var s = this.state;
     var p = this.props;
     this.setState({topLoad: true});
+
+    if (opt === 'init' && p.s.prefs.mode === 'sessions' && p.s.sessions.length === 0) {
+      _.defer(()=>state.set({reQuery: {state: true, type: 'init'}}));
+      return;
+    }
 
     // Query current Chrome window for tabs.
     var stateUpdate = {};
@@ -583,18 +588,8 @@ var Root = React.createClass({
           }
 
           this.setState({init: false});
-          if (opt !== 'init') {
-            // Render state is toggled to false on the subsequent re-renders only.
-            // tile opt forces the tiles to update, cycle forces the grid to update.
-            if (opt === 'tile') {
-              this.setState({render: false});
-            } else if (opt === 'cycle') {
-              this.setState({grid: false});
-            }
-          }
           // Handle session view querying, and set it to tabs var.
           if (p.s.prefs.mode === 'sessions' && p.s.sessions.length > 0) {
-            console.log('flat', Window.tabs);
             var sessionTabs = sessionsStore.flatten(p.s.sessions, _.flatten(allTabs), opt === 'init' ? stateUpdate.windowId : p.s.windowId);
             sessionTabs = utils.sort(p, sessionTabs);
             for (let i = sessionTabs.length - 1; i >= 0; i--) {
@@ -606,7 +601,7 @@ var Root = React.createClass({
               sessionTabs: sessionTabs
             });
           } else if (p.s.prefs.mode !== 'tabs') {
-            _.defer(()=>utilityStore.handleMode(p.s.prefs.mode, _.flatten(Window.tabs)));
+            _.defer(()=>utilityStore.handleMode(p.s.prefs.mode, _.flatten(allTabs)));
           }
           // Avoid setting tabs state here if the mode is not tabs or sessions. updateTabState will handle other modes.
           if (p.s.prefs.mode === 'tabs') {
@@ -618,10 +613,10 @@ var Root = React.createClass({
             }
             this.checkDuplicateTabs(Window.tabs);
           }
-          _.defer(()=>state.set({
+          _.assignIn(stateUpdate, {
             hasScrollbar: utils.scrollbarVisible(document.body),
             reQuery: {state: false}
-          }));
+          });
         }
       });
       stateUpdate.allTabs = allTabs;
@@ -635,8 +630,6 @@ var Root = React.createClass({
           utilityStore.initTrackJs(p.s.prefs, s.savedThemes);
           this.setState({load: false});
         }
-      } else if (opt === 'cycle') {
-        this.setState({grid: true});
       }
     }
 

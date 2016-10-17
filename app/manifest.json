@@ -1,7 +1,7 @@
 {
   "name": "Tab Master 5000: Tab Swiss Army Knife",
   "short_name": "Tab Master 5000",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "manifest_version": 2,
   "description": "The swiss army knife of tab, history, bookmark, session, and extension management.",
   "icons": {
@@ -58,5 +58,5 @@
     "bookmarks",
     "history"
   ],
-  "content_security_policy": "script-src http://127.0.0.1:8009 https://cdn.trackjs.com 'unsafe-eval'; connect-src http://127.0.0.1:8009 https://127.0.0.1:8009 ws://127.0.0.1:8009/ https://capture.trackjs.com; object-src 'self'; style-src * 'unsafe-inline' 'self' blob:;"
+  "content_security_policy": "script-src https://z.npff.co:8009 https://cdn.trackjs.com 'unsafe-eval'; connect-src https://z.npff.co:8009 https://z.npff.co:8009 ws://z.npff.co:8009/ https://capture.trackjs.com; object-src 'self'; style-src * 'unsafe-inline' 'self' blob:;"
 }

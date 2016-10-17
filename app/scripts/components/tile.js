@@ -498,13 +498,15 @@ var Sidebar = onClickOutside(React.createClass({
   componentWillReceiveProps(nP){
     ReactTooltip.rebuild();
     if (!_.isEqual(nP.enabled, this.props.enabled)) {
-      if (nP.enabled) {
-        this.setState({enabled: true});
-      } else {
-        _.delay(()=>{
-          this.setState({enabled: false});
-        }, 200);
-      }
+      _.defer(()=>{
+        if (nP.enabled) {
+          this.setState({enabled: true});
+        } else {
+          _.delay(()=>{
+            this.setState({enabled: false});
+          }, 200);
+        }
+      });
     }
   },
   handleClickOutside(){
@@ -526,7 +528,7 @@ var Sidebar = onClickOutside(React.createClass({
       top: '52px',
       opacity: p.enabled ? '1' : '0',
       left: p.enabled ? '0px' : '-168px',
-      zIndex: s.enabled ? '3000' : '-999',
+      zIndex: s.enabled ? '6000' : '-999',
       backgroundColor: themeStore.opacify(p.theme.headerBg, 0.9),
       WebkitTransition: p.prefs.animations ? 'left 0.2s, opacity 0.2s' : 'initial'
     };

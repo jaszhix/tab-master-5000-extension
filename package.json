@@ -1,6 +1,6 @@
 {
   "name": "tab-master-5000",
-  "version": "1.7.2",
+  "version": "2.0.1",
   "description": "Tab Master 5000",
   "repository": {
     "type": "git",
@@ -62,8 +62,8 @@
     "node-uuid": "^1.4.7",
     "rc-color-picker": "^1.0.0",
     "rc-slider": "^3.3.2",
-    "react": "^15.0.2",
-    "react-dom": "^15.0.2",
+    "react": "^15.3.0",
+    "react-dom": "^15.3.0",
     "react-draggable": "^2.1.2",
     "react-hot-loader": "^1.3.0",
     "react-modal": "^1.2.1",
