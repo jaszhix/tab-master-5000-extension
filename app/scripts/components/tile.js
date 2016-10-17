@@ -63,6 +63,9 @@ var Tile = React.createClass({
     }
     /* Reset tab state after close */
     if (!_.isEqual(nP.tab, p.tab)) {
+      if (this.closeTimeout) {
+        clearTimeout(this.closeTimeout)
+      }
       this.setState({close: false, render: true, duplicate: false});
     }
   },
@@ -121,7 +124,7 @@ var Tile = React.createClass({
           } else {
             tabStore.create(p.tab.url);
           }
-        } else if (p.prefs.mode === 'apps') {
+        } else if (p.prefs.mode === 'apps' || p.prefs.mode === 'extensions') {
           if (p.tab.enabled) {
             if (p.prefs.mode === 'extensions' || p.tab.launchType === 'OPEN_AS_REGULAR_TAB') {
               if (p.tab.url.length > 0) {
@@ -134,11 +137,7 @@ var Tile = React.createClass({
             }
           }
         } else {
-          active(()=>{
-            if (p.prefs.screenshot && p.prefs.screenshotChrome) {
-              chrome.tabs.update(id, {active: true});
-            }
-          });
+          active();
         }
       }
     }
@@ -274,7 +273,11 @@ var Tile = React.createClass({
                 }}>{p.tab.title.length > 0 ? p.tab.title : p.tab.domain ? p.tab.domain : null}</a>
               </div>
               {p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ? 
-              <div className="text-muted text-size-small" style={{whiteSpace: s.hover ? 'initial' : 'nowrap', WebkitTransition: p.prefs.animations ? 'white-space 0.1s' : 'initial'}}>{p.tab.description}</div> : null}
+              <div className="text-muted text-size-small" style={{
+                whiteSpace: s.hover ? 'initial' : 'nowrap', 
+                WebkitTransition: p.prefs.animations ? 'white-space 0.1s' : 'initial',
+                color: themeStore.opacify(p.theme.tileText, 0.8)
+              }}>{p.tab.description}</div> : null}
               {p.prefs.mode === 'tabs' || p.prefs.mode === 'history' || p.prefs.mode === 'bookmarks' || p.prefs.mode === 'sessions' ? 
               <div onMouseEnter={()=>this.setState({stHover: true})} onMouseLeave={()=>this.setState({stHover: false})}>
                 <div className="text-muted text-size-small" style={ST1}>{p.tab.domain}</div>
@@ -377,8 +380,7 @@ var Tile = React.createClass({
               }} 
               className="icon-power2"
               onMouseEnter={this.handlePinHoverIn} 
-              onMouseLeave={this.handlePinHoverOut}
-              onClick={()=>utils.pin(this, p.tab)} />
+              onMouseLeave={this.handlePinHoverOut} />
             </li>
             : null}
             {(p.prefs.mode === 'apps' || p.prefs.mode === 'extensions') ?
@@ -464,7 +466,7 @@ var Tile = React.createClass({
       onMouseEnter={this.handleHoverIn}
       onMouseLeave={this.handleHoverOut}
       onBodyClick={()=>this.handleClick(p.tab.id)}
-      onFooterClick={p.prefs.mode !== 'sessions' && p.prefs.mode !== 'bookmarks' ? ()=>this.handleClick(p.tab.id) : null}
+      onFooterClick={!s.stHover ? ()=>this.handleClick(p.tab.id) : null}
       onContextMenu={this.handleContextClick}>
         {!favIconUrl || p.tab.domain === 'chrome' ?
         <div style={{

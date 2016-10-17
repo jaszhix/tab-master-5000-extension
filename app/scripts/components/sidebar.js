@@ -56,10 +56,10 @@ export var SidebarMenu = React.createClass({
       ],
       [
         [
-          {label: 'Apps', icon: 'icon-history'},
+          {label: 'Apps', icon: 'icon-grid-alt'},
         ],
         [
-          {label: 'Extensions', icon: 'icon-bookmark4'},
+          {label: 'Extensions', icon: 'icon-puzzle'},
         ]
       ]
     ];
