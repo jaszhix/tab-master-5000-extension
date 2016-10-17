@@ -29,7 +29,7 @@ export var msgStore = Reflux.createStore({
       } else if (msg.type === 'bookmarks') {
         bookmarksStore.get_bookmarks();
       } else if (msg.type === 'history' && s.prefs.mode === msg.type) {
-        historyStore.get_history();
+        historyStore.get_history(s.allTabs);
       } else if (msg.type === 'app') {
         chromeAppStore.set(s.prefs.mode === 'apps');
       } else if (msg.type === 'appState') {
@@ -186,11 +186,9 @@ export var utilityStore = Reflux.createStore({
       bookmarksStore.get_bookmarks(tabs);
     } else if (mode === 'history') {
       historyStore.get_history(tabs);
-    } else {
-      msgStore.queryTabs();
     }
     msgStore.setPrefs({mode: mode});
-    state.set({sort: 'index', modeKey: mode === 'sessions' ? 'sessionTabs' : mode});
+    state.set({modeKey: mode === 'sessions' ? 'sessionTabs' : mode});
   },
   now(){
     return new Date(Date.now()).getTime();
@@ -273,7 +271,7 @@ export var bookmarksStore = Reflux.createStore({
         var bookmarks = [];
         var folders = [];
         var s = state.get();
-        s.tabs = tabs ? tabs : s.tabs;
+        s.tabs = tabs ? tabs : _.flatten(s.allTabs);
         var openTab = 0;
         var iter = -1;
         var addBookmarkChildren = (bookmarkLevel, title='')=> {
@@ -323,6 +321,7 @@ export var bookmarksStore = Reflux.createStore({
     var s = state.get();
     var stateUpdate = {};
     this.set_bookmarks(tabs).then((bk)=>{
+      bk = utils.sort({s: s}, bk);
       stateUpdate[s.search.length > 0 && s.bookmarks.length > 0 ? 'tileCache' : 'bookmarks'] = bk;
       state.set(stateUpdate);
       _.defer(()=>state.set({hasScrollbar: utils.scrollbarVisible(document.body)}));
@@ -351,9 +350,8 @@ export var historyStore = Reflux.createStore({
       chrome.history.search({text: '', maxResults: 1000}, (h)=>{
         console.log(h);
         var s = state.get();
-        s.tabs = tabs ? tabs : s.tabs;
+        s.tabs = tabs ? tabs : _.flatten(s.allTabs);
         var openTab = 0;
-        var openTabObj = null;
         for (var i = h.length - 1; i >= 0; i--) {
           var urlMatch = h[i].url.match(s.domainRegEx);
           _.assign(h[i], {
@@ -372,7 +370,6 @@ export var historyStore = Reflux.createStore({
             windowId: s.windowId
           });
           for (var y = s.tabs.length - 1; y >= 0; y--) {
-            openTabObj = _.find(s.tabs, {windowId: s.windowId});
             if (h[i].url === s.tabs[y].url) {
               h[i] = _.assignIn(h[i], _.cloneDeep(s.tabs[y]));
               h[i].openTab = ++openTab;
@@ -390,6 +387,7 @@ export var historyStore = Reflux.createStore({
     var s = state.get();
     var stateUpdate = {};
     this.set_history(tabs).then((h)=>{
+      h = utils.sort({s: s}, h);
       stateUpdate[s.search.length > 0 && s.history.length > 0 ? 'tileCache' : 'history'] = h;
       state.set(stateUpdate);
       _.defer(()=>state.set({hasScrollbar: utils.scrollbarVisible(document.body)}));

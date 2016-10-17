@@ -97,39 +97,41 @@ var sessionsStore = Reflux.createStore({
     };
     reader.readAsText(e.target.files[0], "UTF-8");
   },
-  flatten(sessions){
-    var s = state.get();
+  flatten(sessions, tabs, windowId){
     if (sessions) {
       var allTabs = [];
-      var t = s.tabs;
       var openTab = 0;
-      var openTabObj = null;
       for (let i = sessions.length - 1; i >= 0; i--) {
         for (let y = sessions[i].tabs.length - 1; y >= 0; y--) {
           for (let z = sessions[i].tabs[y].length - 1; z >= 0; z--) {
-            openTabObj = _.find(t, {url: sessions[i].tabs[y][z].url});
-            _.merge(sessions[i].tabs[y][z], {
-              openTab: openTabObj ? ++openTab : null,
-              pinned: openTabObj ? openTabObj.pinned : false,
-              mutedInfo: openTabObj ? {muted: openTabObj.mutedInfo.muted} : {muted: false},
-              audible: openTabObj ? openTabObj.audible : false,
-              windowId: s.windowId,
-              id: openTabObj ? openTabObj.id : utilityStore.now() / Math.random(),
+            var sessionTab = {
+              openTab: null,
+              pinned: false,
+              mutedInfo: {muted: false},
+              audible: false,
+              windowId: windowId,
+              id: uuid.v4(),
               tabId: sessions[i].tabs[y][z].id,
               label: sessions[i].label,
               sTimeStamp: sessions[i].timeStamp,
               originWindow: y,
               originSession: sessions[i].id
-            });
+            };
+            sessions[i].tabs[y][z] = _.assignIn(sessions[i].tabs[y][z], sessionTab);
+            var refOpenTab = _.findIndex(tabs, {url: sessions[i].tabs[y][z].url});
+            if (refOpenTab !== -1) {
+              sessions[i].tabs[y][z] = _.assignIn(sessions[i].tabs[y][z], tabs[refOpenTab]);
+              sessions[i].tabs[y][z].openTab = ++openTab;
+            }
           }
           allTabs.push(sessions[i].tabs[y]);
         }
       }
-      var tabs = _.chain(allTabs)
+      var _tabs = _.chain(allTabs)
         .flatten()
         .orderBy(['openTab'], ['asc'])
         .uniqBy('url').value();
-      return tabs;
+      return _tabs;
     } else {
       msgStore.setPrefs({mode: 'tabs'});
     }
@@ -141,6 +143,11 @@ var sessionsStore = Reflux.createStore({
       console.log('### ref', refSessionTab);
       if (sessionTabs.length === 0) {
         stateUpdate.search = '';
+      }
+      if (refSessionTab !== -1) {
+        _.pullAt(sessionTabs, refSessionTab);
+        stateUpdate.sessionTabs = sessionTabs;
+        state.set(stateUpdate);
       }
     }
 

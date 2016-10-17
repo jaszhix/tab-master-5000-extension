@@ -113,6 +113,9 @@ var Tile = React.createClass({
       if (!s.close) {
         if (p.prefs.mode === 'bookmarks' || p.prefs.mode === 'history' || p.prefs.mode === 'sessions') {
           if (p.tab.hasOwnProperty('openTab') && p.tab.openTab) {
+            if (p.tab.windowId !== p.windowId && chrome.windows.update) {
+              chrome.windows.update(p.tab.windowId, {focused: true})    
+            }
             active();
           } else if (p.tab.hasOwnProperty('openTab') && !p.tab.openTab) {
             chrome.tabs.create({url: p.tab.url}, (t)=>{
@@ -589,36 +592,8 @@ var TileGrid = React.createClass({
       this.prefsInit(nP);
     }
     if (nP.s.sort !== p.s.sort || nP.s.direction !== p.s.direction) {
-      this.sort(nP);
+      utils.sort(nP, nP.data, true);
     }
-  },
-  sort(p) {
-    var key = p.s.sort;
-    var direction = p.s.direction;
-    /*if (key === 'offlineEnabled' 
-      || key === 'sTimeStamp' 
-      || key === 'dateAdded' 
-      || key === 'visitCount' 
-      || key === 'audible'
-      || key === 'timeStamp'  
-      || key === 'lastVisitTime') {
-      //direction = p.s.direction === 'asc' ? 'desc' : 'asc';
-    }*/
-
-    var result;
-
-    if (p.s.prefs.mode === 'tabs') {
-      var pinned = _.orderBy(_.filter(p.data, {pinned: true}), key, direction);
-      var unpinned = _.orderBy(_.filter(p.data, {pinned: false}), key, direction);
-      var concat = _.concat(pinned, unpinned);
-      result = _.orderBy(concat, ['pinned', key], direction);
-    } else {
-      result = _.orderBy(p.data, [key], [direction]);
-    }
-
-    var stateUpdate = {};
-    stateUpdate[p.s.modeKey] = result;
-    state.set(stateUpdate);
   },
   dragStart: function(e, i) {
     this.dragged = {el: e.currentTarget, i: i};

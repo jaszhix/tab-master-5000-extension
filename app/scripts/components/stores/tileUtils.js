@@ -59,6 +59,11 @@ export var closeTab = (t, id, search)=>{
   } else {
     close();
   }
+  if (p.prefs.mode === 'sessions') {
+    t.closeTimeout = setTimeout(()=>{
+      t.setState({close: true, render: false});
+    }, 200);
+  }
 };
 
 export var closeAll = (t, tab)=>{
@@ -102,6 +107,7 @@ export var pin = (t, tab, opt)=>{
   if (p.prefs.animations) {
     t.setState({pinning: true});
   }
+  p.tab.pinned = !p.tab.pinned;
   chrome.tabs.update(id, {
     pinned: !tab.pinned
   });
@@ -265,6 +271,27 @@ export var filterFavicons = (faviconUrl, tabUrl, mode=null)=>{
     return faviconUrl;
   }
 }
+
+export var sort = (p, data, sortChange=null)=>{
+  var result;
+
+  if (p.s.prefs.mode === 'tabs') {
+    var pinned = _.orderBy(_.filter(data, {pinned: true}), p.s.sort, p.s.direction);
+    var unpinned = _.orderBy(_.filter(data, {pinned: false}), p.s.sort, p.s.direction);
+    var concat = _.concat(pinned, unpinned);
+    result = _.orderBy(concat, ['pinned', p.s.sort], p.s.direction);
+  } else {
+    result = _.orderBy(data, [p.s.sort], [p.s.direction]);
+  }
+
+  if (sortChange) {
+    var stateUpdate = {};
+    stateUpdate[p.s.modeKey] = result;
+    state.set(stateUpdate);
+  } else {
+    return result;
+  }
+};
 
 export var hasDuplicates = (array)=>{
   return (new Set(array)).size !== array.length;

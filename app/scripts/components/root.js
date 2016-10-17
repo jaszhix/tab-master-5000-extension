@@ -245,6 +245,18 @@ var Root = React.createClass({
     if (!_.isEqual(nP.s.prefs, p.s.prefs) || this.state.init) {
       this.prefsChange(nP.s.prefs);
     }
+    if (nP.s.modeKey !== p.s.modeKey && (nP.s.prefs.mode === nP.s.modeKey || nP.s.modeKey === 'sessionTabs')) {
+      var sort = 'index';
+      var direction = 'desc';
+      if (nP.s.prefs.mode === 'sessions') {
+        sort = 'sTimeStamp';
+      } else if (nP.s.prefs.mode === 'history') {
+        sort = 'lastVisitTime';
+      } else if (nP.s.prefs.mode === 'bookmarks') {
+        sort = 'dateAdded';
+      }
+      state.set({sort: sort, direction: direction});
+    }
     if (!_.isEqual(nP.s.search, p.s.search)) {
       this.searchChange(nP.s.search);
     }
@@ -544,16 +556,12 @@ var Root = React.createClass({
       state.set({tabs: p.s.tabs});
     }
     if (p.s.prefs.mode !== 'tabs' && p.s.prefs.mode !== 'bookmarks' && p.s.prefs.mode !== 'sessions') {
-      utilityStore.handleMode(p.s.prefs.mode, p.s.tabs);
+      utilityStore.handleMode(p.s.prefs.mode, _.flatten(p.s.allTabs));
     }
   },
   captureTabs(opt, bg) {
     var s = this.state;
     var p = this.props;
-    if (p.s.prefs.mode === 'sessions' && opt !== 'init') {
-      state.set({sessionTabs: sessionsStore.flatten(p.s.sessions)});
-      return;
-    }
     this.setState({topLoad: true});
 
     // Query current Chrome window for tabs.
@@ -585,20 +593,23 @@ var Root = React.createClass({
             }
           }
           // Handle session view querying, and set it to tabs var.
-          if (p.s.prefs.mode === 'sessions') {
-            var sessionTabs = sessionsStore.flatten(p.s.sessions);
+          if (p.s.prefs.mode === 'sessions' && p.s.sessions.length > 0) {
+            console.log('flat', Window.tabs);
+            var sessionTabs = sessionsStore.flatten(p.s.sessions, _.flatten(allTabs), opt === 'init' ? stateUpdate.windowId : p.s.windowId);
+            sessionTabs = utils.sort(p, sessionTabs);
             for (let i = sessionTabs.length - 1; i >= 0; i--) {
               sessionTabs = utils.checkFavicons(p, sessionTabs[i], i, sessionTabs);
             }
             _.assignIn(stateUpdate, {
               modeKey: 'sessionTabs',
+              sort: p.s.sort === 'index' ? 'sTimeStamp' : p.s.sort,
               sessionTabs: sessionTabs
             });
           } else if (p.s.prefs.mode !== 'tabs') {
-            _.defer(()=>utilityStore.handleMode(p.s.prefs.mode, Window.tabs));
+            _.defer(()=>utilityStore.handleMode(p.s.prefs.mode, _.flatten(Window.tabs)));
           }
           // Avoid setting tabs state here if the mode is not tabs or sessions. updateTabState will handle other modes.
-          if (p.s.prefs.mode === 'tabs' || p.s.prefs.mode === 'sessions') {
+          if (p.s.prefs.mode === 'tabs') {
             if (p.s.search.length === 0) {
               stateUpdate.tabs = Window.tabs;
             } else {
