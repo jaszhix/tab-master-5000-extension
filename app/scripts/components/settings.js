@@ -267,7 +267,7 @@ var Theming = React.createClass({
                     <Row 
                     key={i}
                     className="ntg-session-row"
-                    style={p.prefs.theme === theme.id ? {backgroundColor: p.theme.darkBtnBg, color: s.themeHover === i ? p.theme.bodyText : p.theme.darkBtnText} : {backgroundColor: s.themeHover === i ? p.theme.settingsItemHover : 'initial'}}  
+                    style={p.prefs.theme === theme.id ? {backgroundColor: p.theme.darkBtnBg, color: s.themeHover === i ? p.theme.bodyText : p.theme.darkBtnText, maxHeight: '28px'} : {backgroundColor: s.themeHover === i ? p.theme.settingsItemHover : 'initial', maxHeight: '28px'}}  
                     onMouseEnter={()=>this.setState({themeHover: i})}>
                       <div 
                       className="ntg-session-text" 
@@ -286,8 +286,8 @@ var Theming = React.createClass({
                         : theme.label}
                       </div>
                       <div style={{width: 'auto', float: 'right', display: 'inline', marginRight: '4px'}}>
-                        {s.themeHover === i ? <Btn onClick={()=>this.handleRemoveTheme(theme.id)} className="ntg-session-btn" fa="times" noIconPadding={true} data-tip="Remove Theme" /> : null}
-                        {s.themeHover === i ? <Btn onClick={()=>this.setState({themeLabel: i})} className="ntg-session-btn" fa="pencil" noIconPadding={true} data-tip="Edit Label" /> : null}
+                        {s.themeHover === i ? <Btn onClick={()=>this.handleRemoveTheme(theme.id)} className="ntg-session-btn" faStyle={{fontSize: '14px', position: 'relative', top: '0px'}} icon="cross" noIconPadding={true} data-tip="Remove Theme" /> : null}
+                        {s.themeHover === i ? <Btn onClick={()=>this.setState({themeLabel: i})} className="ntg-session-btn" faStyle={{fontSize: '14px', position: 'relative', top: '0px'}} icon="pencil" noIconPadding={true} data-tip="Edit Label" /> : null}
                       </div>
                     </Row>
                   );
@@ -300,7 +300,7 @@ var Theming = React.createClass({
                     <Row 
                     key={i}
                     className="ntg-session-row"
-                    style={p.prefs.theme === theme.id ? {backgroundColor: p.theme.darkBtnBg, color: p.theme.lightBtnText} : {backgroundColor: s.themeHover === i ? p.theme.settingsItemHover : 'initial'}} 
+                    style={p.prefs.theme === theme.id ? {backgroundColor: p.theme.darkBtnBg, color: p.theme.lightBtnText, maxHeight: '28px'} : {backgroundColor: s.themeHover === i ? p.theme.settingsItemHover : 'initial', maxHeight: '28px'}} 
                     onMouseEnter={()=>this.setState({themeHover: i})}>
                       <div 
                       className="ntg-session-text" 
@@ -401,7 +401,7 @@ var Theming = React.createClass({
 var Sessions = React.createClass({
   getInitialState(){
     return {
-      sessions: null,
+      sessions: [],
       sessionHover: null,
       selectedSessionTabHover: null,
       windowHover: -1,
@@ -446,7 +446,7 @@ var Sessions = React.createClass({
         _.each(Window, (tab, tKey)=>{
           if (tab) {
             if (tab.url.indexOf('chrome://newtab/') === -1) {
-              if (!_.find(p.favicons, {domain: tab.url.split('/')[2]}) && tab.url.indexOf('127.0.0.1') === -1) {
+              if (!_.find(p.favicons, {domain: tab.url.split('/')[2]}) && tab.url.indexOf('127.0.0.1') === -1 && tab.url.indexOf('localhost') === -1) {
                 faviconStore.set_favicon(tab, session.tabs.length, tKey);
               }
               var fvData = _.result(_.find(p.favicons, { domain: tab.url.split('/')[2] }), 'favIconUrl');
@@ -522,7 +522,6 @@ var Sessions = React.createClass({
     var s = this.state;
     return (
       <div className="sessions">
-        {s.sessions ?
         <Col size="6" className="session-col" onMouseLeave={()=>this.handleSessionHoverOut(-1)}>
           <h4>Saved Sessions {s.sessions.length > 0 ? `(${s.sessions.length})` : null}</h4>
           {s.sessions.map((session, i)=>{
@@ -601,26 +600,30 @@ var Sessions = React.createClass({
                               e.preventDefault();
                               this.labelSession(session);
                             }}>
-                              <input children={undefined} type="text"
-                                value={s.sessionLabelValue}
-                                className="form-control label-session-input"
-                                placeholder={session.label ? session.label : 'Label...'}
-                                onChange={this.setLabel} />
+                              <input 
+                              children={undefined} 
+                              type="text"
+                              value={s.sessionLabelValue}
+                              className="form-control label-session-input"
+                              style={{backgroundColor: p.theme.settingsBg, color: p.theme.bodyText}}
+                              placeholder={session.label ? session.label : 'Label...'}
+                              onChange={this.setLabel} />
                             </form>
                           </Col>
                           <Col size="6">
-                            <Btn style={{float: 'left', marginTop: '2px'}} onClick={()=>this.labelSession(session)} className="ntg-session-btn" fa="plus" noIconPadding={true} data-tip="Update Label" />
-                            <Btn style={{float: 'left', marginTop: '2px'}} onClick={()=>this.setState({labelSession: null})} className="ntg-session-btn" fa="times" noIconPadding={true} data-tip="Cancel" />
+                            <Btn style={{float: 'left', marginTop: '2px'}} faStyle={{fontSize: '14px', position: 'relative', top: '0px'}} onClick={()=>this.labelSession(session)} className="ntg-session-btn" icon="checkmark3" noIconPadding={true} data-tip="Update Label" />
+                            <Btn style={{float: 'left', marginTop: '2px'}} faStyle={{fontSize: '14px', position: 'relative', top: '0px'}} onClick={()=>this.setState({labelSession: null})} className="ntg-session-btn" icon="cross" noIconPadding={true} data-tip="Cancel" />
                           </Col>
                         </div> : null}
                         {s.searchField === i ? 
                         <Col size="12">
                           <input 
-                            type="text" 
-                            value={s.search}
-                            className="form-control session-field" 
-                            placeholder="Search session..."
-                            onChange={(e)=>this.setState({search: e.target.value})} />
+                          type="text" 
+                          value={s.search}
+                          className="form-control session-field" 
+                          style={{backgroundColor: p.theme.settingsBg, color: p.theme.bodyText}}
+                          placeholder="Search session..."
+                          onChange={(e)=>this.setState({search: e.target.value})} />
                         </Col> : null}
                     </Row>
                   {session.tabs.map((_window, w)=>{
@@ -680,7 +683,7 @@ var Sessions = React.createClass({
 
           <input children={undefined} type="file" onChange={(e)=>sessionsStore.importSessions(p.sessions, e)} accept=".json" ref="fileInput" style={style.hiddenInput} />
           
-        </Col> : null}
+        </Col>
         <Col size="6" className="session-col" onMouseLeave={()=>this.setState({currentSessionHover: -1})}>
           <h4>Current Session</h4>
           {p.allTabs.map((_window, i)=>{
