@@ -107,13 +107,13 @@ export var SidebarMenu = React.createClass({
                     <span>View Mode</span>
                     <ul className="icons-list">
                       <li>
-                        <a data-action="collapse" className={s.viewMode ? '' : 'rotate-180'}></a>
+                        <a data-action="collapse" className={p.prefs.showViewMode ? '' : 'rotate-180'}></a>
                       </li>
                     </ul>
                   </div>
 
                   {p.prefs.showViewMode ?
-                  <div className="category-content" style={{height: s.viewMode ? 'initial' : '0px', WebkitTransition: 'height 0.2s'}}>
+                  <div className="category-content" style={{height: p.prefs.showViewMode ? 'initial' : '0px', WebkitTransition: 'height 0.2s'}}>
                     <div className="row" onMouseLeave={()=>this.setState({lgBtnHover: ''})}>
                       {lgBtnOptions.map((row, i)=>{
                         //
@@ -156,7 +156,7 @@ export var SidebarMenu = React.createClass({
                     <span>Sort By</span>
                     <ul className="icons-list">
                       <li>
-                        <a data-action="collapse" className={s.sortBy ? '' : 'rotate-180'}></a>
+                        <a data-action="collapse" className={p.prefs.sort ? '' : 'rotate-180'}></a>
                       </li>
                     </ul>
                   </div>
