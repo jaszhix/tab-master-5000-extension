@@ -37,7 +37,6 @@
     "babel-runtime": "^6.9.2",
     "classnames": "^2.2.5",
     "clear": "^0.0.1",
-    "colorformat": "^1.2.3",
     "css-loader": "^0.17.0",
     "del": "^2.2.0",
     "eslint": "^3.7.0",

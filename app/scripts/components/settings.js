@@ -4,7 +4,6 @@ import Reflux from 'reflux';
 import moment from 'moment';
 import _ from 'lodash';
 import kmp from 'kmp';
-import cf from 'colorformat';
 import tc from 'tinycolor2';
 
 import ColorPicker from 'rc-color-picker';
@@ -43,17 +42,17 @@ var ColorPickerContainer = React.createClass({
     this.convertColor(nP.color);
   },
   handleColorChange(color){
-    var rgb = cf.hexToRgb(color.color);
+    var rgb = tc(color.color).setAlpha(color.alpha / 100).toRgbString();
     var p = this.props;
     var theme = {};
-    theme[p.themeKey] = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${color.alpha / 100})`;
+    theme[p.themeKey] = rgb;
     themeStore.set(theme);
     p.onChange();
   },
   convertColor(color){
-    if (kmp(color, '#') !== -1) {
+    if (color.indexOf('#') !== -1) {
       this.setState({color: color});
-    } else if (kmp(color, 'a') !== -1) {
+    } else if (color.indexOf('a') !== -1) {
       var arr = color.split(', ');
       var r = arr[0].split('rgba(')[1];
       var g = arr[1];
@@ -61,7 +60,7 @@ var ColorPickerContainer = React.createClass({
       var alpha = arr[3].split(')')[0];
       this.setState({
         alpha: alpha * 100,
-        color: cf.rgbToHex(r, g, b)
+        color: tc({r: r, g: g, b: b}).toHexString()
       });
     }
   },
