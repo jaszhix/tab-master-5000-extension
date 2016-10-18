@@ -130,7 +130,20 @@ var Blacklist = React.createClass({
     return (
       <Col size="12" style={{marginTop: '3px'}}>
           {s.formatError ? <span style={{width: '350px', color: 'A94442'}}>{s.formatError.join(', ')}</span> : null}
-          <textarea value={s.blacklistValue} onChange={this.setBlacklist} style={{backgroundColor: lightTextColorArg ? p.theme.darkBtnBg : 'initial', color: lightTextColorArg ? p.theme.darkBtnText : 'initial', paddingLeft: lightTextColorArg ? '14px' : 'initial', paddingRight: lightTextColorArg ? '14px' : 'initial', width: '100%'}} placeholder="Enter a comma separated list of domains..." id="input" className="form-control blacklist session-field" rows="3" />
+          <textarea 
+          value={s.blacklistValue} 
+          onChange={this.setBlacklist} 
+          style={{
+            backgroundColor: lightTextColorArg ? p.theme.darkBtnBg : p.theme.lightBtnBg, 
+            color: lightTextColorArg ? p.theme.darkBtnText : p.theme.lightBtnText, 
+            paddingLeft: '14px',
+            paddingRight: '14px', 
+            width: '100%'
+          }} 
+          placeholder="Enter a comma separated list of domains..." 
+          id="input" 
+          className="form-control blacklist session-field" 
+          rows="3" />
           <Btn style={{marginTop: '7px'}} onClick={this.blacklistSubmit} className="ntg-setting-btn" icon="floppy-disk">Save</Btn>
       </Col>
     );
