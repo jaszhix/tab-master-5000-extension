@@ -1,7 +1,13 @@
 window._trackJs = {
   token: 'bd495185bd7643e3bc43fa62a30cec92',
   enabled: false,
-  onError: function (payload) { return true; },
+  onError: function (payload) { 
+    console.log('payload', payload)
+    if (payload.message.indexOf('unknown') !== -1) {
+      return false;
+    }
+    return true; 
+  },
   version: "",
   callback: {
     enabled: true,
@@ -34,6 +40,7 @@ import _ from 'lodash';
 import v from 'vquery';
 import uuid from 'node-uuid';
 import prefsStore from '../components/stores/prefs';
+
 var checkChromeErrors = (err)=>{
   if (chrome.runtime.lastError) {
     window.trackJs.track(chrome.runtime.lastError);
@@ -112,6 +119,76 @@ var checkAutoDiscard = (windows, prefs)=>{
   }
   return discards;
 };
+
+var createScreenshot = (t, refWindow, refTab)=>{
+  if (t.state.windows[refWindow].tabs[refTab] === undefined) {
+    return;
+  }
+  if (t.state.windows[refWindow].tabs[refTab].url.indexOf('chrome://newtab/') !== -1) {
+    console.log('screenshot caught new tab activation');
+    return;
+  }
+  if (t.state.screenshots === undefined) {
+    t.state.screenshots = [];
+  }
+  var capture = new Promise((resolve, reject)=>{
+    try {
+      chrome.tabs.captureVisibleTab({format: 'jpeg', quality: 10}, (image)=> {
+        if (image) {
+          resolve(image);
+        } else {
+          reject();
+        }
+        checkChromeErrorsThrottled();
+      });
+    } catch (e) {
+      console.log(e);
+      reject();
+    }
+  });
+  capture.then((image)=>{
+    var resize = new Promise((resolve, reject)=>{
+      var sourceImage = new Image();
+      sourceImage.onload = function() {
+        var imgWidth = sourceImage.width / 2;
+        var imgHeight = sourceImage.height / 2;
+        var canvas = document.createElement("canvas");
+        canvas.width = imgWidth;
+        canvas.height = imgHeight;
+        canvas.getContext("2d").drawImage(sourceImage, 0, 0, imgWidth, imgHeight);
+        var newDataUri = canvas.toDataURL('image/jpeg', 0.25);
+        if (newDataUri) {
+          resolve(newDataUri);
+        }
+      };
+      sourceImage.src = image;
+    });
+    resize.then((image)=>{
+      var screenshot = {
+        url: t.state.windows[refWindow].tabs[refTab].url, 
+        data: image, 
+        timeStamp: Date.now()
+      };
+      
+      var refScreenshot = _.findIndex(t.state.screenshots, {url: t.state.windows[refWindow].tabs[refTab].url});
+      if (refScreenshot !== -1) {
+        t.state.screenshots[refScreenshot] = screenshot;
+      } else {
+        t.state.screenshots.push(screenshot);
+      }
+
+      chrome.storage.local.set({screenshots: t.state.screenshots}, ()=>{
+      });
+      t.setState({screenshots: t.state.screenshots}, ()=>{
+        sendMsg({screenshots: t.state.screenshots});
+      });
+    });
+  }).catch((e)=>{
+    return;
+  });
+};
+
+var createScreenshotThrottled = _.throttle(createScreenshot, 500, {leading: true});
 
 const eventState = {
   onStartup: null,
@@ -491,70 +568,6 @@ var Bg = React.createClass({
       this.setState({screenshots: index});
     });
   },
-  createScreenshot(refWindow, refTab){
-    if (this.state.windows[refWindow].tabs[refTab].url.indexOf('chrome://newtab/') !== -1) {
-      console.log('screenshot caught new tab activation');
-      return;
-    }
-    if (this.state.screenshots === undefined) {
-      this.state.screenshots = [];
-    }
-    var capture = new Promise((resolve, reject)=>{
-      try {
-        chrome.tabs.captureVisibleTab({format: 'jpeg', quality: 10}, (image)=> {
-          if (image) {
-            resolve(image);
-          } else {
-            reject();
-          }
-          checkChromeErrorsThrottled();
-        });
-      } catch (e) {
-        console.log(e);
-        reject();
-      }
-    });
-    capture.then((image)=>{
-      var resize = new Promise((resolve, reject)=>{
-        var sourceImage = new Image();
-        sourceImage.onload = function() {
-          var imgWidth = sourceImage.width / 2;
-          var imgHeight = sourceImage.height / 2;
-          var canvas = document.createElement("canvas");
-          canvas.width = imgWidth;
-          canvas.height = imgHeight;
-          canvas.getContext("2d").drawImage(sourceImage, 0, 0, imgWidth, imgHeight);
-          var newDataUri = canvas.toDataURL('image/jpeg', 0.25);
-          if (newDataUri) {
-            resolve(newDataUri);
-          }
-        };
-        sourceImage.src = image;
-      });
-      resize.then((image)=>{
-        var screenshot = {
-          url: this.state.windows[refWindow].tabs[refTab].url, 
-          data: image, 
-          timeStamp: Date.now()
-        };
-        
-        var refScreenshot = _.findIndex(this.state.screenshots, {url: this.state.windows[refWindow].tabs[refTab].url});
-        if (refScreenshot !== -1) {
-          this.state.screenshots[refScreenshot] = screenshot;
-        } else {
-          this.state.screenshots.push(screenshot);
-        }
-
-        chrome.storage.local.set({screenshots: this.state.screenshots}, ()=>{
-        });
-        this.setState({screenshots: this.state.screenshots}, ()=>{
-          sendMsg({screenshots: this.state.screenshots});
-        });
-      });
-    }).catch((e)=>{
-      return;
-    });
-  },
   handleActivation(e){
     var refWindow = _.findIndex(this.state.windows, {id: e.windowId});
     if (refWindow === -1) {
@@ -573,7 +586,7 @@ var Bg = React.createClass({
     });
     this.setState({windows: this.state.windows});
     if (this.state.prefs && this.state.prefs.screenshot && this.state.prefs.screenshotChrome) {
-      this.createScreenshot(refWindow, refTab);
+      createScreenshotThrottled(this, refWindow, refTab);
     }
   },
   keepNewTabOpen() {
