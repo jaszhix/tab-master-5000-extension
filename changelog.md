@@ -1,5 +1,19 @@
 #### Release Notes
 
+##### v2.0.4 / *10-18-16*
+
+*   Fixed a bug that can cause the extension to crash while quickly flipping through tabs when screenshots are enabled.
+
+##### v2.0.3 / *10-17-16*
+
+*   Fixed blacklist text area legibility on dark themes.
+*   Fixed tile button legibility for Midnight Purple theme.
+*   Fixed sidebar category arrow animations.
+
+##### v2.0.2 / *10-16-16*
+
+*   Fixed TrackJS API.
+
 ##### v2.0.1 / *10-16-16*
 
 *   Sessions, history, and bookmarks modes will now show open tabs across all open Chrome windows. Clicking a tab from another window will focus that window.
