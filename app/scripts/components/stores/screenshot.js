@@ -6,7 +6,7 @@ import {utilityStore} from './main';
 
 var screenshotStore = Reflux.createStore({
   capture(id, wid, imageData, type){
-    console.log('screenshotStore capture:', id, wid, imageData, type);
+    console.log('screenshotStore capture:', id, wid, type);
     var s = state.get();
     var refTab = _.find(s.tabs, {id: id});
     var getScreenshot = new Promise((resolve, reject)=>{
@@ -15,7 +15,7 @@ var screenshotStore = Reflux.createStore({
         resolve(imageData);
       } else {
         chrome.runtime.sendMessage({method: 'captureTabs', id: id}, (response) => {
-          console.log('response from captureVisibleTab: ', id, wid, type, response);
+          console.log('response from captureVisibleTab: ', id, wid, type);
           if (response) {
             if (response.image) {
               resolve(response.image);
@@ -28,7 +28,6 @@ var screenshotStore = Reflux.createStore({
     });
     if (s.prefs.screenshot && refTab !== undefined && refTab.url.indexOf('newtab') === -1) {
       getScreenshot.then((img, err)=>{
-        console.log('pass 1:',img)
         var resize = new Promise((resolve, reject)=>{
           var sourceImage = new Image();
           sourceImage.onload = function() {

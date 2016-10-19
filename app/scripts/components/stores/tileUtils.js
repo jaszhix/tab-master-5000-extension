@@ -275,7 +275,7 @@ export var filterFavicons = (faviconUrl, tabUrl, mode=null)=>{
 export var sort = (p, data, sortChange=null)=>{
   var result;
 
-  if (p.s.prefs.mode === 'tabs') {
+  if (p.s.prefs && p.s.prefs.mode === 'tabs') {
     var pinned = _.orderBy(_.filter(data, {pinned: true}), p.s.sort, p.s.direction);
     var unpinned = _.orderBy(_.filter(data, {pinned: false}), p.s.sort, p.s.direction);
     var concat = _.concat(pinned, unpinned);

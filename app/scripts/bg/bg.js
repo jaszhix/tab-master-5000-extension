@@ -41,6 +41,24 @@ import v from 'vquery';
 import uuid from 'node-uuid';
 import prefsStore from '../components/stores/prefs';
 
+const eventState = {
+  onStartup: null,
+  onUpdateAvailable: null,
+  onInstalled: null,
+  onUninstalled: null,
+  onEnabled: null,
+  onDisabled: null
+};
+chrome.runtime.onStartup.addListener(()=>{
+  eventState.onStartup = {type: 'startup'};
+});
+chrome.runtime.onUpdateAvailable.addListener((details)=>{
+  eventState.onUpdateAvailable = details;
+});
+chrome.runtime.onInstalled.addListener((details)=>{
+  eventState.onInstalled = details;
+});
+
 var checkChromeErrors = (err)=>{
   if (chrome.runtime.lastError) {
     window.trackJs.track(chrome.runtime.lastError);
@@ -80,7 +98,6 @@ var close = (id)=>{
 };
 
 var syncSession = (sessions, prefs, windows=null, cb)=>{
-  console.log(sessions)
   var allTabs = [];
   if (typeof prefs.syncedSession !== 'undefined' && prefs.syncedSession && prefs.sessionsSync) {
     var refSession = _.findIndex(sessions, {id: prefs.syncedSession});
@@ -95,8 +112,6 @@ var syncSession = (sessions, prefs, windows=null, cb)=>{
         }
       });
     }
-    console.log('Mutating session state...');
-
     sessions[refSession].tabs = allTabs;
     sessions[refSession].timeStamp = new Date(Date.now());
     sessions[refSession] = sessions[refSession];
@@ -190,25 +205,41 @@ var createScreenshot = (t, refWindow, refTab)=>{
 
 var createScreenshotThrottled = _.throttle(createScreenshot, 500, {leading: true});
 
-const eventState = {
-  onStartup: null,
-  onUpdateAvailable: null,
-  onInstalled: null,
-  onUninstalled: null,
-  onEnabled: null,
-  onDisabled: null
-};
-chrome.runtime.onStartup.addListener(()=>{
-  eventState.onStartup = {type: 'startup'};
-});
-chrome.runtime.onUpdateAvailable.addListener((details)=>{
-  eventState.onUpdateAvailable = details;
-});
-chrome.runtime.onInstalled.addListener((details)=>{
-  eventState.onInstalled = details;
-});
+var synchronizeSession = _.throttle(syncSession, 100, {leading: true});
 
-var synchronizeSession = _.throttle(syncSession, 1, {leading: true});
+var setAction = (t, type, oldTabInstance, newTabInstance=null)=>{
+  if (t.state.prefs && !t.state.prefs.actions) {
+    return;
+  }
+console.log('setAction', type, oldTabInstance, newTabInstance)
+  if (t.state.actions.length > 30) {
+    var firstAction = _.findIndex(t.state.actions, {id: _.first(t.state.actions).id});
+    if (firstAction !== -1) {
+      _.pullAt(t.state.actions, firstAction);
+    }
+  }
+  if (newTabInstance && newTabInstance.title !== 'New Tab' || oldTabInstance && oldTabInstance.title !== 'New Tab') {
+    var action = {
+      type: type, 
+      item: _.cloneDeep(type === 'update' ? newTabInstance : oldTabInstance),
+      id: uuid.v4()
+    };
+    if (type === 'update' && oldTabInstance !== undefined) {
+      if (oldTabInstance.mutedInfo.muted !== newTabInstance.mutedInfo.muted) {
+        action.type = newTabInstance.mutedInfo.muted ? 'mute' : 'unmute';
+      } else if (oldTabInstance.pinned !== newTabInstance.pinned) {
+        action.type = newTabInstance.pinned ? 'pin' : 'unpin';
+      } else {
+        return;
+      }
+    }
+    t.state.actions.push(action);
+    t.setState({actions: t.state.actions});
+    sendMsg({actions: t.state.actions, windowId: oldTabInstance.windowId});
+  }
+};
+
+var setActionThrottled = _.throttle(setAction, 100, {leading: true});
 
 var Bg = React.createClass({
   mixins: [Reflux.ListenerMixin],
@@ -561,7 +592,6 @@ var Bg = React.createClass({
       var index = [];
       if (shots && shots.screenshots) {
         index = shots.screenshots;
-        //this.purge(this.index);
       } else {
         save([]);
       }
@@ -602,34 +632,6 @@ var Bg = React.createClass({
       }
     });
   },
-  setAction(type, oldTabInstance, newTabInstance=null) {
-    if (this.state.prefs && !this.state.prefs.actions) {
-      return;
-    }
-    if (this.state.actions.length > 30) {
-      var firstAction = _.findIndex(this.state.actions, {id: _.first(this.state.actions).id});
-      if (firstAction !== -1) {
-        _.pullAt(this.state.actions, firstAction);
-      }
-    }
-    if (newTabInstance && newTabInstance.title !== 'New Tab') {
-      var action = {
-        type: type, 
-        item: _.cloneDeep(type === 'update' ? newTabInstance : oldTabInstance),
-        id: uuid.v4()
-      };
-      if (type === 'update' && oldTabInstance !== undefined) {
-        if (oldTabInstance.mutedInfo.muted !== newTabInstance.mutedInfo.muted) {
-          action.type = newTabInstance.mutedInfo.muted ? 'mute' : 'unmute';
-        } else if (oldTabInstance.pinned !== newTabInstance.pinned) {
-          action.type = newTabInstance.pinned ? 'pin' : 'unpin';
-        }
-      }
-      this.state.actions.push(action);
-      this.setState({actions: this.state.actions});
-      sendMsg({actions: this.state.actions, windowId: oldTabInstance.windowId});
-    }
-  },
   undoAction(tabs, chromeVersion){
     var removeLastAction = (lastAction)=>{
       if (lastAction !== undefined) {
@@ -649,7 +651,6 @@ var Bg = React.createClass({
             console.log('Tab created from tabStore.createTab: ',t);
           });
         } else if (lastAction.type === 'update') {
-          // TODO: hard revert tab state
           this.state.actions = _.without(this.state.actions, _.last(this.state.actions));
           undo();
         } else if (lastAction.type.indexOf('mut') !== -1 && chromeVersion >= 46) {
@@ -662,7 +663,6 @@ var Bg = React.createClass({
           chrome.tabs.move(lastAction.item.id, {index: lastAction.item.index});
         } else {
           removeLastAction(lastAction);
-          undo();
         }
       }
       removeLastAction(lastAction);
@@ -709,7 +709,7 @@ var Bg = React.createClass({
     this.state.windows[refWindow].tabs = _.orderBy(_.uniqBy(this.state.windows[refWindow].tabs, 'id'), ['pinned'], ['desc']);
     this.state.windows[refWindow].tabs = this.formatTabs(this.state.windows[refWindow].tabs);
     this.setState({windows: this.state.windows});
-    this.setAction('create', e);
+    setActionThrottled(this, 'create', e);
     synchronizeSession(this.state.sessions, this.state.prefs, this.state.windows);
     sendMsg({windows: this.state.windows, windowId: e.windowId});
   },
@@ -719,12 +719,11 @@ var Bg = React.createClass({
       return;
     }
     var refTab = _.findIndex(this.state.windows[refWindow].tabs, {id: e});
-    this.setAction('remove', this.state.windows[refWindow].tabs[refTab]);
     if (refTab > -1) {
+      setActionThrottled(this, 'remove', this.state.windows[refWindow].tabs[refTab]);
       _.pullAt(this.state.windows[refWindow].tabs, refTab);
+
       this.state.windows[refWindow].tabs = _.orderBy(_.uniqBy(this.state.windows[refWindow].tabs, 'id'), ['pinned'], ['desc']);
-
-
       this.setState({windows: this.state.windows});
       synchronizeSession(this.state.sessions, this.state.prefs, this.state.windows);
       sendMsg({windows: this.state.windows, windowId: windowId});
@@ -746,7 +745,7 @@ var Bg = React.createClass({
         return;
       }
       var refTab = _.findIndex(this.state.windows[refWindow].tabs, {id: e.id});
-      this.setAction('update', this.state.windows[refWindow].tabs[refTab], e);
+      setActionThrottled(this, 'update', this.state.windows[refWindow].tabs[refTab], e);
       _.merge(e, {
         timeStamp: new Date(Date.now()).getTime()
       });
@@ -776,7 +775,7 @@ var Bg = React.createClass({
         return;
       }
       var refTab = _.findIndex(this.state.windows[refWindow].tabs, {id: e.id});
-      this.setAction('move', this.state.windows[refWindow].tabs[refTab], e);
+      setActionThrottled(this, 'move', this.state.windows[refWindow].tabs[refTab], e);
       if (refTab > -1) {
         this.state.windows[refWindow].tabs = v(this.state.windows[refWindow].tabs).move(refTab, e.index).ns;
         this.state.windows[refWindow].tabs[refTab].timeStamp = new Date(Date.now()).getTime();
