@@ -1,6 +1,6 @@
 window._trackJs = {
   token: 'bd495185bd7643e3bc43fa62a30cec92',
-  enabled: false,
+  enabled: true,
   onError: function (payload) { 
     console.log('payload', payload)
     if (payload.message.indexOf('unknown') !== -1) {
@@ -312,7 +312,9 @@ var Bg = React.createClass({
       console.log('Storage changed: ', changed, areaName);
       if (changed.hasOwnProperty('sessions') && areaName === 'local') {
         this.setState({sessions: changed.sessions.newValue});
-        sendMsg({sessions: changed.sessions.newValue});
+        if (this.state.prefs && this.state.prefs.screenshot) {
+          sendMsg({sessions: changed.sessions.newValue});
+        }
       } else if (changed.hasOwnProperty('screenshots') && areaName === 'local' && this.state.prefs && this.state.prefs.screenshot) {
         this.setState({screenshots: changed.screenshots.newValue});
         sendMsg({screenshots: changed.screenshots.newValue});
@@ -323,7 +325,7 @@ var Bg = React.createClass({
     */
     chrome.windows.onCreated.addListener((Window)=>{
       chrome.tabs.query({windowId: Window.id}, (tabs)=>{
-        _.merge(Window, {
+        _.assignIn(Window, {
           tabs: tabs
         })
         this.state.windows.push(Window);

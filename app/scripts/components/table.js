@@ -106,7 +106,7 @@ export var Table = React.createClass({
   },
   componentWillReceiveProps(nP){
     var p = this.props;
-    if (!_.eq(nP.s[p.s.modeKey], p.s[p.s.modeKey]) || !_.isEqual(nP.s[p.s.modeKey], p.s[p.s.modeKey])) {
+    if (!_.isEqual(nP.s[p.s.modeKey], p.s[p.s.modeKey])) {
       this.buildTable(nP);
     }
     if (nP.s.sort !== this.props.s.sort) {

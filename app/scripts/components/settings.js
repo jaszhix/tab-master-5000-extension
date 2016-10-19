@@ -400,7 +400,6 @@ var Theming = React.createClass({
 var Sessions = React.createClass({
   getInitialState(){
     return {
-      sessions: [],
       sessionHover: null,
       selectedSessionTabHover: null,
       windowHover: -1,
@@ -454,13 +453,13 @@ var Sessions = React.createClass({
               _.pullAt(p.sessions[sKey].tabs[wKey], tKey);
             }
           }
-          this.setState({sessions: p.sessions});
         });
       });
-    })
+    });
+    state.set({sessions: p.sessions});
   },
   componentWillReceiveProps(nP){
-    if (!_.isEqual(nP.sessions, this.props.sessions) || !_.isEqual(nP.favicons, this.props.favicons)) {
+    if (!_.isEqual(nP.favicons, this.props.favicons)) {
       this.handleSessionsState(nP);
     }
   },
@@ -507,13 +506,17 @@ var Sessions = React.createClass({
       }
     }
   },
-  handleCurrentSessionCloseTab(id){
+  handleCurrentSessionCloseTab(id, refWindow, refTab){
     chrome.tabs.remove(id);
+    _.pullAt(this.props.allTabs[refWindow], refTab);
+    state.set({allTabs: this.props.allTabs});
     ReactTooltip.hide();
   },
-  handleCurrentSessionCloseWindow(id){
-    msgStore.removeSingleWindow(id);
+  handleCurrentSessionCloseWindow(id, refWindow){
     chrome.windows.remove(id);
+    msgStore.removeSingleWindow(id);
+    _.pullAt(this.props.allTabs, refWindow);
+    state.set({allTabs: this.props.allTabs});
     ReactTooltip.hide();
   },
   render: function() {
@@ -522,8 +525,8 @@ var Sessions = React.createClass({
     return (
       <div className="sessions">
         <Col size="6" className="session-col" onMouseLeave={()=>this.handleSessionHoverOut(-1)}>
-          <h4>Saved Sessions {s.sessions.length > 0 ? `(${s.sessions.length})` : null}</h4>
-          {s.sessions.map((session, i)=>{
+          <h4>Saved Sessions {p.sessions.length > 0 ? `(${p.sessions.length})` : null}</h4>
+          {p.sessions.map((session, i)=>{
             var time = _.capitalize(moment(session.timeStamp).fromNow());
             var _time = time === 'A few seconds ago' ? 'Seconds ago' : time;
             var getTabsCount = ()=>{
@@ -685,16 +688,16 @@ var Sessions = React.createClass({
         </Col>
         <Col size="6" className="session-col" onMouseLeave={()=>this.setState({currentSessionHover: -1})}>
           <h4>Current Session</h4>
-          {p.allTabs.map((_window, i)=>{
-            var windowTitle = `Window ${i + 1}: ${_window.length} Tabs`;
+          {p.allTabs.map((_window, w)=>{
+            var windowTitle = `Window ${w + 1}: ${_window.length} Tabs`;
             return (
-              <Row key={i} className="ntg-session-row" style={{backgroundColor: s.currentSessionHover === i ? p.theme.settingsItemHover : 'initial'}} onMouseEnter={()=>this.setState({currentSessionHover: i})} onMouseLeave={()=>this.setState({currentSessionTabHover: -1})}>
+              <Row key={w} className="ntg-session-row" style={{backgroundColor: s.currentSessionHover === w ? p.theme.settingsItemHover : 'initial'}} onMouseEnter={()=>this.setState({currentSessionHover: w})} onMouseLeave={()=>this.setState({currentSessionTabHover: -1})}>
                 <Row className="ntg-session-text">
-                  <span title={windowTitle} className="ntg-session-text" onClick={()=>this.setState({selectedCurrentSessionWindow: s.selectedCurrentSessionWindow === i ? -1 : i})} style={{cursor: 'pointer'}}>{windowTitle}</span>
+                  <span title={windowTitle} className="ntg-session-text" onClick={()=>this.setState({selectedCurrentSessionWindow: s.selectedCurrentSessionWindow === w ? -1 : w})} style={{cursor: 'pointer'}}>{windowTitle}</span>
                   <div style={{width: 'auto', float: 'right', display: 'inline', position: 'relative', right: '5px'}}>
-                    {s.currentSessionHover === i && _window.length > 0 ? 
+                    {s.currentSessionHover === w && _window.length > 0 ? 
                     <Btn 
-                    onClick={()=>this.handleCurrentSessionCloseWindow(_window[0].windowId)} 
+                    onClick={()=>this.handleCurrentSessionCloseWindow(_window[0].windowId, w)} 
                     className="ntg-session-btn" 
                     icon="cross"
                     faStyle={{fontSize: '18px', position: 'relative', top: '0px'}} 
@@ -702,7 +705,7 @@ var Sessions = React.createClass({
                     data-tip="Close Window" /> : null}
                   </div>
                 </Row>
-                {s.selectedCurrentSessionWindow === i ?
+                {s.selectedCurrentSessionWindow === w ?
                 <Row className="ntg-session-expanded" style={{backgroundColor: p.theme.settingsBg, color: p.theme.bodyText, height: '400px'}}>
                 {_window.map((t, i)=>{
                   var favIconUrl = t.favIconUrl ? utils.filterFavicons(t.favIconUrl, t.url) : '../images/file_paper_blank_document.png';
@@ -719,7 +722,7 @@ var Sessions = React.createClass({
                       <div style={{width: 'auto', float: 'right', display: 'inline', position: 'relative', right: '5px'}}>
                         {s.currentSessionTabHover === i ? 
                         <Btn 
-                        onClick={()=>this.handleCurrentSessionCloseTab(t.id)} 
+                        onClick={()=>this.handleCurrentSessionCloseTab(t.id, w, i)} 
                         className="ntg-session-btn" 
                         icon="cross"
                         faStyle={{fontSize: '18px', position: 'relative', top: '0px'}} 
@@ -763,6 +766,7 @@ var Settings = React.createClass({
     _.merge(style.modal.content, {
       opacity: '1',
     });
+    state.set({sidebar: false});
   },
   componentWillReceiveProps(nP){
     if (nP.settings !== this.props.settings) {

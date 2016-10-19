@@ -18,10 +18,6 @@ Tile dragging has been overhauled in V2, and you can now drag a tile by simply h
 
 This can be done in the table format view. Hold CTRL to select rows, or hold shift to select a range of rows. Then press the delete key. An option to delete selected items through the context menu, among other tab functions, will be added in an upcoming update.
 
-**I switched to table view from the sidebar, and the tiles disappeared.**
-
-Click outside the sidebar to exit it, and the table will appear. This bug is still being investigated.
-
 **When I apply the sorted tab order from the sidebar, the extension becomes unresponsive.**
 
 The method of applying tabs en masse hasn't changed since V1, and will be fixed in an upcoming update.

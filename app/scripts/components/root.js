@@ -1,6 +1,6 @@
 window._trackJs = {
   token: 'bd495185bd7643e3bc43fa62a30cec92',
-  enabled: false,
+  enabled: true,
   onError: function (payload) { return true; },
   version: "",
   callback: {
@@ -285,27 +285,23 @@ var Root = React.createClass({
     msgStore.getSessions().then((sessions)=>{
       state.set({sessions: sessions});
     });
-    if (p.s.prefs.screenshot) {
-      _.defer(()=>{
+    
+    _.defer(()=>{
+      if (p.s.prefs.screenshot) {
         msgStore.getScreenshots().then((screenshots)=>{
           state.set({screenshots: screenshots});
         });
-        msgStore.getActions().then((actions)=>{
-          state.set({actions: actions});
-        });
+      }
+      msgStore.getActions().then((actions)=>{
+        state.set({actions: actions});
       });
-    }
+    });
   },
   prefsChange(e){
     var s = this.state;
     if (s.init) {
       // Init methods called here after prefs are loaded from Chrome storage.
       this.captureTabs('init');
-    }
-    if (e.keyboardShortcuts) {
-      keyboardStore.set(e);
-    } else {
-      keyboardStore.reset();
     }
   },
   faviconsChange(e){
@@ -653,7 +649,7 @@ var Root = React.createClass({
   },
   reQuery(e) {
     console.log('### reQuery', e);
-    if (e.state && !this.props.s.modal.state) {
+    if (e.state && !this.props.s.modal.state && this.props.s.settings !== 'sessions') {
       // Treat attaching/detaching and created tabs with a full re-render.
       if (e.hasOwnProperty('bg')) {
         this.captureTabs('bg', e.bg);
@@ -822,7 +818,17 @@ var App = React.createClass({
     this.listenTo(state, this.stateChange);
     this.onWindowResize({width: window.innerWidth, height: window.innerHeight}, this.props.stateUpdate);
   },
+  setKeyboardShortcuts(e){
+    if (e.prefs.keyboardShortcuts) {
+      keyboardStore.set(e);
+    } else {
+      keyboardStore.reset();
+    }
+  },
   stateChange(e){
+    if (!_.isEqual(this.state.prefs, e.prefs) || this.state.sidebar !== e.sidebar) {
+      this.setKeyboardShortcuts(e);
+    }
     this.setState(e);
   },
   onWindowResize(e, _stateUpdate) {
@@ -835,6 +841,7 @@ var App = React.createClass({
     };
     if (s.init) {
       _.merge(stateUpdate, _stateUpdate);
+      this.setKeyboardShortcuts(stateUpdate);
     }
     state.set(stateUpdate);
     if (s.prefs.screenshotBg || s.prefs.screenshot) {

@@ -1,6 +1,7 @@
 import React from 'react';
 import _ from 'lodash';
 
+import ReactTooltip from './tooltip/tooltip';
 import state from './stores/state';
 import themeStore from './stores/theme';
 import tc from 'tinycolor2';
@@ -37,7 +38,10 @@ export var SidebarMenu = React.createClass({
   },
   handleFormat(){
     var p = this.props;
-    msgStore.setPrefs({format: p.prefs.format === 'tile' ? 'table' : 'tile'});
+    var prefsUpdate = {format: p.prefs.format === 'tile' ? 'table' : 'tile'};
+    state.set({prefs: _.assignIn(p.prefs, prefsUpdate)});
+    _.defer(()=>msgStore.setPrefs(prefsUpdate));
+    ReactTooltip.hide();
   },
   render(){
     var p = this.props;
@@ -64,7 +68,9 @@ export var SidebarMenu = React.createClass({
       ]
     ];
     var sidebarTabs = [
-      {label: 'Settings', icon: 'icon-gear', onClick: ()=>state.set({modal: {state: true, type: 'settings'}})},
+      {label: 'Settings', icon: 'icon-gear', onClick: ()=>state.set({modal: {state: true, type: 'settings'}, settings: 'preferences'})},
+      {label: 'Session Manager', icon: 'icon-versions', onClick: ()=>state.set({modal: {state: true, type: 'settings'}, settings: 'sessions'})},
+      {label: 'Theming', icon: 'icon-paint-format', onClick: ()=>state.set({modal: {state: true, type: 'settings'}, settings: 'theming'})},
       {label: `${p.prefs.format === 'tile' ? 'Table' : 'Tile'} Format`, icon: `icon-${p.prefs.format === 'tile' ? 'list' : 'grid'}`, onClick: ()=>this.handleFormat()}
     ];
     var borderColor = tc(p.theme.darkBtnBg).isDark() ? p.theme.darkBtnText : p.theme.darkBtnBg;

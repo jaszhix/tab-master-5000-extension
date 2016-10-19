@@ -27,7 +27,7 @@ var prefsStore = Reflux.createStore({
       format: 'tile',
       installTime: Date.now(), 
       actions: false,
-      sessionsSync: true,
+      sessionsSync: false,
       singleNewTab: false,
       keyboardShortcuts: true,
       resolutionWarning: true,

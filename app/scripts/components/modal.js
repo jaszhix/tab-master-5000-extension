@@ -54,7 +54,7 @@ var ModalHandler = React.createClass({
   render: function() {
     var s = this.state;
     var p = this.props;
-    var tabOptions = [{label: 'Sessions'}, {label: 'Preferences'}, {label: 'Theming'}, {label: 'About'}];
+    var tabOptions = [{label: 'Preferences'}, {label: 'Sessions'}, {label: 'Theming'}, {label: 'About'}];
     var headerBgIsLight = tc(p.theme.headerBg).isLight();
     if (p.modal.state && p.modal.type === 'settings') {
       return (

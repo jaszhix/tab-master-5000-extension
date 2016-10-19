@@ -1,5 +1,15 @@
 #### Release Notes
 
+##### v2.0.5 / *10-19-16*
+
+*   Important: Fixed favicon cache data getting saved with sessions. If session management is slow for you, you will need to clean your session data by exporting and importing it. Sorry for the inconvenience.
+*   Fixed several keyboard shortcuts that were not working. One of the combinations conflicted with a built in Chrome command, and so settings shortcuts that used to start with CTRL+SHIFT are now CTRL+ALT. The sidebar can be triggered with CTRL+SHIFT+Space. The session saving shortcut is now CTRL+SHIFT+S.
+*   Fixed undoing of tab removal and creation.
+*   Fixed tab pinning not updating.
+*   Fixed tab action history not initializing when screenshots are disabled.
+*   Fixed transitioning to table format view not rendering anything until triggering an app state change.
+*   Added settings shortcuts to the sidebar.
+
 ##### v2.0.4 / *10-18-16*
 
 *   Fixed a bug that can cause the extension to crash while quickly flipping through tabs when screenshots are enabled.

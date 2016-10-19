@@ -4,6 +4,7 @@ import v from 'vquery';
 import mouseTrap from 'mousetrap';
 
 import screenshotStore from './screenshot';
+import sessionsStore from './sessions';
 import state from './state';
 import * as utils from './tileUtils';
 
@@ -501,51 +502,40 @@ export var keyboardStore = Reflux.createStore({
       return true;
     }
   },
-  set(prefs){
+  set(s){
     mouseTrap.bind('ctrl+z', ()=>{
-      if (prefs.actions) {
+      if (s.prefs.actions) {
         msgStore.undoAction();
       }
     });
     mouseTrap.bind('ctrl+f', (e)=>{
       e.preventDefault();
       state.set({modal: {state: false, type: 'settings'}});
-      v('#search > input').n.focus();
+      v('#main > div > div:nth-child(1) > div > div.tm-nav.ntg-form > div > div.col-xs-4 > div > input').n.focus();
     });
-    mouseTrap.bind('ctrl+shift+s', (e)=>{
+    mouseTrap.bind('ctrl+alt+s', (e)=>{
       e.preventDefault();
       state.set({settings: 'sessions', modal: {state: this.state('ctrl+shift+s'), type: 'settings'}});
     });
-    mouseTrap.bind('ctrl+shift+p', (e)=>{
+    mouseTrap.bind('ctrl+alt+p', (e)=>{
       e.preventDefault();
       state.set({settings: 'preferences', modal: {state: this.state('ctrl+shift+p'), type: 'settings'}});
     });
-    mouseTrap.bind('ctrl+shift+t', (e)=>{
+    mouseTrap.bind('ctrl+alt+t', (e)=>{
       e.preventDefault();
-      state.set({settings: 'theming', modal: {state: this.state('ctrl+shift+t'), type: 'settings'}});
+      state.set({settings: 'theming', modal: {state: this.state('ctrl+shift+tab'), type: 'settings'}});
     });
-    mouseTrap.bind('ctrl+shift+a', (e)=>{
+    mouseTrap.bind('ctrl+alt+a', (e)=>{
       e.preventDefault();
       state.set({settings: 'about', modal: {state: this.state('ctrl+shift+a'), type: 'settings'}});
     });
-    mouseTrap.bind('ctrl+s', (e)=>{
+    mouseTrap.bind('ctrl+shift+s', (e)=>{
       e.preventDefault();
-      state.set({settings: 'sessions', modal: {state: true, type: 'settings'}});
-      // fix
-      v('body > div.ReactModalPortal > div > div > div > div.row.ntg-settings-pane > div > div.col-xs-5.session-col > button').click();
+      sessionsStore.v2Save({tabs: s.allTabs, label: ''});
     });
-    mouseTrap.bind('ctrl+m', (e)=>{
+    mouseTrap.bind('ctrl+shift+space', (e)=>{
       e.preventDefault();
-      // fix
-      v('body > div.ReactModalPortal > div > div > div.container-fluid > div.row.ntg-tabs > div:nth-child(2) > button:nth-child(1)').click();
-    });
-    mouseTrap.bind('ctrl+alt+shift+s', (e)=>{
-      e.preventDefault();
-      msgStore.setPrefs({sort: !prefs.sort});
-    });
-    mouseTrap.bind('ctrl+alt+shift+space', (e)=>{
-      e.preventDefault();
-      msgStore.setPrefs({sidebar: !prefs.sidebar});
+      state.set({sidebar: !s.sidebar});
     });
     mouseTrap.bind('alt+t', (e)=>{
       e.preventDefault();

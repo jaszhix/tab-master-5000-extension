@@ -3,6 +3,7 @@ import _ from 'lodash';
 import v from 'vquery';
 import {saveAs} from 'filesaver.js';
 import uuid from 'node-uuid';
+import ReactTooltip from '../tooltip/tooltip';
 import tabStore from './tab';
 import state from './state';
 import {msgStore, utilityStore, alertStore} from './main';
@@ -52,12 +53,14 @@ var sessionsStore = Reflux.createStore({
       });
     });
   },
-  exportSessions(sessions){
+  exportSessions(_sessions){
     // Stringify sessionData and export as JSON.
-    var json = JSON.stringify(sessions);
-    var filename = 'TM5K-Sessions-'+utilityStore.now();
-    var blob = new Blob([json], {type: 'application/json;charset=utf-8'});
-    saveAs(blob, filename+'.json');
+    this.cleanSessions(_sessions, (sessions)=>{
+      var json = JSON.stringify(sessions);
+      var filename = 'TM5K-Sessions-'+utilityStore.now();
+      var blob = new Blob([json], {type: 'application/json;charset=utf-8'});
+      saveAs(blob, filename+'.json');
+    });
   },
   importSessions(sessions, e){
     // Load the JSON file, parse it, and set it to state.
@@ -150,8 +153,8 @@ var sessionsStore = Reflux.createStore({
         state.set(stateUpdate);
       }
     }
-
     _.pullAt(sessions[session].tabs[_window], tab);
+    state.set({sessions: sessions});
     chrome.storage.local.set({sessions: sessions}, ()=> {
       console.log('session tab removed', sessions);
     });
@@ -159,18 +162,43 @@ var sessionsStore = Reflux.createStore({
   v2Remove(sessions, session){
     var refSession = _.findIndex(sessions, {id: session.id});
     _.pullAt(sessions, refSession);
+    state.set({sessions: sessions});
     chrome.storage.local.set({sessions: sessions}, ()=> {
       console.log('session removed', sessions);
     });
+    ReactTooltip.hide();
   },
   v2Update(sessions, session){
     var refSession = _.findIndex(sessions, {id: session.id});
-    sessions[refSession] = _.cloneDeep(session);
+    sessions[refSession] = session;
+    state.set({sessions: sessions});
     chrome.storage.local.set({sessions: sessions}, (result)=> {
       console.log('session updated', sessions);
     });
   },
+  cleanSessions(sessions, cb){
+    _.each(sessions, (session, sKey)=>{
+      _.each(session.tabs, (Window, wKey)=>{
+        _.each(Window, (Tab, tKey)=>{
+          if (Tab.favIconUrl !== undefined && Tab.favIconUrl && Tab.favIconUrl.indexOf('data') !== -1) {
+            sessions[sKey].tabs[wKey][tKey].favIconUrl = '';
+          }
+        })
+      });
+    });
+    chrome.storage.local.set({sessions: sessions}, (result)=> {
+      console.log('sessions cleaned...');
+    });
+    cb(sessions);
+  },
   v2Save(opt){
+    _.each(opt.tabs, (Window, wKey)=>{
+      _.each(Window, (Tab, tKey)=>{
+        if (Tab.favIconUrl !== undefined && Tab.favIconUrl && Tab.favIconUrl.indexOf('data') !== -1) {
+          opt.tabs[wKey][tKey].favIconUrl = '';
+        }
+      })
+    });
     var session = {
       timeStamp: utilityStore.now(), 
       tabs: opt.tabs, 
@@ -188,8 +216,15 @@ var sessionsStore = Reflux.createStore({
         sessions = item;
         sessions.sessions.push(session);
       }
-      chrome.storage.local.set({sessions: _.orderBy(sessions.sessions, ['timeStamp'], ['desc'])}, (result)=> {
+      var result = _.orderBy(sessions.sessions, ['timeStamp'], ['desc']);
+      state.set({sessions: result});
+      chrome.storage.local.set({sessions: result}, (result)=> {
         console.log('session saved...',result);
+        alertStore.set({
+          text: `Successfully saved new session.`,
+          tag: 'alert-success',
+          open: true
+        });
       });   
     });
   },

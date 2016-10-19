@@ -403,14 +403,12 @@ var Preferences = React.createClass({
             hoverBg={p.theme.settingsItemHover}
             data-tip={`
               <div><strong>CTRL+F</strong>: Search</div>
-              <div><strong>CTRL+SHIFT+S</strong>: Sessions</div>
-              <div><strong>CTRL+SHIFT+P</strong>: Preferences</div>
-              <div><strong>CTRL+SHIFT+T</strong>: Theming</div>
-              <div><strong>CTRL+SHIFT+A</strong>: About</div>
-              <div><strong>CTRL+S</strong>: Save Session</div>
-              <div><strong>CTRL+M</strong>: Maximize</div>
-              <div><strong>CTRL+ALT+SHIFT+S</strong>: Sort</div>
-              <div><strong>CTRL+ALT+SHIFT+SPACE</strong>: Sidebar</div>
+              <div><strong>CTRL+ALT+S</strong>: Sessions</div>
+              <div><strong>CTRL+ALT+P</strong>: Preferences</div>
+              <div><strong>CTRL+ALT+T</strong>: Theming</div>
+              <div><strong>CTRL+ALT+A</strong>: About</div>
+              <div><strong>CTRL+SHIFT+S</strong>: Save Session</div>
+              <div><strong>CTRL+SHIFT+SPACE</strong>: Sidebar</div>
               <div><strong>ALT+T</strong>: Tabs</div>
               <div><strong>ALT+B</strong>: Bookmarks</div>
               <div><strong>ALT+H</strong>: History</div>
