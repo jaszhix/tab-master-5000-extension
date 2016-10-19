@@ -109,17 +109,12 @@ export var pin = (t, tab, opt)=>{
   }
   p.tab.pinned = !p.tab.pinned;
   chrome.tabs.update(id, {
-    pinned: !tab.pinned
+    pinned: p.tab.pinned
   });
   if (p.prefs.mode !== 'tabs') {
-    var stateUpdate = {};
     var refItem = _.findIndex(p[p.modeKey], tab);
     p[p.modeKey][refItem].pinned = !p[p.modeKey][refItem].pinned;
   }
-  v('#subTile-'+s.i).on('animationend', function animationEnd(){
-    t.setState({pinning: false});
-    v('#subTile-'+s.i).off('animationend', animationEnd);
-  }.bind(t));
 };
 
 export var mute = (t, tab)=>{
