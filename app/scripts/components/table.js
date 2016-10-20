@@ -214,6 +214,10 @@ export var Table = React.createClass({
     }
     var end = this.over.i;
     this.dragged.el.style.display = 'table-row';
+    if (start === end) {
+      _.defer(()=>this.dragged.el.parentNode.removeChild(this.placeholder));
+      return;
+    }
     if (start < end) {
       end--;
     }

@@ -402,6 +402,7 @@ var Preferences = React.createClass({
             on={p.prefs.keyboardShortcuts} label="Enable keyboard shortcuts"
             hoverBg={p.theme.settingsItemHover}
             data-tip={`
+              <div><strong>CTRL+Z</strong>: Undo (Requires tab actions)</div>
               <div><strong>CTRL+F</strong>: Search</div>
               <div><strong>CTRL+ALT+S</strong>: Sessions</div>
               <div><strong>CTRL+ALT+P</strong>: Preferences</div>
@@ -416,6 +417,13 @@ var Preferences = React.createClass({
               <div><strong>ALT+A</strong>: Apps</div>
               <div><strong>ALT+E</strong>: Extensions</div>
             `}/>
+            <Toggle 
+            theme={p.theme}
+            onMouseEnter={()=>this.handleToggle('scrollNav')}
+            onClick={()=>this.handleClick('scrollNav')}
+            on={p.prefs.scrollNav} label="Enable mouse wheel tab navigation"
+            hoverBg={p.theme.settingsItemHover}
+            data-tip="This will allow you to navigate tabs with the mousewheel. You can activate scrolling by moving your cursor to the top of a page, or holding the SHIFT key. Due to API limitations, built-in Chrome pages, the Chrome Web Store, Google Drive, discarded tabs, and tabs that have not finished loading will be skipped while scrolling tabs with the mousewheel." />
             <Toggle 
             theme={p.theme}
             onMouseEnter={()=>this.handleToggle('blacklist')} 

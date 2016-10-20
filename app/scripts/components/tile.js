@@ -615,8 +615,8 @@ var TileGrid = React.createClass({
       return;
     }
     var end = this.over.i;
+    this.dragged.el.style.display = 'block';
     if (start === end) {
-      this.dragged.el.style.display = 'block';
       _.defer(()=>this.dragged.el.parentNode.removeChild(this.placeholder));
       return;
     }

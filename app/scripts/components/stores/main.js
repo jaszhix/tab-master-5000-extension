@@ -611,24 +611,3 @@ export var alertStore = Reflux.createStore({
     return this.alert;
   }
 });
-
-(function() {
-    document.onmousemove = handleMouseMove;
-    function handleMouseMove(e) {
-      utilityStore.set_cursor({
-        page: {
-          x: e.pageX,
-          y: e.pageY
-        },
-        offset: {
-          x: e.offsetX,
-          y: e.offsetY,
-        },
-        keys: {
-          ctrl: e.ctrlKey,
-          shift: e.shiftKey
-        }
-      });
-    }
-})();
-

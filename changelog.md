@@ -1,5 +1,13 @@
 #### Release Notes
 
+##### v2.0.7 / *10-21-16*
+
+*   Fixed dragging tiles causing other tiles to disappear.
+*   Added a new feature enabling tab navigation with the mouse wheel for non-Linux users. You can opt-in to this feature in Preferences. You can activate scrolling by moving your cursor to the top of a page, or holding the SHIFT key. Due to API limitations, built-in Chrome pages, the Chrome Web Store, Google Drive, discarded tabs, and tabs that have not finished loading will be skipped while scrolling tabs with the mousewheel.
+*   Known issues:
+  *  Reversing the removal of a tab using TM5K's tab action history will result in its tile screenshot being replaced with one of the New Tab.
+  *  Saving a session with CTRL+SHIFT+S causes favicons to disappear until reloading the new tab.
+
 ##### v2.0.6 / *10-20-16*
 
 *   Optimized extension allowing for faster performance.
@@ -57,9 +65,6 @@
 *   Fixed backspacing in a search query not re-filtering tiles.
 *   Fixed bookmark tiles not indicating if its an open tab.
 *   Fixed open tabs in history mode not updating correctly.
-*   Known issues:
-  *  Switching to table mode doesn't render anything until clicking outside of the sidebar.
-  *  Reversing the removal of a tab using TM5K's tab action history will result in its tile screenshot being replaced with one of the New Tab.
 
 ##### v1.7.2 / *8-20-16*
 
