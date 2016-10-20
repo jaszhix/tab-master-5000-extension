@@ -325,8 +325,10 @@ export var bookmarksStore = Reflux.createStore({
     var stateUpdate = {};
     this.set_bookmarks(tabs).then((bk)=>{
       bk = utils.sort({s: s}, bk);
-      stateUpdate[s.search.length > 0 && s.bookmarks.length > 0 ? 'tileCache' : 'bookmarks'] = bk;
-      state.set(stateUpdate);
+      if (s.search.length > 0) {
+        bk = utils.searchChange({s: s}, bk);
+      }
+      state.set({bookmarks: bk});
       _.defer(()=>state.set({hasScrollbar: utils.scrollbarVisible(document.body)}));
     });
   },
@@ -391,8 +393,10 @@ export var historyStore = Reflux.createStore({
     var stateUpdate = {};
     this.set_history(tabs).then((h)=>{
       h = utils.sort({s: s}, h);
-      stateUpdate[s.search.length > 0 && s.history.length > 0 ? 'tileCache' : 'history'] = h;
-      state.set(stateUpdate);
+      if (s.search.length > 0) {
+        h = utils.searchChange({s: s}, h);
+      }
+      state.set({history: h});
       _.defer(()=>state.set({hasScrollbar: utils.scrollbarVisible(document.body)}));
     });
   },
@@ -462,6 +466,7 @@ export var faviconStore = Reflux.createStore({
 
 export var chromeAppStore = Reflux.createStore({
   set(app){
+    var s = state.get()
     chrome.management.getAll((apps)=>{
       var _apps = _.filter(apps, {isApp: app});
       if (_apps) {
@@ -473,6 +478,9 @@ export var chromeAppStore = Reflux.createStore({
             title: _apps[i].name
           });
           _apps[i] = _.merge(defaults(i), _apps[i]);
+        }
+        if (s.search.length > 0) {
+          _apps = utils.searchChange({s: s}, _apps);
         }
         var stateKey = app ? {apps: _apps} : {extensions: _apps};
         state.set(stateKey);

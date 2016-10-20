@@ -92,7 +92,8 @@ var ModalHandler = React.createClass({
           options={tabOptions} 
           onClick={(setting)=>state.set({settings: setting.label.toLowerCase()})}
           borderTopColor={p.theme.darkBtnText}
-          borderLeftRightColor={p.theme.headerBg} />
+          borderLeftRightColor={p.theme.headerBg}
+          settings={p.settings} />
         }
         footerComponent={p.modal.footer}>
           <Settings 

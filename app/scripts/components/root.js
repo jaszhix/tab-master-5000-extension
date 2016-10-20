@@ -1,6 +1,6 @@
 window._trackJs = {
   token: 'bd495185bd7643e3bc43fa62a30cec92',
-  enabled: true,
+  enabled: false,
   onError: function (payload) { return true; },
   version: "",
   callback: {
@@ -233,42 +233,41 @@ var Root = React.createClass({
     // Initialize Reflux listeners.
     themeStore.load(this.props.s.prefs);
     this.listenTo(themeStore, this.themeChange);
-    this.listenTo(bookmarksStore, this.updateTabState);
-    this.listenTo(historyStore, this.updateTabState);
-    this.listenTo(chromeAppStore, this.updateTabState);
     window._trackJs.version = utilityStore.get_manifest().version;
     this.init(this.props);
     
   },
   componentWillReceiveProps(nP){
     var p = this.props;
-    if (!_.isEqual(nP.s.prefs, p.s.prefs) || this.state.init) {
-      this.prefsChange(nP.s.prefs);
-    }
+    var stateUpdate = {};
+    var sUChange = false;
     if (nP.s.modeKey !== p.s.modeKey && nP.s.prefs.mode === p.s.prefs.mode) {
-      var sort = 'index';
-      var direction = 'desc';
-      if (nP.s.prefs.mode === 'sessions') {
-        sort = 'sTimeStamp';
-      } else if (nP.s.prefs.mode === 'history') {
-        sort = 'lastVisitTime';
-      } else if (nP.s.prefs.mode === 'bookmarks') {
-        sort = 'dateAdded';
+      if (nP.s.search.length > 0) {
+        stateUpdate[nP.s.modeKey] = utils.searchChange(nP, nP.s[nP.s.modeKey]);
+        sUChange = true;
       }
-      state.set({sort: sort, direction: direction});
     }
     if (!_.isEqual(nP.s.search, p.s.search)) {
-      this.searchChange(nP.s.search);
+      stateUpdate[nP.s.modeKey] = utils.searchChange(nP, nP.s[nP.s.modeKey]);
+      sUChange = true;
     }
     if (nP.s.folder !== p.s.folder) {
-      this.updateTabState(nP.s.folder, 'folder');
+      stateUpdate = this.updateTabState(nP.s.folder, 'folder', stateUpdate);
+      sUChange = true;
     }
     if (!_.isEqual(nP.s.favicons, p.s.favicons)) {
       this.faviconsChange(nP.s.favicons);
-      state.set({topNavButton: 'dlFavicons'});
+      stateUpdate.topNavButton = 'dlFavicons';
+      sUChange = true;
     }
-    if (!_.isEqual(nP.s.reQuery, p.s.reQuery) && nP.s.reQuery.state) {
-      this.reQuery(nP.s.reQuery);
+    if (!_.isEqual(nP.s.reQuery, p.s.reQuery) && nP.s.reQuery.state 
+      || nP.s.search.length < p.s.search.length) {
+      nP.s.reQuery.state = true;
+      this.reQuery(nP, stateUpdate, (sU)=>{
+        state.set(sU);
+      });
+    } else if (sUChange) {
+      state.set(stateUpdate);
     }
     if (nP.s.applyTabOrder !== p.s.applyTabOrder) {
       if (nP.s.applyTabOrder) {
@@ -282,27 +281,20 @@ var Root = React.createClass({
     }
   },
   init(p){
+    this.captureTabs(p, 'init');
     msgStore.getSessions().then((sessions)=>{
       state.set({sessions: sessions});
-    });
-    
-    _.defer(()=>{
       if (p.s.prefs.screenshot) {
         msgStore.getScreenshots().then((screenshots)=>{
           state.set({screenshots: screenshots});
         });
       }
-      msgStore.getActions().then((actions)=>{
-        state.set({actions: actions});
-      });
+      if (p.s.prefs.actions) {
+        msgStore.getActions().then((actions)=>{
+          state.set({actions: actions});
+        });
+      }
     });
-  },
-  prefsChange(e){
-    var s = this.state;
-    if (s.init) {
-      // Init methods called here after prefs are loaded from Chrome storage.
-      this.captureTabs('init');
-    }
   },
   faviconsChange(e){
     this.setState({topLoad: true});
@@ -495,43 +487,7 @@ var Root = React.createClass({
     }
     this.setState(stateUpdate);
   },
-  searchChange(e, update) {
-    var search = e;
-    var p = this.props;
-    var items = update && p.s.prefs.mode === 'tabs' ? update : p.s[p.s.modeKey];
-    this.setState({topLoad: true});
-    var stateUpdate = {};
-    // Mutate the items array and reroute all event methods to searchChanged while search length > 0
-    if (search.length > 0) {
-      if (search.length === 1 && !p.s.tileCache) {
-        stateUpdate.tileCache = p.s[p.s.modeKey]; 
-      }
-      var sourceItems = p.s.tileCache ? p.s.tileCache : items;
-      var searchItems = _.filter(sourceItems, (item)=>{
-        if (kmp(item.title.toLowerCase(), search.toLowerCase()) !== -1 || item.url.toLowerCase().indexOf(search.toLowerCase()) !== -1) {
-          return item;
-        }
-      });
-      if (update && p.s.prefs.mode === 'tabs') {
-        var updatedItems = _.intersectionBy(update, searchItems, 'id');
-        if (updatedItems.length === 0) {
-          stateUpdate[p.s.modeKey] = p.s.tileCache;
-          stateUpdate.search = '';
-          state.set(stateUpdate);
-          return;
-        } else {
-          _.merge(searchItems, updatedItems);
-        }
-      }
-      stateUpdate[p.s.modeKey] = _.uniqBy(searchItems, 'id');
-      state.set(stateUpdate);
-    } else {
-      stateUpdate[p.s.modeKey] = p.s.tileCache;
-      state.set(stateUpdate);
-    }
-    _.defer(()=>this.setState({topLoad: false}));
-  },
-  updateTabState(e, opt){
+  updateTabState(e, opt, sU=null){
     var p = this.props;
     console.log('updateTabState: ',e);
     var stateUpdate = {};
@@ -540,30 +496,51 @@ var Root = React.createClass({
         var filter = p.s.prefs.mode === 'bookmarks' ? {folder: e} : {originSession: e};
         console.log('filter', filter);
         stateUpdate[p.s.modeKey] = _.filter(p.s[p.s.modeKey], filter);
-        stateUpdate.tileCache = p.s[p.s.modeKey];
-        state.set(stateUpdate);  
+        stateUpdate.tileCache = p.s[p.s.modeKey]; 
       } else {
         stateUpdate[p.s.modeKey] = p.s.tileCache;
         stateUpdate.tileCache = null;
+      }
+      if (sU) {
+        _.assignIn(sU, stateUpdate);
+        return sU;
+      } else {
         state.set(stateUpdate);
       }
       
     } else {
-      state.set({tabs: p.s.tabs});
+      if (sU) {
+        sU.tabs = p.s.tabs;
+        _.assignIn(sU, stateUpdate);
+        return sU;
+      } else {
+        state.set({tabs: p.s.tabs});
+      }
     }
     if (p.s.prefs.mode !== 'tabs' && p.s.prefs.mode !== 'sessions') {
       utilityStore.handleMode(p.s.prefs.mode, _.flatten(p.s.allTabs));
     }
   },
-  captureTabs(opt, bg) {
+  captureTabs(p=null, opt, bg, sU, cb) {
     var s = this.state;
-    var p = this.props;
+    if (!p) {
+      p = this.props;
+    }
     this.setState({topLoad: true});
 
-    if (opt === 'init' && p.s.prefs.mode === 'sessions' && p.s.sessions.length === 0) {
-      _.defer(()=>state.set({reQuery: {state: true, type: 'init'}}));
-      return;
-    }
+    var handleSessionTabs = (stateUpdate)=>{
+      var sessionTabs = sessionsStore.flatten(p.s.sessions, _.flatten(allTabs), opt === 'init' ? stateUpdate.windowId : p.s.windowId);
+      sessionTabs = utils.sort(p, sessionTabs);
+      for (let i = sessionTabs.length - 1; i >= 0; i--) {
+        sessionTabs = utils.checkFavicons(p, sessionTabs[i], i, sessionTabs);
+      }
+      _.assignIn(stateUpdate, {
+        modeKey: 'sessionTabs',
+        sort: p.s.sort === 'index' ? 'sTimeStamp' : p.s.sort,
+        sessionTabs: sessionTabs
+      });
+      return stateUpdate;
+    };
 
     // Query current Chrome window for tabs.
     var stateUpdate = {};
@@ -584,39 +561,47 @@ var Root = React.createClass({
           }
 
           this.setState({init: false});
-          // Handle session view querying, and set it to tabs var.
+
           if (p.s.prefs.mode === 'sessions' && p.s.sessions.length > 0) {
-            var sessionTabs = sessionsStore.flatten(p.s.sessions, _.flatten(allTabs), opt === 'init' ? stateUpdate.windowId : p.s.windowId);
-            sessionTabs = utils.sort(p, sessionTabs);
-            for (let i = sessionTabs.length - 1; i >= 0; i--) {
-              sessionTabs = utils.checkFavicons(p, sessionTabs[i], i, sessionTabs);
+            stateUpdate.sort = 'sTimeStamp'
+            stateUpdate = handleSessionTabs(stateUpdate);
+            if (p.s.search.length > 0) {
+              stateUpdate.sessionTabs = utils.searchChange(p, stateUpdate.sessionTabs);
             }
-            _.assignIn(stateUpdate, {
-              modeKey: 'sessionTabs',
-              sort: p.s.sort === 'index' ? 'sTimeStamp' : p.s.sort,
-              sessionTabs: sessionTabs
-            });
           } else if (p.s.prefs.mode !== 'tabs') {
+            if (p.s.prefs.mode === 'bookmarks') {
+              stateUpdate.sort = 'dateAdded';
+            } else if (p.s.prefs.mode === 'history') {
+              stateUpdate.sort = 'lastVisitTime';
+            } else {
+              stateUpdate.sort = 'index';
+            }
             _.defer(()=>utilityStore.handleMode(p.s.prefs.mode, _.flatten(allTabs)));
           }
-          // Avoid setting tabs state here if the mode is not tabs or sessions. updateTabState will handle other modes.
+
           if (p.s.prefs.mode === 'tabs') {
+            stateUpdate.sort = 'index';
+            stateUpdate = this.checkDuplicateTabs(stateUpdate, Window.tabs);
             if (p.s.search.length === 0) {
               stateUpdate.tabs = Window.tabs;
             } else {
-              stateUpdate.tileCache = Window.tabs;
-              this.searchChange(p.s.search, Window.tabs);
+              stateUpdate.tabs = utils.searchChange(p, Window.tabs);
             }
-            this.checkDuplicateTabs(Window.tabs);
           }
           _.assignIn(stateUpdate, {
             hasScrollbar: utils.scrollbarVisible(document.body),
-            reQuery: {state: false}
+            reQuery: {state: false},
+            direction: 'desc'
           });
+          stateUpdate.allTabs = allTabs;
+          if (sU) {
+            _.assignIn(sU, stateUpdate);
+            cb(sU);
+          } else {
+            state.set(stateUpdate);
+          }
         }
       });
-      stateUpdate.allTabs = allTabs;
-      state.set(stateUpdate);
       this.setState({topLoad: false});
       // Querying is complete, allow the component to render.
       if (opt === 'init' || opt === 'tile') {
@@ -629,7 +614,7 @@ var Root = React.createClass({
       }
     }
 
-    if (opt === 'bg') {
+    if (opt === 'bg' && bg) {
       handleWindows(bg);
     } else {
       msgStore.getTabs().then((res)=>{
@@ -637,24 +622,40 @@ var Root = React.createClass({
       });
     }
   },
-  checkDuplicateTabs(tabs){
+  checkDuplicateTabs(stateUpdate, tabs){
     let tabUrls = [];
     for (var i = tabs.length - 1; i >= 0; i--) {
       tabUrls.push(tabs[i].url);    
     }
     console.log('Duplicates: ', utils.getDuplicates(tabUrls));
     if (utils.hasDuplicates(tabUrls)) {
-      state.set({duplicateTabs: utils.getDuplicates(tabUrls)});
+      stateUpdate.duplicateTabs = utils.getDuplicates(tabUrls);
     } 
+    return stateUpdate;
   },
-  reQuery(e) {
-    console.log('### reQuery', e);
-    if (e.state && !this.props.s.modal.state && this.props.s.settings !== 'sessions') {
+  reQuery(p=null, stateUpdate, cb) {
+    if (!p) {
+      p = this.props;
+    }
+    console.log('### reQuery', p.s.reQuery);
+    if (p.s.reQuery.state && !p.s.modal.state && p.s.settings !== 'sessions') {
       // Treat attaching/detaching and created tabs with a full re-render.
-      if (e.hasOwnProperty('bg')) {
-        this.captureTabs('bg', e.bg);
+      if (p.s.reQuery.hasOwnProperty('bg')) {
+        if (stateUpdate) {
+          this.captureTabs(p, 'bg', p.s.reQuery.bg, stateUpdate, (sU)=>{
+            cb(sU);
+          });
+        } else {
+          this.captureTabs(p, 'bg', p.s.reQuery.bg);
+        }
       } else {
-        this.captureTabs(e.type);
+        if (stateUpdate) {
+          this.captureTabs(p, 'bg', null, stateUpdate, (sU)=>{
+            cb(sU);
+          });
+        } else {
+          this.captureTabs(p, p.s.reQuery.type);
+        }
       }
     }
   },

@@ -132,7 +132,7 @@ var sessionsStore = Reflux.createStore({
       }
       var _tabs = _.chain(allTabs)
         .flatten()
-        .orderBy(['openTab'], ['asc'])
+        .orderBy(['sTimeStamp'], ['desc'])
         .uniqBy('url').value();
       return _tabs;
     } else {

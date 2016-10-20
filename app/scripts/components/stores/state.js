@@ -73,7 +73,7 @@ var state = Reflux.createStore({
       favicons: [],
       screenshots: [],
       sort: 'index',
-      direction: 'asc',
+      direction: 'desc',
     };
   },
   set(obj){

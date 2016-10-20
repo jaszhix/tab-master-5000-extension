@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import v from 'vquery';
+import kmp from 'kmp';
 import state from './state';
 import {historyStore, bookmarksStore, chromeAppStore, faviconStore} from './main';
 import sessionsStore from './sessions';
@@ -83,13 +84,13 @@ export var closeAll = (t, tab)=>{
 export var closeAllSearched = (t)=>{
   var p = t.props;
   var s = t.state;
-  for (var i = p.tabs.length - 1; i >= 0; i--) {
+  for (var i = p[p.modeKey].length - 1; i >= 0; i--) {
     if (p.prefs.mode === 'history' || p.prefs.mode === 'bookmarks') {
       if (!s.openTab) {
-        closeTab(t, p.tabs[i], true);
+        closeTab(t, p[p.modeKey][i], true);
       }
     } else {
-      closeTab(t, p.tabs[i].id);
+      closeTab(t, p[p.modeKey][i].id);
     }
   }
 };
@@ -120,15 +121,13 @@ export var pin = (t, tab, opt)=>{
 export var mute = (t, tab)=>{
   var p = t.props;
   var s = t.state;
-  chrome.tabs.update(tab.id, {muted: !tab.mutedInfo.muted}, ()=>{
+  p.tab.mutedInfo.muted = !p.tab.mutedInfo.muted;
+  chrome.tabs.update(tab.id, {muted: p.tab.mutedInfo.muted}, ()=>{
     if (s.muteInit) {
-      var refTab = _.findIndex(p.tabs, {id: tab.id});
-      p.tabs[refTab].mutedInfo.muted = !tab.mutedInfo.muted;
       t.setState({muteInit: false});
     }
   });
   if (t.props.prefs.mode !== 'tabs') {
-    var stateUpdate = {};
     var refItem = _.findIndex(p[p.modeKey], tab);
     p[p.modeKey][refItem].mutedInfo.muted = !p[p.modeKey][refItem].mutedInfo.muted;
   }
@@ -314,4 +313,18 @@ export var formatBytes = (bytes, decimals)=>{
 
 export var scrollbarVisible = (element)=>{
   return element.scrollHeight > element.clientHeight;
+};
+
+export var searchChange = (p, tabs)=>{
+  var _tabs = _.filter(tabs, (item)=>{
+    if (kmp(item.title.toLowerCase(), p.s.search.toLowerCase()) !== -1 || item.url.toLowerCase().indexOf(p.s.search.toLowerCase()) !== -1) {
+      return item;
+    }
+  });
+  if (_tabs.length === 0) {
+    state.set({search: ''});
+    return tabs;
+  } else {
+    return _tabs;
+  }
 };

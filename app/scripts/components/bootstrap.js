@@ -328,12 +328,13 @@ export var Tabs = React.createClass({
       <div className="tabbable" style={p.style}>
         <ul className="nav nav-tabs nav-tabs-highlight nav-justified">
           {p.options.map((option, i)=>{
+            var active = option.label.toLowerCase() === p.settings;
             var tabStyle = {
               cursor: 'pointer',
-              borderTopColor: s.active === i ? p.borderTopColor : 'rgba(255, 255, 255, 0)',
-              borderBottomColor: s.active === i ? 'rgba(255, 255, 255, 0)' : p.borderTopColor,
-              borderLeftColor: s.active === i ? p.borderTopColor : p.borderLeftRightColor,
-              borderRightColor: s.active === i ? p.borderTopColor : p.borderLeftRightColor
+              borderTopColor: active ? p.borderTopColor : 'rgba(255, 255, 255, 0)',
+              borderBottomColor: active ? 'rgba(255, 255, 255, 0)' : p.borderTopColor,
+              borderLeftColor: active ? p.borderTopColor : p.borderLeftRightColor,
+              borderRightColor: active ? p.borderTopColor : p.borderLeftRightColor
             };
             tabStyle = _.assignIn(tabStyle, _.cloneDeep(p.tabStyle));
             return (

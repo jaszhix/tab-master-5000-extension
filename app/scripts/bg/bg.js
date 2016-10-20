@@ -1,6 +1,6 @@
 window._trackJs = {
   token: 'bd495185bd7643e3bc43fa62a30cec92',
-  enabled: true,
+  enabled: false,
   onError: function (payload) { 
     console.log('payload', payload)
     if (payload.message.indexOf('unknown') !== -1) {

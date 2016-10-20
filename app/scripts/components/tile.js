@@ -593,7 +593,7 @@ var TileGrid = React.createClass({
     if (!_.isEqual(nP.prefs, p.prefs) || !_.isEqual(nP.wallpaper, p.wallpaper)) {
       this.prefsInit(nP);
     }
-    if (nP.s.sort !== p.s.sort || nP.s.direction !== p.s.direction) {
+    if (nP.s.sort !== p.s.sort || nP.s.direction !== p.s.direction && nP.s.modeKey === p.s.modeKey && nP.s.prefs.mode === p.s.prefs.mode) {
       utils.sort(nP, nP.data, true);
     }
   },
@@ -669,7 +669,7 @@ var TileGrid = React.createClass({
         disableSidebarClickOutside={p.disableSidebarClickOutside} />
           <div id="grid" ref="grid">
             {p.s.prefs.format === 'tile' ? p.data.map((tab, i)=> {
-              if ((i <= p.s.tileLimit && p.s.prefs.mode !== 'tabs' || p.s.prefs.mode === 'tabs') && tab.url.indexOf('chrome://newtab/') === -1) {
+              if ((i <= p.s.tileLimit && p.s.prefs.mode !== 'tabs' || p.s.prefs.mode === 'tabs') && tab.url && tab.url.indexOf('chrome://newtab/') === -1) {
                 return (
                   <Tile
                   key={i}

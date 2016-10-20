@@ -1,5 +1,12 @@
 #### Release Notes
 
+##### v2.0.6 / *10-20-16*
+
+*   Optimized extension allowing for faster performance.
+*   Improved handling of search queries, transitioning between modes while searching will now update the search query with items from whatever mode you transitioned to.
+*   Fixed tab index not updating after closing all items from a search query in tabs mode.
+*   Fixed closing all search results in history and bookmarks modes.
+
 ##### v2.0.5 / *10-19-16*
 
 *   Important: Fixed favicon cache data getting saved with sessions. If session management is slow for you, you will need to clean your session data by exporting and importing it. Sorry for the inconvenience.

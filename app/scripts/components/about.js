@@ -183,7 +183,7 @@ var About = React.createClass({
           </div>
         </Row>
         <Col size="12" className="about">
-          {s.tab === 'release' ? <ReleaseNotes settingsMax={p.settingsMax} tm5kLogo={tm5kLogo}/> : null}
+          {s.tab === 'release' ? <ReleaseNotes tm5kLogo={tm5kLogo}/> : null}
           {s.tab === 'support' ? <Support /> : null}
           {s.tab === 'attribution' ? <Attribution /> : null}
           {s.tab === 'Contribute' ? <Contribute /> : null}

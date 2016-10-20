@@ -658,7 +658,7 @@ var Sessions = React.createClass({
                                 <Col size="8">
                                   <span title={t.title} onClick={()=>utilityStore.createTab(t.url)} style={{cursor: 'pointer'}}>
                                     <img className="ntg-small-favicon" src={favIconUrl} /> 
-                                    {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {p.settingsMax ? t.title : _.truncate(t.title, {length: 40})}
+                                    {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {_.truncate(t.title, {length: 40})}
                                   </span>
                                 </Col>
                                 <Col size="4">
@@ -746,12 +746,6 @@ var Sessions = React.createClass({
 
 var Settings = React.createClass({
   mixins: [Reflux.ListenerMixin],
-  getInitialState(){
-    return {
-      settings: this.props.settings,
-      settingsMax: false
-    };
-  },
   propTypes: {
     collapse: React.PropTypes.bool
   },
@@ -762,40 +756,10 @@ var Settings = React.createClass({
   },
   componentDidMount(){
     this.listenTo(msgStore, this.prefsChange);
-    this.prefsChange();
-    _.merge(style.modal.content, {
-      opacity: '1',
-    });
     state.set({sidebar: false});
-  },
-  componentWillReceiveProps(nP){
-    if (nP.settings !== this.props.settings) {
-      this.setState({settings: nP.settings});
-    }
-  },
-  prefsChange(e){
-    this.setState({settingsMax: this.props.prefs.settingsMax});
-    if (this.props.prefs.settingsMax) {
-      _.merge(style.modal.content, {
-        top: '0%',
-        left: '0%',
-        right: '0%',
-        bottom: '0%'
-      });
-    } else {
-      _.merge(style.modal.content, {
-        top: '15%',
-        left: '15%',
-        right: '15%',
-        bottom: '15%'
-      });
-    }
   },
   handleTabClick(opt){
     state.set({settings: opt});
-  },
-  handleMaxBtn(){
-    msgStore.setPrefs({settingsMax: !this.state.settingsMax});
   },
   render: function() {
     var p = this.props;
@@ -803,10 +767,9 @@ var Settings = React.createClass({
     return (
       <Container fluid={true}>
         <Row className="ntg-settings-pane">
-          {s.settings === 'sessions' ? 
+          {p.settings === 'sessions' ? 
           <Sessions 
           modal={p.modal}
-          settingsMax={s.settingsMax} 
           sessions={p.sessions} 
           tabs={p.tabs} 
           prefs={p.prefs} 
@@ -814,16 +777,14 @@ var Settings = React.createClass({
           collapse={p.collapse} 
           theme={p.theme} 
           allTabs={p.allTabs} /> : null}
-          {s.settings === 'preferences' ? 
+          {p.settings === 'preferences' ? 
           <Preferences
-          modal={p.modal}
-          settingsMax={s.settingsMax} 
+          modal={p.modal} 
           prefs={p.prefs} tabs={p.tabs} 
           theme={p.theme}
           chromeVersion={p.chromeVersion} /> : null}
-          {s.settings === 'theming' ? 
-          <Theming 
-          settingsMax={s.settingsMax} 
+          {p.settings === 'theming' ? 
+          <Theming  
           prefs={p.prefs} 
           theme={p.theme} 
           modal={p.modal} 
@@ -833,11 +794,10 @@ var Settings = React.createClass({
           wallpapers={p.wallpapers} 
           collapse={p.collapse} 
           height={p.height}/> : null}
-          {s.settings === 'about' ? 
+          {p.settings === 'about' ? 
           <About 
           modal={p.modal}
-          theme={p.theme} 
-          settingsMax={s.settingsMax} /> : null}
+          theme={p.theme} /> : null}
         </Row>
       </Container>
     );
