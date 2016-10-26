@@ -1,6 +1,6 @@
 window._trackJs = {
   token: 'bd495185bd7643e3bc43fa62a30cec92',
-  enabled: true,
+  enabled: false,
   onError: function (payload) { return true; },
   version: "",
   callback: {
@@ -41,7 +41,7 @@ import ReactTooltip from './tooltip/tooltip';
 import '../../styles/app.scss';
 window.v = v;
 import state from './stores/state';
-import {keyboardStore, chromeAppStore, historyStore, bookmarksStore, utilityStore, msgStore} from './stores/main';
+import {keyboardStore, utilityStore, msgStore} from './stores/main';
 import themeStore from './stores/theme';
 import sessionsStore from './stores/sessions';
 import * as utils from './stores/tileUtils';
@@ -302,13 +302,15 @@ var Root = React.createClass({
   },
   handleMouseListeners(p){
     var wheelListener = (e)=>{
-      if (e.wheelDelta / 120 > 0) {
-        chrome.runtime.sendMessage({scrollNav: 'down'}); 
+      if (e.y <= 20 || e.shiftKey) {
+        if (e.wheelDelta / 120 > 0) {
+          chrome.runtime.sendMessage({scrollNav: 'down'}); 
+        }
+        else {
+          chrome.runtime.sendMessage({scrollNav: 'up'}); 
+        }
+        e.preventDefault();
       }
-      else {
-        chrome.runtime.sendMessage({scrollNav: 'up'}); 
-      }
-      e.preventDefault();
     };
     document.onmousemove = handleMouseMove;
     function handleMouseMove(e) {

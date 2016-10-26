@@ -178,19 +178,19 @@ var ContextMenu = React.createClass({
       console.log('lastAction: ',lastAction);
       if (lastAction) {
         if (lastAction.type === 'remove') {
-          return ' removal of '+lastAction.item.domain;
+          return ' removal of '+lastAction.item.title;
         } else if (lastAction.type === 'create') {
-          return ' creation of '+lastAction.item.domain;
+          return ' creation of '+lastAction.item.title;
         } else if (lastAction.type === 'mute') {
-          return ` muting of ${lastAction.item.domain}`;
+          return ` muting of ${lastAction.item.title}`;
         } else if (lastAction.type === 'unmute') {
-          return ` unmuting of ${lastAction.item.domain}`;
+          return ` unmuting of ${lastAction.item.title}`;
         } else if (lastAction.type === 'pin') {
-          return ` pinning of ${lastAction.item.domain}`;
+          return ` pinning of ${lastAction.item.title}`;
         } else if (lastAction.type === 'pin') {
-          return ` unpinning of ${lastAction.item.domain}`;
+          return ` unpinning of ${lastAction.item.title}`;
         } else if (lastAction.type === 'move') {
-          return ' moving of '+lastAction.item.domain;
+          return ' moving of '+lastAction.item.title;
         }
       } else {
         return false;

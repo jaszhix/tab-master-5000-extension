@@ -1,6 +1,6 @@
 window._trackJs = {
   token: 'bd495185bd7643e3bc43fa62a30cec92',
-  enabled: true,
+  enabled: false,
   onError: function (payload) { 
     console.log('payload', payload)
     if (payload.message.indexOf('unknown') !== -1) {
@@ -523,13 +523,16 @@ var Bg = React.createClass({
       var urlMatch = tab.url.match(/^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n]+)/im);
       _.assign(tabs[tKey], {
         timeStamp: new Date(Date.now()).getTime(),
-        domain: urlMatch ? urlMatch[1] : false
+        domain: urlMatch ? urlMatch[1] : tab.url.split('/')[2]
       });
       if (tab.url.indexOf('chrome://newtab/') !== -1) {
         blacklisted.push(tab.id);
       }
-      if (prefs.scrollNav && tab.url && tab.url.indexOf('chrome://') === -1 && tab.url.indexOf('chrome.google.com') === -1 && tab.url.indexOf('drive.google.com') === -1 && tab.url.indexOf('data:') === -1 && tab.url.indexOf('127.0.0.1') === -1 && tab.url.indexOf('localhost') === -1) {
-        this.executeScrollNav(tab.id);
+      var scrollNavArg = tab.url && tab.url.indexOf('chrome://') === -1 && tab.url.indexOf('chrome.google.com') === -1 && tab.url.indexOf('drive.google.com') === -1 && tab.url.indexOf('data:') === -1 && tab.url.indexOf('127.0.0.1') === -1 && tab.url.indexOf('localhost') === -1;
+      if (prefs.scrollNav) {
+        if (scrollNavArg) {
+          this.executeScrollNav(tab.id);
+        }
       }
     });
     if (blacklisted.length > 0 && prefs && prefs.singleNewTab) {
@@ -716,6 +719,12 @@ var Bg = React.createClass({
     this.state.windows[refWindow].tabs = _.orderBy(_.uniqBy(this.state.windows[refWindow].tabs, 'id'), ['pinned'], ['desc']);
     this.state.windows[refWindow].tabs = this.formatTabs(this.state.prefs, this.state.windows[refWindow].tabs);
     this.setState({windows: this.state.windows});
+    if (this.prefs.scrollNav) {
+      var scrollNavArg = e.url && e.url.indexOf('chrome://') === -1 && e.url.indexOf('chrome.google.com') === -1 && e.url.indexOf('drive.google.com') === -1 && e.url.indexOf('data:') === -1 && e.url.indexOf('127.0.0.1') === -1 && e.url.indexOf('localhost') === -1;
+      if (scrollNavArg) {
+        this.executeScrollNav(e.tab.id);
+      }
+    }
     setActionThrottled(this, 'create', e);
     synchronizeSession(this.state.sessions, this.state.prefs, this.state.windows);
     sendMsg({windows: this.state.windows, windowId: e.windowId});
@@ -803,27 +812,31 @@ var Bg = React.createClass({
   executeScrollNav(id){
     chrome.tabs.executeScript(id, {
       code: `
-        var wheelListener = (e)=>{
-          if (e.wheelDelta / 120 > 0) {
-            chrome.runtime.sendMessage({scrollNav: 'down'}); 
-          }
-          else {
-            chrome.runtime.sendMessage({scrollNav: 'up'}); 
-          }
-          e.preventDefault();
-        };
-        document.onmousemove = (e)=>{
-          if (e.y <= 20 || e.shiftKey) {
-            document.body.style.cursor = 'all-scroll';
-            window.addEventListener('mousewheel', wheelListener);
-          } else {
-            document.body.style.cursor = 'initial';
-            window.removeEventListener('mousewheel', wheelListener);
-          }
-        };
+        if (chrome && chrome.runtime) {
+          window.wheelListener = (e)=>{
+            if (e.y <= 20 || e.shiftKey) {
+              if (e.wheelDelta / 120 > 0) {
+                chrome.runtime.sendMessage({scrollNav: 'down'}); 
+              }
+              else {
+                chrome.runtime.sendMessage({scrollNav: 'up'}); 
+              }
+              e.preventDefault();
+            }
+          };
+          window.mouseMove = (e)=>{
+            if (e.y <= 20 || e.shiftKey) {
+              document.body.style.cursor = 'all-scroll';
+              window.addEventListener('mousewheel', wheelListener);
+            } else {
+              document.body.style.cursor = 'initial';
+              window.removeEventListener('mousewheel', wheelListener);
+            }
+          };
+          document.onmousemove = mouseMove;
+        }
       `
     });
-
   },
   handleScrollNav(sender, index, direction){
     if (this.state.prefs.scrollNav) {

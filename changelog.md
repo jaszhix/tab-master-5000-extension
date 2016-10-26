@@ -1,5 +1,13 @@
 #### Release Notes
 
+##### v2.0.10 / *10-23-16*
+
+*   Fixed a bug that can cause Chrome to become unresponsive when many tabs are created at once.
+
+##### v2.0.8-2.0.9 / *10-21-16*
+
+*   Tab mousewheel navigation fixes and optimizations.
+
 ##### v2.0.7 / *10-21-16*
 
 *   Fixed dragging tiles causing other tiles to disappear.

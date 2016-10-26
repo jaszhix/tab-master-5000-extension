@@ -273,7 +273,7 @@ var Tile = React.createClass({
                   fontSize: `${titleFontSize}px`, 
                   color: p.theme.tileText, 
                   WebkitTransition: p.prefs.animations ? 'font-size 0.2s' : 'initial'
-                }}>{p.tab.title.length > 0 ? p.tab.title : p.tab.domain ? p.tab.domain : null}</a>
+                }}>{p.tab.title.length > 0 ? p.tab.title : p.tab.domain ? p.tab.domain : p.tab.url.split('/')[2]}</a>
               </div>
               {p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ? 
               <div className="text-muted text-size-small" style={{
@@ -283,7 +283,7 @@ var Tile = React.createClass({
               }}>{p.tab.description}</div> : null}
               {p.prefs.mode === 'tabs' || p.prefs.mode === 'history' || p.prefs.mode === 'bookmarks' || p.prefs.mode === 'sessions' ? 
               <div onMouseEnter={()=>this.setState({stHover: true})} onMouseLeave={()=>this.setState({stHover: false})}>
-                <div className="text-muted text-size-small" style={ST1}>{p.tab.domain}</div>
+                <div className="text-muted text-size-small" style={ST1}>{p.tab.domain ? p.tab.domain : p.tab.url.split('/')[2]}</div>
                 {isTab && p.chromeVersion >= 54 && p.tab.discarded ?
                 <div className="text-muted text-size-small" style={ST2}>Discarded</div> : null}
                 {p.prefs.mode === 'history' ? 
@@ -471,7 +471,7 @@ var Tile = React.createClass({
       onBodyClick={()=>this.handleClick(p.tab.id)}
       onFooterClick={!s.stHover ? ()=>this.handleClick(p.tab.id) : null}
       onContextMenu={this.handleContextClick}>
-        {!favIconUrl || p.tab.domain === 'chrome' ?
+        {!favIconUrl || (p.tab.domain && p.tab.domain === 'chrome') ?
         <div style={{
           color: p.theme.tileText,
           fontSize: '70px',
