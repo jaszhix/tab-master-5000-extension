@@ -227,7 +227,7 @@ export var checkFavicons = (p, tab, key, tabs)=>{
   if (p.s.favicons.length > 0) {
     var match = false;
     _.each(p.s.favicons, (fVal)=>{
-      if (fVal.domain && tab.url.indexOf(fVal.domain) !== -1) {
+      if (fVal.domain && kmp(tab.url, fVal.domain) !== -1) {
         match = true;
         tabs[key].favIconUrl = fVal.favIconUrl;
       }
@@ -321,7 +321,7 @@ export var searchChange = (p, tabs)=>{
       return item;
     }
   });
-  if (_tabs.length === 0) {
+  if (_tabs.length === 0 && p.s.search.indexOf(' ') === -1) {
     state.set({search: ''});
     return tabs;
   } else {
