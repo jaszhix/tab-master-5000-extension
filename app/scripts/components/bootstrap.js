@@ -33,7 +33,10 @@ export var Btn = React.createClass({
     }
   },
   componentWillUnmount(){
-    v(ReactDOM.findDOMNode(this)).css({display: 'none'});
+    try {
+      v(ReactDOM.findDOMNode(this)).css({display: 'none'});
+    } catch (e) {}
+    
   },
   themeChange(e){
     if (e.theme) {

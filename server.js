@@ -7,7 +7,7 @@ new WebpackDevServer(webpack(config), {
   publicPath: config.output.publicPath,
   hot: true,
   inline: true,
-  //https: true,
+  https: false,
   historyApiFallback: true,
   headers:    {'Access-Control-Allow-Origin': '*'},
   stats:      {colors: true},
