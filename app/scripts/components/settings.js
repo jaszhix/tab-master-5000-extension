@@ -688,7 +688,7 @@ var Sessions = React.createClass({
         </Col>
         <Col size="6" className="session-col" onMouseLeave={()=>this.setState({currentSessionHover: -1})}>
           <h4>Current Session</h4>
-          {p.allTabs.map((_window, w)=>{
+          {p.allTabs ? p.allTabs.map((_window, w)=>{
             var windowTitle = `Window ${w + 1}: ${_window.length} Tabs`;
             return (
               <Row key={w} className="ntg-session-row" style={{backgroundColor: s.currentSessionHover === w ? p.theme.settingsItemHover : 'initial'}} onMouseEnter={()=>this.setState({currentSessionHover: w})} onMouseLeave={()=>this.setState({currentSessionTabHover: -1})}>
@@ -736,7 +736,7 @@ var Sessions = React.createClass({
                 : null}
               </Row>
             );
-          })}
+          }) : null}
           <p/>
         </Col>
       </div>
