@@ -541,6 +541,9 @@ var Bg = React.createClass({
       for (let i = extraNewTabs.length - 1; i >= 0; i--) {
         close(extraNewTabs[i]);
       }
+      if (blacklisted[0] !== undefined) {
+        chrome.tabs.update(blacklisted[0], {active: true});
+      }
     }
     return tabs;
   },
@@ -607,27 +610,6 @@ var Bg = React.createClass({
       }
       this.setState({screenshots: index});
     });
-  },
-  handleActivation(e){
-    var refWindow = _.findIndex(this.state.windows, {id: e.windowId});
-    if (refWindow === -1) {
-      return;
-    }
-    var refTab = _.findIndex(this.state.windows[refWindow].tabs, {id: e.tabId});
-    if (refTab === -1) {
-      return;
-    }
-    if (this.state.windows[refWindow].tabs[refTab].url.indexOf('chrome://newtab/') !== -1) {
-      return;
-    }
-    // Update timestamp for auto-discard feature's accuracy.
-    _.merge(this.state.windows[refWindow].tabs[refTab], {
-      timeStamp: new Date(Date.now()).getTime()
-    });
-    this.setState({windows: this.state.windows});
-    if (this.state.prefs && this.state.prefs.screenshot && this.state.prefs.screenshotChrome) {
-      createScreenshotThrottled(this, refWindow, refTab);
-    }
   },
   keepNewTabOpen() {
     // Work around to prevent losing focus of New Tab page when a tab is closed or pinned from the grid.
@@ -697,6 +679,28 @@ var Bg = React.createClass({
         }
       });
     });
+  },
+  handleActivation(e){
+    var refWindow = _.findIndex(this.state.windows, {id: e.windowId});
+    if (refWindow === -1) {
+      return;
+    }
+    var refTab = _.findIndex(this.state.windows[refWindow].tabs, {id: e.tabId});
+    if (refTab === -1) {
+      return;
+    }
+    if (this.state.windows[refWindow].tabs[refTab].url.indexOf('chrome://newtab/') !== -1) {
+      return;
+    }
+    // Update timestamp for auto-discard feature's accuracy.
+    _.merge(this.state.windows[refWindow].tabs[refTab], {
+      timeStamp: new Date(Date.now()).getTime()
+    });
+
+    this.setState({windows: this.state.windows});
+    if (this.state.prefs && this.state.prefs.screenshot && this.state.prefs.screenshotChrome) {
+      createScreenshotThrottled(this, refWindow, refTab);
+    }
   },
   createSingleItem(e){
     var refWindow = _.findIndex(this.state.windows, {id: e.windowId});
