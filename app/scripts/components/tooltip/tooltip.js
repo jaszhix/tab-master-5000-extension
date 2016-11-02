@@ -276,7 +276,7 @@ class ReactTooltip extends Component {
 
     clearTimeout(this.delayShowLoop)
     this.delayShowLoop = setTimeout(() => {
-      if (this.trim(this.state.placeholder).length > 0) {
+      if (this.state.placeholder && this.trim(this.state.placeholder).length > 0) {
         if (this.state.effect === 'float') {
           this.setState({
             show: true,
