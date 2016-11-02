@@ -231,10 +231,10 @@ export var Table = React.createClass({
   dragOver: function(e, i) {
     e.preventDefault();
     var s = this.state;
-    this.dragged.el.style.display = 'none';
-    if (e.target === this.placeholder) {
+    if (this.dragged === undefined || e.target === this.placeholder) {
       return;
     }
+    this.dragged.el.style.display = 'none';
     this.over = {el: e.target, i: i};
     console.log(s.rows[i].title);
     var relY = e.clientY - this.over.el.offsetTop;
@@ -247,9 +247,11 @@ export var Table = React.createClass({
         parent.parentNode.insertBefore(this.placeholder, e.target.nextElementSibling.parentNode);
       } catch (e) {}
     } else if (relY < height) {
-        this.nodePlacement = 'before';
+      this.nodePlacement = 'before';
+      try {
         parent.parentNode.insertBefore(this.placeholder, e.target.parentNode);
-      }
+      } catch (e) {}
+    }
     
   },
   handleSelect(i){

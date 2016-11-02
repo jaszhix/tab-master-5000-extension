@@ -631,7 +631,7 @@ var TileGrid = React.createClass({
   dragOver: function(e, i) {
     var p = this.props;
     e.preventDefault();
-    if (p.s.tabs[i].pinned !== p.s.tabs[this.dragged.i].pinned) {
+    if (p.s.tabs[i] === undefined || this.dragged === undefined || p.s.tabs[i].pinned !== p.s.tabs[this.dragged.i].pinned) {
       return;
     }
     this.dragged.el.style.display = 'none';
@@ -646,7 +646,9 @@ var TileGrid = React.createClass({
       } catch (e) {}
     } else if (relY < height) {
       this.nodePlacement = 'before';
-      parent.parentNode.insertBefore(this.placeholder, e.target.parentNode);
+      try {
+        parent.parentNode.insertBefore(this.placeholder, e.target.parentNode);
+      } catch (e) {}
     }
   },
   render: function() {
