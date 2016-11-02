@@ -184,12 +184,11 @@ export var utilityStore = Reflux.createStore({
     var currentMode = state.get().prefs.mode;
     var stateUpdate = {};
     if (currentMode !== mode) {
+      stateUpdate.direction = 'desc';
       if (mode === 'bookmarks') {
         stateUpdate.sort = 'dateAdded';
-        stateUpdate.direction = 'desc';
       } else if (mode === 'history') {
         stateUpdate.sort = 'lastVisitTime';
-        stateUpdate.direction = 'desc';
       } else if (mode === 'sessions') {
         stateUpdate.sort = 'sTimeStamp';
       } else {

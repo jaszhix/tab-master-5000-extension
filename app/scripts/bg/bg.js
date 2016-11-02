@@ -89,14 +89,6 @@ var reload = (reason)=>{
   },0);
 };
 
-var close = (id)=>{
-  chrome.tabs.get(id, (t)=>{
-    if (t) {
-      chrome.tabs.remove(id);
-    }
-  });
-};
-
 var syncSession = (sessions, prefs, windows=null, cb)=>{
   var allTabs = [];
   if (typeof prefs.syncedSession !== 'undefined' && prefs.syncedSession && prefs.sessionsSync) {
@@ -249,6 +241,7 @@ var Bg = React.createClass({
       prefs: null,
       init: true,
       windows: [],
+      newTabs: [],
       sessions: [],
       screenshots: [],
       actions: [],
@@ -288,7 +281,7 @@ var Bg = React.createClass({
       if (eventState.onInstalled.reason === 'update' || eventState.onInstalled.reason === 'install') {
         chrome.tabs.query({title: 'New Tab'},(tabs)=>{
           for (var i = 0; i < tabs.length; i++) {
-            close(tabs[i].id);
+            chrome.tabs.remove(tabs[i].id);
           }
         });
         chrome.tabs.create({active: true}, (tab)=>{
@@ -475,7 +468,7 @@ var Bg = React.createClass({
           }
         });
       } else if (msg.method === 'close') {
-        close(sender.tab.id);
+        chrome.tabs.remove(sender.tab.id);
       } else if (msg.method === 'restoreWindow') {
         for (var i = 0; i < msg.tabs.length; i++) {
           chrome.tabs.create({
@@ -526,7 +519,7 @@ var Bg = React.createClass({
         domain: urlMatch ? urlMatch[1] : tab.url.split('/')[2]
       });
       if (tab.url.indexOf('chrome://newtab/') !== -1) {
-        blacklisted.push(tab.id);
+        blacklisted.push({id: tab.id, windowId: tab.windowId});
       }
       var scrollNavArg = tab.url && tab.url.indexOf('chrome://') === -1 && tab.url.indexOf('chrome.google.com') === -1 && tab.url.indexOf('drive.google.com') === -1 && tab.url.indexOf('data:') === -1 && tab.url.indexOf('127.0.0.1') === -1 && tab.url.indexOf('localhost') === -1;
       if (prefs.scrollNav) {
@@ -537,14 +530,15 @@ var Bg = React.createClass({
     });
     if (blacklisted.length > 0 && prefs && prefs.singleNewTab) {
       var extraNewTabs = _.tail(blacklisted);
-      console.log(extraNewTabs);
+      console.log(extraNewTabs, blacklisted);
       for (let i = extraNewTabs.length - 1; i >= 0; i--) {
-        close(extraNewTabs[i]);
+        chrome.tabs.remove(extraNewTabs[i].id);
       }
-      if (blacklisted[0] !== undefined) {
-        chrome.tabs.update(blacklisted[0], {active: true});
-      }
+      this.state.newTabs.push(blacklisted[0])
+    } else {
+      this.state.newTabs = _.concat(this.state.newTabs, blacklisted);
     }
+    this.setState({newTabs: _.uniqBy(this.state.newTabs, 'id')});
     return tabs;
   },
   queryTabs(send=null, prefs){
@@ -707,6 +701,7 @@ var Bg = React.createClass({
     if (refWindow === -1) {
       return;
     }
+
     if (typeof this.state.windows[refWindow].tabs[e.index] !== 'undefined') {
       for (var i = this.state.windows[refWindow].tabs.length - 1; i >= 0; i--) {
         if (i > e.index) {
@@ -723,7 +718,15 @@ var Bg = React.createClass({
     this.state.windows[refWindow].tabs = _.orderBy(_.uniqBy(this.state.windows[refWindow].tabs, 'id'), ['pinned'], ['desc']);
     this.state.windows[refWindow].tabs = this.formatTabs(this.state.prefs, this.state.windows[refWindow].tabs);
     this.setState({windows: this.state.windows});
-    if (this.prefs.scrollNav) {
+    // Activate the first new tab if it is open, and if this is a second new tab being created.
+    if (e.url.indexOf('chrome://newtab/') !== -1 && this.state.prefs.singleNewTab) {
+      var refNewTab = _.findIndex(this.state.newTabs, {windowId: e.windowId});
+      if (refNewTab !== -1) {
+        chrome.tabs.update(this.state.newTabs[refNewTab].id, {active: true});
+        return;
+      }
+    }
+    if (this.state.prefs.scrollNav) {
       var scrollNavArg = e.url && e.url.indexOf('chrome://') === -1 && e.url.indexOf('chrome.google.com') === -1 && e.url.indexOf('drive.google.com') === -1 && e.url.indexOf('data:') === -1 && e.url.indexOf('127.0.0.1') === -1 && e.url.indexOf('localhost') === -1;
       if (scrollNavArg) {
         this.executeScrollNav(e.tab.id);
@@ -738,13 +741,21 @@ var Bg = React.createClass({
     if (refWindow === -1) {
       return;
     }
+    // Check if this is a new tab, and clean up newTabs state.
+    var refNewTab = _.findIndex(this.state.newTabs, {id: e});
+    console.log(e, refNewTab, this.state.newTabs)
+    if (refNewTab !== -1) {
+      _.pullAt(this.state.newTabs, refNewTab);
+      this.setState({newTabs: this.state.newTabs});
+    }
+
     var refTab = _.findIndex(this.state.windows[refWindow].tabs, {id: e});
     if (refTab > -1) {
       setActionThrottled(this, 'remove', this.state.windows[refWindow].tabs[refTab]);
       _.pullAt(this.state.windows[refWindow].tabs, refTab);
 
       this.state.windows[refWindow].tabs = _.orderBy(_.uniqBy(this.state.windows[refWindow].tabs, 'id'), ['pinned'], ['desc']);
-      this.setState({windows: this.state.windows});
+      this.setState({windows: this.state.windows, newTabs: this.state.newTabs});
       synchronizeSession(this.state.sessions, this.state.prefs, this.state.windows);
       sendMsg({windows: this.state.windows, windowId: windowId});
     }
