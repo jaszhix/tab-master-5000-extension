@@ -227,7 +227,7 @@ export var checkFavicons = (p, tab, key, tabs)=>{
   if (p.s.favicons.length > 0) {
     var match = false;
     _.each(p.s.favicons, (fVal)=>{
-      if (fVal.domain && kmp(tab.url, fVal.domain) !== -1) {
+      if (fVal && fVal.domain && kmp(tab.url, fVal.domain) !== -1) {
         match = true;
         tabs[key].favIconUrl = fVal.favIconUrl;
       }
