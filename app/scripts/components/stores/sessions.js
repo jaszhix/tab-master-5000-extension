@@ -83,7 +83,8 @@ var sessionsStore = Reflux.createStore({
           sessions = _.cloneDeep(_sessions.sessions);
           chrome.storage.local.set(_sessions);
         }
-        //state.set({sessions: sessions});
+        var s = state.get();
+        state.set({sessions: sessions, sessionTabs: this.flatten(sessions, s.tabs, s.windowId)});
         alertStore.set({
           text: `Successfully imported ${sessions.length} sessions.`,
           tag: 'alert-success',

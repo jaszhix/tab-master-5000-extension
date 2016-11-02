@@ -278,13 +278,7 @@ export var sort = (p, data, sortChange=null)=>{
     result = _.orderBy(data, [p.s.sort], [p.s.direction]);
   }
 
-  if (sortChange) {
-    var stateUpdate = {};
-    stateUpdate[p.s.modeKey] = result;
-    state.set(stateUpdate);
-  } else {
-    return result;
-  }
+  return result;
 };
 
 export var hasDuplicates = (array)=>{

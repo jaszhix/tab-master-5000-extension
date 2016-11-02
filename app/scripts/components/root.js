@@ -575,13 +575,11 @@ var Root = React.createClass({
 
     var handleSessionTabs = (stateUpdate)=>{
       var sessionTabs = sessionsStore.flatten(p.s.sessions, _.flatten(allTabs), opt === 'init' ? stateUpdate.windowId : p.s.windowId);
-      sessionTabs = utils.sort(p, sessionTabs);
       for (let i = sessionTabs.length - 1; i >= 0; i--) {
         sessionTabs = utils.checkFavicons(p, sessionTabs[i], i, sessionTabs);
       }
       _.assignIn(stateUpdate, {
         modeKey: 'sessionTabs',
-        sort: p.s.sort === 'index' ? 'sTimeStamp' : p.s.sort,
         sessionTabs: sessionTabs
       });
       return stateUpdate;
@@ -608,24 +606,16 @@ var Root = React.createClass({
           this.setState({init: false});
 
           if (p.s.prefs.mode === 'sessions' && p.s.sessions.length > 0) {
-            stateUpdate.sort = 'sTimeStamp'
             stateUpdate = handleSessionTabs(stateUpdate);
             if (p.s.search.length > 0) {
               stateUpdate.sessionTabs = utils.searchChange(p, stateUpdate.sessionTabs);
             }
           } else if (p.s.prefs.mode !== 'tabs') {
-            if (p.s.prefs.mode === 'bookmarks') {
-              stateUpdate.sort = 'dateAdded';
-            } else if (p.s.prefs.mode === 'history') {
-              stateUpdate.sort = 'lastVisitTime';
-            } else {
-              stateUpdate.sort = 'index';
-            }
-            _.defer(()=>utilityStore.handleMode(p.s.prefs.mode, _.flatten(allTabs)));
+            stateUpdate.direction = 'asc';
+            utilityStore.handleMode(p.s.prefs.mode, _.flatten(allTabs))
           }
 
           if (p.s.prefs.mode === 'tabs') {
-            stateUpdate.sort = 'index';
             stateUpdate = this.checkDuplicateTabs(stateUpdate, Window.tabs);
             if (p.s.search.length === 0) {
               stateUpdate.tabs = Window.tabs;
@@ -636,7 +626,6 @@ var Root = React.createClass({
           _.assignIn(stateUpdate, {
             hasScrollbar: utils.scrollbarVisible(document.body),
             reQuery: {state: false},
-            direction: 'desc'
           });
           stateUpdate.allTabs = allTabs;
           if (sU) {

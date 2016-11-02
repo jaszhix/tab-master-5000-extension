@@ -289,7 +289,7 @@ var Tile = React.createClass({
                 {p.prefs.mode === 'history' ? 
                 <div className="text-muted text-size-small" style={ST2}>{_.capitalize(moment(p.tab.lastVisitTime).fromNow())}</div> : null}
                 {p.prefs.mode === 'bookmarks' ? 
-                <div onClick={()=>this.filterFolders(p.tab.folder)} className="text-muted text-size-small" style={ST1}>{p.tab.folder}</div> : null}
+                <div onClick={()=>this.filterFolders(p.tab.folder)} className="text-muted text-size-small" style={ST2}>{p.tab.folder}</div> : null}
                 {p.prefs.mode === 'sessions' ? 
                 <div onClick={()=>this.filterFolders(p.tab.originSession)} className="text-muted text-size-small" style={p.tab.hasOwnProperty('domain') && p.tab.domain ? ST2 : ST1}>{p.tab.label ? p.tab.label : _.capitalize(moment(p.tab.sTimeStamp).fromNow())}</div> : null}
               </div> : null}
@@ -536,12 +536,14 @@ var Sidebar = onClickOutside(React.createClass({
       <div className="side-div" style={sideStyle}>
         {s.enabled ?
         <SidebarMenu
+        allTabs={p.allTabs}
         prefs={p.prefs}
         theme={p.theme}
         labels={p.labels}
         keys={p.keys}
         sort={p.sort}
-        direction={p.direction} /> : null}
+        direction={p.direction}
+        sessionsExist={p.sessionsExist} /> : null}
       </div>
     );
   }
@@ -594,7 +596,9 @@ var TileGrid = React.createClass({
       this.prefsInit(nP);
     }
     if (nP.s.sort !== p.s.sort || nP.s.direction !== p.s.direction && nP.s.modeKey === p.s.modeKey && nP.s.prefs.mode === p.s.prefs.mode) {
-      utils.sort(nP, nP.data, true);
+      var sU = {};
+      sU[nP.s.modeKey] = utils.sort(nP, nP.data);
+      state.set(sU);
     }
   },
   dragStart: function(e, i) {
@@ -624,7 +628,7 @@ var TileGrid = React.createClass({
       end--;
     }
     chrome.tabs.move(p.s.tabs[start].id, {index: p.s.tabs[end].index}, (t)=>{
-      state.set({reQuery: {state: true, type: 'cycle', id: p.s.tabs[end - 1].id}});
+      msgStore.queryTabs();
       _.defer(()=>this.dragged.el.parentNode.removeChild(this.placeholder));
     });
   },
@@ -654,12 +658,14 @@ var TileGrid = React.createClass({
   render: function() {
     var p = this.props;
     var tileLetterTopPos = p.s.prefs.tabSizeHeight >= 175 ? parseInt((p.s.prefs.tabSizeHeight + 80).toString()[0]+(p.s.prefs.tabSizeHeight + 80).toString()[1]) - 10 : p.s.prefs.tabSizeHeight <= 136 ? -5 : p.s.prefs.tabSizeHeight <= 150 ? 0 : p.s.prefs.tabSizeHeight <= 160 ? 5 : 10;
+    var data = utils.sort(p, p.data);
     return (
       <div className="tile-body">
         <Sidebar
+        sessionsExist={p.s.sessions.length > 0}
         enabled={p.sidebar}
         prefs={p.s.prefs} 
-        tabs={p.s[p.s.modeKey]} 
+        allTabs={p.s.allTabs} 
         labels={p.labels}
         keys={p.keys}
         sort={p.s.sort}
@@ -670,7 +676,7 @@ var TileGrid = React.createClass({
         theme={p.theme}
         disableSidebarClickOutside={p.disableSidebarClickOutside} />
           <div id="grid" ref="grid">
-            {p.s.prefs.format === 'tile' ? p.data.map((tab, i)=> {
+            {p.s.prefs.format === 'tile' ? data.map((tab, i)=> {
               if ((i <= p.s.tileLimit && p.s.prefs.mode !== 'tabs' || p.s.prefs.mode === 'tabs') && tab.url && tab.url.indexOf('chrome://newtab/') === -1) {
                 return (
                   <Tile

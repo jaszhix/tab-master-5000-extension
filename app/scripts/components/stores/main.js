@@ -181,6 +181,21 @@ export var utilityStore = Reflux.createStore({
     });
   },
   handleMode(mode, tabs=null){
+    var currentMode = state.get().prefs.mode;
+    var stateUpdate = {};
+    if (currentMode !== mode) {
+      if (mode === 'bookmarks') {
+        stateUpdate.sort = 'dateAdded';
+        stateUpdate.direction = 'desc';
+      } else if (mode === 'history') {
+        stateUpdate.sort = 'lastVisitTime';
+        stateUpdate.direction = 'desc';
+      } else if (mode === 'sessions') {
+        stateUpdate.sort = 'sTimeStamp';
+      } else {
+        stateUpdate.sort = 'index';
+      }
+    }
     if (mode === 'apps' || mode === 'extensions') {
       chromeAppStore.set(mode === 'apps');
     } else if (mode === 'bookmarks') {
@@ -188,10 +203,14 @@ export var utilityStore = Reflux.createStore({
     } else if (mode === 'history') {
       historyStore.get_history(tabs);
     } else {
-      state.set({reQuery: {state: true, type: 'create'}});
+      if (!tabs || tabs.length === 0) {
+        mode = 'tabs';
+      }
+      stateUpdate.reQuery = {state: true, type: 'create'};
     }
-    msgStore.setPrefs({mode: mode});
-    state.set({modeKey: mode === 'sessions' ? 'sessionTabs' : mode});
+    _.assignIn(stateUpdate, {mode: mode, modeKey: mode === 'sessions' ? 'sessionTabs' : mode});
+    state.set(stateUpdate);
+    _.defer(()=>msgStore.setPrefs({mode: mode}));
   },
   now(){
     return new Date(Date.now()).getTime();
@@ -315,6 +334,7 @@ export var bookmarksStore = Reflux.createStore({
           for (let i = bookmarks.length - 1; i >= 0; i--) {
             bookmarks = utils.checkFavicons({s: s}, bookmarks[i], i, bookmarks);
           }
+          bookmarks = _.orderBy(bookmarks, ['dateAdded', 'asc'])
           resolve(bookmarks);
         }
       });
@@ -392,7 +412,6 @@ export var historyStore = Reflux.createStore({
     var s = state.get();
     var stateUpdate = {};
     this.set_history(tabs).then((h)=>{
-      h = utils.sort({s: s}, h);
       if (s.search.length > 0) {
         h = utils.searchChange({s: s}, h);
       }
@@ -483,6 +502,7 @@ export var chromeAppStore = Reflux.createStore({
           _apps = utils.searchChange({s: s}, _apps);
         }
         var stateKey = app ? {apps: _apps} : {extensions: _apps};
+        stateKey.direction = 'asc';
         state.set(stateKey);
 
         console.log('installed apps: ', _apps);

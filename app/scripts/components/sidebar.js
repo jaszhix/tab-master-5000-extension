@@ -51,19 +51,19 @@ export var SidebarMenu = React.createClass({
       [
         [
           {label: 'Tabs', icon: 'icon-browser'},
-          {label: 'Sessions', icon: 'icon-windows2'},
+          p.sessionsExist ? {label: 'Sessions', icon: 'icon-windows2'} : {label: 'Bookmarks', icon: 'icon-bookmark4'},
         ],
         [
           {label: 'History', icon: 'icon-history'},
-          {label: 'Bookmarks', icon: 'icon-bookmark4'},
+          p.sessionsExist ? {label: 'Bookmarks', icon: 'icon-bookmark4'} : {label: 'Apps', icon: 'icon-grid-alt'},
         ],
       ],
       [
         [
-          {label: 'Apps', icon: 'icon-grid-alt'},
+          p.sessionsExist ? {label: 'Apps', icon: 'icon-grid-alt'} : {label: 'Extensions', icon: 'icon-puzzle'},
         ],
         [
-          {label: 'Extensions', icon: 'icon-puzzle'},
+          p.sessionsExist ? {label: 'Extensions', icon: 'icon-puzzle'} : null,
         ]
       ]
     ];
@@ -122,28 +122,31 @@ export var SidebarMenu = React.createClass({
                   <div className="category-content" style={{height: p.prefs.showViewMode ? 'initial' : '0px', WebkitTransition: 'height 0.2s'}}>
                     <div className="row" onMouseLeave={()=>this.setState({lgBtnHover: ''})}>
                       {lgBtnOptions.map((row, i)=>{
-                        //
                         return (
                           <div key={i} className="row">
                             {row.map((column, c)=>{
                               return (
                                 <div key={c} className="col-xs-6">
                                   {column.map((option, o)=>{
-                                    var lgBtnStyle = {
-                                      color: p.prefs.mode === option.label.toLowerCase() ? p.theme.lightBtnText : p.theme.darkBtnText,
-                                      backgroundColor: p.prefs.mode === option.label.toLowerCase() ? themeStore.opacify(p.theme.lightBtnBg, 0.8) : s.lgBtnHover === option.label ? p.theme.darkBtnBgHover : themeStore.opacify(p.theme.darkBtnBg, 0.8),
-                                      marginBottom: '10px'
-                                    };
-                                    return (
-                                      <LargeBtn 
-                                      key={o}
-                                      style={lgBtnStyle}
-                                      icon={option.icon} 
-                                      label={option.label}
-                                      onClick={()=>utilityStore.handleMode(option.label.toLowerCase())}
-                                      onMouseEnter={()=>this.setState({lgBtnHover: option.label})}
-                                       />
-                                    );
+                                    if (option) {
+                                      var lgBtnStyle = {
+                                        color: p.prefs.mode === option.label.toLowerCase() ? p.theme.lightBtnText : p.theme.darkBtnText,
+                                        backgroundColor: p.prefs.mode === option.label.toLowerCase() ? themeStore.opacify(p.theme.lightBtnBg, 0.8) : s.lgBtnHover === option.label ? p.theme.darkBtnBgHover : themeStore.opacify(p.theme.darkBtnBg, 0.8),
+                                        marginBottom: '10px'
+                                      };
+                                      return (
+                                        <LargeBtn 
+                                        key={o}
+                                        style={lgBtnStyle}
+                                        icon={option.icon} 
+                                        label={option.label}
+                                        onClick={()=>utilityStore.handleMode(option.label.toLowerCase(), p.allTabs)}
+                                        onMouseEnter={()=>this.setState({lgBtnHover: option.label})}
+                                         />
+                                      );
+                                    } else {
+                                      return null;
+                                    }
                                   })}
                                 </div>
                               );

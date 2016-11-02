@@ -1,5 +1,16 @@
 #### Release Notes
 
+##### v2.0.11 / *11-2-16*
+
+*   When "Allow only one New Tab per window" is enabled, opening a New Tab when one is already open will now focus the original New Tab.
+*   Fixed a bug causing favicons to be assigned to the wrong domain.
+*   Fixed a bug causing the search to reset if a space is in the query.
+*   Fixed a bug that can cause the sidebar to not disappear when opening the settings modal.
+*   Fixed a few unhandled exceptions in edge cases.
+*   Fixed a bug causing the extension to continuously query sessions if none are available.
+*   Fixed importing sessions not populating the session manager until after a refresh.
+*   Fixed the bookmarks folder label overlapping the domain label.
+
 ##### v2.0.10 / *10-23-16*
 
 *   Fixed a bug that can cause Chrome to become unresponsive when many tabs are created at once.
