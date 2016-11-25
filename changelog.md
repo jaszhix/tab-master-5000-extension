@@ -1,5 +1,14 @@
 #### Release Notes
 
+##### v2.0.12 / *11-25-16*
+
+*   Added option to show tabs across all windows in the tabs grid/table views.
+*   Removed tab scroll navigation option due to bad performance.
+*   Optimizations.
+*   Fixed search results resetting prematurely.
+*   Fixed table columns not updating when transitioning to apps or extensions view modes from the sidebar.
+*   If you encounter bugs, please report it to the [Github](https://github.com/jaszhix/tab-master-5000-chrome-extension) page or the [Chrome Web Store](https://chrome.google.com/webstore/detail/tab-master-5000-tab-swiss/mippmhcfjhliihkkdobllhpdnmmciaim). Thanks.
+
 ##### v2.0.11 / *11-2-16*
 
 *   When "Allow only one New Tab per window" is enabled, opening a New Tab when one is already open will now focus the original New Tab.
