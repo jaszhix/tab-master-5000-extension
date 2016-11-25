@@ -264,7 +264,7 @@ export var filterFavicons = (faviconUrl, tabUrl, mode=null)=>{
   } else {
     return faviconUrl;
   }
-}
+};
 
 export var sort = (p, data, sortChange=null)=>{
   var result;

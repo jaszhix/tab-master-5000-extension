@@ -242,6 +242,13 @@ var Preferences = React.createClass({
             on={p.prefs.singleNewTab} label="Allow only one New Tab per window"
             hoverBg={p.theme.settingsItemHover}
             data-tip="Enabling this option enforces the closing of all New Tabs except the one that is currently focused. This is useful on older computers." />
+            <Toggle 
+            theme={p.theme}
+            onMouseEnter={()=>this.handleToggle('allTabs')} 
+            onClick={()=>this.handleClick('allTabs')} 
+            on={p.prefs.allTabs} label="Show tabs across all windows"
+            hoverBg={p.theme.settingsItemHover}
+            data-tip="Controls whether or not tabs across all windows are shown in the tabs grid/table views." />
             {p.chromeVersion >= 54 ?
             <Toggle 
             theme={p.theme}

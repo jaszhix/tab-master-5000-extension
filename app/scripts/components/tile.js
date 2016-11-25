@@ -111,10 +111,11 @@ var Tile = React.createClass({
     // Navigate to a tab when its clicked from the grid.
     if (!s.xHover || !s.pHover) {
       if (!s.close) {
-        if (p.prefs.mode === 'bookmarks' || p.prefs.mode === 'history' || p.prefs.mode === 'sessions') {
-          if (p.tab.hasOwnProperty('openTab') && p.tab.openTab) {
+        if (p.prefs.mode === 'bookmarks' || p.prefs.mode === 'history' || p.prefs.mode === 'sessions' 
+          || (p.prefs.allTabs && p.prefs.mode === 'tabs')) {
+          if (p.tab.hasOwnProperty('openTab') && p.tab.openTab || (p.prefs.allTabs && p.prefs.mode === 'tabs')) {
             if (p.tab.windowId !== p.windowId && chrome.windows.update) {
-              chrome.windows.update(p.tab.windowId, {focused: true})    
+              chrome.windows.update(p.tab.windowId, {focused: true});  
             }
             active();
           } else if (p.tab.hasOwnProperty('openTab') && !p.tab.openTab) {

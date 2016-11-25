@@ -544,51 +544,57 @@ var Root = React.createClass({
     var stateUpdate = {};
     var allTabs = [];
 
+    var handleWindow = (res, Window)=>{
+      _.each(Window.tabs, (tVal, tKey)=>{
+        Window.tabs = utils.checkFavicons(p, tVal, tKey, Window.tabs);
+      });
+
+      if (opt === 'init') {
+        stateUpdate.windowId = res.windowId;
+      }
+
+      this.setState({init: false});
+
+      if (p.s.prefs.mode === 'sessions' && p.s.sessions.length > 0) {
+        stateUpdate = handleSessionTabs(stateUpdate);
+        if (p.s.search.length > 0) {
+          stateUpdate.sessionTabs = utils.searchChange(p, stateUpdate.sessionTabs);
+        }
+      } else if (p.s.prefs.mode !== 'tabs') {
+        stateUpdate.direction = 'asc';
+        utilityStore.handleMode(p.s.prefs.mode, _.flatten(allTabs));
+      }
+
+      if (p.s.prefs.mode === 'tabs') {
+        stateUpdate = this.checkDuplicateTabs(stateUpdate, Window.tabs);
+        if (p.s.search.length === 0) {
+          stateUpdate.tabs = Window.tabs;
+        } else {
+          stateUpdate.tabs = utils.searchChange(p, Window.tabs);
+        }
+      }
+      _.assignIn(stateUpdate, {
+        hasScrollbar: utils.scrollbarVisible(document.body),
+        reQuery: {state: false},
+      });
+      stateUpdate.allTabs = allTabs;
+      if (sU) {
+        _.assignIn(sU, stateUpdate);
+        cb(sU);
+      } else {
+        state.set(stateUpdate);
+      }
+    };
+
     var handleWindows = (res)=>{
       _.each(res.windows, (Window, wKey)=>{
         allTabs.push(Window.tabs);
         var wId = opt === 'bg' ? p.s.windowId : res.windowId;
-        if (p.s.tabs.length > 0 && Window.id === p.s.tabs[0].windowId || Window.id === wId) {
-
-          _.each(Window.tabs, (tVal, tKey)=>{
-            Window.tabs = utils.checkFavicons(p, tVal, tKey, Window.tabs);
-          });
-
-          if (opt === 'init') {
-            stateUpdate.windowId = res.windowId;
-          }
-
-          this.setState({init: false});
-
-          if (p.s.prefs.mode === 'sessions' && p.s.sessions.length > 0) {
-            stateUpdate = handleSessionTabs(stateUpdate);
-            if (p.s.search.length > 0) {
-              stateUpdate.sessionTabs = utils.searchChange(p, stateUpdate.sessionTabs);
-            }
-          } else if (p.s.prefs.mode !== 'tabs') {
-            stateUpdate.direction = 'asc';
-            utilityStore.handleMode(p.s.prefs.mode, _.flatten(allTabs))
-          }
-
-          if (p.s.prefs.mode === 'tabs') {
-            stateUpdate = this.checkDuplicateTabs(stateUpdate, Window.tabs);
-            if (p.s.search.length === 0) {
-              stateUpdate.tabs = Window.tabs;
-            } else {
-              stateUpdate.tabs = utils.searchChange(p, Window.tabs);
-            }
-          }
-          _.assignIn(stateUpdate, {
-            hasScrollbar: utils.scrollbarVisible(document.body),
-            reQuery: {state: false},
-          });
-          stateUpdate.allTabs = allTabs;
-          if (sU) {
-            _.assignIn(sU, stateUpdate);
-            cb(sU);
-          } else {
-            state.set(stateUpdate);
-          }
+        if (p.s.prefs.allTabs && wKey === res.windows.length - 1) {
+          var allTabsFlattened = _.flatten(allTabs);
+          handleWindow(res, {tabs: allTabsFlattened});
+        } else if (!p.s.prefs.allTabs && p.s.tabs.length > 0 && Window.id === p.s.tabs[0].windowId || Window.id === wId) {
+          handleWindow(res, Window);
         }
       });
       this.setState({topLoad: false});
@@ -601,7 +607,7 @@ var Root = React.createClass({
           this.setState({load: false});
         }
       }
-    }
+    };
 
     if (opt === 'bg' && bg) {
       handleWindows(bg);
