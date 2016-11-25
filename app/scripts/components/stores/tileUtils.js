@@ -73,7 +73,7 @@ export var closeAll = (t, tab)=>{
     url: '*://'+urlPath[2]+'/*'
   }, (Tab)=> {
     console.log(Tab);
-    for (var i = Tab.length - 1; i >= 0; i--) {
+    for (let i = 0, len = Tab.length; i < len; i++) {
       if (Tab[i].windowId === t.props.windowId) {
         closeTab(t, Tab[i].id);
       }
@@ -84,7 +84,7 @@ export var closeAll = (t, tab)=>{
 export var closeAllSearched = (t)=>{
   var p = t.props;
   var s = t.state;
-  for (var i = p[p.modeKey].length - 1; i >= 0; i--) {
+  for (let i = 0, len = p[p.modeKey].length; i < len; i++) {
     if (p.prefs.mode === 'history' || p.prefs.mode === 'bookmarks') {
       if (!s.openTab) {
         closeTab(t, p[p.modeKey][i], true);
@@ -143,11 +143,11 @@ export var checkDuplicateTabs = (t, p, opt)=>{
     var first;
     if (opt === 'closeAllDupes') {
       var duplicates;
-      for (var y = p.duplicateTabs.length - 1; y >= 0; y--) {
+      for (let y = 0, len = p.duplicateTabs.length; y < len; y++) {
         duplicates = _.filter(p.tabs, {url: p.duplicateTabs[y]});
         first = _.first(duplicates);
         if (duplicates) {
-          for (var x = duplicates.length - 1; x >= 0; x--) {
+          for (let x = 0, _len = duplicates.length; x < _len; x++) {
             if (duplicates[x].id !== first.id && !chrome.runtime.lastError) {
               closeTab(t, duplicates[x].id);
             }
@@ -159,7 +159,7 @@ export var checkDuplicateTabs = (t, p, opt)=>{
       var tabs = _.filter(p.tabs, {url: p.tab.url});
       first = _.first(tabs);
       var activeTab = _.map(_.find(tabs, { 'active': true }), 'id');
-      for (var i = 0; i < tabs.length; i++) {
+      for (let i = 0, len = tabs.length; i < len; i++) {
         if (tabs[i].id !== first.id && tabs[i].title !== 'New Tab' && tabs[i].id !== activeTab && tabs[i].id === p.tab.id) {
           if (opt === 'closeDupes') {
             closeTab(t, tabs[i].id, s.i);
@@ -226,12 +226,12 @@ export var handleRelays = (t, p)=>{
 export var checkFavicons = (p, tab, key, tabs)=>{
   if (p.s.favicons.length > 0) {
     var match = false;
-    _.each(p.s.favicons, (fVal)=>{
-      if (fVal && fVal.domain && kmp(tab.url, fVal.domain) !== -1) {
+    for (let i = 0, len = p.s.favicons.length; i < len; i++) {
+      if (p.s.favicons[i] && p.s.favicons[i].domain && kmp(tab.url, p.s.favicons[i].domain) !== -1) {
         match = true;
-        tabs[key].favIconUrl = fVal.favIconUrl;
+        tabs[key].favIconUrl = p.s.favicons[i].favIconUrl;
       }
-    });
+    }
     if (!match && p.s.prefs.mode === 'tabs') {
       faviconStore.set_favicon(tab, 0, 0);
     }
@@ -310,15 +310,16 @@ export var scrollbarVisible = (element)=>{
 };
 
 export var searchChange = (p, tabs)=>{
-  var _tabs = _.filter(tabs, (item)=>{
+  try {
+    var _tabs = _.filter(tabs, (item)=>{
     if (kmp(item.title.toLowerCase(), p.s.search.toLowerCase()) !== -1 || item.url.toLowerCase().indexOf(p.s.search.toLowerCase()) !== -1) {
       return item;
     }
   });
-  if (_tabs.length === 0 && p.s.search.indexOf(' ') === -1) {
-    state.set({search: ''});
+  } catch (e) {
     return tabs;
-  } else {
-    return _tabs;
   }
+
+  return _tabs;
+
 };

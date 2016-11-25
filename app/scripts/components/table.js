@@ -117,7 +117,7 @@ export var Table = React.createClass({
     var s = this.state;
     var rows = [];
 
-    for (var i = 0; i < p.s[p.s.modeKey].length; i++) {
+    for (let i = 0, len = p.s[p.s.modeKey].length; i < len; i++) {
       var row = p.s[p.s.modeKey][i];
       var urlMatch = row.url.match(/^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n]+)/im);
       row.domain = urlMatch ? urlMatch[1] : false;
@@ -285,7 +285,7 @@ export var Table = React.createClass({
           s.shiftRange = i_cache;
         }
         var range = _.slice(rows, s.shiftRange, i);
-        for (var z = range.length - 1; z >= 0; z--) {
+        for (let z = 0, len = range.length; z < len; z++) {
           var refRow = _.findIndex(s.rows, {id: range[z].id});
           if (s.selectedItems.indexOf(refRow) !== -1 && refRow !== s.shiftRange && refRow !== i) {
             _.pull(s.selectedItems, refRow);
@@ -306,9 +306,9 @@ export var Table = React.createClass({
     var p = this.props;
     var cT = _.cloneDeep(this);
     cT.props.prefs = p.s.prefs;
-    for (var i = s.selectedItems.length - 1; i >= 0; i--) {
+    for (let i = 0, len = s.selectedItems.length; i < len; i++) {
       cT.props.tab = s.rows[s.selectedItems[i]];
-      utils.closeTab(cT, s.rows[s.selectedItems[i]].id)
+      utils.closeTab(cT, s.rows[s.selectedItems[i]].id);
       _.pullAt(s.rows, s.selectedItems[i]);
     }
     this.setState({rows: s.rows, selectedItems: [], shiftRange: null});

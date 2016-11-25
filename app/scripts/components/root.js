@@ -530,7 +530,7 @@ var Root = React.createClass({
 
     var handleSessionTabs = (stateUpdate)=>{
       var sessionTabs = sessionsStore.flatten(p.s.sessions, _.flatten(allTabs), opt === 'init' ? stateUpdate.windowId : p.s.windowId);
-      for (let i = sessionTabs.length - 1; i >= 0; i--) {
+      for (let i = 0, len = sessionTabs.length; i < len; i++) {
         sessionTabs = utils.checkFavicons(p, sessionTabs[i], i, sessionTabs);
       }
       _.assignIn(stateUpdate, {
@@ -587,16 +587,16 @@ var Root = React.createClass({
     };
 
     var handleWindows = (res)=>{
-      _.each(res.windows, (Window, wKey)=>{
-        allTabs.push(Window.tabs);
+      for (let i = 0, len = res.windows.length; i < len; i++) {
+        allTabs.push(res.windows[i].tabs);
         var wId = opt === 'bg' ? p.s.windowId : res.windowId;
-        if (p.s.prefs.allTabs && wKey === res.windows.length - 1) {
+        if (p.s.prefs.allTabs && i === res.windows.length - 1) {
           var allTabsFlattened = _.flatten(allTabs);
           handleWindow(res, {tabs: allTabsFlattened});
-        } else if (!p.s.prefs.allTabs && p.s.tabs.length > 0 && Window.id === p.s.tabs[0].windowId || Window.id === wId) {
-          handleWindow(res, Window);
+        } else if (!p.s.prefs.allTabs && p.s.tabs.length > 0 && res.windows[i].id === p.s.tabs[0].windowId || res.windows[i].id === wId) {
+          handleWindow(res, res.windows[i]);
         }
-      });
+      }
       this.setState({topLoad: false});
       // Querying is complete, allow the component to render.
       if (opt === 'init' || opt === 'tile') {
@@ -619,7 +619,7 @@ var Root = React.createClass({
   },
   checkDuplicateTabs(stateUpdate, tabs){
     let tabUrls = [];
-    for (var i = tabs.length - 1; i >= 0; i--) {
+    for (let i = 0, len = tabs.length; i < len; i++) {
       tabUrls.push(tabs[i].url);    
     }
     console.log('Duplicates: ', utils.getDuplicates(tabUrls));

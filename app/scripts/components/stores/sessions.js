@@ -10,7 +10,7 @@ import {msgStore, utilityStore, alertStore} from './main';
 
 var sessionsStore = Reflux.createStore({
   convertV1(_item){
-    for (let i = _item.sessionData.length - 1; i >= 0; i--) {
+    for (let i = 0, len = _item.sessionData.length; i < len; i++) {
       var session = {
         timeStamp: _item.sessionData[i].timeStamp, 
         tabs: [_item.sessionData[i].tabs], 
@@ -24,13 +24,13 @@ var sessionsStore = Reflux.createStore({
   restore(session){
     // Opens a new chrome window with the selected tabs object.
     console.log('session.tabs: ',session.tabs);
-    for (let i = session.tabs.length - 1; i >= 0; i--) {
+    for (let i = 0, len = session.tabs.length; i < len; i++) {
       chrome.windows.create({
         focused: true
       }, (Window)=>{
         console.log('restored session...',Window);
         var tabs = _.orderBy(session.tabs[i], ['pinned', 'index'], ['desc', 'asc']);
-        for (let z = 0; z < tabs.length; z++) {
+        for (let z = 0, _len = tabs.length; z < _len; z++) {
           tabs[z].index = z;
         }
         chrome.runtime.sendMessage(chrome.runtime.id, {method: 'restoreWindow', windowId: Window.id, tabs: tabs}, (response)=>{
@@ -46,7 +46,7 @@ var sessionsStore = Reflux.createStore({
     }, (Window)=>{
       console.log('restored session...',Window);
       var tabs = _.orderBy(session.tabs[windowIndex], ['pinned', 'index'], ['desc', 'asc']);
-      for (let z = 0; z < tabs.length; z++) {
+      for (let z = 0, len = tabs.length; z < len; z++) {
         tabs[z].index = z;
       }
       chrome.runtime.sendMessage(chrome.runtime.id, {method: 'restoreWindow', windowId: Window.id, tabs: tabs}, (response)=>{
@@ -105,9 +105,9 @@ var sessionsStore = Reflux.createStore({
     if (sessions) {
       var allTabs = [];
       var openTab = 0;
-      for (let i = sessions.length - 1; i >= 0; i--) {
-        for (let y = sessions[i].tabs.length - 1; y >= 0; y--) {
-          for (let z = sessions[i].tabs[y].length - 1; z >= 0; z--) {
+      for (let i = 0, len = sessions.length; i < len; i++) {
+        for (let y = 0, _len = sessions[i].tabs.length; y < _len; y++) {
+          for (let z = 0, __len = sessions[i].tabs[y].length; z < __len; z++) {
             var sessionTab = {
               openTab: null,
               pinned: false,
@@ -184,7 +184,7 @@ var sessionsStore = Reflux.createStore({
           if (Tab.favIconUrl !== undefined && Tab.favIconUrl && Tab.favIconUrl.indexOf('data') !== -1) {
             sessions[sKey].tabs[wKey][tKey].favIconUrl = '';
           }
-        })
+        });
       });
     });
     chrome.storage.local.set({sessions: sessions}, (result)=> {

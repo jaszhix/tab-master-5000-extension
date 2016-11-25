@@ -96,33 +96,33 @@ var syncSession = (sessions, prefs, windows=null, cb)=>{
     if (refSession === -1) {
       return;
     }
-    for (let i = 0; i < windows.length; i++) {
+    for (let i = 0, len = windows.length; i < len; i++) {
       allTabs.push(windows[i].tabs);
-      _.each(windows[i].tabs, (tab, tKey)=>{
-        if (windows[i].tabs[tKey].url === 'chrome://newtab/') {
-          _.pullAt(windows[i].tabs, tKey);
+      for (let z = 0, _len = windows[i].tabs.length; z < _len; z++) {
+        if (windows[i].tabs[z].url === 'chrome://newtab/') {
+          _.pullAt(windows[i].tabs, z);
         }
-      });
+      }
     }
     sessions[refSession].tabs = allTabs;
     sessions[refSession].timeStamp = new Date(Date.now());
     sessions[refSession] = sessions[refSession];
     chrome.storage.local.set({sessions: sessions});
   }
-}
+};
 
 var checkAutoDiscard = (windows, prefs)=>{
   var discards = 0;
   if (prefs.autoDiscard) {
-    _.each(windows, (Window)=>{
-      _.each(Window.tabs, (tab)=>{ 
-        if (tab.hasOwnProperty('timeStamp') && tab.timeStamp + prefs.autoDiscardTime < Date.now()) {
+    for (let i = 0, len = windows.length; i < len; i++) {
+      for (let z = 0, _len = windows[i].tabs.length; z < _len; z++) {
+        if (windows[i].tabs[z].hasOwnProperty('timeStamp') && windows[i].tabs[z].timeStamp + prefs.autoDiscardTime < Date.now()) {
           ++discards;
-          chrome.tabs.discard(tab.id);
-          console.log('Discarding: ', tab.title);
+          chrome.tabs.discard(windows[i].tabs[z].id);
+          console.log('Discarding: ', windows[i].tabs[z].title);
         }
-      });
-    });
+      }
+    }
   }
   return discards;
 };
@@ -280,7 +280,7 @@ var Bg = React.createClass({
     if (eventState.onInstalled) {
       if (eventState.onInstalled.reason === 'update' || eventState.onInstalled.reason === 'install') {
         chrome.tabs.query({title: 'New Tab'},(tabs)=>{
-          for (var i = 0; i < tabs.length; i++) {
+          for (let i = 0, len = tabs.length; i < len; i++) {
             chrome.tabs.remove(tabs[i].id);
           }
         });
@@ -470,7 +470,7 @@ var Bg = React.createClass({
       } else if (msg.method === 'close') {
         chrome.tabs.remove(sender.tab.id);
       } else if (msg.method === 'restoreWindow') {
-        for (var i = 0; i < msg.tabs.length; i++) {
+        for (let i = 0, len = msg.tabs.length; i < len; i++) {
           chrome.tabs.create({
             windowId: msg.windowId,
             index: msg.tabs[i].index,
@@ -510,23 +510,23 @@ var Bg = React.createClass({
   },
   formatTabs(prefs, tabs){
     var blacklisted = [];
-    _.each(tabs, (tab, tKey)=>{
-      var urlMatch = tab.url.match(/^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n]+)/im);
-      _.assign(tabs[tKey], {
+    for (let i = 0, len = tabs.length; i < len; i++) {
+      var urlMatch = tabs[i].url.match(/^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n]+)/im);
+      _.assign(tabs[i], {
         timeStamp: new Date(Date.now()).getTime(),
-        domain: urlMatch ? urlMatch[1] : tab.url.split('/')[2]
+        domain: urlMatch ? urlMatch[1] : tabs[i].url.split('/')[2]
       });
-      if (tab.url.indexOf('chrome://newtab/') !== -1) {
-        blacklisted.push({id: tab.id, windowId: tab.windowId});
+      if (tabs[i].url.indexOf('chrome://newtab/') !== -1) {
+        blacklisted.push({id: tabs[i].id, windowId: tabs[i].windowId});
       }
-    });
+    }
     if (blacklisted.length > 0 && prefs && prefs.singleNewTab) {
       var extraNewTabs = _.tail(blacklisted);
       console.log(extraNewTabs, blacklisted);
-      for (let i = extraNewTabs.length - 1; i >= 0; i--) {
+      for (let i = 0, len = extraNewTabs.length; i < len; i++) {
         chrome.tabs.remove(extraNewTabs[i].id);
       }
-      this.state.newTabs.push(blacklisted[0])
+      this.state.newTabs.push(blacklisted[0]);
     } else {
       this.state.newTabs = _.concat(this.state.newTabs, blacklisted);
     }
@@ -535,17 +535,17 @@ var Bg = React.createClass({
   },
   queryTabs(send=null, prefs){
     chrome.windows.getAll({populate: true}, (w)=>{
-      _.each(w, (Window, wKey)=>{
-        Window.tabs = this.formatTabs(prefs, Window.tabs);
-      });
-      this.setState({windows: w})
+      for (let i = 0, len = w.length; i < len; i++) {
+        w[i].tabs = this.formatTabs(prefs, w[i].tabs);
+      }
+      this.setState({windows: w});
       if (send) {
         sendMsg({windows: this.state.windows});
       }
     });
   },
   convertV1Sessions(_item){
-    for (let i = _item.sessionData.length - 1; i >= 0; i--) {
+    for (let i = 0, len = _item.sessionData.length; i < len; i++) {
       var session = {
         timeStamp: _item.sessionData[i].timeStamp, 
         tabs: [_item.sessionData[i].tabs], 
@@ -603,7 +603,7 @@ var Bg = React.createClass({
       title: 'New Tab',
       active: true
     }, function(Tab) {
-      for (var i = Tab.length - 1; i >= 0; i--) {
+      for (let i = 0, len = Tab.length; i < len; i++) {
         chrome.tabs.update(Tab[i].id, {
           active: true
         });
@@ -695,7 +695,7 @@ var Bg = React.createClass({
     }
 
     if (typeof this.state.windows[refWindow].tabs[e.index] !== 'undefined') {
-      for (var i = this.state.windows[refWindow].tabs.length - 1; i >= 0; i--) {
+      for (let i = 0, len = this.state.windows[refWindow].tabs.length; i < len; i++) {
         if (i > e.index) {
           if (i <= this.state.windows[refWindow].tabs.length) {
             this.state.windows[refWindow].tabs[i].index = i + 1;

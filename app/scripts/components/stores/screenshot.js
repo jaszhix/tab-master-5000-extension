@@ -92,7 +92,7 @@ var screenshotStore = Reflux.createStore({
       // If screenshot cache is above 50MB, start purging screenshots that are 3 days old.
       if (bytes > 52428800) {
         var now = new Date(Date.now()).getTime();
-        for (var i = index.length - 1; i >= 0; i--) {
+        for (let i = 0, len = index.length; i < len; i++) {
           timeStampIndex = _.find(index, { timeStamp: index[i].timeStamp });
           timeStamp = new Date(timeStampIndex.timeStamp).getTime();
           if (timeStamp + 259200000 < now) {

@@ -252,7 +252,7 @@ export var blacklistStore = Reflux.createStore({
     } else {
       valueArr = [value];
     }
-    for (var i = 0; i < valueArr.length; i++) {
+    for (let i = 0, len = valueArr.length; i < len; i++) {
       valueArr[i] = _.trim(valueArr[i]);
       this.blacklist.push(valueArr[i]);
     }
@@ -306,20 +306,20 @@ export var bookmarksStore = Reflux.createStore({
             bookmarks.push(bookmarkLevel);
           } else {
             folders.push(bookmarkLevel);
-            for (let i = bookmarks.length - 1; i >= 0; i--) {
-              for (let x = folders.length - 1; x >= 0; x--) {
+            for (let i = 0, len = bookmarks.length; i < len; i++) {
+              for (let x = 0, _len = folders.length; x < _len; x++) {
                 if (bookmarks[i].parentId === folders[x].id) {
                   bookmarks[i].folder = folders[x].title;
                 }
               }
             }
-            bookmarkLevel.children.forEach((child)=>{
-              addBookmarkChildren(child, title);
-            });
+            for (let i = 0, len = bookmarkLevel.children.length; i < len; i++) {
+              addBookmarkChildren(bookmarkLevel.children[i], title);
+            }
           }
         };
         addBookmarkChildren(bk[0]);
-        for (let i = bookmarks.length - 1; i >= 0; i--) {
+        for (let i = 0, len = bookmarks.length; i < len; i++) {
           var refOpenTab = _.findIndex(s.tabs, {url: bookmarks[i].url});
           if (refOpenTab !== -1) {
             bookmarks[i] = _.assignIn(bookmarks[i], s.tabs[refOpenTab]);
@@ -330,7 +330,7 @@ export var bookmarksStore = Reflux.createStore({
         }
         bookmarks = _.chain(bookmarks).orderBy(['openTab'], ['asc']).uniqBy('id').value();
         if (bookmarks) {
-          for (let i = bookmarks.length - 1; i >= 0; i--) {
+          for (let i = 0, len = bookmarks.length; i < len; i++) {
             bookmarks = utils.checkFavicons({s: s}, bookmarks[i], i, bookmarks);
           }
           bookmarks = _.orderBy(bookmarks, ['dateAdded', 'asc'])
@@ -341,7 +341,6 @@ export var bookmarksStore = Reflux.createStore({
   },
   get_bookmarks(tabs) {
     var s = state.get();
-    var stateUpdate = {};
     this.set_bookmarks(tabs).then((bk)=>{
       bk = utils.sort({s: s}, bk);
       if (s.search.length > 0) {
@@ -376,7 +375,7 @@ export var historyStore = Reflux.createStore({
         var s = state.get();
         s.tabs = tabs ? tabs : _.flatten(s.allTabs);
         var openTab = 0;
-        for (var i = h.length - 1; i >= 0; i--) {
+        for (let i = 0, len = h.length; i < len; i++) {
           var urlMatch = h[i].url.match(s.domainRegEx);
           _.assign(h[i], {
             openTab: null,
@@ -393,14 +392,14 @@ export var historyStore = Reflux.createStore({
             index: i,
             windowId: s.windowId
           });
-          for (var y = s.tabs.length - 1; y >= 0; y--) {
+          for (let y = 0, _len = s.tabs.length; y < _len; y++) {
             if (h[i].url === s.tabs[y].url) {
               h[i] = _.assignIn(h[i], _.cloneDeep(s.tabs[y]));
               h[i].openTab = ++openTab;
             } 
           }
         }
-        for (let i = h.length - 1; i >= 0; i--) {
+        for (let i = 0, len = h.length; i < len; i++) {
           h = utils.checkFavicons({s: s}, h[i], i, h);
         }
         resolve(h);
@@ -471,7 +470,7 @@ export var faviconStore = Reflux.createStore({
   },
   clean(){
     var s = state.get();
-    for (var i = s.favicons.length - 1; i >= 0; i--) {
+    for (let i = 0, len = s.favicons.length; i < len; i++) {
       if (!s.favicons[i]) {
         this.favicons = _.without(s.favicons, s.favicons[i]);
       }
@@ -488,7 +487,7 @@ export var chromeAppStore = Reflux.createStore({
     chrome.management.getAll((apps)=>{
       var _apps = _.filter(apps, {isApp: app});
       if (_apps) {
-        for (let i = _apps.length - 1; i >= 0; i--) {
+        for (let i = 0, len = _apps.length; i < len; i++) {
           _.assign(_apps[i], {
             favIconUrl: _apps[i].icons ? utils.filterFavicons(_.last(_apps[i].icons).url, _.last(_apps[i].icons).url) : '../images/IDR_EXTENSIONS_FAVICON@2x.png',
             id: _apps[i].id,

@@ -531,7 +531,7 @@ var Sessions = React.createClass({
             var _time = time === 'A few seconds ago' ? 'Seconds ago' : time;
             var getTabsCount = ()=>{
               var int = 0;
-              for (let i = session.tabs.length - 1; i >= 0; i--) {
+              for (let i = 0, len = session.tabs.length; i < len; i++) {
                 for (let y = session.tabs[i].length - 1; y >= 0; y--) {
                   ++int;
                 }
