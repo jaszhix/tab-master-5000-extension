@@ -209,7 +209,7 @@ export var utilityStore = Reflux.createStore({
     }
     _.assignIn(stateUpdate, {mode: mode, modeKey: mode === 'sessions' ? 'sessionTabs' : mode});
     state.set(stateUpdate);
-    _.defer(()=>msgStore.setPrefs({mode: mode}));
+    msgStore.setPrefs({mode: mode});
   },
   now(){
     return new Date(Date.now()).getTime();
