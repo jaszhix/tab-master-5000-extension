@@ -504,8 +504,6 @@ var Bg = React.createClass({
         this.undoAction(this.state.windows[refWindow].tabs, this.state.chromeVersion);
       } else if (msg.method === 'getActions') {
         sendResponse({actions: this.state.actions});
-      } else if (msg.hasOwnProperty('scrollNav')) {
-        this.handleScrollNav(sender, msg.scrollNav === 'up' ? sender.tab.index + 1 : sender.tab.index - 1, msg.scrollNav);
       }
       return true;
     });
@@ -520,12 +518,6 @@ var Bg = React.createClass({
       });
       if (tab.url.indexOf('chrome://newtab/') !== -1) {
         blacklisted.push({id: tab.id, windowId: tab.windowId});
-      }
-      var scrollNavArg = tab.url && tab.url.indexOf('chrome://') === -1 && tab.url.indexOf('chrome.google.com') === -1 && tab.url.indexOf('drive.google.com') === -1 && tab.url.indexOf('data:') === -1 && tab.url.indexOf('127.0.0.1') === -1 && tab.url.indexOf('localhost') === -1;
-      if (prefs.scrollNav) {
-        if (scrollNavArg) {
-          this.executeScrollNav(tab.id);
-        }
       }
     });
     if (blacklisted.length > 0 && prefs && prefs.singleNewTab) {
@@ -726,12 +718,6 @@ var Bg = React.createClass({
         return;
       }
     }
-    if (this.state.prefs.scrollNav) {
-      var scrollNavArg = e.url && e.url.indexOf('chrome://') === -1 && e.url.indexOf('chrome.google.com') === -1 && e.url.indexOf('drive.google.com') === -1 && e.url.indexOf('data:') === -1 && e.url.indexOf('127.0.0.1') === -1 && e.url.indexOf('localhost') === -1;
-      if (scrollNavArg) {
-        this.executeScrollNav(e.tab.id);
-      }
-    }
     setActionThrottled(this, 'create', e);
     synchronizeSession(this.state.sessions, this.state.prefs, this.state.windows);
     sendMsg({windows: this.state.windows, windowId: e.windowId});
@@ -823,70 +809,6 @@ var Bg = React.createClass({
         sendMsg({windows: this.state.windows, windowId: e.windowId});   
       }
     });
-  },
-  executeScrollNav(id){
-    chrome.tabs.executeScript(id, {
-      code: `
-        if (chrome && chrome.runtime) {
-          window.wheelListener = (e)=>{
-            if (e.y <= 20 || e.shiftKey) {
-              if (e.wheelDelta / 120 > 0) {
-                chrome.runtime.sendMessage({scrollNav: 'down'}); 
-              }
-              else {
-                chrome.runtime.sendMessage({scrollNav: 'up'}); 
-              }
-              e.preventDefault();
-            }
-          };
-          window.mouseMove = (e)=>{
-            if (e.y <= 20 || e.shiftKey) {
-              document.body.style.cursor = 'all-scroll';
-              window.addEventListener('mousewheel', wheelListener);
-            } else {
-              document.body.style.cursor = 'initial';
-              window.removeEventListener('mousewheel', wheelListener);
-            }
-          };
-          document.onmousemove = mouseMove;
-        }
-      `
-    });
-  },
-  handleScrollNav(sender, index, direction){
-    if (this.state.prefs.scrollNav) {
-      var findTab = (_index)=>{
-        var refWindow = _.findIndex(this.state.windows, {id: sender.tab.windowId});
-        if (refWindow === -1) {
-          return;
-        }
-        var refTab = _.findIndex(this.state.windows[refWindow].tabs, {index: _index});
-        if (refTab === -1) {
-          var lastTab = _.last(this.state.windows[refWindow].tabs);
-          if (index === -1) {
-            findTab(lastTab.index);
-          } else if (index > lastTab.index) {
-            findTab(0);
-          }
-          return;
-        }
-        var tab = this.state.windows[refWindow].tabs[refTab];
-        if ((tab.url.indexOf('chrome://') !== -1 || tab.url.indexOf('chrome.google.com') !== -1|| tab.url.indexOf('127.0.0.1') !== -1 || tab.url.indexOf('localhost') !== -1 || tab.url.indexOf('drive.google.com') !== -1 || tab.url.indexOf('data:') !== -1) 
-          && tab.url.indexOf('chrome://newtab/') === -1
-          || tab.status === 'loading'
-          || tab.discarded) {
-          if (direction === 'up') {
-            findTab(++_index);
-          } else {
-            findTab(--_index);
-          }
-        } else {
-          console.log('scrollNav trigger');
-          chrome.tabs.update(this.state.windows[refWindow].tabs[refTab].id, {active: true});
-        }
-      };
-      findTab(index); 
-    }
   },
   render(){
     console.log('BG STATE: ',this.state);

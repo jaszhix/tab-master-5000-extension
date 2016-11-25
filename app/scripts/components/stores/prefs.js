@@ -35,8 +35,7 @@ var prefsStore = Reflux.createStore({
       theme: 9001,
       wallpaper: null,
       tooltip: true,
-      alerts: true,
-      scrollNav: false
+      alerts: true
     };
     var getPrefs = new Promise((resolve, reject)=>{
       chrome.storage.sync.get('preferences', (prefs)=>{
@@ -90,8 +89,7 @@ var prefsStore = Reflux.createStore({
         syncedSession: prefs.syncedSession,
         wallpaper: prefs.wallpaper,
         tooltip: prefs.tooltip,
-        alerts: prefs.alerts,
-        scrollNav: prefs.scrollNav
+        alerts: prefs.alerts
       };
       if (typeof this.prefs.autoDiscard === 'undefined') {
         this.prefs.autoDiscard = false;
@@ -147,8 +145,8 @@ var prefsStore = Reflux.createStore({
       if (typeof this.prefs.alerts === 'undefined') {
         this.prefs.alerts = true;
       }
-      if (typeof this.prefs.scrollNav === 'undefined') {
-        this.prefs.scrollNav = false;
+      if (typeof this.prefs.scrollNav !== 'undefined') {
+        delete this.prefs.scrollNav;
       }
       console.log('load prefs: ', prefs, this.prefs);
       this.trigger(this.prefs);

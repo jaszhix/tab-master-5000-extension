@@ -241,9 +241,6 @@ var Root = React.createClass({
     var p = this.props;
     var stateUpdate = {};
     var sUChange = false;
-    if (nP.s.prefs.scrollNav !== p.s.prefs.scrollNav) {
-      this.handleMouseListeners(nP);
-    }
     if (nP.s.modeKey !== p.s.modeKey && nP.s.prefs.mode === p.s.prefs.mode) {
       if (nP.s.search.length > 0) {
         stateUpdate[nP.s.modeKey] = utils.searchChange(nP, nP.s[nP.s.modeKey]);
@@ -298,48 +295,6 @@ var Root = React.createClass({
         });
       }
     });
-    this.handleMouseListeners(p);
-  },
-  handleMouseListeners(p){
-    var wheelListener = (e)=>{
-      if (e.y <= 20 || e.shiftKey) {
-        if (e.wheelDelta / 120 > 0) {
-          chrome.runtime.sendMessage({scrollNav: 'down'}); 
-        }
-        else {
-          chrome.runtime.sendMessage({scrollNav: 'up'}); 
-        }
-        e.preventDefault();
-      }
-    };
-    document.onmousemove = handleMouseMove;
-    function handleMouseMove(e) {
-      if (p.s.prefs.scrollNav) {
-        if (e.y <= 20 || e.shiftKey) {
-          document.body.style.cursor = 'all-scroll';
-          window.addEventListener('mousewheel', wheelListener);
-        } else {
-          document.body.style.cursor = 'initial';
-          window.removeEventListener('mousewheel', wheelListener);
-        }
-      } else {
-        window.removeEventListener('mousewheel', wheelListener);
-      }
-      utilityStore.set_cursor({
-        page: {
-          x: e.pageX,
-          y: e.pageY
-        },
-        offset: {
-          x: e.offsetX,
-          y: e.offsetY,
-        },
-        keys: {
-          ctrl: e.ctrlKey,
-          shift: e.shiftKey
-        }
-      });
-    }
   },
   faviconsChange(e){
     this.setState({topLoad: true});
