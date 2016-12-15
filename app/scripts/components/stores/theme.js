@@ -704,16 +704,20 @@ export var themeStore = Reflux.createStore({
   balance(color){
     var rgb = color;
     var colors = rgb.match(/^rgba\((\d+),\s*(\d+),\s*(\d+),\s*(\d+(\.\d*)?)|(\.\d+)\)$/);
-    var r = colors[1];
-    var g = colors[2];
-    var b = colors[3];
-    var brightness = colors[4];
+    if (colors !== undefined && colors) {
+      var r = colors[1];
+      var g = colors[2];
+      var b = colors[3];
+      var brightness = colors[4];
 
-    var ir = Math.floor((255-r)*brightness);
-    var ig = Math.floor((255-g)*brightness);
-    var ib = Math.floor((255-b)*brightness);
+      var ir = Math.floor((255-r)*brightness);
+      var ig = Math.floor((255-g)*brightness);
+      var ib = Math.floor((255-b)*brightness);
 
-    return 'rgb('+ir+','+ig+','+ib+')';
+      return 'rgb('+ir+','+ig+','+ib+')';
+    } else {
+      return color;
+    }
   },
 });
 
