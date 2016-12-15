@@ -128,6 +128,9 @@ var checkAutoDiscard = (windows, prefs)=>{
 };
 
 var createScreenshot = (t, refWindow, refTab)=>{
+  if (refWindow === -1 || refTab === -1) {
+    return;
+  }
   if (t.state.windows[refWindow].tabs[refTab] === undefined) {
     return;
   }
@@ -159,10 +162,10 @@ var createScreenshot = (t, refWindow, refTab)=>{
       sourceImage.onload = function() {
         var imgWidth = sourceImage.width / 2;
         var imgHeight = sourceImage.height / 2;
-        var canvas = document.createElement("canvas");
+        var canvas = document.createElement('canvas');
         canvas.width = imgWidth;
         canvas.height = imgHeight;
-        canvas.getContext("2d").drawImage(sourceImage, 0, 0, imgWidth, imgHeight);
+        canvas.getContext('2d').drawImage(sourceImage, 0, 0, imgWidth, imgHeight);
         var newDataUri = canvas.toDataURL('image/jpeg', 0.25);
         if (newDataUri) {
           resolve(newDataUri);
