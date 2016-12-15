@@ -247,9 +247,12 @@ var Tile = React.createClass({
     };
     var ST1 = _.merge({
       top: `${p.prefs.tabSizeHeight - 40}px`,
-      cursor: p.prefs.mode === 'sessions' || p.prefs.mode === 'bookmarks' ? 'pointer' : 'initial'
+      cursor: p.prefs.mode === 'sessions' || p.prefs.mode === 'bookmarks' ? 'default' : 'initial'
     }, subTitleStyle);
-    var ST2 = _.merge({top: `${p.prefs.tabSizeHeight - 55}px`}, subTitleStyle);
+    var ST2 = _.merge({
+      top: `${p.prefs.tabSizeHeight - 55}px`,
+      cursor: p.prefs.mode === 'sessions' || p.prefs.mode === 'bookmarks' ? 'pointer' : 'default'
+    }, subTitleStyle);
     var favIconUrl = p.tab.favIconUrl ? utils.filterFavicons(p.tab.favIconUrl, p.tab.url) : '../images/file_paper_blank_document.png';
     return (
       <Panel
@@ -259,46 +262,46 @@ var Tile = React.createClass({
       onDragOver={p.onDragOver}
       footerLeft={
         <div>
-            <div className="media-left" style={{paddingRight: '6px'}}>
-              <img src={favIconUrl} style={{width: '16px', height: '16px'}}/>
-            </div>
-            <div className="media-left">
-              <div style={{
+          <div className="media-left" style={{paddingRight: '6px'}}>
+            <img src={favIconUrl} style={{width: '16px', height: '16px'}}/>
+          </div>
+          <div className="media-left">
+            <div style={{
+              color: p.theme.tileText, 
+              textShadow: `2px 2px ${p.theme.tileTextShadow}`, 
+              width: p.prefs.tabSizeHeight+40, 
+              overflow: 'hidden',
+              cursor: 'pointer'
+            }}>
+              <a style={{
+                fontSize: `${titleFontSize}px`, 
                 color: p.theme.tileText, 
-                textShadow: `2px 2px ${p.theme.tileTextShadow}`, 
-                width: p.prefs.tabSizeHeight+40, 
-                overflow: 'hidden',
-                cursor: 'pointer'
-              }}>
-                <a style={{
-                  fontSize: `${titleFontSize}px`, 
-                  color: p.theme.tileText, 
-                  WebkitTransition: p.prefs.animations ? 'font-size 0.2s' : 'initial'
-                }}>{p.tab.title.length > 0 ? p.tab.title : p.tab.domain ? p.tab.domain : p.tab.url.split('/')[2]}</a>
-              </div>
-              {p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ? 
-              <div className="text-muted text-size-small" style={{
-                whiteSpace: s.hover ? 'initial' : 'nowrap', 
-                WebkitTransition: p.prefs.animations ? 'white-space 0.1s' : 'initial',
-                color: themeStore.opacify(p.theme.tileText, 0.8)
-              }}>{p.tab.description}</div> : null}
-              {p.prefs.mode === 'tabs' || p.prefs.mode === 'history' || p.prefs.mode === 'bookmarks' || p.prefs.mode === 'sessions' ? 
-              <div onMouseEnter={()=>this.setState({stHover: true})} onMouseLeave={()=>this.setState({stHover: false})}>
-                <div className="text-muted text-size-small" style={ST1}>{p.tab.domain ? p.tab.domain : p.tab.url.split('/')[2]}</div>
-                {isTab && p.chromeVersion >= 54 && p.tab.discarded ?
-                <div className="text-muted text-size-small" style={ST2}>Discarded</div> : null}
-                {p.prefs.mode === 'history' ? 
-                <div className="text-muted text-size-small" style={ST2}>{_.capitalize(moment(p.tab.lastVisitTime).fromNow())}</div> : null}
-                {p.prefs.mode === 'bookmarks' ? 
-                <div onClick={()=>this.filterFolders(p.tab.folder)} className="text-muted text-size-small" style={ST2}>{p.tab.folder}</div> : null}
-                {p.prefs.mode === 'sessions' ? 
-                <div onClick={()=>this.filterFolders(p.tab.originSession)} className="text-muted text-size-small" style={p.tab.hasOwnProperty('domain') && p.tab.domain ? ST2 : ST1}>{p.tab.label ? p.tab.label : _.capitalize(moment(p.tab.sTimeStamp).fromNow())}</div> : null}
-              </div> : null}
-              {p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ? 
-              <div onMouseEnter={()=>this.setState({stHover: true})} onMouseLeave={()=>this.setState({stHover: false})}>
-                <div onClick={()=>this.filterFolders(p.tab.originSession)} className="text-muted text-size-small" style={ST1}>{`v${p.tab.version}`}</div>
-              </div> : null}
+                WebkitTransition: p.prefs.animations ? 'font-size 0.2s' : 'initial'
+              }}>{p.tab.title.length > 0 ? p.tab.title : p.tab.domain ? p.tab.domain : p.tab.url.split('/')[2]}</a>
             </div>
+            {p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ? 
+            <div className="text-muted text-size-small" style={{
+              whiteSpace: s.hover ? 'initial' : 'nowrap', 
+              WebkitTransition: p.prefs.animations ? 'white-space 0.1s' : 'initial',
+              color: themeStore.opacify(p.theme.tileText, 0.8)
+            }}>{p.tab.description}</div> : null}
+            {p.prefs.mode === 'tabs' || p.prefs.mode === 'history' || p.prefs.mode === 'bookmarks' || p.prefs.mode === 'sessions' ? 
+            <div onMouseEnter={()=>this.setState({stHover: true})} onMouseLeave={()=>this.setState({stHover: false})}>
+              <div className="text-muted text-size-small" style={ST1}>{p.tab.domain ? p.tab.domain : p.tab.url.split('/')[2]}</div>
+              {isTab && p.chromeVersion >= 54 && p.tab.discarded ?
+              <div className="text-muted text-size-small" style={ST2}>Discarded</div> : null}
+              {p.prefs.mode === 'history' ? 
+              <div className="text-muted text-size-small" style={ST2}>{_.capitalize(moment(p.tab.lastVisitTime).fromNow())}</div> : null}
+              {p.prefs.mode === 'bookmarks' ? 
+              <div onClick={()=>this.filterFolders(p.tab.folder)} className="text-muted text-size-small" style={ST2}>{p.tab.folder}</div> : null}
+              {p.prefs.mode === 'sessions' ? 
+              <div onClick={()=>this.filterFolders(p.tab.originSession)} className="text-muted text-size-small" style={p.tab.hasOwnProperty('domain') && p.tab.domain ? ST2 : ST1}>{p.tab.label ? p.tab.label : _.capitalize(moment(p.tab.sTimeStamp).fromNow())}</div> : null}
+            </div> : null}
+            {p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ? 
+            <div onMouseEnter={()=>this.setState({stHover: true})} onMouseLeave={()=>this.setState({stHover: false})}>
+              <div onClick={()=>this.filterFolders(p.tab.originSession)} className="text-muted text-size-small" style={ST1}>{`v${p.tab.version}`}</div>
+            </div> : null}
+          </div>
         </div>
       }
       header={
@@ -428,7 +431,8 @@ var Tile = React.createClass({
         opacity: s.close ? '0' : p.tab.hasOwnProperty('enabled') && !p.tab.enabled ? '0.5' : p.chromeVersion >= 54 && p.tab.discarded ? '0.5' : '1',
         WebkitTransition: p.prefs.animations ? 'opacity 0.2s' : 'initial',
         WebkitAnimationIterationCount: s.duplicate ? 'infinite' : 'initial', 
-        WebkitAnimationDuration: s.duplicate ? '5s' : '0.2s'
+        WebkitAnimationDuration: s.duplicate ? '5s' : '0.2s',
+        cursor: 'pointer'
       }}
       bodyStyle={{
         height: s.hover ? `18px` : `${p.prefs.tabSizeHeight - 40}px`, 
@@ -465,7 +469,8 @@ var Tile = React.createClass({
         backgroundColor: s.hover ? p.theme.tileBg : p.tab.pinned || p.tab.mutedInfo.muted || p.tab.audible ? themeStore.opacify(p.theme.tileBg, 0.8) : 'rgba(255, 255, 255, 0)',
         position: 'absolute',
         zIndex: '11',
-        WebkitTransition: p.prefs.animations ? 'opacity 0.2s, background-color 0.1s' : 'initial'
+        WebkitTransition: p.prefs.animations ? 'opacity 0.2s, background-color 0.1s' : 'initial',
+        cursor: 'default'
       }}
       onMouseEnter={this.handleHoverIn}
       onMouseLeave={this.handleHoverOut}
