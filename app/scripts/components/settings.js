@@ -320,7 +320,7 @@ var Theming = React.createClass({
                   <li style={{padding: '0px'}} className={`${s.rightTab === 'color' ? 'active' : ''}`}>
                     <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({rightTab: 'color'})}>Color Scheme</a>
                   </li>
-                  {!s.isNewTheme && s.leftTab === 'custom' || s.leftTab === 'tm5k' && s.selectedTheme.id !== 9000 ? 
+                  {!s.isNewTheme && s.leftTab === 'custom' || s.leftTab === 'tm5k' && s.selectedTheme && s.selectedTheme !== undefined && s.selectedTheme.id !== 9000 ? 
                   <li style={{padding: '0px'}} className={`${s.rightTab === 'wallpaper' ? 'active' : ''}`}>
                     <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({rightTab: 'wallpaper'})}>Wallpaper</a>
                   </li> : null}
