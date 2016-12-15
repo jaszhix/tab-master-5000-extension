@@ -1,5 +1,4 @@
 import _ from 'lodash';
-import v from 'vquery';
 import kmp from 'kmp';
 import state from './state';
 import {historyStore, bookmarksStore, chromeAppStore, faviconStore} from './main';
@@ -10,7 +9,7 @@ export var closeTab = (t, id, search)=>{
   var stateUpdate = {};
   t.setState({duplicate: false});
   var reRender = (defer)=>{
-    state.set({reQuery: {state: true, type: defer ? 'cycle' : 'create', id: p.tabs[0].id}});
+    state.set({reQuery: {state: true, type: defer ? 'cycle' : 'create', id: id}});
   };
   var close = ()=>{
     chrome.tabs.remove(id, ()=>{
@@ -21,11 +20,11 @@ export var closeTab = (t, id, search)=>{
       }
     });
   };
-  if (!p.tab.hasOwnProperty('openTab') || !p.tab.openTab) {
+  if (p.tab !== undefined && (!p.tab.hasOwnProperty('openTab') || !p.tab.openTab)) {
     t.setState({close: true});
   }
   if (p.prefs.mode !== 'tabs') {
-    if (p.tab.hasOwnProperty('openTab') && p.tab.openTab) {
+    if (p.tab !== undefined && p.tab.hasOwnProperty('openTab') && p.tab.openTab) {
       close(true);
       p[p.modeKey][p.i].openTab = null;
       stateUpdate[p.modeKey] = p[p.modeKey];
