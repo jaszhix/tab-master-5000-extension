@@ -119,6 +119,9 @@ export var Table = React.createClass({
 
     for (let i = 0, len = p.s[p.s.modeKey].length; i < len; i++) {
       var row = p.s[p.s.modeKey][i];
+      if (row === undefined || !row || row.url === undefined || !row.url) {
+        continue;
+      }
       var urlMatch = row.url.match(/^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n]+)/im);
       row.domain = urlMatch ? urlMatch[1] : false;
       rows.push(row);
