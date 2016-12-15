@@ -37,7 +37,12 @@ var screenshotStore = Reflux.createStore({
             canvas.width = imgWidth;
             canvas.height = imgHeight;
             canvas.getContext("2d").drawImage(sourceImage, 0, 0, imgWidth, imgHeight);
-            var newDataUri = canvas.toDataURL('image/jpeg', 0.25);
+            try {
+              var newDataUri = canvas.toDataURL('image/jpeg', 0.25);
+            } catch (e) {
+              // Likely tainted canvas from alternative method
+              reject();
+            }
             if (newDataUri) {
               resolve(newDataUri);
             }
