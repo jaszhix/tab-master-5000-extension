@@ -187,14 +187,12 @@ var Preferences = React.createClass({
     obj[opt] = !p.prefs[opt];
     state.set({prefs: obj});
 
-    _.defer(()=>{
-      msgStore.setPrefs(obj);
-      if (opt === 'animations') {
-        _.defer(()=>window.location.reload());
-      } else if (opt === 'screenshot') {
-        _.defer(()=>chrome.runtime.reload());
-      }
-    });
+    msgStore.setPrefs(obj);
+    if (opt === 'animations') {
+      _.defer(()=>window.location.reload());
+    } else if (opt === 'screenshot') {
+      _.delay(()=>chrome.runtime.reload(), 500);
+    }
   },
   handleSlide(e, opt){
     var obj = {};
