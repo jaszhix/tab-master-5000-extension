@@ -439,30 +439,34 @@ export var faviconStore = Reflux.createStore({
     }
     var domain = tab.url.split('/')[2];
     if (tab && tab.favIconUrl && !_.find(s.favicons, {domain: domain})) {
+      var saveFavicon = (__img)=>{
+        s.favicons.push({
+          favIconUrl: __img,
+          domain:  domain
+        });
+        s.favicons = _.uniqBy(s.favicons, 'domain');
+        if (queryLength === i) {
+          chrome.storage.local.set({favicons: s.favicons}, (result)=> {
+            console.log('favicons saved: ',result);
+            state.set({favicons: s.favicons});
+          });
+        }
+      };
       var sourceImage = new Image();
       sourceImage.onerror = (e)=>{
         console.log(e);
+        saveFavicon('../images/file_paper_blank_document.png');
       };
       sourceImage.onload = ()=>{
         var imgWidth = sourceImage.width;
         var imgHeight = sourceImage.height;
-        var canvas = document.createElement("canvas");
+        var canvas = document.createElement('canvas');
         canvas.width = imgWidth;
         canvas.height = imgHeight;
-        canvas.getContext("2d").drawImage(sourceImage, 0, 0, imgWidth, imgHeight);
+        canvas.getContext('2d').drawImage(sourceImage, 0, 0, imgWidth, imgHeight);
         var img = canvas.toDataURL('image/png');
         if (img) {
-          s.favicons.push({
-            favIconUrl: img,
-            domain:  domain
-          });
-          s.favicons = _.uniqBy(s.favicons, 'domain');
-          if (queryLength === i) {
-            chrome.storage.local.set({favicons: s.favicons}, (result)=> {
-              console.log('favicons saved: ',result);
-              state.set({favicons: s.favicons});
-            });
-          }
+          saveFavicon(img);
         }
       };
       sourceImage.src = tab.favIconUrl;
