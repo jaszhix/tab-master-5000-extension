@@ -203,7 +203,7 @@ var setAction = (t, type, oldTabInstance, newTabInstance=null)=>{
   if (t.state.prefs && !t.state.prefs.actions) {
     return;
   }
-console.log('setAction', type, oldTabInstance, newTabInstance)
+  console.log('setAction', type, oldTabInstance, newTabInstance)
   if (t.state.actions.length > 30) {
     var firstAction = _.findIndex(t.state.actions, {id: _.first(t.state.actions).id});
     if (firstAction !== -1) {
@@ -227,7 +227,12 @@ console.log('setAction', type, oldTabInstance, newTabInstance)
     }
     t.state.actions.push(action);
     t.setState({actions: t.state.actions});
-    sendMsg({actions: t.state.actions, windowId: oldTabInstance.windowId});
+    var msgToSend = {};
+    if (oldTabInstance !== undefined) {
+      msgToSend.windowId = oldTabInstance.windowId;
+    }
+    msgToSend.actions = t.state.actions;
+    sendMsg(msgToSend);
   }
 };
 
