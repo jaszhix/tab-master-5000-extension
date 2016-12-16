@@ -1,5 +1,14 @@
 #### Release Notes
 
+##### v2.0.13 / *12-15-16*
+
+*   Improved how the extension handles restarting. New tabs are no longer created if none were already open, and they will no longer steal focus if a new tab wasn't already focused.
+*   When "Allow only one new tab per window" is enabled, and an open new tab is refocused, the search entry will now be focused so you can start searching tabs or Google right away.
+*   Fixed some favicons not caching when an HTTP error occurs on their initial load.
+*   Fixed the cursor not using the pointer style on empty tile space.
+*   Fixed a bug that can prevent users from switching to screenshot mode when multiple windows with several tabs are open.
+*   Addressed various exceptions occurring as reported by TrackJS. See the [Github](https://github.com/jaszhix/tab-master-5000-chrome-extension) repository for details.
+
 ##### v2.0.12 / *11-25-16*
 
 *   Added option to show tabs across all windows in the tabs grid/table views.

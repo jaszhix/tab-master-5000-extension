@@ -27,6 +27,8 @@ export var msgStore = Reflux.createStore({
         state.set({screenshots: msg.screenshots});
       } else if (msg.hasOwnProperty('actions')) {
         state.set({actions: msg.actions});
+      } else if (msg.hasOwnProperty('focusSearchEntry')) {
+        keyboardStore.focusSearchEntry();
       } else if (msg.type === 'bookmarks') {
         bookmarksStore.get_bookmarks();
       } else if (msg.type === 'history' && s.prefs.mode === msg.type) {
@@ -532,6 +534,9 @@ export var keyboardStore = Reflux.createStore({
       return true;
     }
   },
+  focusSearchEntry(){
+    v('#main > div > div:nth-child(1) > div > div.tm-nav.ntg-form > div > div.col-xs-4 > div > input').n.focus();
+  },
   set(s){
     mouseTrap.bind('ctrl+z', ()=>{
       if (s.prefs.actions) {
@@ -541,7 +546,7 @@ export var keyboardStore = Reflux.createStore({
     mouseTrap.bind('ctrl+f', (e)=>{
       e.preventDefault();
       state.set({modal: {state: false, type: 'settings'}});
-      v('#main > div > div:nth-child(1) > div > div.tm-nav.ntg-form > div > div.col-xs-4 > div > input').n.focus();
+      this.focusSearchEntry();
     });
     mouseTrap.bind('ctrl+alt+s', (e)=>{
       e.preventDefault();

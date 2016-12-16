@@ -740,7 +740,9 @@ var Bg = React.createClass({
         if (refExistingTab === -1 || this.state.windows[refWindow].tabs[refExistingTab].url.indexOf('chrome://newtab/') === -1) {
           console.log('## Not the original new tab!')
         }*/
-        chrome.tabs.update(this.state.newTabs[refNewTab].id, {active: true});
+        chrome.tabs.update(this.state.newTabs[refNewTab].id, {active: true}, ()=>{
+          sendMsg({focusSearchEntry: true});
+        });
         return;
       }
     }
