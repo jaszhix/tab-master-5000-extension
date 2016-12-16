@@ -789,7 +789,7 @@ var Bg = React.createClass({
         synchronizeSession(this.state.sessions, this.state.prefs, this.state.windows);
         var discards = checkAutoDiscard(this.state.windows, this.state.prefs);
         if (discards > 0) {
-          this.queryTabs(true);
+          this.queryTabs(true, this.state.prefs);
         } else {
           sendMsg({windows: this.state.windows, windowId: e.windowId});
         }
