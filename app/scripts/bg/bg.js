@@ -287,19 +287,32 @@ var Bg = React.createClass({
     }
     if (eventState.onInstalled) {
       if (eventState.onInstalled.reason === 'update' || eventState.onInstalled.reason === 'install') {
+        var newTabIsOpen = false;
         chrome.tabs.query({title: 'New Tab'},(tabs)=>{
           for (let i = 0, len = tabs.length; i < len; i++) {
+            newTabIsOpen = true;
             chrome.tabs.remove(tabs[i].id);
           }
         });
-        chrome.tabs.create({active: true}, (tab)=>{
-          setTimeout(()=>{
-            if (eventState.onInstalled.reason === 'install') {
-              sendMsg({e: eventState.onInstalled, type:'appState', action: 'installed'});
-            } else if (eventState.onInstalled.reason === 'update') {
-              sendMsg({e: eventState.onInstalled, type:'appState', action: 'versionUpdate'});
+        chrome.tabs.query({active: true},(tabs)=>{
+          for (let i = 0, len = tabs.length; i < len; i++) {
+            if (tabs[i].active) {
+              setTimeout(()=>{
+                if (!newTabIsOpen) {
+                  return;
+                }
+                chrome.tabs.create({active: false}, (tab)=>{
+                  if (eventState.onInstalled.reason === 'install') {
+                    sendMsg({e: eventState.onInstalled, type:'appState', action: 'installed'});
+                  } else if (eventState.onInstalled.reason === 'update') {
+                    sendMsg({e: eventState.onInstalled, type:'appState', action: 'versionUpdate'});
+                  }
+                  chrome.tabs.update(tabs[i].id, {active: true});
+                });
+              },500);
+              break;
             }
-          },500);
+          }
         });
       }
     }
@@ -328,7 +341,7 @@ var Bg = React.createClass({
       chrome.tabs.query({windowId: Window.id}, (tabs)=>{
         _.assignIn(Window, {
           tabs: tabs
-        })
+        });
         this.state.windows.push(Window);
         this.setState({windows: this.state.windows});
         sendMsg({windows: this.state.windows, windowId: Window.id});
@@ -340,11 +353,11 @@ var Bg = React.createClass({
     chrome.windows.onRemoved.addListener((windowId)=>{
       var refWindow = _.findIndex(this.state.windows, {windowId: windowId});
       if (refWindow !== -1) {
-        _.pullAt(this.state.windows, refWindow)
+        _.pullAt(this.state.windows, refWindow);
         this.setState({windows: this.state.windows});
         sendMsg({windows: this.state.windows});
       }
-    })
+    });
     /*
     Tabs created
     */
@@ -722,6 +735,11 @@ var Bg = React.createClass({
     if (e.url.indexOf('chrome://newtab/') !== -1 && this.state.prefs.singleNewTab) {
       var refNewTab = _.findIndex(this.state.newTabs, {windowId: e.windowId});
       if (refNewTab !== -1) {
+        // TBD
+        /*var refExistingTab = _.findIndex(this.state.windows[refWindow].tabs, {id: this.state.newTabs[refNewTab].id});
+        if (refExistingTab === -1 || this.state.windows[refWindow].tabs[refExistingTab].url.indexOf('chrome://newtab/') === -1) {
+          console.log('## Not the original new tab!')
+        }*/
         chrome.tabs.update(this.state.newTabs[refNewTab].id, {active: true});
         return;
       }
@@ -758,7 +776,7 @@ var Bg = React.createClass({
     console.log('removeSingleWindow', id);
     var refWindow = _.findIndex(this.state.windows, {id: id});
     if (refWindow !== -1) {
-      _.pullAt(this.state.windows, refWindow)
+      _.pullAt(this.state.windows, refWindow);
       this.setState({windows: this.state.windows});
       sendMsg({windows: this.state.windows});
     }
