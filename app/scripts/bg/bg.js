@@ -760,7 +760,6 @@ var Bg = React.createClass({
     }
     // Check if this is a new tab, and clean up newTabs state.
     var refNewTab = _.findIndex(this.state.newTabs, {id: e});
-    console.log(e, refNewTab, this.state.newTabs)
     if (refNewTab !== -1) {
       _.pullAt(this.state.newTabs, refNewTab);
       this.setState({newTabs: this.state.newTabs});
