@@ -732,7 +732,9 @@ var TileGrid = React.createClass({
           {!p.s.hasScrollbar && p.s.prefs.format === 'tile' && p.s[p.s.modeKey].length > p.s.tileLimit ? 
           <Btn 
           onClick={()=>{
-            state.set({tileLimit: p.s.tileLimit + 50});
+            state.set({tileLimit: p.s.tileLimit + 50}, ()=>{
+              state.set({hasScrollbar: utils.scrollbarVisible(document.body)});
+            });
             ReactTooltip.hide();
           }} 
           style={{
