@@ -53,7 +53,7 @@ var Tile = React.createClass({
     }
     if (nP.i !== p.i) {
       this.setState({i: nP.i, duplicate: false});
-      v(ReactDOM.findDOMNode(this)).removeClass('animated')
+      v(ReactDOM.findDOMNode(this)).removeClass('animated');
     }
     if (nP.applyTabOrder) {
       this.applyTabOrder();
@@ -61,7 +61,7 @@ var Tile = React.createClass({
     /* Reset tab state after close */
     if (!_.isEqual(nP.tab, p.tab)) {
       if (this.closeTimeout) {
-        clearTimeout(this.closeTimeout)
+        clearTimeout(this.closeTimeout);
       }
       this.setState({close: false, render: true, duplicate: false});
     }

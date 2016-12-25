@@ -6,6 +6,7 @@ import mouseTrap from 'mousetrap';
 import state from './stores/state';
 import {alertStore, msgStore} from './stores/main';
 import tabStore from './stores/tab';
+import themeStore from './stores/theme';
 import * as utils from './stores/tileUtils';
 
 var Row = React.createClass({
@@ -329,7 +330,15 @@ export var Table = React.createClass({
                 {s.columns.map((column, i)=>{
                   var columnLabel = p.s.prefs.mode === 'apps' && column === 'domain' ? 'webWrapper' : column === 'mutedInfo' ? 'muted' : column;
                   return (
-                    <th key={i} className={`sorting${s.order === column ? '_'+s.direction : ''}`} rowSpan="1" colSpan="1" onClick={()=>this.handleColumnClick(column)}>{_.upperFirst(columnLabel.replace(/([A-Z])/g, ' $1'))}</th>
+                    <th 
+                    key={i} 
+                    className={`sorting${s.order === column ? '_'+s.direction : ''}`} 
+                    style={{WebkitUserSelect: 'none'}}
+                    rowSpan="1" 
+                    colSpan="1" 
+                    onClick={()=>this.handleColumnClick(column)}>
+                      {_.upperFirst(columnLabel.replace(/([A-Z])/g, ' $1'))}
+                    </th>
                   );
                 })}
               </tr>
@@ -342,7 +351,7 @@ export var Table = React.createClass({
                     s={p.s}
                     key={i}
                     className={i % 2 === 0 ? 'even' : 'odd'} 
-                    style={{fontSize: '14px', backgroundColor: s.rowHover === i || s.selectedItems.indexOf(i) !== -1 ? p.theme.settingsBg : 'initial'}} 
+                    style={{fontSize: '14px', backgroundColor: s.rowHover === i || s.selectedItems.indexOf(i) !== -1 ? themeStore.opacify(p.theme.lightBtnBg, 0.5) : 'initial'}} 
                     onMouseEnter={()=>this.setState({rowHover: i})}
                     draggable={p.s.prefs.mode === 'tabs' && p.s.prefs.drag}
                     onDragEnd={this.dragEnd}

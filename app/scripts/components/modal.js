@@ -83,6 +83,8 @@ var ModalHandler = React.createClass({
         bodyStyle={{
           backgroundColor: p.theme.settingsBg,
           maxHeight: p.settings === 'theming' ? '300px' : `${window.innerHeight - 200}px`,
+          overflowY: p.settings !== 'theming' ? 'auto' : 'hidden',
+          overflowX: 'hidden'
         }}
         footerStyle={{backgroundColor: p.theme.settingsBg, paddingTop: '8px'}}
         headerComponent={

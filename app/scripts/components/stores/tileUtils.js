@@ -23,6 +23,9 @@ export var closeTab = (t, id, search)=>{
   if (p.tab !== undefined && (!p.tab.hasOwnProperty('openTab') || !p.tab.openTab)) {
     t.setState({close: true});
   }
+  if (t.state.hasOwnProperty('screenshot')) {
+    t.setState({screenshot: null});
+  }
   if (p.prefs.mode !== 'tabs') {
     if (p.tab !== undefined && p.tab.hasOwnProperty('openTab') && p.tab.openTab) {
       close(true);
@@ -71,11 +74,8 @@ export var closeAll = (t, tab)=>{
   chrome.tabs.query({
     url: '*://'+urlPath[2]+'/*'
   }, (Tab)=> {
-    console.log(Tab);
     for (let i = 0, len = Tab.length; i < len; i++) {
-      if (Tab[i].windowId === t.props.windowId) {
-        closeTab(t, Tab[i].id);
-      }
+      closeTab(t, Tab[i].id);
     }
   });
 };
@@ -83,13 +83,13 @@ export var closeAll = (t, tab)=>{
 export var closeAllSearched = (t)=>{
   var p = t.props;
   var s = t.state;
-  for (let i = 0, len = p[p.modeKey].length; i < len; i++) {
+  for (let i = 0, len = p.tabs.length; i < len; i++) {
     if (p.prefs.mode === 'history' || p.prefs.mode === 'bookmarks') {
       if (!s.openTab) {
-        closeTab(t, p[p.modeKey][i], true);
+        closeTab(t, p.tabs[i], true);
       }
     } else {
-      closeTab(t, p[p.modeKey][i].id);
+      closeTab(t, p.tabs[i].id);
     }
   }
 };

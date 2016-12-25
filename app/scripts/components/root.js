@@ -399,6 +399,21 @@ var Root = React.createClass({
       .sk-cube-grid .sk-cube {
         background-color: ${e.theme.darkBtnBg};
       }
+      .dataTable thead .sorting:before {
+        color: ${e.theme.bodyText};
+      }
+      .dataTable thead .sorting:after {
+        color: ${e.theme.bodyText};
+      }
+      .table>thead {
+        background-color: ${themeStore.opacify(e.theme.headerBg, 0.3)};
+      }
+      .table>thead>tr>th {
+        border-bottom: 1px solid ${e.theme.headerBg};
+      }
+      .table>thead>tr>th, .table>tbody>tr>th, .table>tfoot>tr>th, .table>thead>tr>td, .table>tbody>tr>td, .table>tfoot>tr>td {
+        border-top: 1px solid ${e.theme.darkBtnBg};
+      }
       body > div.ReactModalPortal > div > div {
         -webkit-transition: ${p.s.prefs.animations ? 'background 0.5s ease-in, height 0.2s, width 0.2s, top 0.2s, left 0.2s, right 0.2s, bottom 0.2s' : 'initial'};
         border: ${e.theme.tileShadow};
@@ -729,6 +744,7 @@ var Root = React.createClass({
             {p.s.context.value ? 
             <ContextMenu
             mode={p.s.prefs.mode}
+            modeKey={p.s.modeKey}
             actions={p.s.actions}
             search={p.s.search} 
             tabs={p.s[p.s.prefs.mode]} 
@@ -768,7 +784,7 @@ var Root = React.createClass({
                   right: p.s.prefs.format === 'tile' ? '5px' : '0px',
                   margin: '0px auto',
                   width: `${p.s.width}px`,
-                  top: '57px'
+                  top: p.s.prefs.format === 'tile' ? '57px' : '51px'
                 }}>
                   {s.grid && p.s[p.s.modeKey] ? 
                     <TileGrid

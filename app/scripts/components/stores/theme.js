@@ -157,7 +157,7 @@ export var themeStore = Reflux.createStore({
         settingsBg: 'rgba(158, 189, 134, 1)',
         settingsItemHover: 'rgba(192, 219, 167, 0.29)',
         headerBg: 'rgba(58, 92, 32, 0.8)',
-        bodyBg: 'rgba(50, 94, 43, 0.75)',
+        bodyBg: 'rgba(158, 189, 134, 1)',
         bodyText: 'rgba(39, 51, 28, 1)',
         darkBtnBg: 'rgba(126, 158, 96, 1)',
         darkBtnBgHover: 'rgba(133, 166, 106, 1)',
@@ -257,6 +257,42 @@ export var themeStore = Reflux.createStore({
         tileX: "rgba(124, 128, 110, 1)",
         tileXHover: "rgba(124, 128, 110, 1)"
       };
+      this.redmondFlat = {
+        bodyBg: 'rgba(5, 178, 252, 0.99)',
+        bodyText: 'rgba(51, 51, 51, 1)',
+        darkBtnBg: 'rgba(0, 5, 10, 0.99)',
+        darkBtnBgHover: 'rgba(41, 144, 204, 0.75)',
+        darkBtnText: 'rgba(255, 255, 255, 1)',
+        darkBtnTextShadow: 'rgba(0, 0, 0, 0)',
+        headerBg: 'rgba(0, 5, 10, 0.99)',
+        lightBtnBg: 'rgba(255, 255, 255, 1)',
+        lightBtnBgHover: 'rgba(250, 250, 250, 0.9)',
+        lightBtnText: 'rgba(0, 0, 0, 1)',
+        lightBtnTextShadow: 'rgba(255, 255, 255, 0.01)',
+        settingsBg: 'rgb(255, 255, 255)',
+        settingsItemHover: 'rgba(250, 250, 250, 0.9)',
+        textFieldsBg: 'rgb(41, 144, 204)',
+        textFieldsBorder: 'rgba(255, 255, 252, 0.98)',
+        textFieldsPlaceholder: 'rgba(255, 255, 255, 0.85)',
+        textFieldsText: 'rgb(255, 255, 255)',
+        tileBg: 'rgba(255, 255, 255, 0.97)',
+        tileBgHover: 'rgba(231, 232, 230, 0.99)',
+        tileButtonBg: 'rgb(232, 70, 83)',
+        tileMove: 'rgba(51, 51, 51, 1)',
+        tileMoveHover: 'rgba(0, 0, 0, 1)',
+        tileMute: 'rgb(0, 0, 0)',
+        tileMuteAudible: 'rgba(232, 70, 83, 0.99)',
+        tileMuteAudibleHover: 'rgba(75, 74, 69, 0.99)',
+        tileMuteHover: 'rgba(75, 74, 69, 0.99)',
+        tilePin: 'rgba(0, 0, 0, 0.99)',
+        tilePinHover: 'rgba(75, 74, 69, 0.99)',
+        tilePinned: 'rgba(232, 70, 83, 0.99)',
+        tileShadow: 'rgba(255, 255, 255, 0.01)',
+        tileText: 'rgba(0, 0, 0, 0.99)',
+        tileTextShadow: 'rgba(51, 51, 51, 0)',
+        tileX: 'rgba(0, 0, 0, 0.99)',
+        tileXHover: 'rgba(75, 74, 69, 0.99)'
+      };
       this.standardWallpapers = [
         {
           data: '../../../images/wallpaper1.jpg',
@@ -277,11 +313,7 @@ export var themeStore = Reflux.createStore({
         {
           data: '../../../images/wallpaper4.jpg',
           id: 9004
-        },
-        {
-          data: '../../../images/wallpaper6.jpg',
-          id: 9005
-        },
+        }
       ];
       var now = utilityStore.now();
       this.standardThemes = [
@@ -331,7 +363,7 @@ export var themeStore = Reflux.createStore({
           modified: now,
           label: 'Leafy',
           theme: this.leafy,
-          wallpaper: 9004
+          wallpaper: -1
         },
         {
           id: 9006,
@@ -339,7 +371,15 @@ export var themeStore = Reflux.createStore({
           modified: now,
           label: 'Minty Dark',
           theme: this.mintYDark,
-          wallpaper: 9005
+          wallpaper: 9004
+        },
+        {
+          id: 9007,
+          created: -1,
+          modified: now,
+          label: 'Redmond Flat',
+          theme: this.redmondFlat,
+          wallpaper: -1
         }
       ];
       this.themeId = 0;

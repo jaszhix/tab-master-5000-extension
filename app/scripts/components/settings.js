@@ -244,8 +244,8 @@ var Theming = React.createClass({
       <div className="theming">
         <input children={undefined} type="file" onChange={(e)=>themeStore.import(e)} accept=".json" ref="import" style={style.hiddenInput} />
         <input children={undefined} type="file" onChange={(e)=>themeStore.importWallpaper(e, s.selectedTheme.id)} accept=".jpg,.jpeg,.png" ref="wallpaper" style={style.hiddenInput} />
-        <Row className="ntg-tabs" style={{borderBottom: 'initial', position: 'fixed', zIndex: '9999'}}>
-          <div role="tabpanel"> 
+        <Col size="3" className="ntg-tabs" style={{borderBottom: 'initial', position: 'fixed', zIndex: '9999', marginTop: '-20px', height: '50px', backgroundColor: p.theme.settingsBg}}>
+          <div role="tabpanel" style={{position: 'relative', top: '18px'}}> 
             <ul className="nav nav-tabs">
               <li style={{padding: '0px'}} className={`${s.leftTab === 'custom' ? 'active' : ''}`}>
                 <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({leftTab: 'custom'})}>Custom</a>
@@ -255,10 +255,8 @@ var Theming = React.createClass({
               </li>
             </ul>
           </div>
-        </Row>
-        <Row>
-          <Col size="3">
-            <Col size="12" style={{height: '180px', width: '100%', overflowY: 'auto', position: 'relative', top: '35px'}} onMouseLeave={()=>this.setState({themeHover: -1})}>
+          <Row>
+            <Col size="12" style={{height: '210px', width: '100%', overflowY: 'auto', position: 'relative', top: '25.5px'}} onMouseLeave={()=>this.setState({themeHover: -1})}>
               {s.leftTab === 'custom' ?
               <Row>
                 {s.savedThemes.length > 0 ? s.savedThemes.map((theme, i)=>{
@@ -312,10 +310,15 @@ var Theming = React.createClass({
                 })}
               </Row> : null}
             </Col>
+          </Row>
+        </Col>
+        <Row>
+          <Col size="3">
+            
           </Col>
-          <Col size="9" style={{marginTop: '8px'}}>
-            <Row className="ntg-tabs" style={{borderBottom: 'initial', position: 'fixed', zIndex: '9999', marginTop: '-8px'}}>
-              <div role="tabpanel"> 
+          <Col className="pickerCont" size="9" style={{marginTop: '8px', maxHeight: '218px', minHeight: '218px'}}>
+            <Col size="8" className="ntg-tabs" style={{borderBottom: 'initial', position: 'fixed', zIndex: '9999', marginTop: '-28px', height: '50px', backgroundColor: p.theme.settingsBg}}>
+              <div role="tabpanel" style={{position: 'relative', top: '18px'}}> 
                 <ul className="nav nav-tabs">
                   <li style={{padding: '0px'}} className={`${s.rightTab === 'color' ? 'active' : ''}`}>
                     <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({rightTab: 'color'})}>Color Scheme</a>
@@ -326,7 +329,7 @@ var Theming = React.createClass({
                   </li> : null}
                 </ul>
               </div>
-            </Row>
+            </Col>
             {s.rightTab === 'color' ?
             <Row style={{marginBottom: '28px', minHeight: '184px'}}>
               <Col size="4" style={{marginTop: '28px'}}>
@@ -353,7 +356,9 @@ var Theming = React.createClass({
             </Row> : null}
             {s.rightTab === 'wallpaper' ?
             <Row fluid={true} style={{marginTop: '28px', minHeight: '184px'}}>
-              <Col size={p.wallpaper && p.wallpaper.data === -1 || !p.wallpaper || p.wallpaper.id >= 9000 ? '12' : '6'}>
+              <Col 
+              size={p.wallpaper && p.wallpaper.data === -1 || !p.wallpaper || p.wallpaper.id >= 9000 ? '12' : '6'}
+              style={{maxHeight: '211px', overflowY: 'auto'}}>
                 {p.wallpapers.length > 0 ? _.uniqBy(_.orderBy(p.wallpapers, ['desc'], ['created']), 'id').map((wp, i)=>{
                   var selectedWallpaper = p.wallpaper && wp.id === p.wallpaper.id;
                   return (
@@ -385,9 +390,25 @@ var Theming = React.createClass({
                   );
                 }) : null}
               </Col>
-              {p.wallpaper && p.wallpaper.data !== -1 && p.wallpaper.id < 9000 ? 
-              <Col size="6">
-                <div className="wallpaper-tile" style={{backgroundColor: p.theme.lightBtnBg, backgroundImage: `url('${p.wallpaper.data}')`, backgroundSize: 'cover', height: '180px', width: '320px', padding: '6px', display: 'inline-block'}}></div>
+              {p.wallpaper && p.wallpaper.data !== -1 && p.wallpaper.id < 9000 ?
+              <Col 
+              size="6"
+              style={{paddingLeft: '24px'}}>
+                <div 
+                className="wallpaper-tile" 
+                style={{
+                  backgroundColor: p.theme.lightBtnBg, 
+                  backgroundImage: `url('${p.wallpaper.data}')`, 
+                  backgroundSize: 'cover', 
+                  height: '180px', 
+                  width: '320px', 
+                  padding: '6px', 
+                  display: 'inline-block',
+                  position: 'absolute',
+                  margin: '0px auto',
+                  left: '0px',
+                  right: '0px'
+                }} />
               </Col> : null}
             </Row> : null}
           </Col>
