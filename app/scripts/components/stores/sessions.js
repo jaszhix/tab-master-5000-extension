@@ -3,7 +3,7 @@ import _ from 'lodash';
 import v from 'vquery';
 import {saveAs} from 'filesaver.js';
 import uuid from 'node-uuid';
-import ReactTooltip from '../tooltip/tooltip';
+import ReactTooltip from 'react-tooltip';
 import tabStore from './tab';
 import state from './state';
 import {msgStore, utilityStore, alertStore} from './main';
