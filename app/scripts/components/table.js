@@ -9,21 +9,6 @@ import tabStore from './stores/tab';
 import * as utils from './stores/tileUtils';
 
 var Row = React.createClass({
-  componentWillReceiveProps(nP){
-    var p = this.props;
-    if (!_.isEqual(nP.s.relay, p.s.relay)) {
-      var cT = _.cloneDeep(this);
-      _.assignIn(cT.props, {relay: nP.s.relay, prefs: nP.s.prefs, mode: nP.s.mode, tab: nP.row});
-      utils.handleRelays(cT, cT.props);
-    }
-  },
-  handleContext(e){
-    var p = this.props;
-    e.preventDefault();
-    if (p.s.prefs.context) {
-      state.set({context: {value: true, id: p.row}})
-    }
-  },
   render(){
     var p = this.props;
     var textOverflow = {
@@ -44,7 +29,7 @@ var Row = React.createClass({
       onDragStart={p.onDragStart}
       onDragOver={p.onDragOver}
       onClick={p.onClick}
-      onContextMenu={this.handleContext}
+      onContextMenu={(e)=>p.onContextMenu(e, p.row)}
       >
         {p.columns.map((column, z)=>{
           if (p.row.hasOwnProperty(column)) {
@@ -144,7 +129,7 @@ export var Table = React.createClass({
   handleColumnClick(column){
     var s = this.state;
     var order = column;
-    var direction = s.order === column && s.direction === 'asc' ? 'desc' : 'asc'
+    var direction = s.order === column && s.direction === 'asc' ? 'desc' : 'asc';
     this.setState({
       order: order,
       direction: direction,
@@ -227,7 +212,7 @@ export var Table = React.createClass({
     chrome.tabs.move(s.rows[start].id, {index: s.rows[end].index}, (t)=>{
       _.defer(()=>{
         msgStore.queryTabs();
-        this.dragged.el.parentNode.removeChild(this.placeholder)
+        this.dragged.el.parentNode.removeChild(this.placeholder);
       });
     });
   },
@@ -316,6 +301,13 @@ export var Table = React.createClass({
     }
     this.setState({rows: s.rows, selectedItems: [], shiftRange: null});
   },
+  handleContext(e, row){
+    var p = this.props;
+    e.preventDefault();
+    if (p.s.prefs.context) {
+      state.set({context: {value: true, id: row}});
+    }
+  },
   render(){
     var s = this.state;
     var p = this.props;
@@ -348,6 +340,7 @@ export var Table = React.createClass({
                     onDragStart={(e)=>this.dragStart(e, i)}
                     onDragOver={(e)=>this.dragOver(e, i)}
                     onClick={()=>this.handleSelect(i)}
+                    onContextMenu={this.handleContext}
                     handleTitleClick={this.handleTitleClick}
                     handleBooleanClick={(column)=>this.handleBooleanClick(column, row)}
                     row={row}

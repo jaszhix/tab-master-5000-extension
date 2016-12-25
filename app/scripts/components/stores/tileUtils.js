@@ -111,7 +111,7 @@ export var pin = (t, tab, opt)=>{
   chrome.tabs.update(id, {
     pinned: p.tab.pinned
   });
-  if (p.prefs.mode !== 'tabs') {
+  if (p.prefs.mode !== 'tabs' && p.prefs.format === 'tile') {
     var refItem = _.findIndex(p[p.modeKey], tab);
     if (refItem !== -1) {
       p[p.modeKey][refItem].pinned = !p[p.modeKey][refItem].pinned;
@@ -128,7 +128,7 @@ export var mute = (t, tab)=>{
       t.setState({muteInit: false});
     }
   });
-  if (t.props.prefs.mode !== 'tabs') {
+  if (t.props.prefs.mode !== 'tabs' && p.prefs.format === 'tile') {
     var refItem = _.findIndex(p[p.modeKey], tab);
     if (refItem !== -1) {
       p[p.modeKey][refItem].mutedInfo.muted = !p[p.modeKey][refItem].mutedInfo.muted;
@@ -192,37 +192,6 @@ export var app = (t, opt)=>{
   }
   if (opt !== 'launchApp' && opt !== 'uninstallApp') {
     chromeAppStore.set(p.prefs.mode === 'apps');
-  }
-};
-
-export var handleRelays = (t, p)=>{
-  var r = p.relay;
-
-  if (r.id && r.id.index === p.tab.index) {
-    if (r.value === 'close') {
-      closeTab(t, p.tab.id);
-    } else if (r.value === 'closeAll') {
-      closeAll(t, p.tab);
-    } else if (r.value === 'pin') {
-      pin(t, p.tab);
-    } else if (r.value === 'mute') {
-      mute(t, p.tab);
-    } else if (r.value === 'closeAllDupes') {
-      checkDuplicateTabs(t, p, r.value);
-    } else if (r.value === 'closeSearched') {
-      closeAllSearched(t);
-    } else if (r.value === 'toggleEnable') {
-      app(t, r.value);
-    } else if (r.value === 'uninstallApp') {
-      app(t, r.value);
-    } else if (r.value === 'createAppShortcut') {
-      app(t, r.value);
-    } else if (r.value === 'launchApp') {
-      app(t, r.value);
-    } else if (_.first(_.words(r.value)) === 'OPEN') {
-      app(t, r.value);
-    }
-    _.defer(()=>state.set({relay: {value: null, id: null}}));
   }
 };
 

@@ -31,10 +31,6 @@ var state = Reflux.createStore({
         id: null,
         options: []
       },
-      relay: {
-        value: '',
-        id: null
-      },
       sidebar: false,
       disableSidebarClickOutside: false,
       applyTabOrder: false,

@@ -55,9 +55,6 @@ var Tile = React.createClass({
       this.setState({i: nP.i, duplicate: false});
       v(ReactDOM.findDOMNode(this)).removeClass('animated')
     }
-    if (!_.isEqual(nP.relay, p.relay)) {
-      utils.handleRelays(this, nP)
-    }
     if (nP.applyTabOrder) {
       this.applyTabOrder();
     }
@@ -714,7 +711,6 @@ var TileGrid = React.createClass({
                   context={p.s.context}
                   folder={p.s.folder}
                   applyTabOrder={p.s.applyTabOrder}
-                  relay={p.s.relay}
                   search={p.s.search}
                   sort={p.s.sort}
                   windowId={p.s.windowId}

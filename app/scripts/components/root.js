@@ -724,7 +724,8 @@ var Root = React.createClass({
           : 
           <div>
             {p.s.context.value ? 
-            <ContextMenu 
+            <ContextMenu
+            mode={p.s.prefs.mode}
             actions={p.s.actions}
             search={p.s.search} 
             tabs={p.s[p.s.prefs.mode]} 
