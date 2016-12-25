@@ -35,14 +35,14 @@ var Row = React.createClass({
           if (p.row.hasOwnProperty(column)) {
             if (column === 'title' || column === 'name') {
               return (
-                <td key={z} style={{maxWidth: p.s.width <= 950 ? '300px' : p.s.width <= 1015 ? '400px' : '700px'}}>
+                <td key={z} style={{maxWidth: p.s.width <= 950 ? '300px' : p.s.width <= 1015 ? '400px' : '700px', WebkitUserSelect: 'none'}}>
                   <div className="media-left media-middle">
                     <img src={favIconUrl} style={{width: '16px', height: '16px'}}/>
                   </div>
                   <div className="media-left">
                     <div style={textOverflow}><a style={{cursor: 'pointer', fontSize: '14px'}} onClick={()=>p.handleTitleClick(p.row)} className="text-default text-semibold">{p.row[column]}</a></div>
                     {p.s.prefs.mode === 'apps' || p.s.prefs.mode === 'extensions' ? 
-                    <div className="text-muted text-size-small" style={{whiteSpace: 'nowrap'}}>{p.row.description}</div> : null}
+                    <div className="text-muted text-size-small" style={{whiteSpace: 'nowrap', cursor: 'default'}}>{p.row.description}</div> : null}
                   </div>
                   {p.row.audible ?
                   <div className="media-right media-middle" style={{right: '20px'}}>
@@ -302,10 +302,19 @@ export var Table = React.createClass({
     this.setState({rows: s.rows, selectedItems: [], shiftRange: null});
   },
   handleContext(e, row){
+    var s = this.state;
     var p = this.props;
-    e.preventDefault();
     if (p.s.prefs.context) {
-      state.set({context: {value: true, id: row}});
+      e.preventDefault();
+      if (s.selectedItems.length > 0) {
+        var rows = [];
+        for (let z = 0, len = s.selectedItems.length; z < len; z++) {
+          rows.push(s.rows[s.selectedItems[z]]);
+        }
+        state.set({context: {value: true, id: rows.length > 1 ? rows : rows[0], origin: this}});
+      } else {
+        state.set({context: {value: true, id: row}});
+      }
     }
   },
   render(){

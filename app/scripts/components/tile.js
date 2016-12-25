@@ -126,17 +126,7 @@ var Tile = React.createClass({
             tabStore.create(p.tab.url);
           }
         } else if (p.prefs.mode === 'apps' || p.prefs.mode === 'extensions') {
-          if (p.tab.enabled) {
-            if (p.prefs.mode === 'extensions' || p.tab.launchType === 'OPEN_AS_REGULAR_TAB') {
-              if (p.tab.url.length > 0) {
-                tabStore.create(p.tab.url);
-              } else {
-                tabStore.create(p.tab.homepageUrl);
-              }
-            } else {
-              chrome.management.launchApp(p.tab.id);
-            }
-          }
+          utils.handleAppClick(p);
         } else {
           active();
         }

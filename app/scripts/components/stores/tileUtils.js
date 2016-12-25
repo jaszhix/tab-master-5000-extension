@@ -186,12 +186,26 @@ export var app = (t, opt)=>{
   } else if (opt  === 'createAppShortcut') {
     chrome.management.createAppShortcut(p.tab.id);
   } else if (opt  === 'launchApp') {
-    t.handleClick(p.tab.id);
+    handleAppClick(p);
   } else if (_.first(_.words(opt)) === 'OPEN') {
     chrome.management.setLaunchType(p.tab.id, opt);
   }
   if (opt !== 'launchApp' && opt !== 'uninstallApp') {
     chromeAppStore.set(p.prefs.mode === 'apps');
+  }
+};
+
+export var handleAppClick = (p)=>{
+  if (p.tab.enabled) {
+    if (p.prefs.mode === 'extensions' || p.tab.launchType === 'OPEN_AS_REGULAR_TAB') {
+      if (p.tab.url.length > 0) {
+        chrome.tabs.create({url: p.tab.url});
+      } else {
+        chrome.tabs.create({url: p.tab.homepageUrl});
+      }
+    } else {
+      chrome.management.launchApp(p.tab.id);
+    }
   }
 };
 

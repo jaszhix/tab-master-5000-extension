@@ -390,6 +390,9 @@ var Root = React.createClass({
       .ntg-session-text {
         color: ${e.theme.bodyText};
       }
+      .text-muted.text-size-small {
+        color: ${themeStore.opacify(e.theme.bodyText, 0.9)};
+      }
       .ntg-folder {
         text-shadow: 2px 2px ${e.theme.tileTextShadow};
       }

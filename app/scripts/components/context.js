@@ -37,14 +37,19 @@ var ContextMenu = React.createClass({
   },
   handleClickOutside(e){
     var p = this.props;
-    p.context.value = null;
+    p.context.value = false;
     state.set({
       context: p.context, 
       disableSidebarClickOutside: false
     });
+    if (p.context.hasOwnProperty('origin')) {
+      _.defer(()=>p.context.origin.setState({selectedItems: []}));
+    }
   },
   handleOptions(p){
     var s = this.state;
+
+    var isSelectedItems = _.isArray(p.context.id);
     var close = p.prefs.mode !== 'apps' && p.prefs.mode !== 'tabs' && !s.openTab ? 'Remove' : 'Close';
     var notBookmarksHistorySessAppsExt = p.prefs.mode !== 'bookmarks' && p.prefs.mode !== 'history' && p.prefs.mode !== 'sessions' && p.prefs.mode !== 'apps' && p.prefs.mode !== 'extensions';
     var notAppsExt = p.prefs.mode !== 'apps' && p.prefs.mode !== 'extensions';
@@ -52,74 +57,80 @@ var ContextMenu = React.createClass({
     var contextOptions = [
       {
         argument: notAppsExt,
-        onClick: ()=>this.handleMenuOption('close'),
+        onClick: ()=>this.handleMenuOption(p, 'close'),
         icon: `icon-${p.prefs.mode !== 'tabs' && !s.openTab ? 'eraser' : 'cross2'}`,
-        label: close,
+        label: isSelectedItems ? `${close} ${p.context.id.length} ${p.mode === 'history' ? p.mode+' items' : p.mode}` : close,
         divider: null
       },
       {
         argument: p.prefs.mode === 'tabs',
-        onClick: ()=>this.handleMenuOption('closeAll'),
+        onClick: ()=>this.handleMenuOption(p, 'closeAll'),
         icon: 'icon-stack-cancel',
-        label: `${close} all from ${p.context.id.url.split('/')[2]}`,
+        label: `${close} all from ${isSelectedItems ? 'selected domains' : p.context.id.url.split('/')[2]}`,
         divider: null
       },
       {
         argument: notAppsExt && this.getStatus('duplicate'),
-        onClick: ()=>this.handleMenuOption('closeAllDupes'),
+        onClick: ()=>this.handleMenuOption(p, 'closeAllDupes'),
         icon: 'icon-svg',
         label: `${close} all duplicates`,
         divider: null
       },
       {
         argument: notAppsExt && p.prefs.mode !== 'sessions' && p.search.length > 0,
-        onClick: ()=>this.handleMenuOption('closeSearched'),
+        onClick: ()=>this.handleMenuOption(p, 'closeSearched'),
         icon: 'icon-svg',
         label: `${close} all search results`,
         divider: null
       },
       {
-        argument: p.context.id.openTab || notBookmarksHistorySessAppsExt,
-        onClick: ()=>this.handleMenuOption('pin'),
+        argument: (isSelectedItems && p.prefs.mode === 'tabs') || (notBookmarksHistorySessAppsExt || p.context.id.openTab),
+        onClick: ()=>this.handleMenuOption(p, 'pin'),
         icon: 'icon-pushpin',
-        label: p.context.id.pinned ? 'Unpin' : 'Pin',
+        label: isSelectedItems ? `Toggle pinning of ${p.context.id.length} tabs` : p.context.id.pinned ? 'Unpin' : 'Pin',
         divider: null
       },
       {
-        argument: p.chromeVersion >= 46 && (p.context.id.openTab || notBookmarksHistorySessAppsExt),
-        onClick: ()=>this.handleMenuOption('mute'),
-        icon: `icon-${p.context.id.mutedInfo.muted ? 'volume-medium' : 'volume-mute'}`,
-        label: p.context.id.mutedInfo.muted ? 'Unmute' : 'Mute',
+        argument: (p.chromeVersion >= 46 && isSelectedItems && p.prefs.mode === 'tabs') || p.chromeVersion >= 46 && (notBookmarksHistorySessAppsExt || p.context.id.openTab),
+        onClick: ()=>this.handleMenuOption(p, 'mute'),
+        icon: `icon-${isSelectedItems || p.context.id.mutedInfo.muted ? 'volume-medium' : 'volume-mute'}`,
+        label: isSelectedItems ? `Toggle muting of ${p.context.id.length} tabs` : p.context.id.mutedInfo.muted ? 'Unmute' : 'Mute',
         divider: null
       },
       {
-        argument: notAppsExt && p.prefs.actions && actionsStatus,
-        onClick: ()=>this.handleMenuOption('actions'),
+        argument: !isSelectedItems && notAppsExt && p.prefs.actions && actionsStatus,
+        onClick: ()=>this.handleMenuOption(p, 'actions'),
         icon: 'icon-undo',
         label: `Undo ${actionsStatus}`,
         divider: null
       },
       {
         argument: (p.prefs.mode === 'apps' || p.prefs.mode === 'extensions') && p.context.id.enabled,
-        onClick: ()=>this.handleMenuOption('launchApp'),
+        onClick: ()=>this.handleMenuOption(p, 'launchApp'),
         icon: 'icon-play4',
         label: p.context.id.title,
         divider: null
       },
       {
         argument: p.prefs.mode === 'apps' && p.context.id.enabled,
-        onClick: ()=>this.handleMenuOption('createAppShortcut'),
+        onClick: ()=>this.handleMenuOption(p, 'createAppShortcut'),
         icon: 'icon-forward',
-        label: 'Create Shortcut',
+        label: isSelectedItems ? `Create shortcuts for ${p.context.id.length} ${p.mode}` : 'Create shortcut',
         divider: null
       },
     ];
-    if (p.prefs.mode === 'apps' && p.context.id.enabled) {
+    if (isSelectedItems) {
+      _.pullAt(contextOptions, 2);
+      _.pullAt(contextOptions, 2);
+      _.pullAt(contextOptions, 5);
+      _.pullAt(contextOptions, 5);
+    }
+    if (!isSelectedItems && p.prefs.mode === 'apps' && p.context.id.enabled) {
       _.filter(p.context.id.availableLaunchTypes, (launchType)=>{
         if (launchType !== p.context.id.launchType) {
           var launchOption = {
             argument: true,
-            onClick: ()=>this.handleMenuOption(launchType),
+            onClick: ()=>this.handleMenuOption(p, launchType),
             icon: 'icon-gear',
             label: _.endsWith(launchType, 'SCREEN') ? 'Open full screen' : _.endsWith(launchType, 'PINNED_TAB') ? 'Open as a pinned tab' : 'Open as a '+_.last(_.words(launchType.toLowerCase())),
             divider: null
@@ -128,20 +139,20 @@ var ContextMenu = React.createClass({
         }
       });
     }
-    if (p.context.id.mayDisable && (p.prefs.mode === 'apps' || p.prefs.mode === 'extensions')) {
+    if (p.prefs.mode === 'apps' || p.prefs.mode === 'extensions') {
       var appToggleOptions = [
         {
           argument: true,
-          onClick: ()=>this.handleMenuOption('toggleEnable'),
-          switch: p.context.id.enabled,
-          label: p.context.id.enabled ? 'Disable' : 'Enable',
+          onClick: ()=>this.handleMenuOption(p, 'toggleEnable'),
+          switch: isSelectedItems || p.context.id.enabled,
+          label: isSelectedItems ? `Toggle ${p.context.id.length} ${p.mode}` : p.context.id.enabled ? 'Disable' : 'Enable',
           divider: null
         },
         {
           argument: true,
-          onClick: ()=>this.handleMenuOption('uninstallApp'),
+          onClick: ()=>this.handleMenuOption(p, 'uninstallApp'),
           icon: 'icon-trash',
-          label: 'Uninstall',
+          label: `Uninstall${isSelectedItems ? ' '+p.context.id.length+' '+p.mode : ''}`,
           divider: null
         },
       ];
@@ -153,11 +164,22 @@ var ContextMenu = React.createClass({
       disableSidebarClickOutside: true
     });
   },
-  handleMenuOption(opt){
+  handleMenuOption(p, opt, recursion=0){
     // Create wrapper context for utils until component centric logic is revised.
+    var isSelectedItems = _.isArray(p.context.id);
     var t = _.cloneDeep(this);
-    _.assignIn(t.props, {tab: t.props.context.id});
-    var p = t.props;
+    p = recursion === 0 ? t.props : p;
+  
+    if (isSelectedItems) {
+      var selectedItems = p.context.id;
+      for (let z = 0, len = selectedItems.length; z < len; z++) {
+        p.context.id = selectedItems[z];
+        p.tab = selectedItems[z];
+        this.handleMenuOption(p, opt, ++recursion);
+      }
+      return;
+    }
+    _.assignIn(t.props, {tab: p.context.id});
     if (opt === 'actions') {
       msgStore.undoAction();
     } else if (opt === 'close') {
@@ -187,7 +209,10 @@ var ContextMenu = React.createClass({
   },
   getStatus(opt){
     var p = this.props;
-    console.log(p.context.id);
+    var isSelectedItems = _.isArray(p.context.id);
+    if (isSelectedItems) {
+      return true;
+    }
     if (opt === 'muted') {
       return p.context.id.mutedInfo.muted;
     } else if (opt === 'duplicate') {
@@ -196,7 +221,7 @@ var ContextMenu = React.createClass({
     } else if (opt === 'actions') {
       var lastAction = _.last(p.actions);
       console.log('lastAction: ',lastAction);
-      if (lastAction) {
+      if (lastAction && lastAction.hasOwnProperty('item')) {
         if (lastAction.type === 'remove') {
           return ' removal of '+lastAction.item.title;
         } else if (lastAction.type === 'create') {
