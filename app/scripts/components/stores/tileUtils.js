@@ -46,6 +46,7 @@ export var closeTab = (t, id, search)=>{
           historyStore.remove(p.history, historyUrl);
         });
       } else if (p.prefs.mode === 'sessions') {
+        // TBD
         var refSession = _.findIndex(p.sessions, {id: p.tab.originSession});
         _.each(p.sessions[refSession], (w)=>{
           if (w) {

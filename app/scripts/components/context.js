@@ -38,6 +38,7 @@ var ContextMenu = React.createClass({
   handleClickOutside(e){
     var p = this.props;
     p.context.value = false;
+    p.context.id = null;
     state.set({
       context: p.context, 
       disableSidebarClickOutside: false
@@ -56,7 +57,7 @@ var ContextMenu = React.createClass({
     var actionsStatus = this.getStatus('actions');
     var contextOptions = [
       {
-        argument: notAppsExt,
+        argument: notAppsExt && p.prefs.mode !== 'sessions', // Temporary until session removal is fixed
         onClick: ()=>this.handleMenuOption(p, 'close'),
         icon: `icon-${p.prefs.mode !== 'tabs' && !s.openTab ? 'eraser' : 'cross2'}`,
         label: isSelectedItems ? `${close} ${p.context.id.length} ${p.mode === 'history' ? p.mode+' items' : p.mode}` : close,

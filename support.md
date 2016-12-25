@@ -14,9 +14,9 @@ Having an option to remove duplicates from a certain website, and all duplicates
 
 Tile dragging has been overhauled in V2, and you can now drag a tile by simply holding the left mouse button and moving the tile to the selected position. This can also be done from the table view.
 
-**How do I remove only certain tabs?**
+**How do I apply actions to certain tabs?**
 
-This can be done in the table format view. Hold CTRL to select rows, or hold shift to select a range of rows. Then press the delete key. An option to delete selected items through the context menu, among other tab functions, will be added in an upcoming update.
+This can be done in the table format view. Hold CTRL to select rows, or hold shift to select a range of rows. Then press the delete key to close/remove items, or use the context menu for more options to apply to your selection.
 
 **When I apply the sorted tab order from the sidebar, the extension becomes unresponsive.**
 

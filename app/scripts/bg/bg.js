@@ -302,11 +302,13 @@ var Bg = React.createClass({
                   return;
                 }
                 chrome.tabs.create({active: false}, (tab)=>{
-                  if (eventState.onInstalled.reason === 'install') {
-                    sendMsg({e: eventState.onInstalled, type:'appState', action: 'installed'});
-                  } else if (eventState.onInstalled.reason === 'update') {
-                    sendMsg({e: eventState.onInstalled, type:'appState', action: 'versionUpdate'});
-                  }
+                  setTimeout(()=>{
+                    if (eventState.onInstalled.reason === 'install') {
+                      sendMsg({e: eventState.onInstalled, type:'appState', action: 'installed'});
+                    } else if (eventState.onInstalled.reason === 'update') {
+                      sendMsg({e: eventState.onInstalled, type:'appState', action: 'versionUpdate'});
+                    }
+                  }, 1000);
                   chrome.tabs.update(tabs[i].id, {active: true});
                 });
               },500);
