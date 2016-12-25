@@ -760,8 +760,8 @@ var Root = React.createClass({
                 theme={s.theme}  />
                 <div style={{
                   position: 'absolute',
-                  left: '5px',
-                  right: '5px',
+                  left: p.s.prefs.format === 'tile' ? '5px' : '0px',
+                  right: p.s.prefs.format === 'tile' ? '5px' : '0px',
                   margin: '0px auto',
                   width: `${p.s.width}px`,
                   top: '57px'
