@@ -438,6 +438,7 @@ var Tile = React.createClass({
         height: s.hover ? `18px` : `${p.prefs.tabSizeHeight - 40}px`, 
         width: p.prefs.tabSizeHeight+80,
         padding: s.hover ? '0px' : 'initial',
+        borderRadius: '0px',
         backgroundImage: `url('${favIconUrl}')`, 
         backgroundBlendMode: 'luminosity',
         backgroundPosition: 'center',
@@ -466,6 +467,7 @@ var Tile = React.createClass({
       headingStyle={{
         width: `${p.prefs.tabSizeHeight + 80}px`,
         padding: '0px',
+        borderRadius: '0px',
         backgroundColor: s.hover ? p.theme.tileBg : p.tab.pinned || p.tab.mutedInfo.muted || p.tab.audible ? themeStore.opacify(p.theme.tileBg, 0.8) : 'rgba(255, 255, 255, 0)',
         position: 'absolute',
         zIndex: '11',
