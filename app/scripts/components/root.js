@@ -36,7 +36,7 @@ import ReactDOM from 'react-dom';
 import Reflux from 'reflux';
 import _ from 'lodash';
 import ReactUtils from 'react-utils';
-import ReactTooltip from './tooltip/tooltip';
+import ReactTooltip from 'react-tooltip';
 import '../../styles/app.scss';
 window.v = v;
 import state from './stores/state';
@@ -433,18 +433,20 @@ var Root = React.createClass({
         background-color: ${themeStore.opacify(e.theme.darkBtnBgHover, 0.9)};
         border: solid 2px ${themeStore.opacify(e.theme.lightBtnBgHover, 0.85)}; 
       }
-      .__react_component_tooltip.type-dark {
-        color: ${e.theme.darkBtnText};
-        background-color: ${themeStore.opacify(e.theme.darkBtnBg, 1)};
+      .__react_component_tooltip {
+        z-index: 9999 !important;
+        opacity: 1 !important;
+        color: ${e.theme.darkBtnText} !important;
+        background-color: ${themeStore.opacify(e.theme.darkBtnBg, 1)} !important;
       }
       .__react_component_tooltip.type-dark.place-bottom:after {
-        border-bottom: 6px solid ${themeStore.opacify(e.theme.darkBtnBg, 1)};
+        border-bottom: 6px solid ${themeStore.opacify(e.theme.darkBtnBg, 1)} !important;
       }
       .__react_component_tooltip.type-dark.place-top:after {
-        border-top: 6px solid ${themeStore.opacify(e.theme.darkBtnBg, 1)};
+        border-top: 6px solid ${themeStore.opacify(e.theme.darkBtnBg, 1)} !important;
       }
       .__react_component_tooltip.type-dark.place-right:after {
-        border-right: 6px solid ${themeStore.opacify(e.theme.darkBtnBg, 1)};
+        border-right: 6px solid ${themeStore.opacify(e.theme.darkBtnBg, 1)} !important;
       }
       #main {
         -webkit-transition: ${p.s.prefs.animations ? '-webkit-filter 0.2s ease-in' : 'initial'};

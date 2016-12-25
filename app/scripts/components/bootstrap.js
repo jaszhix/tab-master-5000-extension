@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import Reflux from 'reflux';
 import _ from 'lodash';
 import onClickOutside from 'react-onclickoutside';
-import ReactTooltip from './tooltip/tooltip';
+import ReactTooltip from 'react-tooltip';
 import themeStore from './stores/theme';
 
 export var Btn = React.createClass({

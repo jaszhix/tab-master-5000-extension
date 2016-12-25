@@ -6,7 +6,7 @@ import v from 'vquery';
 import moment from 'moment';
 
 import onClickOutside from 'react-onclickoutside';
-import ReactTooltip from './tooltip/tooltip';
+import ReactTooltip from 'react-tooltip';
 import state from './stores/state';
 import {msgStore} from './stores/main';
 import themeStore from './stores/theme';

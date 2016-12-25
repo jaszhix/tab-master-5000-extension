@@ -6,7 +6,7 @@ import tc from 'tinycolor2';
 import * as utils from './stores/tileUtils';
 
 import Slider from 'rc-slider';
-import ReactTooltip from './tooltip/tooltip';
+import ReactTooltip from 'react-tooltip';
 import state from './stores/state';
 import {msgStore, utilityStore, blacklistStore} from './stores/main';
 import screenshotStore from './stores/screenshot';

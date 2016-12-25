@@ -3,7 +3,7 @@ import Reflux from 'reflux';
 import _ from 'lodash';
 import tc from 'tinycolor2';
 
-import ReactTooltip from './tooltip/tooltip';
+import ReactTooltip from 'react-tooltip';
 
 import Settings from './settings';
 
@@ -117,9 +117,7 @@ var ModalHandler = React.createClass({
           effect="solid" 
           place="top"
           multiline={true}
-          html={true}
-          offset={{top: 24, left: 46}} /> : null}
-          {/*<Alert enabled={p.prefs.alerts} />*/}
+          html={true}/> : null}
         </ModalOverlay>
       );
     } else {

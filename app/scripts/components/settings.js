@@ -7,7 +7,7 @@ import kmp from 'kmp';
 import tc from 'tinycolor2';
 
 import ColorPicker from 'rc-color-picker';
-import ReactTooltip from './tooltip/tooltip';
+import ReactTooltip from 'react-tooltip';
 
 import * as utils from './stores/tileUtils';
 import state from './stores/state';

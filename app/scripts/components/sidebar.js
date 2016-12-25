@@ -1,7 +1,7 @@
 import React from 'react';
 import _ from 'lodash';
 
-import ReactTooltip from './tooltip/tooltip';
+import ReactTooltip from 'react-tooltip';
 import state from './stores/state';
 import themeStore from './stores/theme';
 import tc from 'tinycolor2';
