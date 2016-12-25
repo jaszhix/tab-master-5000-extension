@@ -113,7 +113,9 @@ export var pin = (t, tab, opt)=>{
   });
   if (p.prefs.mode !== 'tabs') {
     var refItem = _.findIndex(p[p.modeKey], tab);
-    p[p.modeKey][refItem].pinned = !p[p.modeKey][refItem].pinned;
+    if (refItem !== -1) {
+      p[p.modeKey][refItem].pinned = !p[p.modeKey][refItem].pinned;
+    }
   }
 };
 
@@ -128,7 +130,9 @@ export var mute = (t, tab)=>{
   });
   if (t.props.prefs.mode !== 'tabs') {
     var refItem = _.findIndex(p[p.modeKey], tab);
-    p[p.modeKey][refItem].mutedInfo.muted = !p[p.modeKey][refItem].mutedInfo.muted;
+    if (refItem !== -1) {
+      p[p.modeKey][refItem].mutedInfo.muted = !p[p.modeKey][refItem].mutedInfo.muted;
+    }
   }
 };
 
