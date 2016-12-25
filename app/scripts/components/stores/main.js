@@ -466,7 +466,11 @@ export var faviconStore = Reflux.createStore({
         canvas.width = imgWidth;
         canvas.height = imgHeight;
         canvas.getContext('2d').drawImage(sourceImage, 0, 0, imgWidth, imgHeight);
-        var img = canvas.toDataURL('image/png');
+        var img = '../images/file_paper_blank_document.png';
+        // Catch rare 'Tainted canvases may not be exported' error message.
+        try {
+          img = canvas.toDataURL('image/png');
+        } catch (e) {}
         if (img) {
           saveFavicon(img);
         }
