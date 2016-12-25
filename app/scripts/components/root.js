@@ -573,7 +573,6 @@ var Root = React.createClass({
         }
       }
       _.assignIn(stateUpdate, {
-        hasScrollbar: utils.scrollbarVisible(document.body),
         reQuery: {state: false},
       });
       stateUpdate.allTabs = allTabs;
@@ -581,7 +580,9 @@ var Root = React.createClass({
         _.assignIn(sU, stateUpdate);
         cb(sU);
       } else {
-        state.set(stateUpdate);
+        state.set(stateUpdate, ()=>{
+          state.set({hasScrollbar: utils.scrollbarVisible(document.body)});
+        });
       }
     };
 
@@ -832,7 +833,7 @@ var App = React.createClass({
       collapse: e.width >= 1565,
       width: e.width,
       height: e.height,
-      hasScrollbar: utils.scrollbarVisible(document.body)
+      hasScrollbar: true
     };
     if (s.init) {
       _.merge(stateUpdate, _stateUpdate);

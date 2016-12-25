@@ -76,7 +76,7 @@ var state = Reflux.createStore({
       direction: 'desc',
     };
   },
-  set(obj){
+  set(obj, cb=null){
     console.log('STATE INPUT: ', obj);
     if (obj.hasOwnProperty('prefs')) {
       _.merge(this.state, obj);
@@ -86,6 +86,9 @@ var state = Reflux.createStore({
     
     console.log('STATE: ', this.state);
     this.trigger(this.state);
+    if (cb && _.isFunction(cb)) {
+      _.defer(()=>cb());
+    }
   },
   get(){
     return this.state;
