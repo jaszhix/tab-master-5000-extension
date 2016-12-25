@@ -1,5 +1,18 @@
 #### Release Notes
 
+##### v2.1.0 / *12-25-16*
+
+*   Added context menu support for selecting multiple items in table mode.
+*   Added a new theme, "Redmond Flat", based on the color scheme of Windows 10.
+*   Added an option in Preferences to clear the favicon cache.
+*   Fixed the context menu becoming unresponsive in table mode after selecting an option.
+*   Fixed the selection color in table mode not being visible in some themes.
+*   Fixed CTRL+T focusing the wrong new tab when the "Allow only one new tab" option is enabled.
+*   Fixed the "Load More" button appearing at the bottom when the scroll bar is present.
+*   Fixed the tooltip not being oriented correctly in the Settings modal.
+*   Fixed parts of the theming editor clipping.
+*   More bug fixes based on TrackJS exceptions. See the [Github](https://github.com/jaszhix/tab-master-5000-chrome-extension) repository for details.
+
 ##### v2.0.13 / *12-15-16*
 
 *   Improved how the extension handles restarting. New tabs are no longer created if none were already open, and they will no longer steal focus if a new tab wasn't already focused.
@@ -7,7 +20,7 @@
 *   Fixed some favicons not caching when an HTTP error occurs on their initial load.
 *   Fixed the cursor not using the pointer style on empty tile space.
 *   Fixed a bug that can prevent users from switching to screenshot mode when multiple windows with several tabs are open.
-*   Addressed various exceptions occurring as reported by TrackJS. See the [Github](https://github.com/jaszhix/tab-master-5000-chrome-extension) repository for details.
+*   Addressed various exceptions occurring as reported by TrackJS.
 
 ##### v2.0.12 / *11-25-16*
 

@@ -15,7 +15,7 @@ export var msgStore = Reflux.createStore({
     chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       var s = state.get();
       console.log('msg: ',msg, 'sender: ', sender);
-      if (msg.type === 'prefs' && msg.e.mode === 'sessions') {
+      if (msg.type === 'prefs' && msg.e && msg.e.mode === 'sessions') {
         state.set({reQuery: {state: true, type: 'cycle'}});
         return;
       }
