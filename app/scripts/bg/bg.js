@@ -735,14 +735,17 @@ var Bg = React.createClass({
     if (e.url.indexOf('chrome://newtab/') !== -1 && this.state.prefs.singleNewTab) {
       var refNewTab = _.findIndex(this.state.newTabs, {windowId: e.windowId});
       if (refNewTab !== -1) {
-        // TBD
-        /*var refExistingTab = _.findIndex(this.state.windows[refWindow].tabs, {id: this.state.newTabs[refNewTab].id});
+        var refExistingTab = _.findIndex(this.state.windows[refWindow].tabs, {id: this.state.newTabs[refNewTab].id});
         if (refExistingTab === -1 || this.state.windows[refWindow].tabs[refExistingTab].url.indexOf('chrome://newtab/') === -1) {
-          console.log('## Not the original new tab!')
-        }*/
-        chrome.tabs.update(this.state.newTabs[refNewTab].id, {active: true}, ()=>{
-          sendMsg({focusSearchEntry: true});
-        });
+          _.pullAt(this.state.newTabs, refNewTab);
+          this.setState({newTabs: this.state.newTabs}, ()=>{
+            chrome.tabs.create({active: true});
+          });
+        } else {
+          chrome.tabs.update(this.state.newTabs[refNewTab].id, {active: true}, ()=>{
+            sendMsg({focusSearchEntry: true});
+          });
+        }
         return;
       }
     }
