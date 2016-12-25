@@ -447,7 +447,7 @@ export var faviconStore = Reflux.createStore({
           domain:  domain
         });
         s.favicons = _.uniqBy(s.favicons, 'domain');
-        if (queryLength === i) {
+        if (queryLength - 1 === i) {
           chrome.storage.local.set({favicons: s.favicons}, (result)=> {
             console.log('favicons saved: ',result);
             state.set({favicons: s.favicons});
