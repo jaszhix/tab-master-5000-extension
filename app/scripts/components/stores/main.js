@@ -489,6 +489,9 @@ export var faviconStore = Reflux.createStore({
       console.log('cleaned dud favicon entries: ',result);
     });
   },
+  clear(){
+    chrome.storage.local.remove('favicons');
+  },
 });
 
 export var chromeAppStore = Reflux.createStore({

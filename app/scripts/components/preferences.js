@@ -8,7 +8,7 @@ import * as utils from './stores/tileUtils';
 import Slider from 'rc-slider';
 import ReactTooltip from 'react-tooltip';
 import state from './stores/state';
-import {msgStore, utilityStore, blacklistStore} from './stores/main';
+import {msgStore, utilityStore, blacklistStore, faviconStore} from './stores/main';
 import screenshotStore from './stores/screenshot';
 
 import {Btn, Col, Row} from './bootstrap';
@@ -165,6 +165,7 @@ var Preferences = React.createClass({
       p.modal.footer = (
         <div>
           <Btn onClick={()=>this.handleSlide(134, 'tabSizeHeight')} className="ntg-setting-btn" icon="reset" faStyle={{position: 'relative', top: '-2px'}}>Reset Tile Size</Btn>
+          <Btn onClick={()=>faviconStore.clear()} className="ntg-setting-btn" icon="trash" faStyle={{paddingRight: '8px'}}>Clear Favicon Cache</Btn>
           {p.prefs.screenshot ? <Btn onClick={()=>screenshotStore.clear()} className="ntg-setting-btn" icon="trash" faStyle={{paddingRight: '8px'}}>Clear Screenshot Cache</Btn> : null}
         </div>
       );
