@@ -127,7 +127,7 @@ var checkAutoDiscard = (windows, prefs)=>{
   return discards;
 };
 
-var createScreenshot = (t, refWindow, refTab)=>{
+var createScreenshot = (t, refWindow, refTab, run=0)=>{
   if (refWindow === -1 || refTab === -1) {
     return;
   }
@@ -135,7 +135,6 @@ var createScreenshot = (t, refWindow, refTab)=>{
     return;
   }
   if (t.state.windows[refWindow].tabs[refTab].url.indexOf('chrome://newtab/') !== -1) {
-    console.log('screenshot caught new tab activation');
     return;
   }
   if (t.state.screenshots === undefined) {
@@ -143,17 +142,22 @@ var createScreenshot = (t, refWindow, refTab)=>{
   }
   var capture = new Promise((resolve, reject)=>{
     try {
-      chrome.tabs.captureVisibleTab({format: 'jpeg', quality: 10}, (image)=> {
-        if (image) {
-          resolve(image);
-        } else {
-          reject();
-        }
-        checkChromeErrorsThrottled();
-      });
+      _.delay(()=>{
+        chrome.tabs.captureVisibleTab({format: 'jpeg', quality: 10}, (image)=> {
+          if (image) {
+            resolve(image);
+          } else {
+            ++run;
+            if (run <= 1) {
+              _.delay(()=>createScreenshot(t, refWindow, refTab, run), 500);
+            } else {
+              reject(null);
+            }
+          }
+        });
+      }, 500);
     } catch (e) {
-      console.log(e);
-      reject();
+      reject(e);
     }
   });
   capture.then((image)=>{
@@ -198,7 +202,7 @@ var createScreenshot = (t, refWindow, refTab)=>{
   });
 };
 
-var createScreenshotThrottled = _.throttle(createScreenshot, 500, {leading: true});
+var createScreenshotThrottled = _.throttle(createScreenshot, 2000, {leading: true});
 
 var synchronizeSession = _.throttle(syncSession, 100, {leading: true});
 
@@ -206,7 +210,6 @@ var setAction = (t, type, oldTabInstance, newTabInstance=null)=>{
   if (t.state.prefs && !t.state.prefs.actions) {
     return;
   }
-  console.log('setAction', type, oldTabInstance, newTabInstance)
   if (t.state.actions.length > 30) {
     var firstAction = _.findIndex(t.state.actions, {id: _.first(t.state.actions).id});
     if (firstAction !== -1) {
