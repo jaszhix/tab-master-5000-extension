@@ -18,6 +18,7 @@ var state = Reflux.createStore({
       massUpdate: null,
       remove: null,
       create: null,
+      screenshotClear: null,
       // UI
       search: '',
       width: window.innerWidth,

@@ -166,7 +166,7 @@ var Preferences = React.createClass({
         <div>
           <Btn onClick={()=>this.handleSlide(134, 'tabSizeHeight')} className="ntg-setting-btn" icon="reset" faStyle={{position: 'relative', top: '-2px'}}>Reset Tile Size</Btn>
           <Btn onClick={()=>faviconStore.clear()} className="ntg-setting-btn" icon="trash" faStyle={{paddingRight: '8px'}}>Clear Favicon Cache</Btn>
-          {p.prefs.screenshot ? <Btn onClick={()=>screenshotStore.clear()} className="ntg-setting-btn" icon="trash" faStyle={{paddingRight: '8px'}}>Clear Screenshot Cache</Btn> : null}
+          {p.prefs.screenshot ? <Btn onClick={this.handleScreenshotClear} className="ntg-setting-btn" icon="trash" faStyle={{paddingRight: '8px'}}>Clear Screenshot Cache</Btn> : null}
         </div>
       );
       state.set({modal: p.modal});
@@ -203,13 +203,20 @@ var Preferences = React.createClass({
   handleSlideAfterChange(e, opt){
     var obj = {};
     obj[opt] = e;
-    msgStore.setPrefs(obj)
+    msgStore.setPrefs(obj);
   },
   handleAutoDiscardTime(e){
     var discardTime = parseInt(e.target.value.split(' ')[0]);
     var isMinute = e.target.value.indexOf('Minute') !== -1;
     var output = isMinute && discardTime === 30 ? 0.5 : isMinute && discardTime === 15 ? 0.25 : discardTime; 
     msgStore.setPrefs({autoDiscardTime: output * 3600000});
+  },
+  handleScreenshotClear(){
+    screenshotStore.clear();
+    this.setState({bytesInUse: 0}, ()=>{
+      state.set({screenshotClear: true});
+      _.delay(()=>state.set({screenshotClear: null}), 500);
+    });
   },
   render: function() {
     var s = this.state;

@@ -55,6 +55,9 @@ var Tile = React.createClass({
       this.setState({i: nP.i, duplicate: false});
       v(ReactDOM.findDOMNode(this)).removeClass('animated');
     }
+    if (nP.screenshotClear !== p.screenshotClear) {
+      this.setState({screenshot: null});
+    }
     if (nP.applyTabOrder) {
       this.applyTabOrder();
     }
@@ -705,7 +708,8 @@ var TileGrid = React.createClass({
                   sort={p.s.sort}
                   windowId={p.s.windowId}
                   chromeVersion={p.s.chromeVersion}
-                  tileLetterTopPos={tileLetterTopPos} />
+                  tileLetterTopPos={tileLetterTopPos}
+                  screenshotClear={p.s.screenshotClear} />
                 );
               }
             })
