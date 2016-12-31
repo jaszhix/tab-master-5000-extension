@@ -8,6 +8,7 @@ import {Btn, Col, Row} from './bootstrap';
 
 import changelog from 'html!markdown!../../../changelog.md';
 import support from 'html!markdown!../../../support.md';
+import license from 'html!markdown!../../../COPYING';
 
 var Contribute = React.createClass({
   render:function(){
@@ -27,6 +28,8 @@ var Contribute = React.createClass({
         </form>
         <h4>Special Thanks</h4>
         <ul>
+          <li>Alex Dorey</li>
+          <li>Joel Zipkin</li>
           <li>reset77</li>
           <li>Martin Lichtblau</li>
           <li>volcano99</li>
@@ -38,15 +41,22 @@ var Contribute = React.createClass({
   }
 });
 
+var License = React.createClass({
+  render(){
+    function createMarkup() { return {__html: license};}
+    return (
+      <div style={{marginTop: '49px'}}>
+        <Col size="2" />
+        <Col size="8" className="ntg-release">
+          <div dangerouslySetInnerHTML={createMarkup()} />
+        </Col>
+        <Col size="2"/>
+      </div>
+    );
+  }
+});
+
 var Support = React.createClass({
-  componentDidMount(){
-    var deps = require('json!../../../package.json');
-    var state = [];
-    for (var key in deps.devDependencies) {
-      state.push(`${key} ${deps.devDependencies[key].split('^')[1]}`);
-    }
-    this.setState({dependencies: state});
-  },
   render(){
     function createMarkup() { return {__html: support};}
     return (
@@ -126,8 +136,7 @@ var ReleaseNotes = React.createClass({
     function createMarkup() { return {__html: changelog};}
     var p = this.props;
     return (
-      <div>
-        
+      <div> 
         <img className="ntg-about" src={p.tm5kLogo}/>
         <a href="https://trackjs.com" target="_blank"><img style={{borderRadius: '2px', position: 'absolute', top: '0px', right:'5%', opacity: '0.7'}} src="../../images/trackjs.gif" height="40px" alt="Protected by TrackJS JavaScript Error Monitoring" /></a>
         <img style={{position: 'absolute', top: '50px', right:'8%', height: '120px', opacity: '0.7'}} src="../../images/eff.png" />
@@ -153,7 +162,6 @@ var About = React.createClass({
       <div>
         <Btn onClick={()=>utilityStore.createTab('https://github.com/jaszhix/tab-master-5000-chrome-extension')} className="ntg-setting-btn" icon="github">Github</Btn>
         <Btn onClick={()=>utilityStore.createTab('https://chrome.google.com/webstore/detail/tab-master-5000-tab-swiss/mippmhcfjhliihkkdobllhpdnmmciaim')} className="ntg-setting-btn" icon="chrome">Chrome Web Store</Btn>
-        <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" src="https://i.creativecommons.org/l/by/4.0/88x31.png" className="pull-right" /></a>
       </div>
     );
     state.set({modal: p.modal});
@@ -168,16 +176,19 @@ var About = React.createClass({
           <div role="tabpanel"> 
             <ul className="nav nav-tabs" style={{borderBottom: 'initial', position: 'absolute', zIndex: '9999'}} >
               <li style={{padding: '0px'}} className={`${s.tab === 'release' ? 'active' : ''}`}>
-                  <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({tab: 'release'})}>Release Notes</a>
+                <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({tab: 'release'})}>Release Notes</a>
               </li>
               <li style={{padding: '0px'}} className={`${s.tab === 'support' ? 'active' : ''}`}>
-                  <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({tab: 'support'})}>Support</a>
+                <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({tab: 'support'})}>Support</a>
               </li>
               <li style={{padding: '0px'}} className={`${s.tab === 'attribution' ? 'active' : ''}`}>
-                  <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({tab: 'attribution'})}>Attribution</a>
+                <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({tab: 'attribution'})}>Attribution</a>
               </li>
-              <li style={{padding: '0px'}} className={`${s.tab === 'Contribute' ? 'active' : ''}`}>
-                  <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({tab: 'Contribute'})}>Contribute</a>
+              <li style={{padding: '0px'}} className={`${s.tab === 'contribute' ? 'active' : ''}`}>
+                <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({tab: 'contribute'})}>Contribute</a>
+              </li>
+              <li style={{padding: '0px'}} className={`${s.tab === 'license' ? 'active' : ''}`}>
+                <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({tab: 'license'})}>License</a>
               </li>
             </ul>
           </div>
@@ -186,7 +197,8 @@ var About = React.createClass({
           {s.tab === 'release' ? <ReleaseNotes tm5kLogo={tm5kLogo}/> : null}
           {s.tab === 'support' ? <Support /> : null}
           {s.tab === 'attribution' ? <Attribution /> : null}
-          {s.tab === 'Contribute' ? <Contribute /> : null}
+          {s.tab === 'contribute' ? <Contribute /> : null}
+          {s.tab === 'license' ? <License /> : null}
         </Col>
       </div>
     );
