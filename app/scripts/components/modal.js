@@ -74,7 +74,10 @@ var ModalHandler = React.createClass({
         dialogStyle={{
           zIndex: '50',
           opacity: p.settings === 'theming' ? '0.95' : '1',
-          WebkitTransition: p.prefs.animations ? 'opacity 0.2s' : 'initial'
+          WebkitTransition: p.prefs.animations ? 'opacity 0.2s' : 'initial',
+          width: '75%',
+          margin: '0px auto',
+          top: '3.5%'
         }}
         headerStyle={{
           backgroundColor: p.theme.headerBg, 
