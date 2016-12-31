@@ -1,5 +1,6 @@
 import React from 'react';
 import tc from 'tinycolor2';
+import moment from 'moment';
 
 import state from './stores/state';
 import {utilityStore} from './stores/main';
@@ -48,6 +49,9 @@ var License = React.createClass({
       <div style={{marginTop: '49px'}}>
         <Col size="2" />
         <Col size="8" className="ntg-release">
+          <p>The MIT License (MIT)</p>
+
+          <p>{`Copyright © ${moment(Date.now()).format('YYYY')} Jason Hicks`}</p>
           <div dangerouslySetInnerHTML={createMarkup()} />
         </Col>
         <Col size="2"/>

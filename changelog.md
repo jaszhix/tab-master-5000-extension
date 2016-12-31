@@ -1,5 +1,13 @@
 #### Release Notes
 
+##### v2.1.1 / *12-31-16*
+
+*   Added bookmark toggling to the context menu.
+*   Improved the stability of screenshot generation.
+*   Fixed screenshot cache clearing not updating the DOM.
+*   Decreased the width of the settings modal.
+*   Changed the license to MIT, as Creative Commons doesn't recommend using their licenses for software, and the new license more explicitly states TM5K is free and open source.
+
 ##### v2.1.0 / *12-25-16*
 
 *   Added context menu support for selecting multiple items in table mode.

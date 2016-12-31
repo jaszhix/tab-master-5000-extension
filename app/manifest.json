@@ -1,7 +1,7 @@
 {
   "name": "Tab Master 5000: Chrome Swiss Army Knife",
   "short_name": "Tab Master 5000",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "manifest_version": 2,
   "description": "The swiss army knife of tab, history, bookmark, session, and extension management.",
   "icons": {
@@ -27,7 +27,7 @@
     "default_title": "Tab Master 5000: Chrome Swiss Army Knife"
   },
   "omnibox": {
-    "keyword": "new"
+    "keyword": "tm5k"
   },
   "offline_enabled": true,
   "content_scripts": [

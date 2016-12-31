@@ -18,10 +18,6 @@ Tile dragging has been overhauled in V2, and you can now drag a tile by simply h
 
 This can be done in the table format view. Hold CTRL to select rows, or hold shift to select a range of rows. Then press the delete key to close/remove items, or use the context menu for more options to apply to your selection.
 
-**When I apply the sorted tab order from the sidebar, the extension becomes unresponsive.**
-
-The method of applying tabs en masse hasn't changed since V1, and will be fixed in an upcoming update.
-
 **Session management is slow.**
 
 A bug was causing favicon cache data to be saved with session data, and this has been resolved. To repair your session data, please export it, and re-import it.
@@ -29,3 +25,7 @@ A bug was causing favicon cache data to be saved with session data, and this has
 **I am experiencing performance issues.**
 
 Try disabling screenshots, animations, session synchronization, or undoing of tab actions in Preferences. Enabling automatic tab discarding can also help improve performance on lower-end PCs.
+
+**The extension crashed.**
+
+This is related to the screenshot capturing API. While fixes are being tested, it is recommended to disable screenshot capturing if this is happening to you.
