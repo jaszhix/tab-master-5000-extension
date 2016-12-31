@@ -75,7 +75,7 @@ var ModalHandler = React.createClass({
           zIndex: '50',
           opacity: p.settings === 'theming' ? '0.95' : '1',
           WebkitTransition: p.prefs.animations ? 'opacity 0.2s' : 'initial',
-          width: '75%',
+          width: `${p.width > 3100 ? 55 : p.width > 2700 ? 60 : p.width > 2450 ? 65 : p.width > 2200 ? 70 : p.width > 1880 ? 75 : 85}%`,
           margin: '0px auto',
           top: '3.5%'
         }}

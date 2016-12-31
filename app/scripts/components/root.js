@@ -770,6 +770,7 @@ var Root = React.createClass({
               wallpaper={s.wallpaper}
               wallpapers={s.wallpapers}
               settings={p.s.settings}
+              width={p.s.width}
               height={p.s.height}
               chromeVersion={p.s.chromeVersion} /> : null}
               <div className="tile-container">
