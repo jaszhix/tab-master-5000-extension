@@ -29,7 +29,7 @@ export var msgStore = Reflux.createStore({
         state.set({actions: msg.actions});
       } else if (msg.hasOwnProperty('focusSearchEntry')) {
         keyboardStore.focusSearchEntry();
-      } else if (msg.type === 'bookmarks') {
+      } else if (msg.type === 'bookmarks' && s.prefs.mode === msg.type) {
         bookmarksStore.get_bookmarks();
       } else if (msg.type === 'history' && s.prefs.mode === msg.type) {
         historyStore.get_history(s.allTabs);
