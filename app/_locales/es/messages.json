@@ -1,0 +1,647 @@
+{
+  "appName": {
+    "message": "Tab Master 5000: Cuchillo suizo del cromo"
+  },
+  "appDesc": {
+    "message": "El cuchillo del ejército suizo de la tabulación, de la historia, de la señal, de la sesión, y de la gerencia de extensión."
+  },
+  "hi": {
+    "message": "Hola"
+  },
+  "tab": {
+    "message": "Lengüeta"
+  },
+  "newTab": {
+    "message": "Nueva Pestaña"
+  },
+  "options": {
+    "message": "Opciones"
+  },
+  "close": {
+    "message": "Cerrar"
+  },
+  "remove": {
+    "message": "Quitar"
+  },
+  "pin": {
+    "message": "Alfiler"
+  },
+  "unpin": {
+    "message": "Desprender"
+  },
+  "mute": {
+    "message": "Mudo"
+  },
+  "unmute": {
+    "message": "Activar sonido"
+  },
+  "addTo": {
+    "message": "Añadir"
+  },
+  "removeFrom": {
+    "message": "Eliminar de"
+  },
+  "allFrom": {
+    "message": "todo desde"
+  },
+  "bookmarks": {
+    "message": "marcadores"
+  },
+  "tabs": {
+    "message": "pestañas"
+  },
+  "sessions": {
+    "message": "sesiones"
+  },
+  "history": {
+    "message": "historia"
+  },
+  "extensions": {
+    "message": "extensiones"
+  },
+  "apps": {
+    "message": "aplicaciones"
+  },
+  "undo": {
+    "message": "Deshacer"
+  },
+  "allDuplicates": {
+    "message": "todos los duplicados"
+  },
+  "selectedDomains": {
+    "message": "dominios seleccionados"
+  },
+  "allSearchResults": {
+    "message": "todos los resultados de búsqueda"
+  },
+  "togglePinningOf": {
+    "message": "Toggle pinning de"
+  },
+  "toggleMutingOf": {
+    "message": "Alternar silenciamiento de"
+  },
+  "items": {
+    "message": "artículos"
+  },
+  "createShortcutsFor": {
+    "message": "Crear accesos directos para"
+  },
+  "createShortcut": {
+    "message": "Crear acceso directo"
+  },
+  "openFullScreen": {
+    "message": "Abrir pantalla completa"
+  },
+  "openAsAPinnedTab": {
+    "message": "Abrir como pestaña fijada"
+  },
+  "openAsA": {
+    "message": "Abrir como un"
+  },
+  "toggle": {
+    "message": "Palanca"
+  },
+  "disable": {
+    "message": "Inhabilitar"
+  },
+  "enable": {
+    "message": "Habilitar"
+  },
+  "uninstall": {
+    "message": "Desinstalar"
+  },
+  "removalOf": {
+    "message": "eliminación de"
+  },
+  "creationOf": {
+    "message": "creación de"
+  },
+  "mutingOf": {
+    "message": "silenciamiento de"
+  },
+  "unmutingOf": {
+    "message": "desaprobación de"
+  },
+  "pinningOf": {
+    "message": "fijación de"
+  },
+  "unpinningOf": {
+    "message": "desenfundando de"
+  },
+  "movingOf": {
+    "message": "movimiento de"
+  },
+  "pressEnterToSearch": {
+    "message": "Pulse Intro para buscar"
+  },
+  "google": {
+    "message": "Google"
+  },
+  "newVersionAvailable": {
+    "message": "Nueva versión disponible"
+  },
+  "updatedTo": {
+    "message": "Actualizado a"
+  },
+  "thankYouForInstallingTM5K": {
+    "message": "Gracias por instalar TM5K"
+  },
+  "downloadingAndCachingFavicons": {
+    "message": "Descarga y almacenamiento en caché de favicons..."
+  },
+  "search": {
+    "message": "Buscar"
+  },
+  "resetData": {
+    "message": "El restablecimiento borrará todos los datos. Por favor, haga una copia de seguridad de sus sesiones y temas antes de comenzar."
+  },
+  "encounteredError": {
+    "message": "Tab Maestro encontró un error y no pudo inicializar. Lo siento por los inconvenientes ocasionados. Infórmelo en la pestaña Soporte de la"
+  },
+  "chromeWebStore": {
+    "message": "Chrome Web Store"
+  },
+  "orAsAnIssueOn": {
+    "message": "o como un problema en"
+  },
+  "github": {
+    "message": "Github"
+  },
+  "soThisIssueCanBeInvestigated": {
+    "message": "por lo que este tema puede ser investigado. ¡Gracias!"
+  },
+  "tile": {
+    "message": "Azulejo"
+  },
+  "table": {
+    "message": "Mesa"
+  },
+  "format": {
+    "message": "Formato"
+  },
+  "settings": {
+    "message": "Ajustes"
+  },
+  "sessionManager": {
+    "message": "Administrador de sesión"
+  },
+  "theming": {
+    "message": "Teoría"
+  },
+  "viewMode": {
+    "message": "Modo de vista"
+  },
+  "sortBy": {
+    "message": "Ordenar por"
+  },
+  "folder": {
+    "message": "Carpeta"
+  },
+  "dateAdded": {
+    "message": "Fecha Agregada"
+  },
+  "website": {
+    "message": "Sitio web"
+  },
+  "title": {
+    "message": "Título"
+  },
+  "open": {
+    "message": "Abierto"
+  },
+  "originalOrder": {
+    "message": "Orden Original"
+  },
+  "mostVisited": {
+    "message": "Más visitado"
+  },
+  "lastVisit": {
+    "message": "Última visita"
+  },
+  "offlineEnabled": {
+    "message": "Desconectado habilitado"
+  },
+  "tabOrder": {
+    "message": "Orden de tabulación"
+  },
+  "updated": {
+    "message": "Actualizado"
+  },
+  "audible": {
+    "message": "Audible"
+  },
+  "label": {
+    "message": "Etiqueta"
+  },
+  "apply": {
+    "message": "Aplicar"
+  },
+  "homepage": {
+    "message": "Página principal"
+  },
+  "preferences": {
+    "message": "Preferencias"
+  },
+  "about": {
+    "message": "Acerca de"
+  },
+  "enableContextMenu": {
+    "message": "Habilitar menú contextual"
+  },
+  "enableContextMenuTip": {
+    "message": "Esta opción activa y desactiva el menú contextual del botón derecho del ratón. Si lo deshabilita, algunas funciones de control de pestañas no estarán accesibles."
+  },
+  "enableDraggableTabReordering": {
+    "message": "Habilitar el reordenamiento de la pestaña arrastrable"
+  },
+  "enableDraggableTabReorderingTip": {
+    "message": "Esta opción le permite volver a ordenar las pestañas arrastrando un mosaico o una fila de la tabla con el cursor."
+  },
+  "singleNewTab": {
+    "message": "Permitir sólo una Nueva pestaña por ventana"
+  },
+  "singleNewTabTip": {
+    "message": "Habilitar esta opción impone el cierre de todas las pestañas nuevas, excepto la que está actualmente enfocada. Esto es útil en computadoras más antiguas."
+  },
+  "allTabs": {
+    "message": "Mostrar pestañas en todas las ventanas"
+  },
+  "allTabsTip": {
+    "message": "Controla si las pestañas de todas las ventanas se muestran o no en las vistas de cuadrícula / tabla de pestañas."
+  },
+  "autoDiscard": {
+    "message": "Habilitar el descarte automático de pestañas de la memoria"
+  },
+  "autoDiscardTip": {
+    "message": "Esta opción permite a TM5K borrar automáticamente las pestañas de la memoria después de haber estado inactivas durante un período de tiempo determinado. Al borrar las pestañas de la memoria no se cierran las pestañas, pero Chrome tendrá que volver a cargarlas tras la activación."
+  },
+  "autoDiscardClearTime": {
+    "message": "Borrar las pestañas de la memoria si está inactiva para"
+  },
+  "time": {
+    "message": "Hora"
+  },
+  "hour": {
+    "message": "Hora"
+  },
+  "minute": {
+    "message": "Minuto"
+  },
+  "minutes": {
+    "message": "Minutos"
+  },
+  "s": {
+    "message": "s"
+  },
+  "animations": {
+    "message": "Habilitar animaciones"
+  },
+  "animationsTip": {
+    "message": "Esta opción cambia las animaciones de acción de tabulación, así como los efectos de desenfoque. Deshabilitar esto es útil en computadoras de gama baja con aceleración de hardware limitada."
+  },
+  "duplicate": {
+    "message": "Habilitar pulsaciones de pestañas duplicadas"
+  },
+  "duplicateTip": {
+    "message": "Esta opción hará que pulsen todas las pestañas de duplicados excepto la primera. Esto hace que sea más fácil ver cuántas pestañas duplicadas tiene abierto."
+  },
+  "screenshot": {
+    "message": "Habilitar capturas de pantalla de pestañas"
+  },
+  "screenshotTip": {
+    "message": "Habilitar esta función agrega una captura de pantalla de una pestaña en el fondo de la ficha de la ficha una vez que se ha hecho clic en él. Cuando una captura de pantalla está activa, se almacena en Chrome hasta que la página vuelva a estar activa."
+  },
+  "screenshotDiskUsage": {
+    "message": "Uso del disco de captura de pantalla"
+  },
+  "screenshotDiskUsageTip": {
+    "message": "Si observa problemas de rendimiento, puede borrar el caché de captura de pantalla de forma ocasional. Las capturas de pantalla de más de tres días comenzarán a purgarse una vez que la caché alcance los 50 MB."
+  },
+  "screenshotInit": {
+    "message": "Capturar capturas de pantalla cuando una pestaña se carga"
+  },
+  "screenshotInitTip": {
+    "message": "Al habilitar esto, TM5K intentará capturar pestañas después de cargarlas. Esta opción es para usuarios con equipos rápidos o aquellos que tienen pocas pestañas abiertas."
+  },
+  "screenshotChrome": {
+    "message": "Capturar capturas de pantalla mediante la API de Chrome"
+  },
+  "screenshotChromeTip": {
+    "message": "De forma predeterminada, TM5K utilizará Chrome para capturar capturas de pantalla. La API de Chrome es más rápida y captura cualquier sitio web, pero puede afectar el rendimiento general de Chrome más. Deshabilite esta opción para utilizar sólo el método de lienzo. Después de inhabilitar, necesitará reiniciar Chrome."
+  },
+  "screenshotBg": {
+    "message": "Habilitar capturas de pantalla en el fondo en hover"
+  },
+  "screenshotBgTip": {
+    "message": "Esta configuración permite que las capturas de pantalla de tamaño completo rellenen el fondo de la página Nueva pestaña mientras se sitúa sobre una pestaña con una captura de pantalla. Las capturas de pantalla se borran y se mezclan en el fondo."
+  },
+  "tooltip": {
+    "message": "Habilitar las sugerencias"
+  },
+  "tooltipTip": {
+    "message": "Alterna la información que está leyendo ahora."
+  },
+  "alerts": {
+    "message": "Habilitar alertas"
+  },
+  "alertsTip": {
+    "message": "Cambia las notificaciones que aparecen en la esquina inferior derecha de la pantalla."
+  },
+  "screenshotBgOpacity": {
+    "message": "Establecer la opacidad de la imagen de fondo"
+  },
+  "screenshotBgOpacityTip": {
+    "message": "Controla la fuerza de la opacidad de las capturas de pantalla de fondo y el fondo de pantalla."
+  },
+  "screenshotBgBlur": {
+    "message": "Establecer la fuerza de desenfoque de imagen de fondo"
+  },
+  "screenshotBgBlurTip": {
+    "message": "Controla la fuerza de la borrosidad de las capturas de pantalla de fondo y papel tapiz."
+  },
+  "tabSizeHeight": {
+    "message": "Ajustar el tamaño del mosaico"
+  },
+  "tabSizeHeightTip": {
+    "message": "Controla el tamaño de las baldosas."
+  },
+  "sessionsSync": {
+    "message": "Habilitar la sincronización de sesión"
+  },
+  "sessionsSyncTip": {
+    "message": "Habilitar la sincronización de sesión le permite mantener una sesión guardada de forma persistente actualizada con la ventana actual de Chrome. La sincronización se produce con un intervalo máximo de quince segundos."
+  },
+  "actions": {
+    "message": "Habilitar deshacer las acciones de pestaña"
+  },
+  "actionsTip": {
+    "message": "Esta opción le permite deshacer una acción de pestaña presionando CTRL + Z, o usando el menú contextual con el botón derecho en un mosaico de pestañas mientras está en la vista de pestañas."
+  },
+  "keyboardShortcuts": {
+    "message": "Habilitar accesos directos del teclado"
+  },
+  "blacklist": {
+    "message": "Habilitar la lista negra del sitio web"
+  },
+  "blacklistTip": {
+    "message": "Introduzca una lista de dominios separados por comas y se cerrará automáticamente en cualquier circunstancia. Esto es útil para bloquear sitios web que pueden inhibir la productividad, o simplemente no te gusta."
+  },
+  "blacklistPlaceholder": {
+    "message": "Introduzca una lista de dominios separados por comas..."
+  },
+  "ctrlZ": {
+    "message": "Deshacer (requiere acciones de pestaña)"
+  },
+  "sidebar": {
+    "message": "Barra lateral"
+  },
+  "resetTileSize": {
+    "message": "Restaurar tamaño de mosaico"
+  },
+  "clearFaviconCache": {
+    "message": "Borrar caché de Favicon"
+  },
+  "clearScreenshotCache": {
+    "message": "Borrar Captura de pantalla"
+  },
+  "saveSession": {
+    "message": "Guardar la sesión"
+  },
+  "and": {
+    "message": "y"
+  },
+  "areNotValidDomains": {
+    "message": ""
+  },
+  "isNotValidDomain": {
+    "message": "no son dominios de sitios web válidos."
+  },
+  "save": {
+    "message": "Guardar"
+  },
+  "saveSession": {
+    "message": "Guardar la sesión"
+  },
+  "savedSessions": {
+    "message": "Guardar Sesiones"
+  },
+  "currentSession": {
+    "message": "Sesión actual"
+  },
+  "export": {
+    "message": "Exportar"
+  },
+  "import": {
+    "message": "Importar"
+  },
+  "editLabel": {
+    "message": "Editar etiqueta"
+  },
+  "searchSession": {
+    "message": "Sesión de búsqueda"
+  },
+  "synchronizeSession": {
+    "message": "Sincronizar sesión"
+  },
+  "restoreSession": {
+    "message": "Restaurar sesion"
+  },
+  "removeSession": {
+    "message": "Eliminar sesión"
+  },
+  "closeWindow": {
+    "message": "Cerrar ventana"
+  },
+  "restoreWindow": {
+    "message": "Restaurar ventana"
+  },
+  "removeTab": {
+    "message": "Eliminar ficha"
+  },
+  "closeTab": {
+    "message": "Cerrar pestaña"
+  },
+  "new": {
+    "message": "Nuevo"
+  },
+  "theme": {
+    "message": "Tema"
+  },
+  "saveTheme": {
+    "message": "Guardar Tema"
+  },
+  "update": {
+    "message": "Actualizar"
+  },
+  "updateTheme": {
+    "message": "Actualizar Tema"
+  },
+  "bodyHeaderAndFields": {
+    "message": "Cuerpo, cabecera y campos"
+  },
+  "buttons": {
+    "message": "Botones"
+  },
+  "tiles": {
+    "message": "Azulejos"
+  },
+  "importWallpaper": {
+    "message": "Importar fondo de pantalla"
+  },
+  "custom": {
+    "message": "Personalizado"
+  },
+  "tm5k": {
+    "message": "TM5K"
+  },
+  "colorScheme": {
+    "message": "Esquema de colores"
+  },
+  "wallpaper": {
+    "message": "Papel pintado"
+  },
+  "chromesque": {
+    "message": "Chromesque"
+  },
+  "leafy": {
+    "message": "Frondoso"
+  },
+  "mellowDark": {
+    "message": "Mellow Dark"
+  },
+  "midnightPurple": {
+    "message": "Púrpura de medianoche"
+  },
+  "mintYDark": {
+    "message": "Minty Dark"
+  },
+  "pastelSummer": {
+    "message": "Verano pastel"
+  },
+  "redmondFlat": {
+    "message": "Redmond Flat"
+  },
+  "tabMasterVanilla": {
+    "message": "Tab Maestro Vanilla"
+  },
+  "bodyText": {
+    "message": "Cuerpo de texto"
+  },
+  "bodyBg": {
+    "message": "Fondo del cuerpo"
+  },
+  "headerBg": {
+    "message": "Fondo del encabezado"
+  },
+  "textFieldsText": {
+    "message": "Texto del campo"
+  },
+  "textFieldsPlaceholder": {
+    "message": "Marcador de posición de texto de campo"
+  },
+  "textFieldsBg": {
+    "message": "Fondo de campo"
+  },
+  "textFieldsBorder": {
+    "message": "Frontera del campo"
+  },
+  "settingsBg": {
+    "message": "Configuración de fondo"
+  },
+  "settingsItemHover": {
+    "message": "Elemento de configuración (Hover)"
+  },
+  "darkBtnText": {
+    "message": "Texto del botón oscuro"
+  },
+  "darkBtnTextShadow": {
+    "message": "Sombra de texto de botón oscuro"
+  },
+  "darkBtnBg": {
+    "message": "Fondo oscuro del botón"
+  },
+  "darkBtnBgHover": {
+    "message": "Fondo oscuro del botón (Hover)"
+  },
+  "lightBtnText": {
+    "message": "Texto del botón luminoso"
+  },
+  "lightBtnTextShadow": {
+    "message": "Sombreado del texto de la luz"
+  },
+  "lightBtnBg": {
+    "message": "Fondo de botón de luz"
+  },
+  "lightBtnBgHover": {
+    "message": "Fondo de botón de luz (Hover)"
+  },
+  "tileBg": {
+    "message": "Fondo de azulejos"
+  },
+  "tileBgHover": {
+    "message": "Fondo de azulejos (Hover)"
+  },
+  "tileText": {
+    "message": "Texto del azulejo"
+  },
+  "tileTextShadow": {
+    "message": "Sombra de texto de mosaico"
+  },
+  "tileShadow": {
+    "message": "Sombra de azulejos"
+  },
+  "tileX": {
+    "message": "Botón Cerrar Cerrar"
+  },
+  "tileXHover": {
+    "message": "Botón Cerrar Cerrar (Hover)"
+  },
+  "tilePin": {
+    "message": "Botón del Pin de la teja"
+  },
+  "tilePinHover": {
+    "message": "Botón del Pin de la teja (Hover)"
+  },
+  "tilePinned": {
+    "message": "Botón de azulejos fijados"
+  },
+  "tileMute": {
+    "message": "Botón de silenciamiento de azulejos"
+  },
+  "tileMuteHover": {
+    "message": "Botón de silenciamiento de azulejos (Hover)"
+  },
+  "tileMuteAudible": {
+    "message": "Botón audible de azulejos"
+  },
+  "tileMuteAudibleHover": {
+    "message": "Botón audible de azulejos (Hover)"
+  },
+  "tileButtonBg": {
+    "message": "Fondo del botón del azulejo"
+  },
+  "releaseNotes": {
+    "message": "Notas de la versión"
+  },
+  "support": {
+    "message": "Apoyo"
+  },
+  "attribution": {
+    "message": "Atribución"
+  },
+  "attributionHeader": {
+    "message": "TM5K fue posible gracias a los esfuerzos de los siguientes proyectos."
+  },
+  "attributionFooter": {
+    "message": "Los fondos de pantalla incluidos están"
+  },
+  "contribute": {
+    "message": "Contribuir"
+  },
+  "contributeHeader": {
+    "message": "¿Por qué contribuir?"
+  },
+  "license": {
+    "message": "license"
+  }
+}
