@@ -1,10 +1,652 @@
 {
   "appName": {
-    "message": "New Tab Grid Sort, Filter, and Search",
-    "description": "New Tab Grid Sort, Filter, and Search"
+    "message": "Tab Master 5000: Chrome Swiss Army Knife",
+    "description": "The title of the application, displayed in the web store."
   },
-  "appDescription": {
-    "message": "This extensions replaces the new tab page with a clean, sortable, and searchable, grid view of all of your open tabs.",
-    "description": "This extensions replaces the new tab page with a clean, sortable, and searchable, grid view of all of your open tabs."
+  "appDesc": {
+    "message": "The swiss army knife of tab, history, bookmark, session, and extension management.", 
+    "description":"The description of the application, displayed in the web store."
+  },
+  "hi": {
+    "message": "Hi"
+  },
+  "tab": {
+    "message": "Tab"
+  },
+  "newTab": {
+    "message": "New Tab"
+  },
+  "options": {
+    "message": "Options"
+  },
+  "close": {
+    "message": "Close"
+  },
+  "remove": {
+    "message": "Remove"
+  },
+  "pin": {
+    "message": "Pin"
+  },
+  "unpin": {
+    "message": "Unpin"
+  },
+  "mute": {
+    "message": "Mute"
+  },
+  "unmute": {
+    "message": "Unmute"
+  },
+  "addTo": {
+    "message": "Add to"
+  },
+  "removeFrom": {
+    "message": "Remove from"
+  },
+  "allFrom": {
+    "message": "all from"
+  },
+  "bookmarks": {
+    "message": "bookmarks"
+  },
+  "tabs": {
+    "message": "tabs"
+  },
+  "sessions": {
+    "message": "sessions"
+  },
+  "history": {
+    "message": "history"
+  },
+  "extensions": {
+    "message": "extensions"
+  },
+  "apps": {
+    "message": "apps"
+  },
+  "undo": {
+    "message": "Undo"
+  },
+  "allDuplicates": {
+    "message": "all duplicates"
+  },
+  "allSearchResults": {
+    "message": "all search results"
+  },
+  "togglePinningOf": {
+    "message": "Toggle pinning of"
+  },
+  "toggleMutingOf": {
+    "message": "Toggle muting of"
+  },
+  "selectedDomains": {
+    "message": "selected domains"
+  },
+  "items": {
+    "message": "items"
+  },
+  "createShortcutsFor": {
+    "message": "Create shortcuts for"
+  },
+  "createShortcut": {
+    "message": "Create shortcut"
+  },
+  "openFullScreen": {
+    "message": "Open full screen"
+  },
+  "openAsAPinnedTab": {
+    "message": "Open as a pinned tab"
+  },
+  "openAsA": {
+    "message": "Open as a"
+  },
+  "toggle": {
+    "message": "Toggle"
+  },
+  "disable": {
+    "message": "Disable"
+  },
+  "enable": {
+    "message": "Enable"
+  },
+  "uninstall": {
+    "message": "Uninstall"
+  },
+  "removalOf": {
+    "message": "removal of"
+  },
+  "creationOf": {
+    "message": "creation of"
+  },
+  "mutingOf": {
+    "message": "muting of"
+  },
+  "unmutingOf": {
+    "message": "unmuting of"
+  },
+  "pinningOf": {
+    "message": "pinning of"
+  },
+  "unpinningOf": {
+    "message": "unpinning of"
+  },
+  "movingOf": {
+    "message": "moving of"
+  },
+  "pressEnterToSearch": {
+    "message": "Press Enter to Search"
+  },
+  "google": {
+    "message": "Google"
+  },
+  "newVersionAvailable": {
+    "message": "New Version Available"
+  },
+  "updatedTo": {
+    "message": "Updated to"
+  },
+  "thankYouForInstallingTM5K": {
+    "message": "Thank you for installing TM5K"
+  },
+  "downloadingAndCachingFavicons": {
+    "message": "Downloading and caching favicons..."
+  },
+  "search": {
+    "message": "Search"
+  },
+  "resetData": {
+    "message": "Resetting will delete all data. Please backup your sessions and themes before you begin."
+  },
+  "encounteredError": {
+    "message": "Tab Master encountered an error and was unable to initialize. Sorry for the inconvenience. Please report this to the Support tab in the"
+  },
+  "chromeWebStore": {
+    "message": "Chrome Web Store"
+  },
+  "orAsAnIssueOn": {
+    "message": "or as an issue on"
+  },
+  "github": {
+    "message": "Github"
+  },
+  "soThisIssueCanBeInvestigated": {
+    "message": "so this issue can be investigated. Thank you!"
+  },
+  "tile": {
+    "message": "Tile"
+  },
+  "table": {
+    "message": "Table"
+  },
+  "format": {
+    "message": "Format"
+  },
+  "settings": {
+    "message": "Settings"
+  },
+  "sessionManager": {
+    "message": "Session Manager"
+  },
+  "theming": {
+    "message": "Theming"
+  },
+  "viewMode": {
+    "message": "View Mode"
+  },
+  "sortBy": {
+    "message": "Sort By"
+  },
+  "folder": {
+    "message": "Folder"
+  },
+  "dateAdded": {
+    "message": "Date Added"
+  },
+  "website": {
+    "message": "Website"
+  },
+  "title": {
+    "message": "Title"
+  },
+  "open": {
+    "message": "Open"
+  },
+  "originalOrder": {
+    "message": "Original Order"
+  },
+  "mostVisited": {
+    "message": "Most Visited"
+  },
+  "lastVisit": {
+    "message": "Last Visit"
+  },
+  "offlineEnabled": {
+    "message": "Offline Enabled"
+  },
+  "tabOrder": {
+    "message": "Tab Order"
+  },
+  "updated": {
+    "message": "Updated"
+  },
+  "audible": {
+    "message": "Audible"
+  },
+  "label": {
+    "message": "Label"
+  },
+  "apply": {
+    "message": "Apply"
+  },
+  "homepage": {
+    "message": "Homepage"
+  },
+  "preferences": {
+    "message": "Preferences"
+  },
+  "about": {
+    "message": "About"
+  },
+  "enableContextMenu": {
+    "message": "Enable context menu"
+  },
+  "enableContextMenuTip": {
+    "message": "This option toggles the right-click context menu on and off. If you disable it, some tab control features will not be accessible."
+  },
+  "enableDraggableTabReordering": {
+    "message": "Enable draggable tab re-ordering"
+  },
+  "enableDraggableTabReorderingTip": {
+    "message": "This option allows you to re-order tabs by dragging a tile, or table row, with your cursor."
+  },
+  "singleNewTab": {
+    "message": "Allow only one New Tab per window"
+  },
+  "singleNewTabTip": {
+    "message": "Enabling this option enforces the closing of all New Tabs except the one that is currently focused. This is useful on older computers."
+  },
+  "allTabs": {
+    "message": "Show tabs across all windows"
+  },
+  "allTabsTip": {
+    "message": "Controls whether or not tabs across all windows are shown in the tabs grid/table views."
+  },
+  "autoDiscard": {
+    "message": "Enable automatic discarding of tabs from memory"
+  },
+  "autoDiscardTip": {
+    "message": "This option allows TM5K to automatically clear tabs from memory after they have been inactive for a set amount of time. Clearing tabs from memory will not close the tabs, but Chrome will have to reload them upon activation."
+  },
+  "autoDiscardClearTime": {
+    "message": "Clear tabs from memory if inactive for"
+  },
+  "time": {
+    "message": "Time"
+  },
+  "hour": {
+    "message": "Hour"
+  },
+  "minute": {
+    "message": "Minute"
+  },
+  "minutes": {
+    "message": "Minutes"
+  },
+  "s": {
+    "message": "s"
+  },
+  "animations": {
+    "message": "Enable animations"
+  },
+  "animationsTip": {
+    "message": "This option toggles tab action animations as well as the blur effects. Disabling this is useful on lower end computers with limited hardware acceleration."
+  },
+  "duplicate": {
+    "message": "Enable pulsing duplicate tabs"
+  },
+  "duplicateTip": {
+    "message": "This option will make all duplicates tabs pulsate except the first tab. This makes it easier to see how many duplicate tabs you have open."
+  },
+  "screenshot": {
+    "message": "Enable tab screenshots"
+  },
+  "screenshotTip": {
+    "message": "Enabling this feature adds a screen shot of a tab in the tab tile's background once its been clicked. After a screenshot is active, it is stored in Chrome until the page is active again."
+  },
+  "screenshotDiskUsage": {
+    "message": "Screenshot disk usage"
+  },
+  "screenshotDiskUsageTip": {
+    "message": "If you notice performance issues, clearing the screenshot cache occassionally can help. Screenshots older than three days will start being purged once the cache reaches 50MB."
+  },
+  "screenshotInit": {
+    "message": "Capture screenshots when a tab loads"
+  },
+  "screenshotInitTip": {
+    "message": "Enabling this will make TM5K attempt to capture tabs after they are loaded. This option is for users with fast computers, or those who have few tabs open."
+  },
+  "screenshotChrome": {
+    "message": "Capture screenshots using the Chrome API"
+  },
+  "screenshotChromeTip": {
+    "message": "By default, TM5K will use Chrome to capture screenshots. The Chrome API is faster and captures any website, but can impact the overall performance of Chrome more. Disable this to use the canvas method only. After disabling, you will need to restart Chrome."
+  },
+  "screenshotBg": {
+    "message": "Enable screenshots in the background on hover"
+  },
+  "screenshotBgTip": {
+    "message": "This setting enables full-size tab screenshots to fill the background of the New Tab page, while you are hovering over a tab with a screenshot. Screenshots are blurred and blended into the background."
+  },
+  "tooltip": {
+    "message": "Enable tooltips"
+  },
+  "tooltipTip": {
+    "message": "Toggles the tooltip you are reading now."
+  },
+  "alerts": {
+    "message": "Enable alerts"
+  },
+  "alertsTip": {
+    "message": "Toggles the notifications appearing in the bottom-right corner of the screen."
+  },
+  "screenshotBgOpacity": {
+    "message": "Set background image opacity"
+  },
+  "screenshotBgOpacityTip": {
+    "message": "Controls the strength of the opacity of background screenshots and wallpaper."
+  },
+  "screenshotBgBlur": {
+    "message": "Set background image blur strength"
+  },
+  "screenshotBgBlurTip": {
+    "message": "Controls the strength of the blur of background screenshots and wallpaper."
+  },
+  "tabSizeHeight": {
+    "message": "Set tile size"
+  },
+  "tabSizeHeightTip": {
+    "message": "Controls the size of the tiles."
+  },
+  "sessionsSync": {
+    "message": "Enable session synchronization"
+  },
+  "sessionsSyncTip": {
+    "message": "Enabling session synchronization allows you to keep a saved session persistently up to date with the current Chrome window. Synchronization occurs at a max interval of fifteen seconds."
+  },
+  "actions": {
+    "message": "Enable undoing of tab actions"
+  },
+  "actionsTip": {
+    "message": "This option allows you to undo a tab action by pressing CTRL+Z, or using the right-click context menu on a tab tile while in the tabs view."
+  },
+  "keyboardShortcuts": {
+    "message": "Enable keyboard shortcuts"
+  },
+  "blacklist": {
+    "message": "Enable website blacklist"
+  },
+  "blacklistTip": {
+    "message": "Enter a comma separated list of domains, and they will be automatically closed under any circumstance. This is useful for blocking websites which may inhibit productivity, or you simply don't like."
+  },
+  "blacklistPlaceholder": {
+    "message": "Enter a comma separated list of domains..."
+  },
+  "ctrlZ": {
+    "message": "Undo (Requires tab actions)"
+  },
+  "sidebar": {
+    "message": "Sidebar"
+  },
+  "resetTileSize": {
+    "message": "Reset Tile Size"
+  },
+  "clearFaviconCache": {
+    "message": "Clear Favicon Cache"
+  },
+  "clearScreenshotCache": {
+    "message": "Clear Screenshot Cache"
+  },
+  "saveSession": {
+    "message": "Save Session"
+  },
+  "and": {
+    "message": "and"
+  },
+  "areNotValidDomains": {
+    "message": "are not valid website domains."
+  },
+  "isNotValidDomain": {
+    "message": "is not a valid website domain."
+  },
+  "save": {
+    "message": "Save"
+  },
+  "saveSession": {
+    "message": "Save Session"
+  },
+  "savedSessions": {
+    "message": "Saved Sessions"
+  },
+  "currentSession": {
+    "message": "Current Session"
+  },
+  "export": {
+    "message": "Export"
+  },
+  "import": {
+    "message": "Import"
+  },
+  "editLabel": {
+    "message": "Edit Label"
+  },
+  "searchSession": {
+    "message": "Search Session"
+  },
+  "synchronizeSession": {
+    "message": "Synchronize Session"
+  },
+  "restoreSession": {
+    "message": "Restore Session"
+  },
+  "removeSession": {
+    "message": "Remove Session"
+  },
+  "closeWindow": {
+    "message": "Close Window"
+  },
+  "restoreWindow": {
+    "message": "Restore Window"
+  },
+  "removeTab": {
+    "message": "Remove Tab"
+  },
+  "closeTab": {
+    "message": "Close Tab"
+  },
+  "new": {
+    "message": "New"
+  },
+  "theme": {
+    "message": "Theme"
+  },
+  "saveTheme": {
+    "message": "Save Theme"
+  },
+  "update": {
+    "message": "Update"
+  },
+  "updateTheme": {
+    "message": "Update Theme"
+  },
+  "bodyHeaderAndFields": {
+    "message": "Body, Header, and Fields"
+  },
+  "buttons": {
+    "message": "Buttons"
+  },
+  "tiles": {
+    "message": "Tiles"
+  },
+  "importWallpaper": {
+    "message": "Import Wallpaper"
+  },
+  "custom": {
+    "message": "Custom"
+  },
+  "tm5k": {
+    "message": "TM5K"
+  },
+  "colorScheme": {
+    "message": "Color Scheme"
+  },
+  "wallpaper": {
+    "message": "Wallpaper"
+  },
+  "chromesque": {
+    "message": "Chromesque"
+  },
+  "leafy": {
+    "message": "Leafy"
+  },
+  "mellowDark": {
+    "message": "Mellow Dark"
+  },
+  "midnightPurple": {
+    "message": "Midnight Purple"
+  },
+  "mintYDark": {
+    "message": "Minty Dark"
+  },
+  "pastelSummer": {
+    "message": "Pastel Summer"
+  },
+  "redmondFlat": {
+    "message": "Redmond Flat"
+  },
+  "tabMasterVanilla": {
+    "message": "Tab Master Vanilla"
+  },
+  "bodyText": {
+    "message": "Body Text"
+  },
+  "bodyBg": {
+    "message": "Body BG"
+  },
+  "headerBg": {
+    "message": "Header BG"
+  },
+  "textFieldsText": {
+    "message": "Field Text"
+  },
+  "textFieldsPlaceholder": {
+    "message": "Field Text Placeholder"
+  },
+  "textFieldsBg": {
+    "message": "Field BG"
+  },
+  "textFieldsBorder": {
+    "message": "Field Border"
+  },
+  "settingsBg": {
+    "message": "Settings BG"
+  },
+  "settingsItemHover": {
+    "message": "Settings Item (Hover)"
+  },
+  "darkBtnText": {
+    "message": "Dark Button Text"
+  },
+  "darkBtnTextShadow": {
+    "message": "Dark Button Text Shadow"
+  },
+  "darkBtnBg": {
+    "message": "Dark Button BG"
+  },
+  "darkBtnBgHover": {
+    "message": "Dark Button BG (Hover)"
+  },
+  "lightBtnText": {
+    "message": "Light Button Text"
+  },
+  "lightBtnTextShadow": {
+    "message": "Light Button Text Shadow"
+  },
+  "lightBtnBg": {
+    "message": "Light Button BG"
+  },
+  "lightBtnBgHover": {
+    "message": "Light Button BG (Hover)"
+  },
+  "tileBg": {
+    "message": "Tile BG"
+  },
+  "tileBgHover": {
+    "message": "Tile BG (Hover)"
+  },
+  "tileText": {
+    "message": "Tile Text"
+  },
+  "tileTextShadow": {
+    "message": "Tile Text Shadow"
+  },
+  "tileShadow": {
+    "message": "Tile Shadow"
+  },
+  "tileX": {
+    "message": "Tile Close Button"
+  },
+  "tileXHover": {
+    "message": "Tile Close Button (Hover)"
+  },
+  "tilePin": {
+    "message": "Tile Pin Button"
+  },
+  "tilePinHover": {
+    "message": "Tile Pin Button (Hover)"
+  },
+  "tilePinned": {
+    "message": "Tile Pinned Button"
+  },
+  "tileMute": {
+    "message": "Tile Mute Button"
+  },
+  "tileMuteHover": {
+    "message": "Tile Mute Button (Hover)"
+  },
+  "tileMuteAudible": {
+    "message": "Tile Audible Button"
+  },
+  "tileMuteAudibleHover": {
+    "message": "Tile Audible Button (Hover)"
+  },
+  "tileButtonBg": {
+    "message": "Tile Button BG"
+  },
+  "releaseNotes": {
+    "message": "Release Notes"
+  },
+  "support": {
+    "message": "Support"
+  },
+  "attribution": {
+    "message": "Attribution"
+  },
+  "attributionHeader": {
+    "message": "TM5K was made possible because of the efforts of the following projects."
+  },
+  "attributionFooter": {
+    "message": "Included wallpapers are licensed under the"
+  },
+  "contribute": {
+    "message": "Contribute"
+  },
+  "contributeHeader": {
+    "message": "Why contribute?"
+  },
+  "license": {
+    "message": "license"
+  },
+  "faq": {
+    "message": "FAQ"
   }
 }

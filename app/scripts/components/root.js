@@ -1,6 +1,6 @@
 window._trackJs = {
   token: 'bd495185bd7643e3bc43fa62a30cec92',
-  enabled: true,
+  enabled: false,
   onError: function (payload) { return true; },
   version: "",
   callback: {
@@ -74,7 +74,7 @@ var Loading = React.createClass({
     };
   },
   handleReset(){
-    var c = confirm('Resetting will delete all data. Please backup your sessions and themes before you begin.');
+    var c = confirm(utils.t('resetData'));
     if (c) {
       chrome.storage.local.clear();
       chrome.runtime.reload();
@@ -101,7 +101,7 @@ var Loading = React.createClass({
         </div>
         {this.error && !p.top ?
           <div className="container">
-            <div className="row">Tab Master encountered an error and was unable to initialize. Sorry for the inconvenience. Please report this to the Support tab in the <a style={errorLink} href="https://chrome.google.com/webstore/detail/tab-master-5000-tab-swiss/mippmhcfjhliihkkdobllhpdnmmciaim/support">Chrome Web Store</a>, or as an issue on <a style={errorLink} href="https://github.com/jaszhix/tab-master-5000-chrome-extension/issues">Github</a>, so this issue can be investigated. Thank you! </div>
+            <div className="row">{utils.t('encounteredError')} <a style={errorLink} href="https://chrome.google.com/webstore/detail/tab-master-5000-tab-swiss/mippmhcfjhliihkkdobllhpdnmmciaim/support">{utils.t('chromeWebStore')}</a>, {utils.t('orAsAnIssueOn')} <a style={errorLink} href="https://github.com/jaszhix/tab-master-5000-chrome-extension/issues">{utils.t('github')}</a>, {utils.t('soThisIssueCanBeInvestigated')} </div>
             
             <div className="row" style={{margin: '0px auto', position: 'fixed', right: '0px', bottom: '0px'}}>
               <button className="ntg-btn" onClick={()=>sessionsStore.exportSessions(p.sessions)}>Backup Sessions</button>
@@ -192,18 +192,18 @@ var Search = React.createClass({
                 type="text"
                 value={p.s.search}
                 className="form-control search-tabs" 
-                placeholder={`Search ${p.s.prefs.mode}...`}
+                placeholder={`${utils.t('search')} ${utils.t(p.s.prefs.mode)}...`}
                 onChange={this.handleSearch} 
                 onKeyDown={(e)=>this.handleEnter(e)}/>
             </div>
           </Col>
           <Col size={p.s.width <= 825 ? p.s.width <= 630 ? p.s.width <= 514 ? '2' : '4' : '6' : '8'} style={{float: 'right'}}>
-            {p.s.search.length > 3 ? <span style={{color: p.theme.textFieldsPlaceholder}} className="search-msg ntg-search-google-text">Press Enter to Search Google</span> : null}
-            {p.s.topNavButton === 'newVersion' ? <Btn onClick={()=>this.handleTopNavButtonClick(()=>chrome.runtime.reload())} style={topNavButtonStyle} className="ntg-sort-btn pull-right" fa="rocket" data-place="bottom" data-tip={p.s.width <= 841 ? 'New Version Available' : null}>{p.s.width <= 841 ? '' : 'New Version Available'}</Btn> : null}
-            {p.s.topNavButton === 'versionUpdate' ? <Btn onClick={()=>this.handleTopNavButtonClick(()=>this.openAbout())} style={topNavButtonStyle} className="ntg-sort-btn pull-right" icon="info3" data-place="bottom" data-tip={p.s.width <= 841 ? `Updated to ${utilityStore.get_manifest().version}` : null}>{p.s.width <= 841 ? '' : `Updated to ${utilityStore.get_manifest().version}`}</Btn> : null}
-            {p.s.topNavButton === 'installed' ? <Btn onClick={()=>this.handleTopNavButtonClick(()=>this.openAbout())} style={topNavButtonStyle} className="ntg-sort-btn pull-right" fa="thumbs-o-up" data-place="bottom" data-tip={p.s.width <= 841 ? 'Thank you for installing TM5K' : null}>{p.s.width <= 841 ? '' : 'Thank you for installing TM5K'}</Btn> : null}
+            {p.s.search.length > 3 ? <span style={{color: p.theme.textFieldsPlaceholder}} className="search-msg ntg-search-google-text">{`${utils.t('pressEnterToSearch')} ${utils.t('google')}`}</span> : null}
+            {p.s.topNavButton === 'newVersion' ? <Btn onClick={()=>this.handleTopNavButtonClick(()=>chrome.runtime.reload())} style={topNavButtonStyle} className="ntg-sort-btn pull-right" fa="rocket" data-place="bottom" data-tip={p.s.width <= 841 ? utils.t('newVersionAvailable') : null}>{p.s.width <= 841 ? '' : utils.t('newVersionAvailable')}</Btn> : null}
+            {p.s.topNavButton === 'versionUpdate' ? <Btn onClick={()=>this.handleTopNavButtonClick(()=>this.openAbout())} style={topNavButtonStyle} className="ntg-sort-btn pull-right" icon="info3" data-place="bottom" data-tip={p.s.width <= 841 ? `${utils.t('updatedTo')} ${utilityStore.get_manifest().version}` : null}>{p.s.width <= 841 ? '' : `${utils.t('updatedTo')} ${utilityStore.get_manifest().version}`}</Btn> : null}
+            {p.s.topNavButton === 'installed' ? <Btn onClick={()=>this.handleTopNavButtonClick(()=>this.openAbout())} style={topNavButtonStyle} className="ntg-sort-btn pull-right" fa="thumbs-o-up" data-place="bottom" data-tip={p.s.width <= 841 ? utils.t('thankYouForInstallingTM5K') : null}>{p.s.width <= 841 ? '' : utils.t('thankYouForInstallingTM5K')}</Btn> : null}
             {p.topLoad ? <Loading top={true} /> : null}
-            {p.s.topNavButton === 'dlFavicons' && p.topLoad ? <div><p className="tm5k-info pull-right" style={{color: p.theme.darkBtnText, textShadow: `2px 2px ${p.theme.darkBtnTextShadow}`, position: 'relative', top: '2px', marginRight: '8px'}}> {p.s.width <= 841 ? '' : 'Downloading and caching favicons...'}</p></div> : null}
+            {p.s.topNavButton === 'dlFavicons' && p.topLoad ? <div><p className="tm5k-info pull-right" style={{color: p.theme.darkBtnText, textShadow: `2px 2px ${p.theme.darkBtnTextShadow}`, position: 'relative', top: '2px', marginRight: '8px'}}> {p.s.width <= 841 ? '' : utils.t('downloadingAndCachingFavicons')}</p></div> : null}
           </Col>  
         </Row>
       </div>
@@ -684,54 +684,54 @@ var Root = React.createClass({
       if (p.s.prefs.mode === 'bookmarks') {
         keys = ['openTab', 'url', 'title', 'dateAdded', 'folder', 'index'];
         labels = {
-          folder: 'Folder',
-          dateAdded: 'Date Added',
-          url: 'Website',
-          title: 'Title',
-          openTab: 'Open',
-          index: 'Original Order'
+          folder: utils.t('folder'),
+          dateAdded: utils.t('dateAdded'),
+          url: utils.t('website'),
+          title: utils.t('title'),
+          openTab: utils.t('open'),
+          index: utils.t('originalOrder')
         };
       } else if (p.s.prefs.mode === 'history') {
         keys = ['openTab', 'url', 'title', 'lastVisitTime', 'visitCount', 'index'];
         labels = {
-          visitCount: 'Most Visited',
-          lastVisitTime: 'Last Visit',
-          url: 'Website',
-          title: 'Title',
-          openTab: 'Open',
-          index: 'Original Order'
+          visitCount: utils.t('mostVisited'),
+          lastVisitTime: utils.t('lastVisit'),
+          url: utils.t('website'),
+          title: utils.t('title'),
+          openTab: utils.t('open'),
+          index: utils.t('originalOrder')
         };
       } else if (p.s.prefs.mode === 'sessions') {
         keys = ['openTab', 'url', 'title', 'sTimeStamp', 'label', 'index'];
         labels = {
-          label: 'Label',
-          sTimeStamp: 'Date Added',
-          url: 'Website',
-          title: 'Title',
-          openTab: 'Open',
-          index: 'Original Order'
+          label: utils.t('label'),
+          sTimeStamp: utils.t('dateAdded'),
+          url: utils.t('website'),
+          title: utils.t('title'),
+          openTab: utils.t('open'),
+          index: utils.t('originalOrder')
         };
       } else if (p.s.prefs.mode === 'apps' || p.s.prefs.mode === 'extensions') {
         keys = ['title', 'offlineEnabled', 'index'];
         labels = {
-          offlineEnabled: 'Offline Enabled',
-          title: 'Title',
-          index: 'Original Order'
+          offlineEnabled: utils.t('offlineEnabled'),
+          title: utils.t('title'),
+          index: utils.t('originalOrder')
         };
       } else {
         keys = ['url', 'title', 'timeStamp', 'index',];
         labels = {
-          index: 'Tab Order',
-          url: 'Website',
-          title: 'Title',
-          'timeStamp': 'Updated'
+          index: utils.t('tabOrder'),
+          url: utils.t('website'),
+          title: utils.t('title'),
+          'timeStamp': utils.t('updated')
         };
         if (p.s.chromeVersion >= 46) {
           var init = _.initial(keys);
           init.push('audible');
           keys = _.union(init, keys);
           _.assign(labels, {
-            audible: 'Audible'
+            audible: utils.t('audible')
           });
         }
       }

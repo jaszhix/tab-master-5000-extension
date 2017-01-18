@@ -8,11 +8,9 @@ import ReactTooltip from 'react-tooltip';
 import Settings from './settings';
 
 import state from './stores/state';
-import {msgStore} from './stores/main';
-import themeStore from './stores/theme';
+import * as utils from './stores/tileUtils';
 
 import {ModalOverlay, Tabs} from './bootstrap';
-import Alert from './alert';
 
 var mount = false;
 var ModalHandler = React.createClass({
@@ -54,7 +52,12 @@ var ModalHandler = React.createClass({
   render: function() {
     var s = this.state;
     var p = this.props;
-    var tabOptions = [{label: 'Preferences'}, {label: 'Sessions'}, {label: 'Theming'}, {label: 'About'}];
+    var tabOptions = [
+      {label: utils.t('preferences'), key: 'preferences'}, 
+      {label: _.upperFirst(utils.t('sessions')), key: 'sessions'}, 
+      {label: utils.t('theming'), key: 'theming'}, 
+      {label: utils.t('about'), key: 'about'}
+    ];
     var headerBgIsLight = tc(p.theme.headerBg).isLight();
     if (p.modal.state && p.modal.type === 'settings') {
       return (
@@ -62,7 +65,7 @@ var ModalHandler = React.createClass({
         clickOutside={!p.colorPickerOpen}
         onClose={this.handleClose}
         size="full"
-        header="Settings"
+        header={utils.t('settings')}
         closeBtnStyle={{color: headerBgIsLight ? p.theme.lightBtnText : p.theme.darkBtnText}}
         animations={p.prefs.animations}
         backdropStyle={{
@@ -95,7 +98,7 @@ var ModalHandler = React.createClass({
           initActiveOption={_.findIndex(tabOptions, (opt)=>p.settings.indexOf(opt.label.toLowerCase()) !== -1)}
           style={{position: 'relative', top: '16px'}}
           options={tabOptions} 
-          onClick={(setting)=>state.set({settings: setting.label.toLowerCase()})}
+          onClick={(setting)=>state.set({settings: setting.key})}
           borderTopColor={p.theme.darkBtnText}
           borderLeftRightColor={p.theme.headerBg}
           settings={p.settings} />

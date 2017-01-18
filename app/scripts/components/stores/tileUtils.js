@@ -310,3 +310,7 @@ export var searchChange = (p, tabs)=>{
   return _tabs;
 
 };
+
+export var t = (key)=>{
+  return chrome.i18n.getMessage(key);
+};

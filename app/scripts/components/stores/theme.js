@@ -321,6 +321,7 @@ export var themeStore = Reflux.createStore({
           id: 9000,
           created: -1,
           modified: now,
+          camel: 'tabMasterVanilla',
           label: 'Tab Master Vanilla',
           theme: this.defaultTheme,
           wallpaper: -1
@@ -329,6 +330,7 @@ export var themeStore = Reflux.createStore({
           id: 9001,
           created: -1,
           modified: now,
+          camel: 'chromesque',
           label: 'Chromesque',
           theme: this.chromesque,
           wallpaper: -1
@@ -337,6 +339,7 @@ export var themeStore = Reflux.createStore({
           id: 9002,
           created: -1,
           modified: now,
+          camel: 'mellowDark',
           label: 'Mellow Dark',
           theme: this.mellowDark,
           wallpaper: 9000
@@ -345,6 +348,7 @@ export var themeStore = Reflux.createStore({
           id: 9003,
           created: -1,
           modified: now,
+          camel: 'midnightPurple',
           label: 'Midnight Purple',
           theme: this.midnightPurple,
           wallpaper: 9002
@@ -353,6 +357,7 @@ export var themeStore = Reflux.createStore({
           id: 9004,
           created: -1,
           modified: now,
+          camel: 'pastelSummer',
           label: 'Pastel Summer',
           theme: this.pastelSummer,
           wallpaper: 9003
@@ -361,6 +366,7 @@ export var themeStore = Reflux.createStore({
           id: 9005,
           created: -1,
           modified: now,
+          camel: 'leafy',
           label: 'Leafy',
           theme: this.leafy,
           wallpaper: -1
@@ -369,6 +375,7 @@ export var themeStore = Reflux.createStore({
           id: 9006,
           created: -1,
           modified: now,
+          camel: 'mintYDark',
           label: 'Minty Dark',
           theme: this.mintYDark,
           wallpaper: 9004
@@ -377,6 +384,7 @@ export var themeStore = Reflux.createStore({
           id: 9007,
           created: -1,
           modified: now,
+          camel: 'redmondFlat',
           label: 'Redmond Flat',
           theme: this.redmondFlat,
           wallpaper: -1

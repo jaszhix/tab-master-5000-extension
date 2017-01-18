@@ -6,6 +6,7 @@ import state from './stores/state';
 import themeStore from './stores/theme';
 import tc from 'tinycolor2';
 import {utilityStore, msgStore} from './stores/main';
+import * as utils from './stores/tileUtils';
 
 import {Btn} from './bootstrap';
 
@@ -50,28 +51,28 @@ export var SidebarMenu = React.createClass({
     var lgBtnOptions = [
       [
         [
-          {label: 'Tabs', icon: 'icon-browser'},
-          p.sessionsExist ? {label: 'Sessions', icon: 'icon-windows2'} : {label: 'Bookmarks', icon: 'icon-bookmark4'},
+          {label: utils.t('tabs'), icon: 'icon-browser', key: 'tabs'},
+          p.sessionsExist ? {label: utils.t('sessions'), icon: 'icon-windows2', key: 'sessions'} : {label: utils.t('bookmarks'), icon: 'icon-bookmark4', key: 'bookmarks'},
         ],
         [
-          {label: 'History', icon: 'icon-history'},
-          p.sessionsExist ? {label: 'Bookmarks', icon: 'icon-bookmark4'} : {label: 'Apps', icon: 'icon-grid-alt'},
+          {label: utils.t('history'), icon: 'icon-history', key: 'history'},
+          p.sessionsExist ? {label: utils.t('bookmarks'), icon: 'icon-bookmark4', key: 'bookmarks'} : {label: utils.t('apps'), icon: 'icon-grid-alt', key: 'apps'},
         ],
       ],
       [
         [
-          p.sessionsExist ? {label: 'Apps', icon: 'icon-grid-alt'} : {label: 'Extensions', icon: 'icon-puzzle'},
+          p.sessionsExist ? {label: utils.t('apps'), icon: 'icon-grid-alt', key: 'apps'} : {label: utils.t('extensions'), icon: 'icon-puzzle', key: 'extensions'},
         ],
         [
-          p.sessionsExist ? {label: 'Extensions', icon: 'icon-puzzle'} : null,
+          p.sessionsExist ? {label: utils.t('extensions'), icon: 'icon-puzzle', key: 'extensions'} : null,
         ]
       ]
     ];
     var sidebarTabs = [
-      {label: 'Settings', icon: 'icon-gear', onClick: ()=>state.set({modal: {state: true, type: 'settings'}, settings: 'preferences'})},
-      {label: 'Session Manager', icon: 'icon-versions', onClick: ()=>state.set({modal: {state: true, type: 'settings'}, settings: 'sessions'})},
-      {label: 'Theming', icon: 'icon-paint-format', onClick: ()=>state.set({modal: {state: true, type: 'settings'}, settings: 'theming'})},
-      {label: `${p.prefs.format === 'tile' ? 'Table' : 'Tile'} Format`, icon: `icon-${p.prefs.format === 'tile' ? 'list' : 'grid'}`, onClick: ()=>this.handleFormat()}
+      {label: utils.t('settings'), icon: 'icon-gear', onClick: ()=>state.set({modal: {state: true, type: 'settings'}, settings: 'preferences'})},
+      {label: utils.t('sessionManager'), icon: 'icon-versions', onClick: ()=>state.set({modal: {state: true, type: 'settings'}, settings: 'sessions'})},
+      {label: utils.t('theming'), icon: 'icon-paint-format', onClick: ()=>state.set({modal: {state: true, type: 'settings'}, settings: 'theming'})},
+      {label: `${p.prefs.format === 'tile' ? utils.t('table') : utils.t('tile')} ${utils.t('format')}`, icon: `icon-${p.prefs.format === 'tile' ? 'list' : 'grid'}`, onClick: ()=>this.handleFormat()}
     ];
     var borderColor = tc(p.theme.darkBtnBg).isDark() ? p.theme.darkBtnText : p.theme.darkBtnBg;
     var textColor = tc(p.theme.bodyBg).isDark() && tc(p.theme.bodyText).isLight() ? p.theme.bodyText : tc(p.theme.headerBg).isDark() ? p.theme.darkBtnText : p.theme.lightBtnText;
@@ -110,7 +111,7 @@ export var SidebarMenu = React.createClass({
                     cursor: 'pointer'
                   }} 
                     onClick={()=>msgStore.setPrefs({showViewMode: !p.prefs.showViewMode})}>
-                    <span>View Mode</span>
+                    <span>{utils.t('viewMode')}</span>
                     <ul className="icons-list">
                       <li>
                         <a data-action="collapse" className={p.prefs.showViewMode ? '' : 'rotate-180'}></a>
@@ -140,7 +141,7 @@ export var SidebarMenu = React.createClass({
                                         style={lgBtnStyle}
                                         icon={option.icon} 
                                         label={option.label}
-                                        onClick={()=>utilityStore.handleMode(option.label.toLowerCase(), p.allTabs)}
+                                        onClick={()=>utilityStore.handleMode(option.key, p.allTabs)}
                                         onMouseEnter={()=>this.setState({lgBtnHover: option.label})}
                                          />
                                       );
@@ -162,7 +163,7 @@ export var SidebarMenu = React.createClass({
                   className={`category-title ${p.prefs.sort ? '' : 'category-collapsed'}`} 
                   style={{borderBottomColor: borderColor, cursor: 'pointer'}} 
                   onClick={()=>msgStore.setPrefs({sort: !p.prefs.sort})}>
-                    <span>Sort By</span>
+                    <span>{utils.t('sortBy')}</span>
                     <ul className="icons-list">
                       <li>
                         <a data-action="collapse" className={p.prefs.sort ? '' : 'rotate-180'}></a>
@@ -198,7 +199,7 @@ export var SidebarMenu = React.createClass({
                   </div> : null}
                   {p.sort !== 'index' && p.prefs.mode === 'tabs' ?
                   <div style={{textAlign: 'center'}}>
-                    <Btn className="ntg-top-btn"  onClick={()=>state.set({applyTabOrder: true})}>Apply</Btn> 
+                    <Btn className="ntg-top-btn"  onClick={()=>state.set({applyTabOrder: true})}>{utils.t('apply')}</Btn> 
                   </div> : null}
                 </div>
               </div>

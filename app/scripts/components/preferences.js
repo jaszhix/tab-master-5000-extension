@@ -115,9 +115,9 @@ var Blacklist = React.createClass({
       blacklistStore.set_blacklist(s.blacklistValue);
     } else {
       if (formatError.length >= 2) {
-        formatError[formatError.length - 1] = 'and '+_.last(formatError)+' are not valid website domains.';
+        formatError[formatError.length - 1] = `'${utils.t('and')} ${_.last(formatError)} ${utils.t('areNotValidDomains')}`;
       } else {
-        formatError[formatError.length - 1] = _.last(formatError)+' is not a valid website domain.';
+        formatError[formatError.length - 1] = `${_.last(formatError)} ${utils.t('isNotValidDomain')}`;
       }
       this.setState({formatError: formatError});
     }
@@ -139,11 +139,11 @@ var Blacklist = React.createClass({
             paddingRight: '14px', 
             width: '100%'
           }} 
-          placeholder="Enter a comma separated list of domains..." 
+          placeholder={utils.t('blacklistPlaceholder')}
           id="input" 
           className="form-control blacklist session-field" 
           rows="3" />
-          <Btn style={{marginTop: '7px'}} onClick={this.blacklistSubmit} className="ntg-setting-btn" icon="floppy-disk">Save</Btn>
+          <Btn style={{marginTop: '7px'}} onClick={this.blacklistSubmit} className="ntg-setting-btn" icon="floppy-disk">{utils.t('save')}</Btn>
       </Col>
     );
   }
@@ -164,9 +164,9 @@ var Preferences = React.createClass({
     if (!p.options) {
       p.modal.footer = (
         <div>
-          <Btn onClick={()=>this.handleSlide(134, 'tabSizeHeight')} className="ntg-setting-btn" icon="reset" faStyle={{position: 'relative', top: '-2px'}}>Reset Tile Size</Btn>
-          <Btn onClick={()=>faviconStore.clear()} className="ntg-setting-btn" icon="trash" faStyle={{paddingRight: '8px'}}>Clear Favicon Cache</Btn>
-          {p.prefs.screenshot ? <Btn onClick={this.handleScreenshotClear} className="ntg-setting-btn" icon="trash" faStyle={{paddingRight: '8px'}}>Clear Screenshot Cache</Btn> : null}
+          <Btn onClick={()=>this.handleSlide(134, 'tabSizeHeight')} className="ntg-setting-btn" icon="reset" faStyle={{position: 'relative', top: '-2px'}}>{utils.t('resetTileSize')}</Btn>
+          <Btn onClick={()=>faviconStore.clear()} className="ntg-setting-btn" icon="trash" faStyle={{paddingRight: '8px'}}>{utils.t('clearFaviconCache')}</Btn>
+          {p.prefs.screenshot ? <Btn onClick={this.handleScreenshotClear} className="ntg-setting-btn" icon="trash" faStyle={{paddingRight: '8px'}}>{utils.t('clearScreenshotCache')}</Btn> : null}
         </div>
       );
       state.set({modal: p.modal});
@@ -231,49 +231,49 @@ var Preferences = React.createClass({
             theme={p.theme}
             onMouseEnter={()=>this.handleToggle('context')} 
             onClick={()=>this.handleClick('context')} 
-            on={p.prefs.context} label="Enable context menu"
+            on={p.prefs.context} label={utils.t('enableContextMenu')}
             hoverBg={p.theme.settingsItemHover}
-            data-tip="This option toggles the right-click context menu on and off. If you disable it, some tab control features will not be accessible." />
+            data-tip={utils.t('enableContextMenuTip')} />
             <Toggle 
             theme={p.theme}
             onMouseEnter={()=>this.handleToggle('drag')}
             onClick={()=>this.handleClick('drag')} 
-            on={p.prefs.drag} label="Enable draggable tab re-ordering"
+            on={p.prefs.drag} label={utils.t('enableDraggableTabReordering')}
             hoverBg={p.theme.settingsItemHover}
-            data-tip="This features adds a hand icon to the top right corner of your tab tiles. Clicking the icon and dragging a tab will allow you to re-order your tabs from the grid." />
+            data-tip={utils.t('enableDraggableTabReorderingTip')} />
             <Toggle 
             theme={p.theme}
             onMouseEnter={()=>this.handleToggle('singleNewTab')} 
             onClick={()=>this.handleClick('singleNewTab')} 
-            on={p.prefs.singleNewTab} label="Allow only one New Tab per window"
+            on={p.prefs.singleNewTab} label={utils.t('singleNewTab')}
             hoverBg={p.theme.settingsItemHover}
-            data-tip="Enabling this option enforces the closing of all New Tabs except the one that is currently focused. This is useful on older computers." />
+            data-tip={utils.t('singleNewTabTip')} />
             <Toggle 
             theme={p.theme}
             onMouseEnter={()=>this.handleToggle('allTabs')} 
             onClick={()=>this.handleClick('allTabs')} 
-            on={p.prefs.allTabs} label="Show tabs across all windows"
+            on={p.prefs.allTabs} label={utils.t('allTabs')}
             hoverBg={p.theme.settingsItemHover}
-            data-tip="Controls whether or not tabs across all windows are shown in the tabs grid/table views." />
+            data-tip={utils.t('allTabsTip')} />
             {p.chromeVersion >= 54 ?
             <Toggle 
             theme={p.theme}
             onMouseEnter={()=>this.handleToggle('autoDiscard')} 
             onClick={()=>this.handleClick('autoDiscard')} 
-            on={p.prefs.autoDiscard} label="Enable automatic discarding of tabs from memory"
+            on={p.prefs.autoDiscard} label={utils.t('autoDiscard')}
             hoverBg={p.theme.settingsItemHover}
-            data-tip="This option allows TM5K to automatically clear tabs from memory after they have been inactive for a set amount of time. Clearing tabs from memory will not close the tabs, but Chrome will have to reload them upon activation.">
+            data-tip={utils.t('autoDiscardTip')}>
               {p.prefs.autoDiscard ?
               <div>
-                Clear tabs from memory if inactive for:
+                {`${utils.t('autoDiscardClearTime')}:`}
                 <select 
                 className="form-control"
                 style={{backgroundColor: p.theme.settingsBg, color: p.theme.bodyText, width: '100px', marginTop: '6px', paddingLeft: '6px'}}
-                placeholder="Time" 
-                value={`${p.prefs.autoDiscardTime < 1800000 ? '15' : p.prefs.autoDiscardTime < 3600000 ? '30' : autoDiscardTimeHourDivided} ${p.prefs.autoDiscardTime < 3600000 ? 'Minutes' : 'Hour'}${autoDiscardTimeHourDivided > 1 && p.prefs.autoDiscardTime >= 3600000 ? 's' : ''}`} 
+                placeholder={utils.t('time')}
+                value={`${p.prefs.autoDiscardTime < 1800000 ? '15' : p.prefs.autoDiscardTime < 3600000 ? '30' : autoDiscardTimeHourDivided} ${p.prefs.autoDiscardTime < 3600000 ? utils.t('minutes') : utils.t('hour')}${autoDiscardTimeHourDivided > 1 && p.prefs.autoDiscardTime >= 3600000 ? utils.t('s') : ''}`} 
                 onChange={this.handleAutoDiscardTime}>
                   {autoDiscardTimeOptions.map((option, x)=>{
-                    return <option key={x}>{`${option} ${x >= 2 ? 'Hour' : 'Minute'}${option > 1 ? 's' : ''}`}</option>;
+                    return <option key={x}>{`${option} ${x >= 2 ? utils.t('hour') : utils.t('minute')}${option > 1 ? utils.t('s') : ''}`}</option>;
                   })}
                 </select>
               </div> : null}
@@ -282,30 +282,30 @@ var Preferences = React.createClass({
             theme={p.theme}
             onMouseEnter={()=>this.handleToggle('animations')} 
             onClick={()=>this.handleClick('animations')} 
-            on={p.prefs.animations} label="Enable animations"
+            on={p.prefs.animations} label={utils.t('animations')}
             hoverBg={p.theme.settingsItemHover}
-            data-tip="This option toggles tab action animations as well as the blur effects. Disabling this is useful on lower end computers with limited hardware acceleration.">
+            data-tip={utils.t('animationsTip')}>
               {p.prefs.animations ? 
                 <Toggle 
                 theme={p.theme}
                 onMouseEnter={()=>this.handleToggle('duplicate')}
                 onClick={()=>this.handleClick('duplicate')} 
-                on={p.prefs.duplicate} child={true} label="Enable pulsing duplicate tabs"
+                on={p.prefs.duplicate} child={true} label={utils.t('duplicate')}
                 hoverBg={p.theme.settingsItemHover}
-                data-tip="This option will make all duplicates tabs pulsate except the first tab. This makes it easier to see how many duplicate tabs you have open.">
+                data-tip={utils.t('duplicateTip')}>
               </Toggle> : null}
             </Toggle>
             <Toggle 
             theme={p.theme}
             onMouseEnter={()=>this.handleToggle('screenshot')}
             onClick={()=>this.handleClick('screenshot')}
-            on={p.prefs.screenshot} label="Enable tab screenshots"
+            on={p.prefs.screenshot} label={utils.t('screenshot')}
             hoverBg={p.theme.settingsItemHover}
-            data-tip="Enabling this feature adds a screen shot of a tab in the tab tile's background once its been clicked. After a screenshot is active, it is stored in Chrome until the page is active again.">
+            data-tip={utils.t('screenshotTip')}>
               {p.prefs.screenshot ?
                 <div>
-                  <Row className="prefs-row-first" data-place="bottom" data-tip={`<div style="max-width: 350px;">If you notice performance issues, clearing the screenshot cache occassionally can help. Screenshots older than three days will start being purged once the cache reaches 50MB.</div>`}>
-                    {s.bytesInUse ? `Screenshot disk usage: ${utils.formatBytes(s.bytesInUse, 2)}` : null}
+                  <Row className="prefs-row-first" data-place="bottom" data-tip={`<div style="max-width: 350px;">${utils.t('screenshotDiskUsageTip')}</div>`}>
+                    {s.bytesInUse ? `${utils.t('screenshotDiskUsage')}: ${utils.formatBytes(s.bytesInUse, 2)}` : null}
                   </Row>
                   <Toggle 
                   theme={p.theme}
@@ -313,9 +313,9 @@ var Preferences = React.createClass({
                   onClick={()=>this.handleClick('screenshotInit')} 
                   on={p.prefs.screenshotInit} 
                   child={true} 
-                  label="Capture screenshots when a tab loads"
+                  label={utils.t('screenshotInit')}
                   hoverBg={p.theme.settingsItemHover}
-                  data-tip="Enabling this will make TM5K attempt to capture tabs after they are loaded. This option is for users with fast computers, or those who have few tabs open.">
+                  data-tip={utils.t('screenshotInitTip')}>
                   </Toggle>
                   <Toggle 
                   theme={p.theme}
@@ -323,9 +323,9 @@ var Preferences = React.createClass({
                   onClick={()=>this.handleClick('screenshotChrome')} 
                   on={p.prefs.screenshotChrome} 
                   child={true} 
-                  label="Capture screenshots using the Chrome API"
+                  label={utils.t('screenshotChrome')}
                   hoverBg={p.theme.settingsItemHover}
-                  data-tip="By default, TM5K will use Chrome to capture screenshots. The Chrome API is faster and captures any website, but can impact the overall performance of Chrome more. Disable this to use the canvas method only. After disabling, you will need to restart Chrome.">
+                  data-tip={utils.t('screenshotChromeTip')}>
                   </Toggle>
                   <Toggle 
                   theme={p.theme}
@@ -333,9 +333,9 @@ var Preferences = React.createClass({
                   onClick={()=>this.handleClick('screenshotBg')} 
                   on={p.prefs.screenshotBg} 
                   child={true} 
-                  label="Enable screenshots in the background on hover"
+                  label={utils.t('screenshotBg')}
                   hoverBg={p.theme.settingsItemHover}
-                  data-tip="This setting enables full-size tab screenshots to fill the background of the New Tab page, while you are hovering over a tab with a screenshot. Screenshots are blurred and blended into the background.">
+                  data-tip={utils.t('screenshotBgTip')}>
                   </Toggle>
                 </div>
               : null}
@@ -344,23 +344,23 @@ var Preferences = React.createClass({
             theme={p.theme}
             onMouseEnter={()=>this.handleToggle('tooltip')}
             onClick={()=>this.handleClick('tooltip')}
-            on={p.prefs.tooltip} label="Enable tooltips"
+            on={p.prefs.tooltip} label={utils.t('tooltip')}
             hoverBg={p.theme.settingsItemHover}
-            data-tip="Toggles the tooltip you are reading now." />
+            data-tip={utils.t('tooltipTip')} />
             <Toggle 
             theme={p.theme}
             onMouseEnter={()=>this.handleToggle('alerts')}
             onClick={()=>this.handleClick('alerts')}
-            on={p.prefs.alerts} label="Enable alerts"
+            on={p.prefs.alerts} label={utils.t('alerts')}
             hoverBg={p.theme.settingsItemHover}
-            data-tip="Toggles the notifications appearing in the bottom-right corner of the screen." />
+            data-tip={utils.t('alertsTip')} />
           </Col>
           <Col size="6">
             {!p.options ?
               <div>
                 <Slide 
                 className="prefs-row-last" 
-                label={`Set background image opacity: ${p.prefs.screenshotBgOpacity}`}
+                label={`${utils.t('screenshotBgOpacity')}: ${p.prefs.screenshotBgOpacity}`}
                 min={0} max={10}
                 defaultValue={p.prefs.screenshotBgOpacity}
                 value={p.prefs.screenshotBgOpacity}
@@ -368,10 +368,10 @@ var Preferences = React.createClass({
                 onAfterChange={(e)=>this.handleSlideAfterChange(e, 'screenshotBgOpacity')}
                 onMouseEnter={()=>this.handleToggle('screenshotBgOpacity')}
                 hoverBg={p.theme.settingsItemHover}
-                data-tip="Controls the strength of the opacity of background screenshots and wallpaper." /> 
+                data-tip={utils.t('screenshotBgOpacityTip')} /> 
                 <Slide 
                 className="prefs-row-last" 
-                label={`Set background image blur strength: ${p.prefs.screenshotBgBlur}`}
+                label={`${utils.t('screenshotBgBlur')}: ${p.prefs.screenshotBgBlur}`}
                 min={0} max={15}
                 defaultValue={p.prefs.screenshotBgBlur}
                 value={p.prefs.screenshotBgBlur}
@@ -379,9 +379,9 @@ var Preferences = React.createClass({
                 onAfterChange={(e)=>this.handleSlideAfterChange(e, 'screenshotBgBlur')}
                 onMouseEnter={()=>this.handleToggle('screenshotBgBlur')}
                 hoverBg={p.theme.settingsItemHover}
-                data-tip="Controls the strength of the blur of background screenshots and wallpaper."/> 
+                data-tip={utils.t('screenshotBgBlurTip')}/> 
                 <Slide  className="prefs-row-last" 
-                label={`Set tile size: ${p.prefs.tabSizeHeight}x${p.prefs.tabSizeHeight+80}`}
+                label={`${utils.t('tabSizeHeight')}: ${p.prefs.tabSizeHeight}x${p.prefs.tabSizeHeight+80}`}
                 min={134} max={300}
                 defaultValue={p.prefs.tabSizeHeight}
                 value={p.prefs.tabSizeHeight}
@@ -391,51 +391,51 @@ var Preferences = React.createClass({
                 step={20}
                 dots={true}
                 hoverBg={p.theme.settingsItemHover}
-                data-tip="Controls the size of the tiles." />
+                data-tip={utils.t('tabSizeHeightTip')} />
               </div>  : null}
             <Toggle 
             theme={p.theme}
             onMouseEnter={()=>this.handleToggle('sessionsSync')}
             onClick={()=>this.handleClick('sessionsSync')} 
-            on={p.prefs.sessionsSync} label="Enable session synchronization"
+            on={p.prefs.sessionsSync} label={utils.t('sessionsSync')}
             hoverBg={p.theme.settingsItemHover}
-            data-tip="Enabling session synchronization allows you to keep a saved session persistently up to date with the current Chrome window. Synchronization occurs at a max interval of fifteen seconds." />
+            data-tip={utils.t('sessionsSyncTip')} />
             <Toggle 
             theme={p.theme}
             onMouseEnter={()=>this.handleToggle('actions')}
             onClick={()=>this.handleClick('actions')}
-            on={p.prefs.actions} label="Enable undoing of tab actions"
+            on={p.prefs.actions} label={utils.t('actions')}
             hoverBg={p.theme.settingsItemHover}
-            data-tip="This option allows you to undo a tab action by pressing CTRL+Z, or using the right-click context menu on a tab tile while in the tabs view." />
+            data-tip={utils.t('actionsTip')} />
             <Toggle 
             theme={p.theme}
             onMouseEnter={()=>this.handleToggle('keyboardShortcuts')}
             onClick={()=>this.handleClick('keyboardShortcuts')}
-            on={p.prefs.keyboardShortcuts} label="Enable keyboard shortcuts"
+            on={p.prefs.keyboardShortcuts} label={utils.t('keyboardShortcuts')}
             hoverBg={p.theme.settingsItemHover}
             data-tip={`
-              <div><strong>CTRL+Z</strong>: Undo (Requires tab actions)</div>
-              <div><strong>CTRL+F</strong>: Search</div>
-              <div><strong>CTRL+ALT+S</strong>: Sessions</div>
-              <div><strong>CTRL+ALT+P</strong>: Preferences</div>
-              <div><strong>CTRL+ALT+T</strong>: Theming</div>
-              <div><strong>CTRL+ALT+A</strong>: About</div>
-              <div><strong>CTRL+SHIFT+S</strong>: Save Session</div>
-              <div><strong>CTRL+SHIFT+SPACE</strong>: Sidebar</div>
-              <div><strong>ALT+T</strong>: Tabs</div>
-              <div><strong>ALT+B</strong>: Bookmarks</div>
-              <div><strong>ALT+H</strong>: History</div>
-              <div><strong>ALT+S</strong>: Sessions</div>
-              <div><strong>ALT+A</strong>: Apps</div>
-              <div><strong>ALT+E</strong>: Extensions</div>
+              <div><strong>CTRL+Z</strong>: ${utils.t('ctrlZ')}</div>
+              <div><strong>CTRL+F</strong>: ${utils.t('search')}</div>
+              <div><strong>CTRL+ALT+S</strong>: ${_.upperFirst(utils.t('sessions'))}</div>
+              <div><strong>CTRL+ALT+P</strong>: ${utils.t('preferences')}</div>
+              <div><strong>CTRL+ALT+T</strong>: ${utils.t('theming')}</div>
+              <div><strong>CTRL+ALT+A</strong>: ${utils.t('about')}</div>
+              <div><strong>CTRL+SHIFT+S</strong>: ${utils.t('saveSession')}</div>
+              <div><strong>CTRL+SHIFT+SPACE</strong>: ${utils.t('sidebar')}</div>
+              <div><strong>ALT+T</strong>: ${_.upperFirst(utils.t('tabs'))}</div>
+              <div><strong>ALT+B</strong>: ${_.upperFirst(utils.t('bookmarks'))}</div>
+              <div><strong>ALT+H</strong>: ${_.upperFirst(utils.t('history'))}</div>
+              <div><strong>ALT+S</strong>: ${_.upperFirst(utils.t('sessions'))}</div>
+              <div><strong>ALT+A</strong>: ${_.upperFirst(utils.t('apps'))}</div>
+              <div><strong>ALT+E</strong>: ${_.upperFirst(utils.t('extensions'))}</div>
             `}/>
             <Toggle 
             theme={p.theme}
             onMouseEnter={()=>this.handleToggle('blacklist')} 
             onClick={()=>this.handleClick('blacklist')} 
-            on={p.prefs.blacklist} label="Enable website blacklist"
+            on={p.prefs.blacklist} label={utils.t('blacklist')}
             hoverBg={p.theme.settingsItemHover}
-            data-tip="Enter a comma separated list of domains, and they will be automatically closed under any circumstance. This is useful for blocking websites which may inhibit productivity, or you simply don't like.">
+            data-tip={utils.t('blacklistTip')}>
               {p.prefs.blacklist ? <Blacklist theme={p.theme}/> : null} 
             </Toggle>
           </Col>

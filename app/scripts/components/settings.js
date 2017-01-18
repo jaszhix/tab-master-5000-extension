@@ -13,7 +13,6 @@ import * as utils from './stores/tileUtils';
 import state from './stores/state';
 import {msgStore, faviconStore, utilityStore} from './stores/main';
 import themeStore from './stores/theme';
-import tabStore from './stores/tab';
 import sessionsStore from './stores/sessions';
 
 import Preferences from './preferences';
@@ -174,18 +173,18 @@ var Theming = React.createClass({
           style={{fontWeight: s.boldUpdate ? '600' : '400'}}
           icon="floppy-disk"
           className="ntg-setting-btn">
-          {`${s.isNewTheme ? 'Save' : 'Update'}${p.collapse ? ' Theme' : ''}`}
+          {`${s.isNewTheme ? utils.t('save') : utils.t('update')}${p.collapse ? ' '+utils.t('theme') : ''}`}
         </Btn> : null}
-        <Btn onClick={this.handleNewTheme} icon="color-sampler" className="ntg-setting-btn" >{`New ${p.collapse ? 'Theme' : ''}`}</Btn>
+        <Btn onClick={this.handleNewTheme} icon="color-sampler" className="ntg-setting-btn" >{`${utils.t('new')} ${p.collapse ? utils.t('theme') : ''}`}</Btn>
         {s.savedThemes.length > 0 ? 
-        <Btn onClick={()=>themeStore.export()} className="ntg-setting-btn" icon="database-export">Export</Btn> : null}
-        <Btn onClick={()=>this.triggerRefClick('import')} className="ntg-setting-btn" icon="database-insert">Import</Btn>
+        <Btn onClick={()=>themeStore.export()} className="ntg-setting-btn" icon="database-export">{utils.t('export')}</Btn> : null}
+        <Btn onClick={()=>this.triggerRefClick('import')} className="ntg-setting-btn" icon="database-insert">{utils.t('import')}</Btn>
         {s.rightTab === 'wallpaper' ? 
-        <Btn onClick={()=>this.triggerRefClick('wallpaper')} className="ntg-setting-btn" icon="file-picture">Import Wallpaper</Btn> : null}
-        {s.rightTab === 'color' ? <Btn onClick={()=>this.setState({colorGroup: 'general'})} className="ntg-setting-btn">Body, Header, and Fields</Btn> : null}
-        {s.rightTab === 'color' ? <Btn onClick={()=>this.setState({colorGroup: 'buttons'})} className="ntg-setting-btn">Buttons</Btn> : null}
-        {s.rightTab === 'color' ? <Btn onClick={()=>this.setState({colorGroup: 'tiles'})} className="ntg-setting-btn">Tiles</Btn> : null}
-        {p.wallpaper && p.wallpaper.data !== -1 && p.wallpaper.id < 9000 ? <Btn onClick={()=>themeStore.removeWallpaper(p.prefs.wallpaper)} className="ntg-setting-btn pull-right">Remove</Btn> : null}
+        <Btn onClick={()=>this.triggerRefClick('wallpaper')} className="ntg-setting-btn" icon="file-picture">{utils.t('importWallpaper')}</Btn> : null}
+        {s.rightTab === 'color' ? <Btn onClick={()=>this.setState({colorGroup: 'general'})} className="ntg-setting-btn">{utils.t('bodyHeaderAndFields')}</Btn> : null}
+        {s.rightTab === 'color' ? <Btn onClick={()=>this.setState({colorGroup: 'buttons'})} className="ntg-setting-btn">{utils.t('buttons')}</Btn> : null}
+        {s.rightTab === 'color' ? <Btn onClick={()=>this.setState({colorGroup: 'tiles'})} className="ntg-setting-btn">{utils.t('tiles')}</Btn> : null}
+        {p.wallpaper && p.wallpaper.data !== -1 && p.wallpaper.id < 9000 ? <Btn onClick={()=>themeStore.removeWallpaper(p.prefs.wallpaper)} className="ntg-setting-btn pull-right">{utils.t('remove')}</Btn> : null}
       </div>
     );
     state.set({modal: p.modal});
@@ -248,10 +247,10 @@ var Theming = React.createClass({
           <div role="tabpanel" style={{position: 'relative', top: '18px'}}> 
             <ul className="nav nav-tabs">
               <li style={{padding: '0px'}} className={`${s.leftTab === 'custom' ? 'active' : ''}`}>
-                <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({leftTab: 'custom'})}>Custom</a>
+                <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({leftTab: 'custom'})}>{utils.t('custom')}</a>
               </li>
               <li style={{padding: '0px'}} className={`${s.leftTab === 'tm5k' ? 'active' : ''}`}>
-                <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({leftTab: 'tm5k'})}>TM5K</a>
+                <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({leftTab: 'tm5k'})}>{utils.t('tm5k')}</a>
               </li>
             </ul>
           </div>
@@ -277,7 +276,7 @@ var Theming = React.createClass({
                         value={s.themeLabelValue}
                         className="form-control"
                         style={{position: 'absolute', display: 'block', height: '24px', width: '66%', top: '2px', left: '17px'}}
-                        placeholder={theme.label !== 'Custom Theme' ? theme.label : 'Label...'}
+                        placeholder={theme.label !== 'Custom Theme' ? theme.label : `${utils.t('label')}...`}
                         onChange={(e)=>this.setState({themeLabelValue: e.target.value})}
                         onKeyDown={(e)=>this.handleEnter(e, theme.id)} />
                         : theme.label}
@@ -303,7 +302,7 @@ var Theming = React.createClass({
                       className="ntg-session-text" 
                       style={{width: 'auto', display: 'inline', cursor: p.prefs.theme !== theme.id ? 'pointer' : null, fontWeight: p.prefs.theme === theme.id ? '600' : 'initial', color: p.prefs.theme === theme.id ? p.theme.darkBtnText : p.theme.bodyText}} 
                       onClick={()=>this.handleSelectTheme(theme)}>
-                        {theme.label}
+                        {utils.t(theme.camel)}
                       </div>
                     </Row>
                   );
@@ -321,11 +320,11 @@ var Theming = React.createClass({
               <div role="tabpanel" style={{position: 'relative', top: '18px'}}> 
                 <ul className="nav nav-tabs">
                   <li style={{padding: '0px'}} className={`${s.rightTab === 'color' ? 'active' : ''}`}>
-                    <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({rightTab: 'color'})}>Color Scheme</a>
+                    <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({rightTab: 'color'})}>{utils.t('colorScheme')}</a>
                   </li>
                   {!s.isNewTheme && s.leftTab === 'custom' || s.leftTab === 'tm5k' && s.selectedTheme && s.selectedTheme !== undefined && s.selectedTheme.id !== 9000 ? 
                   <li style={{padding: '0px'}} className={`${s.rightTab === 'wallpaper' ? 'active' : ''}`}>
-                    <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({rightTab: 'wallpaper'})}>Wallpaper</a>
+                    <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({rightTab: 'wallpaper'})}>{utils.t('wallpaper')}</a>
                   </li> : null}
                 </ul>
               </div>
@@ -335,7 +334,7 @@ var Theming = React.createClass({
               <Col size="4" style={{marginTop: '28px'}}>
                 <Row>
                   {themeFields1.map((field, i)=>{
-                    return <ColorPickerContainer key={field.themeKey} onChange={()=>this.setState({boldUpdate: true})} hoverBg={p.theme.settingsItemHover} color={p.theme[field.themeKey]} themeKey={field.themeKey} label={field.label}/>;
+                    return <ColorPickerContainer key={field.themeKey} onChange={()=>this.setState({boldUpdate: true})} hoverBg={p.theme.settingsItemHover} color={p.theme[field.themeKey]} themeKey={field.themeKey} label={utils.t(field.themeKey)}/>;
                   })}
                 </Row>
               </Col>

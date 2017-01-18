@@ -52,7 +52,7 @@ var ContextMenu = React.createClass({
 
     var isSelectedItems = _.isArray(p.context.id);
     var addContextMenuItems = (hasBookmark, bk)=>{
-      var close = p.prefs.mode !== 'apps' && p.prefs.mode !== 'tabs' && !s.openTab ? 'Remove' : 'Close';
+      var close = p.prefs.mode !== 'apps' && p.prefs.mode !== 'tabs' && !s.openTab ? utils.t('remove') : utils.t('close');
       var notBookmarksHistorySessAppsExt = p.prefs.mode !== 'bookmarks' && p.prefs.mode !== 'history' && p.prefs.mode !== 'sessions' && p.prefs.mode !== 'apps' && p.prefs.mode !== 'extensions';
       var notAppsExt = p.prefs.mode !== 'apps' && p.prefs.mode !== 'extensions';
       var actionsStatus = this.getStatus('actions');
@@ -61,63 +61,56 @@ var ContextMenu = React.createClass({
           argument: notAppsExt && p.prefs.mode !== 'sessions', // Temporary until session removal is fixed
           onClick: ()=>this.handleMenuOption(p, 'close'),
           icon: `icon-${p.prefs.mode !== 'tabs' && !s.openTab ? 'eraser' : 'cross2'}`,
-          label: isSelectedItems ? `${close} ${p.context.id.length} ${p.mode === 'history' ? p.mode+' items' : p.mode}` : close,
+          label: isSelectedItems ? `${close} ${p.context.id.length} ${p.mode === 'history' ? `${p.mode} ${utils.t('items')}` : p.mode}` : close,
           divider: null
         },
         {
           argument: p.prefs.mode === 'tabs',
           onClick: ()=>this.handleMenuOption(p, 'closeAll'),
           icon: 'icon-stack-cancel',
-          label: `${close} all from ${isSelectedItems ? 'selected domains' : p.context.id.url.split('/')[2]}`,
+          label: `${close} ${utils.t('allFrom')} ${isSelectedItems ? utils.t('selectedDomains') : p.context.id.url.split('/')[2]}`,
           divider: null
         },
         {
           argument: notAppsExt && this.getStatus('duplicate'),
           onClick: ()=>this.handleMenuOption(p, 'closeAllDupes'),
           icon: 'icon-svg',
-          label: `${close} all duplicates`,
+          label: `${close} ${utils.t('allDuplicates')}`,
           divider: null
         },
         {
           argument: notAppsExt && p.prefs.mode !== 'sessions' && p.search.length > 0,
           onClick: ()=>this.handleMenuOption(p, 'closeSearched'),
           icon: 'icon-svg',
-          label: `${close} all search results`,
+          label: `${close} ${utils.t('allSearchResults')}`,
           divider: null
         },
         {
           argument: (isSelectedItems && p.prefs.mode === 'tabs') || (notBookmarksHistorySessAppsExt || p.context.id.openTab),
           onClick: ()=>this.handleMenuOption(p, 'pin'),
           icon: 'icon-pushpin',
-          label: isSelectedItems ? `Toggle pinning of ${p.context.id.length} tabs` : p.context.id.pinned ? 'Unpin' : 'Pin',
+          label: isSelectedItems ? `${utils.t('togglePinningOf')} ${p.context.id.length} ${utils.t('tabs')}` : p.context.id.pinned ? utils.t('unpin') : utils.t('pin'),
           divider: null
         },
         {
           argument: (p.chromeVersion >= 46 && isSelectedItems && p.prefs.mode === 'tabs') || p.chromeVersion >= 46 && (notBookmarksHistorySessAppsExt || p.context.id.openTab),
           onClick: ()=>this.handleMenuOption(p, 'mute'),
           icon: `icon-${isSelectedItems || p.context.id.mutedInfo.muted ? 'volume-medium' : 'volume-mute'}`,
-          label: isSelectedItems ? `Toggle muting of ${p.context.id.length} tabs` : p.context.id.mutedInfo.muted ? 'Unmute' : 'Mute',
-          divider: null
-        },
-        {
-          argument: notAppsExt && this.getStatus('duplicate'),
-          onClick: ()=>this.handleMenuOption(p, 'closeAllDupes'),
-          icon: 'icon-svg',
-          label: `${close} all duplicates`,
+          label: isSelectedItems ? `${utils.t('toggleMutingOf')} ${p.context.id.length} tabs` : p.context.id.mutedInfo.muted ? utils.t('unmute') : utils.t('mute'),
           divider: null
         },
         {
           argument: notAppsExt && !isSelectedItems && p.prefs.mode !== 'bookmarks',
           onClick: ()=>this.handleMenuOption(p, 'toggleBookmark', 0, hasBookmark, bk),
           icon: 'icon-bookmark4',
-          label: `${hasBookmark ? 'Remove from' : 'Add to'} bookmarks`,
+          label: `${hasBookmark ? utils.t('removeFrom') : utils.t('addTo')} ${utils.t('bookmarks')}`,
           divider: null
         },
         {
           argument: !isSelectedItems && notAppsExt && p.prefs.actions && actionsStatus,
           onClick: ()=>this.handleMenuOption(p, 'actions'),
           icon: 'icon-undo',
-          label: `Undo ${actionsStatus}`,
+          label: `${utils.t('undo')} ${actionsStatus}`,
           divider: null
         },
         {
@@ -131,7 +124,7 @@ var ContextMenu = React.createClass({
           argument: p.prefs.mode === 'apps' && p.context.id.enabled,
           onClick: ()=>this.handleMenuOption(p, 'createAppShortcut'),
           icon: 'icon-forward',
-          label: isSelectedItems ? `Create shortcuts for ${p.context.id.length} ${p.mode}` : 'Create shortcut',
+          label: isSelectedItems ? `${utils.t('createShortcutsFor')} ${p.context.id.length} ${p.mode}` : utils.t('createShortcut'),
           divider: null
         },
       ];
@@ -148,7 +141,7 @@ var ContextMenu = React.createClass({
               argument: true,
               onClick: ()=>this.handleMenuOption(p, launchType),
               icon: 'icon-gear',
-              label: _.endsWith(launchType, 'SCREEN') ? 'Open full screen' : _.endsWith(launchType, 'PINNED_TAB') ? 'Open as a pinned tab' : 'Open as a '+_.last(_.words(launchType.toLowerCase())),
+              label: _.endsWith(launchType, 'SCREEN') ? utils.t('openFullscreen') : _.endsWith(launchType, 'PINNED_TAB') ? utils.t('openAsAPinnedTab') : `${utils.t('openAsA')} ${_.last(_.words(launchType.toLowerCase()))}`,
               divider: null
             };
             contextOptions.push(launchOption);
@@ -161,14 +154,14 @@ var ContextMenu = React.createClass({
             argument: true,
             onClick: ()=>this.handleMenuOption(p, 'toggleEnable'),
             switch: isSelectedItems || p.context.id.enabled,
-            label: isSelectedItems ? `Toggle ${p.context.id.length} ${p.mode}` : p.context.id.enabled ? 'Disable' : 'Enable',
+            label: isSelectedItems ? `${utils.t('toggle')} ${p.context.id.length} ${p.mode}` : p.context.id.enabled ? utils.t('disable') : utils.t('enable'),
             divider: null
           },
           {
             argument: true,
             onClick: ()=>this.handleMenuOption(p, 'uninstallApp'),
             icon: 'icon-trash',
-            label: `Uninstall${isSelectedItems ? ' '+p.context.id.length+' '+p.mode : ''}`,
+            label: `${utils.t('uninstall')}${isSelectedItems ? ' '+p.context.id.length+' '+p.mode : ''}`,
             divider: null
           },
         ];
@@ -253,19 +246,19 @@ var ContextMenu = React.createClass({
       console.log('lastAction: ',lastAction);
       if (lastAction && lastAction.hasOwnProperty('item')) {
         if (lastAction.type === 'remove') {
-          return ' removal of '+lastAction.item.title;
+          return ` ${utils.t('removalOf')} ${lastAction.item.title}`;
         } else if (lastAction.type === 'create') {
-          return ' creation of '+lastAction.item.title;
+          return ` ${utils.t('creationOf')} ${lastAction.item.title}`;
         } else if (lastAction.type === 'mute') {
-          return ` muting of ${lastAction.item.title}`;
+          return ` ${utils.t('mutingOf')} ${lastAction.item.title}`;
         } else if (lastAction.type === 'unmute') {
-          return ` unmuting of ${lastAction.item.title}`;
+          return ` ${utils.t('unmutingOf')} ${lastAction.item.title}`;
         } else if (lastAction.type === 'pin') {
-          return ` pinning of ${lastAction.item.title}`;
+          return ` ${utils.t('pinningOf')} ${lastAction.item.title}`;
         } else if (lastAction.type === 'pin') {
-          return ` unpinning of ${lastAction.item.title}`;
+          return ` ${utils.t('unpinningOf')} ${lastAction.item.title}`;
         } else if (lastAction.type === 'move') {
-          return ' moving of '+lastAction.item.title;
+          return ` ${utils.t('movingOf')} ${lastAction.item.title}`;
         }
       } else {
         return false;

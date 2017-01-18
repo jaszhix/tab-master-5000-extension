@@ -305,7 +305,7 @@ var Tile = React.createClass({
             {p.chromeVersion >= 46 && openTab || p.chromeVersion >= 46 && p.prefs.mode === 'tabs' ?
             <li>
               <i 
-              title={`${p.tab.mutedInfo.muted ? 'Unmute' : 'Mute'} Tab${p.tab.audible ? ' (Audible)' : ''}`}
+              title={`${p.tab.mutedInfo.muted ? utils.t('unmute') : utils.t('mute')} ${utils.t('tab')}${p.tab.audible ? ' ('+utils.t('audible')+')' : ''}`}
               style={{
                 display: 'block', 
                 cursor: 'pointer', 
@@ -325,7 +325,7 @@ var Tile = React.createClass({
             {isTab ?
             <li>
               <i
-              title={`${p.tab.pinned ? 'Unp' : 'P'}in Tab`}
+              title={`${p.tab.pinned ? utils.t('unpin') : utils.t('pin')} ${utils.t('tab')}`}
               style={{
                 display: 'block', 
                 cursor: 'pointer', 
@@ -345,7 +345,7 @@ var Tile = React.createClass({
             {p.prefs.mode !== 'apps' && p.prefs.mode !== 'extensions' ?
             <li>
               <i
-              title={`${isTab ? 'Close' : 'Remove'} ${_.trimEnd(_.upperFirst(p.prefs.mode), 's')}${p.prefs.mode === 'sessions' ? ' Tab' : ''}`}
+              title={`${isTab ? utils.t('close') : utils.t('remove')} ${_.trimEnd(_.upperFirst(utils.t(p.prefs.mode)), 's')}${p.prefs.mode === 'sessions' ? ' '+utils.t('tab') : ''}`}
               style={{
                 display: 'block', 
                 cursor: 'pointer', 
@@ -364,7 +364,7 @@ var Tile = React.createClass({
             {(p.prefs.mode === 'apps' || p.prefs.mode === 'extensions') ?
             <li>
               <i
-              title="Offline Enabled"
+              title={utils.t('offlineEnabled')}
               style={{
                 display: 'block', 
                 cursor: 'pointer', 
@@ -383,7 +383,7 @@ var Tile = React.createClass({
             {(p.prefs.mode === 'apps' || p.prefs.mode === 'extensions') ?
             <li>
               <i
-              title={`${_.trimEnd(_.upperFirst(p.prefs.mode), 's')} Homepage`}
+              title={`${_.trimEnd(_.upperFirst(utils.t(p.prefs.mode)), 's')} ${utils.t('homepage')}`}
               style={{
                 display: 'block', 
                 cursor: 'pointer', 

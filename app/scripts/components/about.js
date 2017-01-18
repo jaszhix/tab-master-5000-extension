@@ -3,6 +3,7 @@ import tc from 'tinycolor2';
 import moment from 'moment';
 
 import state from './stores/state';
+import * as utils from './stores/tileUtils';
 import {utilityStore} from './stores/main';
 
 import {Btn, Col, Row} from './bootstrap';
@@ -100,7 +101,7 @@ var Attribution = React.createClass({
     }
     return (
       <div style={{marginTop: '49px'}}>
-        <h3 style={{textAlign: 'center'}}>TM5K was made possible because of the efforts of the following projects.</h3>
+        <h3 style={{textAlign: 'center'}}>{utils.t('attributionHeader')}</h3>
         <Row>
           <Col size="2" />
           <Col size="8">
@@ -128,7 +129,7 @@ var Attribution = React.createClass({
           <Col size="2" />
         </Row>
         <Row style={{textAlign: 'center'}}>
-          Included wallpapers are licensed under the <a href="https://creativecommons.org/publicdomain/zero/1.0/">Creative Commons Zero (CC0)</a> license.
+          {utils.t('attributionFooter')} <a href="https://creativecommons.org/publicdomain/zero/1.0/">Creative Commons Zero (CC0)</a> {utils.t('license')}.
         </Row>
       </div>
     );
@@ -180,19 +181,19 @@ var About = React.createClass({
           <div role="tabpanel"> 
             <ul className="nav nav-tabs" style={{borderBottom: 'initial', position: 'absolute', zIndex: '9999'}} >
               <li style={{padding: '0px'}} className={`${s.tab === 'release' ? 'active' : ''}`}>
-                <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({tab: 'release'})}>Release Notes</a>
+                <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({tab: 'release'})}>{utils.t('releaseNotes')}</a>
               </li>
               <li style={{padding: '0px'}} className={`${s.tab === 'support' ? 'active' : ''}`}>
-                <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({tab: 'support'})}>Support</a>
+                <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({tab: 'support'})}>{utils.t('support')}</a>
               </li>
               <li style={{padding: '0px'}} className={`${s.tab === 'attribution' ? 'active' : ''}`}>
-                <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({tab: 'attribution'})}>Attribution</a>
+                <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({tab: 'attribution'})}>{utils.t('attribution')}</a>
               </li>
               <li style={{padding: '0px'}} className={`${s.tab === 'contribute' ? 'active' : ''}`}>
-                <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({tab: 'contribute'})}>Contribute</a>
+                <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({tab: 'contribute'})}>{utils.t('contribute')}</a>
               </li>
               <li style={{padding: '0px'}} className={`${s.tab === 'license' ? 'active' : ''}`}>
-                <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({tab: 'license'})}>License</a>
+                <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({tab: 'license'})}>{utils.t('license')}</a>
               </li>
             </ul>
           </div>
