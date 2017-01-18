@@ -1,5 +1,11 @@
 #### Release Notes
 
+##### v2.1.2 / *1-17-17*
+
+*   Added localization support.
+*   Added a Spanish translation.
+*   If you would like to help translate TM5K to other languages, or improve the current translations, please look at [these files](https://github.com/jaszhix/tab-master-5000-chrome-extension/tree/master/app/_locales/). After translating a JSON file, you can attach it to a new Github issue, or submit a pull request if you are familiar with Git.
+
 ##### v2.1.1 / *12-31-16*
 
 *   Added bookmark toggling to the context menu.
