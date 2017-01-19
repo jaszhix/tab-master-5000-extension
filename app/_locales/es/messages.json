@@ -48,7 +48,7 @@
     "message": "marcadores"
   },
   "tabs": {
-    "message": "pestañas"
+    "message": "lengüetas"
   },
   "sessions": {
     "message": "sesiones"
@@ -243,7 +243,7 @@
     "message": "Preferencias"
   },
   "about": {
-    "message": "Acerca de"
+    "message": "Sobre"
   },
   "enableContextMenu": {
     "message": "Habilitar menú contextual"
@@ -440,14 +440,23 @@
   "searchSession": {
     "message": "Sesión de búsqueda"
   },
+  "synchronized": {
+    "message": "Sincronizado"
+  },
   "synchronizeSession": {
     "message": "Sincronizar sesión"
+  },
+  "desynchronizeSession": {
+    "message": "Desincronizar sesión"
   },
   "restoreSession": {
     "message": "Restaurar sesion"
   },
   "removeSession": {
     "message": "Eliminar sesión"
+  },
+  "window": {
+    "message": "Ventana"
   },
   "closeWindow": {
     "message": "Cerrar ventana"
@@ -640,6 +649,9 @@
   },
   "contributeHeader": {
     "message": "¿Por qué contribuir?"
+  },
+  "specialThanks": {
+    "message": "Gracias Especiales"
   },
   "license": {
     "message": "license"

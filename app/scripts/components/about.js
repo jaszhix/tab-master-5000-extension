@@ -9,26 +9,30 @@ import {utilityStore} from './stores/main';
 import {Btn, Col, Row} from './bootstrap';
 
 import changelog from 'html!markdown!../../../changelog.md';
-import support from 'html!markdown!../../../support.md';
+/*let supportFile = `html!markdown!../../../support_${chrome.i18n.getUILanguage()}.md`;
+import support from supportFile;*/
 import license from 'html!markdown!../../../COPYING';
 
 var Contribute = React.createClass({
   render:function(){
+    let contributeFile;
+    let locale = chrome.i18n.getUILanguage();
+    if (locale === 'es') {
+      contributeFile = require('html!markdown!../../../contribute_es.md');
+    } else {
+      contributeFile = require('html!markdown!../../../contribute.md');
+    }
+    function createMarkup() { return {__html: contributeFile};}
     return (
       <div style={{marginTop: '49px'}}>
-        <h4>Why contribute?</h4>
-        <p>Tab Master 5000 is free of cost and doesn't generate any revenue directly. If you are a happier Chrome user because of this extension, a donation will help me ration more time to this project. As a developer, I have to choose my time wisely, and while I love working on it, it is not always easy to sit down and improve the extension while I have other obligations.</p>
-        <p>If you are a developer and would like to contribute time to this project, you can submit pull requests to this project's master branch on Github.</p>
-        <p>Submitting bug reports and suggesting new features on Github or the Chrome Web Store is also helpful.</p>
-        <p>All contributors will be listed on this page after each extension update unless they opt out.</p>
-        <p>Thanks for using Tab Master!</p>
-        <p>Jason Hicks</p>
+        <h4>{utils.t('contributeHeader')}</h4>
+        <div dangerouslySetInnerHTML={createMarkup()} />
         <form  action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank">
           <input type="hidden" name="cmd" value="_s-xclick" />
           <input type="hidden" name="hosted_button_id" value="8VL34HHRFN3LS" />
           <Btn className="ntg-top-btn" name="submit">PayPal</Btn>
         </form>
-        <h4>Special Thanks</h4>
+        <h4>{utils.t('specialThanks')}</h4>
         <ul>
           <li>Alex Dorey</li>
           <li>Joel Zipkin</li>
@@ -63,7 +67,14 @@ var License = React.createClass({
 
 var Support = React.createClass({
   render(){
-    function createMarkup() { return {__html: support};}
+    let supportFile;
+    let locale = chrome.i18n.getUILanguage();
+    if (locale === 'es') {
+      supportFile = require('html!markdown!../../../support_es.md');
+    } else {
+      supportFile = require('html!markdown!../../../support.md');
+    }
+    function createMarkup() { return {__html: supportFile};}
     return (
       <div style={{marginTop: '49px'}}>
         <Col size="2" />

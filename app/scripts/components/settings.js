@@ -341,14 +341,14 @@ var Theming = React.createClass({
               <Col size="4" style={{marginTop: '28px'}}>
                 <Row>
                   {themeFields2.map((field, i)=>{
-                    return <ColorPickerContainer key={field.themeKey} onChange={()=>this.setState({boldUpdate: true})} hoverBg={p.theme.settingsItemHover} color={p.theme[field.themeKey]} themeKey={field.themeKey} label={field.label}/>;
+                    return <ColorPickerContainer key={field.themeKey} onChange={()=>this.setState({boldUpdate: true})} hoverBg={p.theme.settingsItemHover} color={p.theme[field.themeKey]} themeKey={field.themeKey} label={utils.t(field.themeKey)}/>;
                   })}
                 </Row>
               </Col>
               <Col size="4" style={{marginTop: '28px'}}>
                 <Row>
                   {themeFields3.map((field, i)=>{
-                    return <ColorPickerContainer key={field.themeKey} onChange={()=>this.setState({boldUpdate: true})} hoverBg={p.theme.settingsItemHover} color={p.theme[field.themeKey]} themeKey={field.themeKey} label={field.label}/>;
+                    return <ColorPickerContainer key={field.themeKey} onChange={()=>this.setState({boldUpdate: true})} hoverBg={p.theme.settingsItemHover} color={p.theme[field.themeKey]} themeKey={field.themeKey} label={utils.t(field.themeKey)}/>;
                   })}
                 </Row>
               </Col>
@@ -447,9 +447,9 @@ var Sessions = React.createClass({
     var s = this.state;
     p.modal.footer = (
       <div>
-        <Btn onClick={()=>sessionsStore.exportSessions(p.sessions)} className="ntg-setting-btn" icon="database-export">Export</Btn>
-        <Btn onClick={this.triggerInput} className="ntg-setting-btn" icon="database-insert">Import</Btn>
-        <Btn onClick={()=>sessionsStore.v2Save({tabs: p.allTabs, label: s.sessionLabelValue})} className="ntg-setting-btn pull-right" icon="floppy-disk">Save Session</Btn>
+        <Btn onClick={()=>sessionsStore.exportSessions(p.sessions)} className="ntg-setting-btn" icon="database-export">{utils.t('export')}</Btn>
+        <Btn onClick={this.triggerInput} className="ntg-setting-btn" icon="database-insert">{utils.t('import')}</Btn>
+        <Btn onClick={()=>sessionsStore.v2Save({tabs: p.allTabs, label: s.sessionLabelValue})} className="ntg-setting-btn pull-right" icon="floppy-disk">{utils.t('saveSession')}</Btn>
       </div>
     );
     state.set({modal: p.modal});
@@ -545,7 +545,7 @@ var Sessions = React.createClass({
     return (
       <div className="sessions">
         <Col size="6" className="session-col" onMouseLeave={()=>this.handleSessionHoverOut(-1)}>
-          <h4>Saved Sessions {p.sessions.length > 0 ? `(${p.sessions.length})` : null}</h4>
+          <h4>{utils.t('savedSessions')} {p.sessions.length > 0 ? `(${p.sessions.length})` : null}</h4>
           {p.sessions.map((session, i)=>{
             var time = _.capitalize(moment(session.timeStamp).fromNow());
             var _time = time === 'A few seconds ago' ? 'Seconds ago' : time;
@@ -559,13 +559,13 @@ var Sessions = React.createClass({
               return int;
             };
             var tabsCount = getTabsCount();
-            var sessionTitle = `${session.label ? session.label : _time}: ${session.tabs.length} Window${session.tabs.length > 1 ? 's' : ''}, ${tabsCount} Tab${tabsCount > 1 ? 's' : ''}`;
+            var sessionTitle = `${session.label ? session.label : _time}: ${session.tabs.length} ${utils.t('window')}${session.tabs.length > 1 ? 's' : ''}, ${tabsCount} ${utils.t('tab')}${tabsCount > 1 ? 's' : ''}`;
             return (
               <Row onMouseEnter={()=>this.handleSessionHoverIn(i)} onMouseLeave={()=>this.handleSessionHoverOut(i)} key={i} className="ntg-session-row" style={{backgroundColor: s.sessionHover === i ? p.theme.settingsItemHover : 'initial', minHeight: '30px'}}>
                 <Row style={{marginBottom: s.expandedSession === i ? '1px' : 'initial'}}>
                   <div style={{width: 'auto', float: 'left', display: 'inline', position: 'relative', top: '1px'}}>
                     <div onClick={(e)=>this.expandSelectedSession(i, e)} className={"ntg-session-text session-text-"+i} style={{paddingBottom: s.expandedSession === i ? '4px' : 'initial', cursor: 'pointer'}}>
-                      {p.prefs.syncedSession === session.id ? <span title="Synchronized" style={{paddingRight: '5px', color: p.theme.bodyText}}><i className="icon-sync"/></span> : null}
+                      {p.prefs.syncedSession === session.id ? <span title={utils.t('synchronized')}style={{paddingRight: '5px', color: p.theme.bodyText}}><i className="icon-sync"/></span> : null}
                       {sessionTitle}
                     </div>
                   </div>
@@ -577,7 +577,7 @@ var Sessions = React.createClass({
                     icon="cross"
                     faStyle={{fontSize: '18px', position: 'relative', top: '0px'}} 
                     noIconPadding={true} 
-                    data-tip="Remove Session" /> : null}
+                    data-tip={utils.t('removeSession')} /> : null}
                     {s.sessionHover === i ? 
                     <Btn 
                     onClick={()=>sessionsStore.restore(session, p.prefs.screenshot)} 
@@ -585,7 +585,7 @@ var Sessions = React.createClass({
                     icon="folder-open2"
                     faStyle={{fontSize: '14px', position: 'relative', top: '0px'}}
                     noIconPadding={true} 
-                    data-tip="Restore Session"/> : null}
+                    data-tip={utils.t('restoreSession')}/> : null}
                     {s.sessionHover === i && p.prefs.sessionsSync ? 
                     <Btn 
                     onClick={()=>msgStore.setPrefs({syncedSession: p.prefs.syncedSession === session.id ? null : session.id})} 
@@ -593,7 +593,7 @@ var Sessions = React.createClass({
                     icon="sync" 
                     faStyle={{fontWeight: p.prefs.syncedSession === session.id ? '600' : 'initial', position: 'relative', top: '0px'}} 
                     noIconPadding={true} 
-                    data-tip={p.prefs.syncedSession === session.id ? 'Desynchronize Session' : 'Synchronize Session'}/> : null}
+                    data-tip={p.prefs.syncedSession === session.id ? utils.t('desynchronizeSession') : utils.t('synchronizeSession')}/> : null}
                     {s.sessionHover === i ? 
                     <Btn 
                     onClick={()=>this.setState({searchField: i, expandedSession: i})} 
@@ -601,7 +601,7 @@ var Sessions = React.createClass({
                     icon="search4" 
                     faStyle={{fontSize: '13px', position: 'relative', top: '0px'}} 
                     noIconPadding={true} 
-                    data-tip="Search Session"/> : null}
+                    data-tip={utils.t('searchSession')}/> : null}
                     {!s.labelSession ? s.sessionHover === i && s.labelSession !== i ? 
                     <Btn 
                     onClick={()=>this.setState({labelSession: i, expandedSession: i})} 
@@ -609,7 +609,7 @@ var Sessions = React.createClass({
                     icon="pencil"
                     faStyle={{fontSize: '13px', position: 'relative', top: '0px'}} 
                     noIconPadding={true} 
-                    data-tip="Edit Label" /> : null : null}
+                    data-tip={utils.t('editLabel')} /> : null : null}
                   </div>
                 </Row>
                 {s.expandedSession === i ? 
@@ -628,7 +628,7 @@ var Sessions = React.createClass({
                               value={s.sessionLabelValue}
                               className="form-control label-session-input"
                               style={{backgroundColor: p.theme.settingsBg, color: p.theme.bodyText}}
-                              placeholder={session.label ? session.label : 'Label...'}
+                              placeholder={session.label ? session.label : `${utils.t('label')}...`}
                               onChange={this.setLabel} />
                             </form>
                           </Col>
@@ -644,12 +644,12 @@ var Sessions = React.createClass({
                           value={s.search}
                           className="form-control session-field" 
                           style={{backgroundColor: p.theme.settingsBg, color: p.theme.bodyText}}
-                          placeholder="Search session..."
+                          placeholder={`${utils.t('searchSession')}...`}
                           onChange={(e)=>this.setState({search: e.target.value})} />
                         </Col> : null}
                     </Row>
                   {session.tabs.map((_window, w)=>{
-                    var windowTitle = `Window ${w + 1}: ${_window.length} Tabs`;
+                    var windowTitle = `${utils.t('window')} ${w + 1}: ${_window.length} ${utils.t('tabs')}`;
                     return (
                       <Row key={w} className="ntg-session-row" style={{backgroundColor: s.windowHover === w ? p.theme.settingsItemHover : p.theme.settingsBg}} onMouseEnter={()=>this.setState({windowHover: w})}>
                         <Row className="ntg-session-text" style={{marginBottom: s.selectedSavedSessionWindow === w || s.search.length > 0 ? '1px' : 'initial', minHeight: '22px'}}>
@@ -662,7 +662,7 @@ var Sessions = React.createClass({
                             icon="folder-open2"
                             faStyle={{fontSize: '14px', position: 'relative', top: '0px'}}
                             noIconPadding={true} 
-                            data-tip="Restore Window"/> : null}
+                            data-tip={utils.t('restoreWindow')}/> : null}
                           </div>
                         </Row>
                         {s.selectedSavedSessionWindow === w || s.search.length > 0 ?
@@ -689,7 +689,7 @@ var Sessions = React.createClass({
                                   icon="cross"
                                   faStyle={{fontSize: '18px', position: 'relative', top: '0px'}}  
                                   noIconPadding={true} 
-                                  data-tip="Remove Tab" />: null}
+                                  data-tip={utils.t('removeTab')} />: null}
                                 </Col>
                               </Row>
                             );
@@ -707,9 +707,9 @@ var Sessions = React.createClass({
           
         </Col>
         <Col size="6" className="session-col" onMouseLeave={()=>this.setState({currentSessionHover: -1})}>
-          <h4>Current Session</h4>
+          <h4>{utils.t('currentSession')}</h4>
           {p.allTabs ? p.allTabs.map((_window, w)=>{
-            var windowTitle = `Window ${w + 1}: ${_window.length} Tabs`;
+            var windowTitle = `${utils.t('window')} ${w + 1}: ${_window.length} ${_.upperFirst(utils.t('tabs'))}`;
             return (
               <Row key={w} className="ntg-session-row" style={{backgroundColor: s.currentSessionHover === w ? p.theme.settingsItemHover : 'initial'}} onMouseEnter={()=>this.setState({currentSessionHover: w})} onMouseLeave={()=>this.setState({currentSessionTabHover: -1})}>
                 <Row className="ntg-session-text">
@@ -722,7 +722,7 @@ var Sessions = React.createClass({
                     icon="cross"
                     faStyle={{fontSize: '18px', position: 'relative', top: '0px'}} 
                     noIconPadding={true} 
-                    data-tip="Close Window" /> : null}
+                    data-tip={utils.t('closeWindow')} /> : null}
                   </div>
                 </Row>
                 {s.selectedCurrentSessionWindow === w ?
@@ -747,7 +747,7 @@ var Sessions = React.createClass({
                         icon="cross"
                         faStyle={{fontSize: '18px', position: 'relative', top: '0px'}} 
                         noIconPadding={true} 
-                        data-tip="Close Tab" /> : null}
+                        data-tip={utils.t('closeTab')} /> : null}
                       </div>
                     </Row>
                   );

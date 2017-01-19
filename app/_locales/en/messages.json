@@ -442,14 +442,23 @@
   "searchSession": {
     "message": "Search Session"
   },
+  "synchronized": {
+    "message": "Synchronized"
+  },
   "synchronizeSession": {
     "message": "Synchronize Session"
+  },
+  "desynchronizeSession": {
+    "message": "Desynchronize Session"
   },
   "restoreSession": {
     "message": "Restore Session"
   },
   "removeSession": {
     "message": "Remove Session"
+  },
+  "window": {
+    "message": "Window"
   },
   "closeWindow": {
     "message": "Close Window"
@@ -643,10 +652,10 @@
   "contributeHeader": {
     "message": "Why contribute?"
   },
+  "specialThanks": {
+    "message": "Special Thanks"
+  },
   "license": {
     "message": "license"
-  },
-  "faq": {
-    "message": "FAQ"
   }
 }
