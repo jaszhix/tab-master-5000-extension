@@ -1,5 +1,10 @@
 #### Release Notes
 
+##### v2.1.3 / *1-19-17*
+
+*   Fixed a bug preventing a new tab from being able to load preferences when Chrome is starting up and restoring a previous session with a new tab open.
+*   Fixed incomplete localization support in the Session Manager, Support, and Contribute views.
+
 ##### v2.1.2 / *1-17-17*
 
 *   Added localization support.
