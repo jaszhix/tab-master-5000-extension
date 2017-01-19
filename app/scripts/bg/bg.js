@@ -285,7 +285,7 @@ var Bg = React.createClass({
     */
     if (eventState.onStartup) {
       _.defer(()=>{
-        sendMsg(eventState.onStartup);
+        sendMsg({e: eventState.onStartup, type: 'startup'});
       });
     }
     if (eventState.onInstalled) {

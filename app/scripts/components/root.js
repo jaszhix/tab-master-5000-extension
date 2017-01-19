@@ -922,5 +922,5 @@ var loadPrefs = ()=>{
 };
 
 v(document).ready(()=>{
-  _.delay(()=>loadPrefs(), 500);
+  loadPrefs();
 });

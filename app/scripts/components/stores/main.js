@@ -42,6 +42,8 @@ export var msgStore = Reflux.createStore({
       } else if (msg.type === 'checkSSCapture') {
         console.log('checkSSCapture: Sending screenshot to '+sender.tab.url);
         sendResponse(screenshotStore.tabHasScreenshot(sender.tab.url));
+      } else if (msg.type === 'startup') {
+        _.delay(()=>window.location.reload(), 500);
       }
     });
   },
