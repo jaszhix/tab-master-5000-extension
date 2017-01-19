@@ -20,7 +20,7 @@
     "utility"
   ],
   "author": "jaszhix <jaszhix@gmail.com>",
-  "license": "CC-BY-4.0",
+  "license": "MIT",
   "dependencies": {},
   "devDependencies": {
     "autoprefixer": "^6.6.0",
