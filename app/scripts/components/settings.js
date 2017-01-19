@@ -649,7 +649,7 @@ var Sessions = React.createClass({
                         </Col> : null}
                     </Row>
                   {session.tabs.map((_window, w)=>{
-                    var windowTitle = `${utils.t('window')} ${w + 1}: ${_window.length} ${utils.t('tabs')}`;
+                    var windowTitle = `${utils.t('window')} ${w + 1}: ${_window.length} ${_.upperFirst(utils.t('tabs'))}`;
                     return (
                       <Row key={w} className="ntg-session-row" style={{backgroundColor: s.windowHover === w ? p.theme.settingsItemHover : p.theme.settingsBg}} onMouseEnter={()=>this.setState({windowHover: w})}>
                         <Row className="ntg-session-text" style={{marginBottom: s.selectedSavedSessionWindow === w || s.search.length > 0 ? '1px' : 'initial', minHeight: '22px'}}>
