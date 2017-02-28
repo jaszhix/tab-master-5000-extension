@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import kmp from 'kmp';
+import Fuse from 'fuse.js';
 import state from './state';
 import {historyStore, bookmarksStore, chromeAppStore, faviconStore} from './main';
 import sessionsStore from './sessions';
@@ -29,9 +30,11 @@ export var closeTab = (t, id, search)=>{
   if (p.prefs.mode !== 'tabs') {
     if (p.tab !== undefined && p.tab.hasOwnProperty('openTab') && p.tab.openTab) {
       close(true);
-      p[p.modeKey][p.i].openTab = null;
-      stateUpdate[p.modeKey] = p[p.modeKey];
-      state.set(stateUpdate);
+      if (p.modeKey !== undefined || p.i !== undefined) {
+        p[p.modeKey][p.i].openTab = null;
+        stateUpdate[p.modeKey] = p[p.modeKey];
+        state.set(stateUpdate);
+      }
     } else {
       if (p.prefs.mode === 'bookmarks') {
         var bookmarkId = search ? id.bookmarkId : p.tab.bookmarkId;
@@ -297,12 +300,19 @@ export var scrollbarVisible = (element)=>{
 };
 
 export var searchChange = (p, tabs)=>{
+  let _tabs;
   try {
-    var _tabs = _.filter(tabs, (item)=>{
-    if (kmp(item.title.toLowerCase(), p.s.search.toLowerCase()) !== -1 || item.url.toLowerCase().indexOf(p.s.search.toLowerCase()) !== -1) {
-      return item;
-    }
-  });
+    let tabsSearch = new Fuse(tabs, {
+      keys: [{
+        name: 'title',
+        weight: 0.3
+      }, {
+        name: 'url',
+        weight: 0.7
+      }],
+      threshold: 0.4
+    });
+    _tabs = tabsSearch.search(p.s.search.toLowerCase());
   } catch (e) {
     return tabs;
   }
