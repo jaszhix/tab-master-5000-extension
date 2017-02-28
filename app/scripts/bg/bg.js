@@ -178,6 +178,9 @@ var createScreenshot = (t, refWindow, refTab, run=0)=>{
       sourceImage.src = image;
     });
     resize.then((image)=>{
+      if (typeof t.state.windows[refWindow].tabs[refTab] === 'undefined') {
+        return;
+      }
       var screenshot = {
         url: t.state.windows[refWindow].tabs[refTab].url, 
         data: image, 

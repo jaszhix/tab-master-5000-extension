@@ -922,5 +922,7 @@ var loadPrefs = ()=>{
 };
 
 v(document).ready(()=>{
-  loadPrefs();
+  try {
+    loadPrefs();
+  } catch (e) {}
 });

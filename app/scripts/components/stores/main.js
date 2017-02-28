@@ -544,7 +544,12 @@ export var keyboardStore = Reflux.createStore({
     }
   },
   focusSearchEntry(){
-    _.defer(()=>v('#main > div > div:nth-child(1) > div > div.tm-nav.ntg-form > div > div.col-xs-4 > div > input').n.focus());
+    _.defer(()=>{
+      let node = v('#main > div > div:nth-child(1) > div > div.tm-nav.ntg-form > div > div.col-xs-4 > div > input').n;
+      if (node) {
+        node.focus();
+      }
+    });
   },
   set(s){
     mouseTrap.bind('ctrl+z', ()=>{
