@@ -1,5 +1,10 @@
 #### Release Notes
 
+##### v2.2.0 / *2-28-17*
+
+*   Improved the search functionality with fuzzy searching.
+*   Fixed a few TrackJS errors.
+
 ##### v2.1.3 / *1-19-17*
 
 *   Fixed a bug preventing a new tab from being able to load preferences when Chrome is starting up and restoring a previous session with a new tab open.
