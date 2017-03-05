@@ -98,29 +98,43 @@ var Blacklist = React.createClass({
     this.updateValue();
   },
   blacklistSubmit(){
-    var s = this.state;
-    var list = [];
-    if (s.blacklistValue.includes(',')) {
-      list = s.blacklistValue.split(',');
-    } else {
-      list = [s.blacklistValue];
+    let blacklistStr = this.state.blacklistValue;
+    if (_.trim(blacklistStr) === '') {
+      blacklistStore.set_blacklist([]);
+      this.setState({
+        formatErrorStr: false,
+        blacklistValue: '',
+      });
+      return;
     }
-    var formatError = [];
-    for (let i = 0, len = list.length; i < len; i++) {
-      if (!list[i].includes('.') || list[i] === '.') {
-        formatError.push(list[i]);
+    function quote(str) {
+      // easy way to wrap a string in quotes
+      return JSON.stringify(str);
+    }
+
+    let badDomains = [];
+    let domains = blacklistStr.split('\n').map(function(val, i){
+      let trimmed = _.trim(val);
+      if (blacklistStore.check_is_domain(trimmed)) {
+        return trimmed;
+      } else if (trimmed !== '') {
+        badDomains.push(quote(trimmed));
       }
-    }
-    if (formatError.length === 0 || s.blacklistValue === '') {
-      blacklistStore.set_blacklist(s.blacklistValue);
+    });
+    let formatErrorStr;
+    if (badDomains.length === 1) {
+      formatErrorStr = `${badDomains[0]} ${utils.t('isNotValidDomain')}`;
     } else {
-      if (formatError.length >= 2) {
-        formatError[formatError.length - 1] = `'${utils.t('and')} ${_.last(formatError)} ${utils.t('areNotValidDomains')}`;
-      } else {
-        formatError[formatError.length - 1] = `${_.last(formatError)} ${utils.t('isNotValidDomain')}`;
-      }
-      this.setState({formatError: formatError});
+      let last = badDomains.pop();
+      let first = badDomains.join(', ');
+      formatErrorStr = `
+        ${first} ${utils.t('and')} ${last} ${utils.t('areNotValidDomains')}
+      `;
     }
+    this.setState({
+      formatErrorStr: formatErrorStr,
+      blacklistValue: domains.join('\n'),
+    });
   },
   render: function() {
     var s = this.state;
@@ -128,7 +142,7 @@ var Blacklist = React.createClass({
     var lightTextColorArg = tc(p.theme.settingsBg).isLight() && tc(p.theme.textFieldsPlaceholder).isLight();
     return (
       <Col size="12" style={{marginTop: '3px'}}>
-          {s.formatError ? <span style={{width: '350px', color: 'A94442'}}>{s.formatError.join(', ')}</span> : null}
+          {s.formatErrorStr ? <span style={{width: '350px', color: 'A94442'}}>{s.formatErrorStr}</span> : null}
           <textarea 
           value={s.blacklistValue} 
           onChange={this.setBlacklist} 

@@ -8,6 +8,8 @@ import sessionsStore from './sessions';
 import state from './state';
 import * as utils from './tileUtils';
 
+const DOMAIN_REGEX = /^(?!:\/\/)([a-zA-Z0-9]+\.)?[a-zA-Z0-9][a-zA-Z0-9-]+\.[a-zA-Z]{2,6}?$/i;
+
 // Chrome event listeners set to trigger re-renders.
 export var msgStore = Reflux.createStore({
   init(){
@@ -242,32 +244,35 @@ export var blacklistStore = Reflux.createStore({
       this.trigger(this.blacklist);
     }).catch(()=>{
       console.log('init blacklist');
-      this.blacklist = [];
-      chrome.storage.sync.set({blacklist: this.blacklist}, (result)=> {
-        console.log('Init blacklist saved: ',result);
-      });
-      this.trigger(this.blacklist);
+      // on init, don't call state.set({reQuery...}) ?
+      this.set_blacklist([], false);
     });
   },
-  set_blacklist: function(value) {
-    var valueArr = [];
-    if (value.length > 1) {
-      valueArr = value.split(',');
-    } else {
-      valueArr = [value];
-    }
-    for (let i = 0, len = valueArr.length; i < len; i++) {
-      valueArr[i] = _.trim(valueArr[i]);
-      this.blacklist.push(valueArr[i]);
-    }
-    console.log('blacklist: ', value);
-    valueArr = _.uniq(valueArr);
-    this.blacklist = valueArr;
-    chrome.storage.sync.set({blacklist: valueArr}, (result)=> {
+  check_is_domain: function (value) {
+    return _.isString(value) && value.match(DOMAIN_REGEX);
+  },
+  set_blacklist: function(domainsArr, requery=true) {
+    domainsArr.forEach((domain) => {
+      // shouldnt even get here. but just making sure
+      // input is valid
+      if (!this.check_is_domain(domain)) {
+        throw new Error(`Invalid domain: ${domain}`);
+      }
+    });
+    this.blacklist = _.uniq(domainsArr);
+    console.log('blacklist: ', this.blacklist);
+    chrome.storage.sync.set({blacklist: this.blacklist}, (result)=> {
       this.trigger(this.blacklist);
-      console.log('Blacklist saved: ',result);
-      state.set({reQuery: {state: true, type: 'create'}});
-    }); 
+      console.log('Blacklist saved: ', result);
+      if (requery) {
+        state.set({
+          reQuery: {
+            state: true,
+            type: 'create'
+          }
+        });
+      }
+    });
   },
   get_blacklist: function() {
     return this.blacklist;
