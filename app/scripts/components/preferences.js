@@ -77,25 +77,24 @@ var Blacklist = React.createClass({
     return {
       blacklistValue: '',
       blacklist: blacklistStore.get_blacklist(),
+      blacklistNeedsSave: false,
       formatError: null
     };
   },
   componentDidMount(){
-    this.listenTo(blacklistStore, this.blacklistChange);
-    this.updateValue();
+    this.replaceState({
+      blacklistValue: blacklistStore.get_blacklist().join(' \n') + ' ',
+    });
   },
-  updateValue(){
-    this.replaceState({blacklistValue: blacklistStore.get_blacklist()});
-  },
-  setBlacklist(e){
-    this.setState({blacklistValue: e.target.value});
-  },
-  blacklistChange(e){
-    if (this.state.formatError) {
-      this.setState({formatError: false});
+  blacklistFieldChange (e) {
+    let blacklistNeedsSave = this.state.blacklistNeedsSave;
+    if (!blacklistNeedsSave && e.target.value != this.state.blacklistValue) {
+      blacklistNeedsSave = true;
     }
-    this.setState({blacklist: e});
-    this.updateValue();
+    this.setState({
+      blacklistNeedsSave: blacklistNeedsSave,
+      blacklistValue: e.target.value,
+    });
   },
   blacklistSubmit(){
     let blacklistStr = this.state.blacklistValue || '';
@@ -112,34 +111,39 @@ var Blacklist = React.createClass({
       return JSON.stringify(str);
     }
 
-    let badDomains = [];
-    let domains;
-
-    if (_.isString(blacklistStr)) {
-      blacklistStr = blacklistStr.split(',').join('\n').split(/\n/g);
-    }
-    blacklistStr.map(function(val, i){
+    let domains = blacklistStr.split(/[\s,]/).reduce(function(_d, val, i){
+      // pass the 2nd argument of arr.reduce(...) as the argument _d
       let trimmed = _.trim(val);
       if (blacklistStore.check_is_domain(trimmed)) {
-        return trimmed;
+        _d.valid.push(trimmed);
       } else if (trimmed !== '') {
-        badDomains.push(quote(trimmed));
+        _d.invalid.push(quote(trimmed));
       }
+      // return the first arg
+      return _d;
+    }, {
+      valid: [],
+      invalid: [],
     });
+    domains.valid = _.uniq(domains.valid);
+    domains.invalid = _.uniq(domains.invalid);
+
     let formatErrorStr;
-    if (badDomains.length === 1) {
-      formatErrorStr = `${badDomains[0]} ${utils.t('isNotValidDomain')}`;
-    } else {
-      let last = badDomains.pop();
-      let first = badDomains.join(', ');
+    if (domains.invalid.length === 1) {
+      formatErrorStr = `${domains.invalid[0]} ${utils.t('isNotValidDomain')}`;
+    } else if (domains.invalid.length > 1) {
+      let last = domains.invalid.pop();
+      let first = domains.invalid.join(', ');
       formatErrorStr = `
         ${first} ${utils.t('and')} ${last} ${utils.t('areNotValidDomains')}
       `;
     }
     this.setState({
       formatErrorStr: formatErrorStr,
-      blacklistValue: _.isString(domains) ? domains.join('\n') : domains,
+      blacklistValue: domains.valid.join(' \n') + ' ',
+      blacklistNeedsSave: false,
     });
+    blacklistStore.set_blacklist(domains.valid);
   },
   render: function() {
     var s = this.state;
@@ -147,10 +151,17 @@ var Blacklist = React.createClass({
     var lightTextColorArg = tc(p.theme.settingsBg).isLight() && tc(p.theme.textFieldsPlaceholder).isLight();
     return (
       <Col size="12" style={{marginTop: '3px'}}>
+          <Btn style={{position: 'absolute', top: '-2.5em', right: 0}}
+          onClick={this.blacklistSubmit}
+          disabled={!s.blacklistNeedsSave}
+          className="ntg-setting-btn"
+          icon="floppy-disk">
+            {utils.t('save')}
+          </Btn>
           {s.formatErrorStr ? <span style={{width: '350px', color: 'A94442'}}>{s.formatErrorStr}</span> : null}
           <textarea 
           value={s.blacklistValue} 
-          onChange={this.setBlacklist} 
+          onChange={this.blacklistFieldChange}
           style={{
             backgroundColor: lightTextColorArg ? p.theme.darkBtnBg : p.theme.lightBtnBg, 
             color: lightTextColorArg ? p.theme.darkBtnText : p.theme.lightBtnText, 
@@ -162,7 +173,6 @@ var Blacklist = React.createClass({
           id="input" 
           className="form-control blacklist session-field" 
           rows="3" />
-          <Btn style={{marginTop: '7px'}} onClick={this.blacklistSubmit} className="ntg-setting-btn" icon="floppy-disk">{utils.t('save')}</Btn>
       </Col>
     );
   }
