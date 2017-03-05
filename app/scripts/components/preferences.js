@@ -98,7 +98,7 @@ var Blacklist = React.createClass({
     this.updateValue();
   },
   blacklistSubmit(){
-    let blacklistStr = this.state.blacklistValue;
+    let blacklistStr = this.state.blacklistValue || '';
     if (_.trim(blacklistStr) === '') {
       blacklistStore.set_blacklist([]);
       this.setState({
@@ -113,7 +113,12 @@ var Blacklist = React.createClass({
     }
 
     let badDomains = [];
-    let domains = blacklistStr.split('\n').map(function(val, i){
+    let domains;
+
+    if (_.isString(blacklistStr)) {
+      blacklistStr = blacklistStr.split(',').join('\n').split(/\n/g);
+    }
+    blacklistStr.map(function(val, i){
       let trimmed = _.trim(val);
       if (blacklistStore.check_is_domain(trimmed)) {
         return trimmed;
@@ -133,7 +138,7 @@ var Blacklist = React.createClass({
     }
     this.setState({
       formatErrorStr: formatErrorStr,
-      blacklistValue: domains.join('\n'),
+      blacklistValue: _.isString(domains) ? domains.join('\n') : domains,
     });
   },
   render: function() {
