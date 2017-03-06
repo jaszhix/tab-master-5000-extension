@@ -386,10 +386,10 @@
     "message": "Enable website blacklist"
   },
   "blacklistTip": {
-    "message": "Enter a comma separated list of domains, and they will be automatically closed under any circumstance. This is useful for blocking websites which may inhibit productivity, or you simply don't like."
+    "message": "Enter a space separated list of domains, and they will be automatically closed under any circumstance. This is useful for blocking websites which may inhibit productivity, or you simply don't like."
   },
   "blacklistPlaceholder": {
-    "message": "Enter a comma separated list of domains..."
+    "message": "Enter a space separated list of domains..."
   },
   "ctrlZ": {
     "message": "Undo (Requires tab actions)"
