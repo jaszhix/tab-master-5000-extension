@@ -1,5 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import autoBind from 'react-autobind';
+import reactMixin from 'react-mixin';
 import Reflux from 'reflux';
 import moment from 'moment';
 import _ from 'lodash';
@@ -21,25 +23,23 @@ import About from './about';
 import {Btn, Col, Row, Container} from './bootstrap';
 import style from './style';
 
-var ColorPickerContainer = React.createClass({
-  getDefaultProps(){
-    return {
-      color: '#FFFFFF'
-    };
-  },
-  getInitialState(){
-    return {
+class ColorPickerContainer extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
       alpha: 1,
       color: null,
       hover: null
-    };
-  },
+    }
+    autoBind(this);
+  }
   componentDidMount(){
     this.convertColor(this.props.color);
-  },
+  }
   componentWillReceiveProps(nP){
     this.convertColor(nP.color);
-  },
+  }
   handleColorChange(color){
     var rgb = tc(color.color).setAlpha(color.alpha / 100).toRgbString();
     var p = this.props;
@@ -47,7 +47,7 @@ var ColorPickerContainer = React.createClass({
     theme[p.themeKey] = rgb;
     themeStore.set(theme);
     p.onChange();
-  },
+  }
   convertColor(color){
     if (color.indexOf('#') !== -1) {
       this.setState({color: color});
@@ -62,8 +62,8 @@ var ColorPickerContainer = React.createClass({
         color: tc({r: r, g: g, b: b}).toHexString()
       });
     }
-  },
-  render:function(){
+  }
+  render(){
     var s = this.state;
     var p = this.props;
     return (
@@ -89,11 +89,17 @@ var ColorPickerContainer = React.createClass({
       </Row>
     );
   }
-});
+}
 
-var Theming = React.createClass({
-  getInitialState(){
-    return {
+ColorPickerContainer.defaultProps = {
+  color: '#FFFFFF'
+};
+
+class Theming extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
       savedThemes: this.props.savedThemes,
       selectedTheme: null,
       themeHover: null,
@@ -106,8 +112,9 @@ var Theming = React.createClass({
       selectedWallpaper: null,
       boldUpdate: false,
       colorGroup: 'general'
-    };
-  },
+    }
+    autoBind(this);
+  }
   componentDidMount(){
     var p = this.props;
     var refTheme;
@@ -127,13 +134,13 @@ var Theming = React.createClass({
       showCustomButtons: showCustomButtons
     });
     this.handleFooterButtons(this.props);
-  },
+  }
   componentDidUpdate(pP, pS){
     ReactTooltip.rebuild();
     if (!_.isEqual(this.state, pS)) {
       this.handleFooterButtons(this.props);
     }
-  },
+  }
   componentWillReceiveProps(nP){
     var p = this.props;
     var refTheme;
@@ -159,10 +166,10 @@ var Theming = React.createClass({
     if (!_.isEqual(nP.wallpaper, p.wallpaper)) {
       this.handleFooterButtons(nP);
     }
-  },
+  }
   triggerRefClick(ref){
     this.refs[ref].click();
-  },
+  }
   handleFooterButtons(p){
     var s = this.state;
     p.modal.footer = (
@@ -188,7 +195,7 @@ var Theming = React.createClass({
       </div>
     );
     state.set({modal: p.modal});
-  },
+  }
   handleSelectTheme(theme){
     console.log('handleSelectTheme: ', theme);
     this.setState({
@@ -196,42 +203,42 @@ var Theming = React.createClass({
       isNewTheme: theme.id < 9000 ? false : true
     });
     themeStore.selectTheme(theme.id, this.props.prefs);
-  },
+  }
   handleNewTheme(){
     this.setState({
       isNewTheme: true
     });
     themeStore.newTheme();
-  },
+  }
   handleSaveTheme(){
     this.setState({
       isNewTheme: false,
       rightTab: 'color'
     });
     themeStore.save();
-  },
+  }
   handleUpdateTheme(){
     themeStore.update(this.state.selectedTheme.id);
     this.setState({
       boldUpdate: false
     });
-  },
+  }
   handleRemoveTheme(id){
     ReactTooltip.hide();
     themeStore.remove(id);
-  },
+  }
   handleEnter(e, id){
     if (e.keyCode === 13) {
       this.handleLabel(id);
     }
-  },
+  }
   handleLabel(id){
     ReactTooltip.hide();
     var s = this.state;
     this.setState({themeLabel: -1});
     themeStore.label(id, s.themeLabelValue);
-  },
-  render: function(){
+  }
+  render(){
     var p = this.props;
     var s = this.state;
     var themeFields = _.filter(themeStore.getThemeFields(), {group: s.colorGroup});
@@ -415,11 +422,13 @@ var Theming = React.createClass({
       </div>
     );
   }
-});
+}
 
-var Sessions = React.createClass({
-  getInitialState(){
-    return {
+class Sessions extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
       sessionHover: null,
       selectedSessionTabHover: null,
       windowHover: -1,
@@ -432,16 +441,9 @@ var Sessions = React.createClass({
       search: '',
       selectedCurrentSessionWindow: -1,
       selectedSavedSessionWindow: -1
-    };
-  },
-  propTypes: {
-    collapse: React.PropTypes.bool
-  },
-  getDefaultProps(){
-    return {
-      collapse: true
-    };
-  },
+    }
+    autoBind(this);
+  }
   componentDidMount(){
     var p = this.props;
     var s = this.state;
@@ -454,10 +456,10 @@ var Sessions = React.createClass({
     );
     state.set({modal: p.modal});
     this.handleSessionsState(p);
-  },
+  }
   componentDidUpdate(){
     ReactTooltip.rebuild();
-  },
+  }
   handleSessionsState(p){
     _.each(p.sessions, (session, sKey)=>{
       _.each(session.tabs, (Window, wKey)=>{
@@ -477,15 +479,15 @@ var Sessions = React.createClass({
       });
     });
     state.set({sessions: p.sessions});
-  },
+  }
   componentWillReceiveProps(nP){
     if (!_.isEqual(nP.favicons, this.props.favicons)) {
       this.handleSessionsState(nP);
     }
-  },
+  }
   componentWillUnmount(){
     faviconStore.clean();
-  },
+  }
   labelSession(session){
     session.label = this.state.sessionLabelValue;
     sessionsStore.v2Update(this.props.sessions, session);
@@ -494,26 +496,26 @@ var Sessions = React.createClass({
       labelSession: '',
       sessionLabelValue: ''
     });
-  },
+  }
   setLabel(e){
     this.setState({sessionLabelValue: e.target.value});
-  },
+  }
   triggerInput(){
     // Remotely trigger file input button with our own prettier button.
     ReactDOM.findDOMNode(this.refs.fileInput).click();
-  },
+  }
   handleSessionHoverIn(i){
     this.setState({sessionHover: i});
-  },
+  }
   handleSessionHoverOut(i){
     this.setState({sessionHover: i});
-  },
+  }
   handleSelectedSessionTabHoverIn(i){
     this.setState({selectedSessionTabHover: i});
-  },
+  }
   handleSelectedSessionTabHoverOut(i){
     this.setState({selectedSessionTabHover: i});
-  },
+  }
   expandSelectedSession(i, e){
     var s = this.state;
     if (s.labelSession) {
@@ -525,21 +527,21 @@ var Sessions = React.createClass({
         this.setState({expandedSession: i});
       }
     }
-  },
+  }
   handleCurrentSessionCloseTab(id, refWindow, refTab){
     chrome.tabs.remove(id);
     _.pullAt(this.props.allTabs[refWindow], refTab);
     state.set({allTabs: this.props.allTabs});
     ReactTooltip.hide();
-  },
+  }
   handleCurrentSessionCloseWindow(id, refWindow){
     chrome.windows.remove(id);
     msgStore.removeSingleWindow(id);
     _.pullAt(this.props.allTabs, refWindow);
     state.set({allTabs: this.props.allTabs});
     ReactTooltip.hide();
-  },
-  render: function() {
+  }
+  render() {
     var p = this.props;
     var s = this.state;
     return (
@@ -762,28 +764,29 @@ var Sessions = React.createClass({
       </div>
     );
   }
-});
+}
 
-var Settings = React.createClass({
-  mixins: [Reflux.ListenerMixin],
-  propTypes: {
-    collapse: React.PropTypes.bool
-  },
-  getDefaultProps(){
-    return {
-      collapse: true
-    };
-  },
+Sessions.propTypes = {
+  collapse: React.PropTypes.bool
+};
+Sessions.defaultProps = {
+  collapse: true
+};
+
+export class Settings extends React.Component {
+  constructor(props) {
+    super(props);
+    autoBind(this);
+  }
   componentDidMount(){
     this.listenTo(msgStore, this.prefsChange);
     state.set({sidebar: false});
-  },
+  }
   handleTabClick(opt){
     state.set({settings: opt});
-  },
-  render: function() {
+  }
+  render() {
     var p = this.props;
-    var s = this.state;
     return (
       <Container fluid={true}>
         <Row className="ntg-settings-pane">
@@ -822,6 +825,14 @@ var Settings = React.createClass({
       </Container>
     );
   }
-});
+}
+
+Settings.propTypes = {
+  collapse: React.PropTypes.bool
+};
+Settings.defaultProps = {
+  collapse: true
+};
+reactMixin(Settings.prototype, Reflux.ListenerMixin);
 
 export default Settings;

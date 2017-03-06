@@ -1,4 +1,6 @@
 import React from 'react';
+import autoBind from 'react-autobind';
+import reactMixin from 'react-mixin';
 import Reflux from 'reflux';
 import _ from 'lodash';
 import tc from 'tinycolor2';
@@ -13,24 +15,19 @@ import * as utils from './stores/tileUtils';
 import {ModalOverlay, Tabs} from './bootstrap';
 
 var mount = false;
-var ModalHandler = React.createClass({
-  mixins: [Reflux.ListenerMixin],
-  getInitialState(){
-    return {
+
+class ModalHandler extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
       modal: this.props.modal
-    };
-  },
-  propTypes: {
-    collapse: React.PropTypes.bool
-  },
-  getDefaultProps(){
-    return {
-      collapse: true
-    };
-  },
+    }
+    autoBind(this);
+  }
   componentDidMount(){
     mount = true;
-  },
+  }
   componentWillReceiveProps(nP){
     if (!_.isEqual(nP.modal, this.props.modal) && mount || nP.settings !== this.props.settings) {
       this.setState({modal: nP.modal});
@@ -41,15 +38,15 @@ var ModalHandler = React.createClass({
           });
         }
     }
-  },
+  }
   componentWillUnmount(){
     mount = false;
-  },
+  }
   handleClose(){
     msgStore.queryTabs();
     state.set({modal: {state: false}});
-  },
-  render: function() {
+  }
+  render() {
     var s = this.state;
     var p = this.props;
     var tabOptions = [
@@ -130,9 +127,16 @@ var ModalHandler = React.createClass({
       );
     } else {
       return null;
-    }
-    
+    } 
   }
-});
+}
+
+ModalHandler.propTypes = {
+  collapse: React.PropTypes.bool
+};
+ModalHandler.defaultProps = {
+  collapse: true
+};
+reactMixin(ModalHandler.prototype, Reflux.ListenerMixin);
 
 export default ModalHandler;

@@ -1,4 +1,6 @@
 import React from 'react';
+import autoBind from 'react-autobind';
+import reactMixin from 'react-mixin';
 import Reflux from 'reflux';
 import _ from 'lodash';
 import tc from 'tinycolor2';
@@ -13,13 +15,15 @@ import screenshotStore from './stores/screenshot';
 
 import {Btn, Col, Row} from './bootstrap';
 
-var Slide = React.createClass({
-  getInitialState(){
-    return {
+class Slide extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
       hover: false
-    };
-  },
-  render: function() {
+    }
+  }
+  render() {
     var p = this.props;
     var s = this.state;
     return (
@@ -31,18 +35,20 @@ var Slide = React.createClass({
       </div>
     );
   }
-});
+}
 
-var Toggle = React.createClass({
-  getInitialState(){
-    return {
+class Toggle extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
       hover: false
-    };
-  },
+    }
+  }
   componentDidMount(){
     ReactTooltip.rebuild();
-  },
-  render: function() {
+  }
+  render() {
     var p = this.props;
     var s = this.state;
     return (
@@ -69,33 +75,35 @@ var Toggle = React.createClass({
       </Row>
     );
   }
-});
+}
 
-var Blacklist = React.createClass({
-  mixins: [Reflux.ListenerMixin],
-  getInitialState(){
-    return {
+class Blacklist extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
       blacklistValue: '',
       blacklist: blacklistStore.get_blacklist(),
       blacklistNeedsSave: false,
       formatError: null
-    };
-  },
+    }
+    autoBind(this);
+  }
   componentDidMount(){
-    this.replaceState({
+    this.setState({
       blacklistValue: blacklistStore.get_blacklist().join(' \n') + ' ',
     });
-  },
+  }
   blacklistFieldChange (e) {
     let blacklistNeedsSave = this.state.blacklistNeedsSave;
-    if (!blacklistNeedsSave && e.target.value != this.state.blacklistValue) {
+    if (!blacklistNeedsSave && e.target.value !== this.state.blacklistValue) {
       blacklistNeedsSave = true;
     }
     this.setState({
       blacklistNeedsSave: blacklistNeedsSave,
       blacklistValue: e.target.value,
     });
-  },
+  }
   blacklistSubmit(){
     let blacklistStr = this.state.blacklistValue || '';
     if (_.trim(blacklistStr) === '') {
@@ -144,8 +152,8 @@ var Blacklist = React.createClass({
       blacklistNeedsSave: false,
     });
     blacklistStore.set_blacklist(domains.valid);
-  },
-  render: function() {
+  }
+  render() {
     var s = this.state;
     var p = this.props;
     var lightTextColorArg = tc(p.theme.settingsBg).isLight() && tc(p.theme.textFieldsPlaceholder).isLight();
@@ -176,16 +184,20 @@ var Blacklist = React.createClass({
       </Col>
     );
   }
-});
+}
 
-var Preferences = React.createClass({
-  mixins: [Reflux.ListenerMixin],
-  getInitialState(){
-    return {
+reactMixin(Blacklist.prototype, Reflux.ListenerMixin);
+
+class Preferences extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
       hover: null,
       bytesInUse: null
-    };
-  },
+    }
+    autoBind(this);
+  }
   componentDidMount(){
     this.listenTo(screenshotStore, this.getBytesInUse);
     this.getBytesInUse();
@@ -200,17 +212,17 @@ var Preferences = React.createClass({
       );
       state.set({modal: p.modal});
     }
-  },
+  }
   getBytesInUse(){
     if (this.props.prefs.screenshot) {
       utilityStore.get_bytesInUse('screenshots').then((bytes)=>{
         this.setState({bytesInUse: bytes});
       });
     }
-  },
+  }
   handleToggle(opt){
     this.setState({hover: opt});
-  },
+  }
   handleClick(opt){
     var p = this.props;
     var obj = {};
@@ -223,31 +235,31 @@ var Preferences = React.createClass({
     } else if (opt === 'screenshot') {
       _.delay(()=>chrome.runtime.reload(), 500);
     }
-  },
+  }
   handleSlide(e, opt){
     var obj = {};
     obj[opt] = e;
     state.set({prefs: obj});
-  },
+  }
   handleSlideAfterChange(e, opt){
     var obj = {};
     obj[opt] = e;
     msgStore.setPrefs(obj);
-  },
+  }
   handleAutoDiscardTime(e){
     var discardTime = parseInt(e.target.value.split(' ')[0]);
     var isMinute = e.target.value.indexOf('Minute') !== -1;
     var output = isMinute && discardTime === 30 ? 0.5 : isMinute && discardTime === 15 ? 0.25 : discardTime; 
     msgStore.setPrefs({autoDiscardTime: output * 3600000});
-  },
+  }
   handleScreenshotClear(){
     screenshotStore.clear();
     this.setState({bytesInUse: 0}, ()=>{
       state.set({screenshotClear: true});
       _.delay(()=>state.set({screenshotClear: null}), 500);
     });
-  },
-  render: function() {
+  }
+  render() {
     var s = this.state;
     var p = this.props;
     var autoDiscardTimeOptions = [15, 30, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24];
@@ -478,6 +490,8 @@ var Preferences = React.createClass({
       </div>
     );
   }
-});
+}
+
+reactMixin(Preferences.prototype, Reflux.ListenerMixin);
 
 export default Preferences;

@@ -1,4 +1,5 @@
 import React from 'react';
+import autoBind from 'react-autobind';
 import _ from 'lodash';
 import v from 'vquery';
 import mouseTrap from 'mousetrap';
@@ -9,7 +10,10 @@ import tabStore from './stores/tab';
 import themeStore from './stores/theme';
 import * as utils from './stores/tileUtils';
 
-var Row = React.createClass({
+class Row extends React.Component {
+  constructor(props) {
+    super(props);
+  }
   render(){
     var p = this.props;
     var textOverflow = {
@@ -68,11 +72,13 @@ var Row = React.createClass({
       </tr>
     );
   }
-});
+}
 
-export var Table = React.createClass({
-  getInitialState(){
-    return {
+export class Table extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
       columns: null,
       rows: null,
       order: 'index',
@@ -81,15 +87,16 @@ export var Table = React.createClass({
       muteInit: true,
       selectedItems: [],
       shiftRange: null
-    };
-  },
+    }
+    autoBind(this);
+  }
   componentDidMount(){
     var p = this.props;
     this.buildTable(p);
     mouseTrap.bind('del', ()=>{
       this.removeSelectedItems();
     });
-  },
+  }
   componentWillReceiveProps(nP){
     var p = this.props;
     if (!_.isEqual(nP.s[p.s.modeKey], p.s[p.s.modeKey])) {
@@ -98,7 +105,7 @@ export var Table = React.createClass({
     if (nP.s.sort !== this.props.s.sort) {
       this.setState({order: nP.s.sort, direction:  nP.s.direction});
     }
-  },
+  }
   buildTable(p){
     var s = this.state;
     var rows = [];
@@ -126,7 +133,7 @@ export var Table = React.createClass({
     }
     _.assignIn(s, {columns: columns, rows: _.orderBy(rows, [s.order], [s.direction])});
     console.log('buildTable: ', s);
-  },
+  }
   handleColumnClick(column){
     var s = this.state;
     var order = column;
@@ -136,7 +143,7 @@ export var Table = React.createClass({
       direction: direction,
       rows: _.orderBy(s.rows, [order], [direction])
     });
-  },
+  }
   handleTitleClick(row){
     var p = this.props;
     
@@ -161,7 +168,7 @@ export var Table = React.createClass({
         chrome.tabs.create({url: row.url});
       }
     }
-  },
+  }
   handleBooleanClick(column, row){
     var p = this.props;
     var s = this.state;
@@ -186,16 +193,16 @@ export var Table = React.createClass({
         state.set({reQuery: {state: true, type: 'update'}});
       });
     }
-  },
-  dragStart: function(e, i) {
+  }
+  dragStart(e, i) {
     this.dragged = {el: e.currentTarget, i: i};
     e.dataTransfer.effectAllowed = 'move';
     this.placeholder = v(this.dragged.el).clone().n;
     v(this.placeholder).allChildren().removeAttr('data-reactid');
     this.placeholder.removeAttribute('id');
     this.placeholder.classList.add('tileClone');
-  },
-  dragEnd: function(e) {
+  }
+  dragEnd(e) {
     var s = this.state;
     var start = this.dragged.i;
     if (this.over === undefined) {
@@ -216,8 +223,8 @@ export var Table = React.createClass({
         this.dragged.el.parentNode.removeChild(this.placeholder);
       });
     });
-  },
-  dragOver: function(e, i) {
+  }
+  dragOver(e, i) {
     e.preventDefault();
     var s = this.state;
     if (this.dragged === undefined || e.target === this.placeholder) {
@@ -240,9 +247,8 @@ export var Table = React.createClass({
       try {
         parent.parentNode.insertBefore(this.placeholder, e.target.parentNode);
       } catch (e) {}
-    }
-    
-  },
+    } 
+  }
   handleSelect(i){
     var s = this.state;
     var p = this.props;
@@ -289,7 +295,7 @@ export var Table = React.createClass({
       s.shiftRange = null;
     }
     this.setState({selectedItems: s.selectedItems, shiftRange: s.shiftRange});
-  },
+  }
   removeSelectedItems(){
     var s = this.state;
     var p = this.props;
@@ -301,7 +307,7 @@ export var Table = React.createClass({
       _.pullAt(s.rows, s.selectedItems[i]);
     }
     this.setState({rows: s.rows, selectedItems: [], shiftRange: null});
-  },
+  }
   handleContext(e, row){
     var s = this.state;
     var p = this.props;
@@ -317,7 +323,7 @@ export var Table = React.createClass({
         state.set({context: {value: true, id: row}});
       }
     }
-  },
+  }
   render(){
     var s = this.state;
     var p = this.props;
@@ -375,4 +381,4 @@ export var Table = React.createClass({
       return null;
     }
   }
-});
+}

@@ -1,4 +1,5 @@
 import React from 'react';
+import autoBind from 'react-autobind';
 import _ from 'lodash';
 
 import ReactTooltip from 'react-tooltip';
@@ -10,7 +11,10 @@ import * as utils from './stores/tileUtils';
 
 import {Btn} from './bootstrap';
 
-var LargeBtn = React.createClass({
+class LargeBtn extends React.Component {
+  constructor(props) {
+    super(props);
+  }
   render(){
     var p = this.props;
     return (
@@ -26,24 +30,27 @@ var LargeBtn = React.createClass({
       </button>
     );
   }
-});
+}
 
-export var SidebarMenu = React.createClass({
-  getInitialState(){
-    return {
+export class SidebarMenu extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
       sidebarTab: 'Navigation',
       lgBtnHover: '',
       viewMode: true,
       sortBy: true
-    };
-  },
+    }
+    autoBind(this);
+  }
   handleFormat(){
     var p = this.props;
     var prefsUpdate = {format: p.prefs.format === 'tile' ? 'table' : 'tile'};
     state.set({prefs: _.assignIn(p.prefs, prefsUpdate)});
     _.defer(()=>msgStore.setPrefs(prefsUpdate));
     ReactTooltip.hide();
-  },
+  }
   render(){
     var p = this.props;
     var s = this.state;
@@ -209,4 +216,4 @@ export var SidebarMenu = React.createClass({
       </div>
     ); 
   }
-});
+}

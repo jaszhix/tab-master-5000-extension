@@ -1,6 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Reflux from 'reflux';
+import autoBind from 'react-autobind';
+import reactMixin from 'react-mixin';
 import _ from 'lodash';
 import v from 'vquery';
 import moment from 'moment';
@@ -17,11 +19,11 @@ import {Btn, Col, Row, Panel} from './bootstrap';
 import style from './style';
 import * as utils from './stores/tileUtils';
 
-var Tile = React.createClass({
-  mixins: [Reflux.ListenerMixin],
-  getInitialState() {
-    var p = this.props;
-    return {
+class Tile extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
       hover: false,
       xHover: false,
       pHover: false,
@@ -35,14 +37,15 @@ var Tile = React.createClass({
       drag: null,
       screenshot: null,
       openTab: false,
-      tab: p.tab,
-      i: p.i,
+      tab: this.props.tab,
+      i: this.props.i,
       muteInit: true
-    };
-  },
+    }
+    autoBind(this);
+  }
   componentDidMount() {
     this.initMethods();
-  },
+  }
   componentWillReceiveProps(nP){
     var p = this.props;
     if (nP.prefs.mode === 'tabs') {
@@ -68,14 +71,14 @@ var Tile = React.createClass({
       }
       this.setState({close: false, render: true, duplicate: false});
     }
-  },
+  }
   initMethods(){
     var p = this.props;
     this.updateScreenshot('init', p);
     if (p.prefs.mode === 'tabs') {
       utils.checkDuplicateTabs(this, p, '');
     }
-  },
+  }
   updateScreenshot(opt, p){
     var setScreeenshot = ()=>{
       if (p.prefs.screenshot) {
@@ -92,11 +95,11 @@ var Tile = React.createClass({
         setScreeenshot();
       }
     }
-  },
+  }
   filterFolders(folderName){
     var p = this.props;
     state.set({folder: p.folder ? false : folderName});
-  },
+  }
   handleClick(id, e) {
     var s = this.state;
     var p = this.props;
@@ -136,7 +139,7 @@ var Tile = React.createClass({
       }
     }
     this.setState({render: true});
-  },
+  }
   // Trigger hovers states that will update the inline CSS in style.js.
   handleHoverIn(e) {
     var s = this.state;
@@ -152,28 +155,28 @@ var Tile = React.createClass({
         document.getElementById('bgImg').style.backgroundImage = '';
       }
     }
-  },
+  }
   handleHoverOut(e) {
     this.setState({hover: false});
-  },
+  }
   handleTabCloseHoverIn(e) {
     this.setState({xHover: true});
-  },
+  }
   handleTabCloseHoverOut(e) {
     this.setState({xHover: false});
-  },
+  }
   handlePinHoverIn() {
     this.setState({pHover: true});
-  },
+  }
   handlePinHoverOut() {
     this.setState({pHover: false});
-  },
+  }
   handleTabMuteHoverIn(){
     this.setState({mHover: true});
-  },
+  }
   handleTabMuteHoverOut(){
     this.setState({mHover: false});
-  },
+  }
   applyTabOrder() {
     // Apply the sorted tab grid state to the Chrome window.
     var s = this.state;
@@ -190,14 +193,14 @@ var Tile = React.createClass({
         });
       }
     }
-  },
+  }
   handleContextClick(e){
     if (this.props.prefs.context) {
       e.preventDefault();
       state.set({context: {value: true, id: this.props.tab}});
     }
-  },
-  render: function() {
+  }
+  render() {
     var s = this.state;
     var p = this.props;
     style.ssIconBg = _.cloneDeep(_.merge(style.ssIconBg, {
@@ -485,14 +488,21 @@ var Tile = React.createClass({
       </Panel>
     );
   }
-});
+}
+
+reactMixin(Tile.prototype, Reflux.ListenerMixin);
+
 import {SidebarMenu} from './sidebar';
-var Sidebar = onClickOutside(React.createClass({
-  getInitialState(){
-    return {
+
+class Sidebar extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
       enabled: false
-    };
-  },
+    }
+    autoBind(this);
+  }
   componentWillReceiveProps(nP){
     ReactTooltip.rebuild();
     if (!_.isEqual(nP.enabled, this.props.enabled)) {
@@ -506,16 +516,16 @@ var Sidebar = onClickOutside(React.createClass({
         }
       });
     }
-  },
+  }
   handleClickOutside(){
     if (!this.props.disableSidebarClickOutside && this.props.enabled) {
       state.set({sidebar: false});
     }
-  },
+  }
   handleSort(){
     msgStore.setPrefs({sort: !this.props.prefs.sort});
-  },
-  render: function() {
+  }
+  render() {
     var p = this.props;
     var s = this.state;
     const sideStyle = {
@@ -545,28 +555,23 @@ var Sidebar = onClickOutside(React.createClass({
       </div>
     );
   }
-}));
+}
 
-// TileGrid is modified from react-sort-table for this extension - https://github.com/happy-charlie-777/react-sort-table 
-var TileGrid = React.createClass({
-  mixins: [Reflux.ListenerMixin],
-  propTypes: {
-    data: React.PropTypes.array,
-    keys: React.PropTypes.array,
-    labels: React.PropTypes.object,
-    collapse: React.PropTypes.bool
-  },
-  getDefaultProps: function() {
-    return {
-      tabs: [],
-      keys: [],
-      labels: {},
-      collapse: true
-    };
-  },
+Sidebar = onClickOutside(Sidebar);
+
+class TileGrid extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      theme: null,
+      hover: false
+    }
+    autoBind(this);
+  }
   componentDidMount(){
     this.prefsInit(this.props);
-  },
+  }
   prefsInit(p){
     if (p.s.prefs.screenshotBg || p.s.prefs.screenshot || p.wallpaper && p.wallpaper.data !== -1) {
       v('#main').css({position: 'absolute'});
@@ -587,7 +592,7 @@ var TileGrid = React.createClass({
         opacity: 1
       });
     }
-  },
+  }
   componentWillReceiveProps(nP){
     var p = this.props;
     if (!_.isEqual(nP.prefs, p.prefs) || !_.isEqual(nP.wallpaper, p.wallpaper)) {
@@ -598,8 +603,8 @@ var TileGrid = React.createClass({
       sU[nP.s.modeKey] = utils.sort(nP, nP.data);
       state.set(sU);
     }
-  },
-  dragStart: function(e, i) {
+  }
+  dragStart(e, i) {
     this.dragged = {el: e.currentTarget, i: i};
     e.dataTransfer.effectAllowed = 'move';
     this.placeholder = v(this.dragged.el).clone().empty().n;
@@ -609,8 +614,8 @@ var TileGrid = React.createClass({
     });
     this.placeholder.removeAttribute('id');
     this.placeholder.classList.add('tileClone');
-  },
-  dragEnd: function(e) {
+  }
+  dragEnd(e) {
     var p = this.props;
     var start = this.dragged.i;
     if (this.over === undefined) {
@@ -629,8 +634,8 @@ var TileGrid = React.createClass({
       msgStore.queryTabs();
       _.defer(()=>this.dragged.el.parentNode.removeChild(this.placeholder));
     });
-  },
-  dragOver: function(e, i) {
+  }
+  dragOver(e, i) {
     var p = this.props;
     e.preventDefault();
     if (p.s.tabs[i] === undefined || this.dragged === undefined || p.s.tabs[i].pinned !== p.s.tabs[this.dragged.i].pinned) {
@@ -652,8 +657,8 @@ var TileGrid = React.createClass({
         parent.parentNode.insertBefore(this.placeholder, e.target.parentNode);
       } catch (e) {}
     }
-  },
-  render: function() {
+  }
+  render() {
     var p = this.props;
     var tileLetterTopPos = p.s.prefs.tabSizeHeight >= 175 ? parseInt((p.s.prefs.tabSizeHeight + 80).toString()[0]+(p.s.prefs.tabSizeHeight + 80).toString()[1]) - 10 : p.s.prefs.tabSizeHeight <= 136 ? -5 : p.s.prefs.tabSizeHeight <= 150 ? 0 : p.s.prefs.tabSizeHeight <= 160 ? 5 : 10;
     var data = utils.sort(p, p.data);
@@ -743,7 +748,21 @@ var TileGrid = React.createClass({
       </div>
     );
   }
-});
+}
+
+TileGrid.propTypes = {
+  data: React.PropTypes.array,
+  keys: React.PropTypes.array,
+  labels: React.PropTypes.object,
+  collapse: React.PropTypes.bool
+};
+TileGrid.defaultProps = {
+  tabs: [],
+  keys: [],
+  labels: {},
+  collapse: true
+};
+reactMixin(TileGrid.prototype, Reflux.ListenerMixin);
 
 module.exports = TileGrid;
 

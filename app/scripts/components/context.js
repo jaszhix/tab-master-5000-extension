@@ -1,4 +1,5 @@
 import React from 'react';
+import autoBind from 'react-autobind';
 import _ from 'lodash';
 
 import {Context} from './bootstrap';
@@ -6,26 +7,27 @@ import state from './stores/state';
 import {msgStore} from './stores/main';
 import * as utils from './stores/tileUtils';
 
-var ContextMenu = React.createClass({
-  getInitialState(){
-    var p = this.props;
-    return {
-      actions: p.actions,
-      cursor: p.cursor,
+class ContextMenu extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      actions: this.props.actions,
+      cursor: this.props.cursor,
       inViewport: true
-    };
-  },
+    }
+    autoBind(this);
+  }
   componentDidMount(){
     this.handleOptions(this.props);
     _.defer(()=>{
-      console.log('context visible? ',v('#main > div > div > div.ntg-context').inViewport());
       var positionedDiv = v('#main > div > div > div.ntg-context > div');
       var divTop = positionedDiv.css().top.split('px')[0];
       if (!positionedDiv.inViewport()) {
         positionedDiv.css({top: `${divTop - 100}px`});
       }
     });
-  },
+  }
   componentWillReceiveProps(nextProps){
     var p = this.props;
     if (!_.isEqual(nextProps.actions, p.actions)) {
@@ -34,7 +36,7 @@ var ContextMenu = React.createClass({
     if (!_.isEqual(nextProps.context, p.context)) {
       this.handleOptions(nextProps);
     }
-  },
+  }
   handleClickOutside(e){
     var p = this.props;
     p.context.value = false;
@@ -46,7 +48,7 @@ var ContextMenu = React.createClass({
     if (p.context.hasOwnProperty('origin')) {
       _.defer(()=>p.context.origin.setState({selectedItems: []}));
     }
-  },
+  }
   handleOptions(p){
     var s = this.state;
 
@@ -180,7 +182,7 @@ var ContextMenu = React.createClass({
         addContextMenuItems(bk.length > 0, bk);
       });
     }
-  },
+  }
   handleMenuOption(p, opt, recursion=0, hasBookmark=null, bk=null){
     // Create wrapper context for utils until component centric logic is revised.
     var isSelectedItems = _.isArray(p.context.id);
@@ -229,7 +231,7 @@ var ContextMenu = React.createClass({
       }
     }
     this.handleClickOutside();
-  },
+  }
   getStatus(opt){
     var p = this.props;
     var isSelectedItems = _.isArray(p.context.id);
@@ -266,8 +268,8 @@ var ContextMenu = React.createClass({
     } else {
       return p.context.id.pinned;
     }
-  },
-  render: function() {
+  }
+  render() {
     var p = this.props;
     var s = this.state;
     return (
@@ -282,6 +284,6 @@ var ContextMenu = React.createClass({
       </div>
     );
   }
-});
+}
 
 export default ContextMenu;

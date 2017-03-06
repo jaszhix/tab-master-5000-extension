@@ -1,5 +1,10 @@
 #### Release Notes
 
+##### v2.2.1 / *2-28-17*
+
+*   Changed the way the blacklist works. Blacklisted domains no longer are comma separated. Each domain goes on a new line now. This change was made to address a bug preventing some domains from being added.
+
+
 ##### v2.2.0 / *2-28-17*
 
 *   Improved the search functionality with fuzzy searching.

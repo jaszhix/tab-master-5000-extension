@@ -33,6 +33,8 @@ import tc from 'tinycolor2';
 v('.startup-p').text(moment().format('h:mm A'));
 import React from 'react';
 import ReactDOM from 'react-dom';
+import autoBind from 'react-autobind';
+import reactMixin from 'react-mixin';
 import Reflux from 'reflux';
 import _ from 'lodash';
 import ReactUtils from 'react-utils';
@@ -54,13 +56,16 @@ if (module.hot) {
   module.hot.accept();
 }
 
-var Loading = React.createClass({
-  getInitialState(){
-    return {
+class Loading extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
       failSafe: false,
       error: ''
-    };
-  },
+    }
+    autoBind(this);
+  }
   componentDidMount(){
     this.error = null;
     window.onerror = (err)=>{
@@ -72,16 +77,15 @@ var Loading = React.createClass({
           ${chrome.extension.lastError ? 'chrome.extension: '+chrome.extension.lastError : ''}`
       };
     };
-  },
+  }
   handleReset(){
     var c = confirm(utils.t('resetData'));
     if (c) {
       chrome.storage.local.clear();
       chrome.runtime.reload();
     }
-  },
-  render: function() {
-    var s = this.state;
+  }
+  render() {
     var p = this.props;
     var topStyle = {width: '20px', height: '20px', margin: '0px', float: 'right', marginRight: '4px', marginTop: '7px'};
     var fullStyle = {marginTop: `${window.innerHeight / 2.4}px`};
@@ -113,14 +117,17 @@ var Loading = React.createClass({
       </div>
     );
   }
-});
+}
 
-var Search = React.createClass({
-  getInitialState(){
-    return {
+class Search extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
       theme: this.props.theme
-    };
-  },
+    }
+    autoBind(this);
+  }
   componentWillReceiveProps(nP){
     if (nP.theme !== this.props.theme) {
       this.setState({theme: nP.theme});
@@ -128,13 +135,13 @@ var Search = React.createClass({
     if (nP.s.width !== this.props.s.width) {
       ReactTooltip.rebuild();
     }
-  },
+  }
   preventSubmit(e) {
     e.preventDefault();
-  },
+  }
   handleSearch(e) {
     state.set({search: e.target.value});
-  },
+  }
   handleWebSearch(e) {
     e.preventDefault();
     chrome.tabs.query({
@@ -144,23 +151,23 @@ var Search = React.createClass({
         url: 'https://www.google.com/?gws_rd=ssl#q=' + this.props.s.search
       });
     });
-  },
+  }
   openAbout(){
     state.set({settings: 'about', modal: {state: true, type: 'settings'}});
-  },
+  }
   handleSidebar(){
     state.set({sidebar: !this.props.s.sidebar});
-  },
+  }
   handleEnter(e){
     if (e.keyCode === 13) {
       this.handleWebSearch(e);
     }
-  },
+  }
   handleTopNavButtonClick(cb){
     state.set({topNavButton: null});
     cb();
-  },
-  render: function() {
+  }
+  render() {
     var p = this.props;
     const headerStyle = {
       backgroundColor: this.state.theme.headerBg, 
@@ -209,11 +216,13 @@ var Search = React.createClass({
       </div>
     );
   }
-});
-var Root = React.createClass({
-  mixins: [Reflux.ListenerMixin],
-  getInitialState() {
-    return {
+}
+
+class Root extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
       init: true,
       render: false,
       grid: true,
@@ -227,7 +236,8 @@ var Root = React.createClass({
       wallpaper: null,
       wallpapers: []
     };
-  },
+    autoBind(this);
+  }
   componentDidMount() {
     // Initialize Reflux listeners.
     themeStore.load(this.props.s.prefs);
@@ -235,7 +245,7 @@ var Root = React.createClass({
     window._trackJs.version = utilityStore.get_manifest().version;
     this.init(this.props);
     
-  },
+  }
   componentWillReceiveProps(nP){
     var p = this.props;
     var stateUpdate = {};
@@ -273,12 +283,12 @@ var Root = React.createClass({
         _.defer(()=>state.set({applyTabOrder: false}));
       }
     }
-  },
+  }
   componentDidUpdate(pP, pS){
     if (!_.isEqual(pS.theme, this.state.theme)) {
       this.themeChange({theme: this.state.theme});
     }
-  },
+  }
   init(p){
     this.captureTabs(p, 'init');
     msgStore.getSessions().then((sessions)=>{
@@ -294,14 +304,14 @@ var Root = React.createClass({
         });
       }
     });
-  },
+  }
   faviconsChange(e){
     this.setState({topLoad: true});
     _.defer(()=>this.setState({topLoad: false}));
-  },
+  }
   chromeAppChange(e){
     this.setState({apps: e});
-  },
+  }
   themeChange(e){
     var p = this.props;
     var stateUpdate = {};
@@ -505,7 +515,7 @@ var Root = React.createClass({
       stateUpdate.wallpapers = e.wallpapers;
     }
     this.setState(stateUpdate);
-  },
+  }
   updateTabState(e, opt, sU=null){
     var p = this.props;
     console.log('updateTabState: ',e);
@@ -539,7 +549,7 @@ var Root = React.createClass({
     if (p.s.prefs.mode !== 'tabs' && p.s.prefs.mode !== 'sessions') {
       utilityStore.handleMode(p.s.prefs.mode, _.flatten(p.s.allTabs));
     }
-  },
+  }
   captureTabs(p=null, opt, bg, sU, cb) {
     var s = this.state;
     if (!p) {
@@ -636,7 +646,7 @@ var Root = React.createClass({
         handleWindows(res);
       });
     }
-  },
+  }
   checkDuplicateTabs(stateUpdate, tabs){
     let tabUrls = [];
     for (let i = 0, len = tabs.length; i < len; i++) {
@@ -647,7 +657,7 @@ var Root = React.createClass({
       stateUpdate.duplicateTabs = utils.getDuplicates(tabUrls);
     } 
     return stateUpdate;
-  },
+  }
   reQuery(p=null, stateUpdate, cb) {
     if (!p) {
       p = this.props;
@@ -673,8 +683,8 @@ var Root = React.createClass({
         }
       }
     }
-  },
-  render: function() {
+  }
+  render() {
     var s = this.state;
     var p = this.props;
     if (s.theme && p.s.prefs) {
@@ -822,34 +832,28 @@ var Root = React.createClass({
       return null;
     }
   }
-});
+}
 
-var App = React.createClass({
-  mixins: [
-    Reflux.ListenerMixin,
-    ReactUtils.Mixins.WindowSizeWatch,
-    ReactUtils.Mixins.ViewportWatch
-  ],
-  getInitialState(){
-    return state.get();
-  },
+reactMixin(Root.prototype, Reflux.ListenerMixin);
+
+class App extends Reflux.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {};
+    this.store = state;
+    autoBind(this);
+  }
   componentDidMount(){
-    this.listenTo(state, this.stateChange);
     this.onWindowResize({width: window.innerWidth, height: window.innerHeight}, this.props.stateUpdate);
-  },
+  }
   setKeyboardShortcuts(e){
     if (e.prefs.keyboardShortcuts) {
       keyboardStore.set(e);
     } else {
       keyboardStore.reset();
     }
-  },
-  stateChange(e){
-    if (!_.isEqual(this.state.prefs, e.prefs) || this.state.sidebar !== e.sidebar) {
-      this.setKeyboardShortcuts(e);
-    }
-    this.setState(e);
-  },
+  }
   onWindowResize(e, _stateUpdate) {
     var s = this.state;
     var stateUpdate = {
@@ -871,7 +875,7 @@ var App = React.createClass({
       width: window.innerWidth + 30,
       height: window.innerHeight + 5,
     });
-  },
+  }
   onViewportChange(viewport) {
     var wrapper = document.body;
     if (this.state.hasScrollbar && this.state.tileLimit < this.state[this.state.modeKey].length) {
@@ -879,7 +883,7 @@ var App = React.createClass({
         state.set({tileLimit: this.state.tileLimit + 50});
       }
     }
-  },
+  }
   render(){
     if (!this.state.init) {
       return <Root s={this.state} />;
@@ -887,7 +891,10 @@ var App = React.createClass({
       return null;
     }
   }
-});
+}
+
+reactMixin(App.prototype, ReactUtils.Mixins.WindowSizeWatch);
+reactMixin(App.prototype, ReactUtils.Mixins.ViewportWatch);
 
 var renderApp = (stateUpdate)=>{
   ReactDOM.render(<App stateUpdate={stateUpdate} />, document.getElementById('main'));

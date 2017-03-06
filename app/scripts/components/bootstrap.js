@@ -1,62 +1,58 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import autoBind from 'react-autobind';
+import reactMixin from 'react-mixin';
 import Reflux from 'reflux';
 import _ from 'lodash';
 import onClickOutside from 'react-onclickoutside';
 import ReactTooltip from 'react-tooltip';
 import themeStore from './stores/theme';
 
-export var Btn = React.createClass({
-  mixins: [Reflux.ListenerMixin],
-  getDefaultProps(){
-    return {
-      style: {},
-      faStyle: {},
-      noIconPadding: false
-    }
-  },
-  getInitialState(){
-    return {
+export class Btn extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
       theme: null,
       hover: false
-    };
-  },
+    }
+    autoBind(this);
+  }
   componentDidMount(){
     this.listenTo(themeStore, this.themeChange);
     var selectedTheme = themeStore.getSelectedTheme();
     this.setState({theme: selectedTheme});
     this.themeChange({theme: selectedTheme});
-  },
+  }
   componentDidUpdate(pP, pS){
     if (pS.hover !== this.state.hover && !this.state.hover) {
       ReactTooltip.hide();
     }
-  },
+  }
   componentWillUnmount(){
     try {
       v(ReactDOM.findDOMNode(this)).css({display: 'none'});
-    } catch (e) {}
-    
-  },
+    } catch (e) {} 
+  }
   themeChange(e){
     if (e.theme) {
       this.setState({theme: e.theme});
       _.defer(()=>ReactTooltip.rebuild());
     }
-  },
+  }
   handleHoverIn(){
     this.setState({hover: true});
     if (this.props.onMouseEnter) {
       this.props.onMouseEnter();
     }
-  },
+  }
   handleHoverOut(){
     this.setState({hover: false});
     if (this.props.onMouseLeave) {
       this.props.onMouseLeave();
     }
-  },
-  render: function() {
+  }
+  render() {
     var p = this.props;
     var s = this.state;
     var style = {};
@@ -100,69 +96,74 @@ export var Btn = React.createClass({
       return null;
     }
   }
-});
+}
 
-export var Col = React.createClass({
-  propTypes: {
-    size: React.PropTypes.string.isRequired
-  },
-  render: function() {
+Btn.defaultProps = {
+  style: {},
+  faStyle: {},
+  noIconPadding: false
+};
+reactMixin(Btn.prototype, Reflux.ListenerMixin);
+
+export class Col extends React.Component {
+  constructor(props){
+    super(props);
+  }
+  render(){
     var p = this.props;
     return (
       <div data-tip={p['data-tip'] ? `<div style="max-width: 350px;">${p['data-tip']}</div>` : null} onContextMenu={p.onContextMenu} onDragEnter={p.onDragEnter} onMouseEnter={p.onMouseEnter} onMouseLeave={p.onMouseLeave} onClick={p.onClick} style={p.style} id={p.id} className={p.className ? 'col-xs-'+p.size+' '+p.className : 'col-xs-'+p.size}>{p.children}</div>
-    );
+    )
   }
-});
+}
 
-export var Row = React.createClass({
-  getDefaultProps(){
-    return {
-      fluid: false,
-    };
-  },
-  propTypes: {
-    fluid: React.PropTypes.bool,
-  },
-  render: function() {
+Col.propTypes = {
+  size: React.PropTypes.string.isRequired
+};
+
+export class Row extends React.Component {
+  constructor(props){
+    super(props);
+  }
+  render(){
     var p = this.props;
     return (
       <div data-tip={p['data-tip'] ? `<div style="max-width: 350px;">${p['data-tip']}</div>` : null} onContextMenu={p.onContextMenu} onDragEnter={p.onDragEnter} onMouseEnter={p.onMouseEnter} onMouseLeave={p.onMouseLeave} onClick={p.onClick} style={p.style} id={p.id} className={p.fluid ? p.className ? 'row-fluid '+p.className : 'row-fluid' : p.className ? 'row '+p.className : 'row'}>{p.children}</div>
     );
   }
-});
+}
 
-export var Container = React.createClass({
-  getDefaultProps(){
-    return {
-      fluid: false
-    };
-  },
-  propTypes: {
-    fluid: React.PropTypes.bool
-  },
-  render: function() {
+Row.propTypes = {
+  fluid: React.PropTypes.bool,
+};
+Row.defaultProps = {
+  fluid: false,
+};
+
+export class Container extends React.Component {
+  constructor(props){
+    super(props);
+  }
+  render() {
     var p = this.props;
     return (
       <div data-tip={p['data-tip'] ? `<div style="max-width: 350px;">${p['data-tip']}</div>` : null} onContextMenu={p.onContextMenu} onDragEnter={p.onDragEnter} onMouseEnter={p.onMouseEnter} onMouseLeave={p.onMouseLeave} onClick={p.onClick} style={p.style} id={p.id} className={p.fluid ? p.className ? 'container-fluid '+p.className : 'container-fluid' : p.className ? 'container '+p.className : 'container'}>{p.children}</div>
     );
   }
-});
+}
 
-export var Panel = React.createClass({
-  getDefaultProps(){
-    return {
-      className: null,
-      style: null,
-      bodyStyle: null,
-      header: null,
-      footerLeft: null,
-      footerRight: null,
-      noBody: false,
-      type: 'flat',
-      content: false
-    };
-  },
-  render:function(){
+Container.propTypes = {
+  fluid: React.PropTypes.bool
+};
+Container.defaultProps = {
+  fluid: false
+};
+
+export class Panel extends React.Component {
+  constructor(props){
+    super(props);
+  }
+  render(){
     var p = this.props;
     var defaultStyle = {};
     if (p.content) {
@@ -205,36 +206,41 @@ export var Panel = React.createClass({
       </div>
     );
   }
-});
+}
 
-export var ModalOverlay = React.createClass({
-  getDefaultProps(){
-    return {
-      onClose: ()=>{return;},
-      header: '',
-      size: null,
-      footerComponent: null,
-      clickOutside: false,
-      bodyStyle: {}
-    };
-  },
-  getInitialState(){
-    return {
+Panel.defaultProps = {
+  className: null,
+  style: null,
+  bodyStyle: null,
+  header: null,
+  footerLeft: null,
+  footerRight: null,
+  noBody: false,
+  type: 'flat',
+  content: false
+};
+
+export class ModalOverlay extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
       fadeIn: false
-    };
-  },
+    }
+    autoBind(this);
+  }
   componentDidMount(){
     _.defer(()=>{
       this.setState({fadeIn: true});
     });
-  },
+  }
   componentWillUnmount(){
     this.setState({fadeIn: false});
-  },
+  }
   handleCloseClick(){
     this.setState({fadeIn: false});
     _.defer(()=>this.props.onClose());
-  },
+  }
   render(){
     var s = this.state;
     var p = this.props;
@@ -262,14 +268,27 @@ export var ModalOverlay = React.createClass({
       </div>
     );
   }
-});
+}
 
-export var ModalDefault = onClickOutside(React.createClass({
+ModalOverlay.defaultProps = {
+  onClose: ()=>{return;},
+  header: '',
+  size: null,
+  footerComponent: null,
+  clickOutside: false,
+  bodyStyle: {}
+};
+
+export class ModalDefault extends React.Component {
+  constructor(props) {
+    super(props);
+    autoBind(this);
+  }
   handleClickOutside(){
     if (this.props.clickOutside) {
       this.props.onClose();
     }
-  },
+  }
   render(){
     var p = this.props;
     var heightOffset = p.heightOffset ? p.heightOffset : p.footerComponent ? 200 : 140;
@@ -304,26 +323,26 @@ export var ModalDefault = onClickOutside(React.createClass({
       </div>
     );
   }
-}));
+}
 
-export var Tabs = React.createClass({
-  getDefaultProps(){
-    return {
-      options: []
-    };
-  },
-  getInitialState(){
-    return {
+ModalDefault = onClickOutside(ModalDefault);
+
+export class Tabs extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
       active: 0
-    };
-  },
+    }
+    autoBind(this);
+  }
   componentDidMount(){
     this.setState({active: this.props.initActiveOption});
-  },
+  }
   handleTabClick(option, i){
     this.props.onClick(option);
     this.setState({active: i});
-  },
+  }
   render(){
     var p = this.props;
     var s = this.state;
@@ -355,17 +374,20 @@ export var Tabs = React.createClass({
       </div>
     );
   }
-});
+}
 
-export var Context = onClickOutside(React.createClass({
-  getDefaultProps(){
-    return {
-      options: null
-    };
-  },
+Tabs.defaultProps = {
+  options: []
+};
+
+export class Context extends React.Component {
+  constructor(props) {
+    super(props);
+    autoBind(this);
+  }
   handleClickOutside(){
     this.props.onClickOutside();
-  },
+  }
   render(){
     var p = this.props;
     return (
@@ -411,4 +433,10 @@ export var Context = onClickOutside(React.createClass({
       </ul>
     );
   }
-}));
+}
+
+Context.defaultProps = {
+  options: null
+};
+
+Context = onClickOutside(Context);

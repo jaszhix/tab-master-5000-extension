@@ -1,24 +1,28 @@
 import React from 'react';
+import autoBind from 'react-autobind';
+import reactMixin from 'react-mixin';
 import Reflux from 'reflux';
 import {alertStore} from './stores/main';
 
-var Alert = React.createClass({
-  mixins: [Reflux.ListenerMixin],
-  getInitialState: function() {
-    return {
+class Alert extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
       text: '',
       tag: 'alert-success',
       open: false,
       class: ''
-    };
-  },
-  componentDidMount: function() {
+    }
+    autoBind(this);
+  }
+  componentDidMount() {
     this.listenTo(alertStore, this.alertChange);
-  },
+  }
   alertChange(e){
     this.setState(e);
-  },
-  render: function() {
+  }
+  render() {
     var s = this.state;
     var createPostMarkup = (postContent)=> { return {__html: postContent};};
     return (
@@ -32,6 +36,8 @@ var Alert = React.createClass({
       </div>
     );
   }
-});
+}
+
+reactMixin(Alert.prototype, Reflux.ListenerMixin);
 
 export default Alert;

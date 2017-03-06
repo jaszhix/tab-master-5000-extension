@@ -13,8 +13,11 @@ import changelog from 'html!markdown!../../../changelog.md';
 import support from supportFile;*/
 import license from 'html!markdown!../../../COPYING';
 
-var Contribute = React.createClass({
-  render:function(){
+class Contribute extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+  render(){
     let contributeFile;
     let locale = chrome.i18n.getUILanguage();
     if (locale === 'es') {
@@ -45,9 +48,12 @@ var Contribute = React.createClass({
       </div>
     );
   }
-});
+}
 
-var License = React.createClass({
+class License extends React.Component {
+  constructor(props) {
+    super(props);
+  }
   render(){
     function createMarkup() { return {__html: license};}
     return (
@@ -63,9 +69,12 @@ var License = React.createClass({
       </div>
     );
   }
-});
+}
 
-var Support = React.createClass({
+class Support extends React.Component {
+  constructor(props) {
+    super(props);
+  }
   render(){
     let supportFile;
     let locale = chrome.i18n.getUILanguage();
@@ -85,14 +94,16 @@ var Support = React.createClass({
       </div>
     );
   }
-});
+}
 
-var Attribution = React.createClass({
-  getInitialState(){
-    return {
+class Attribution extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
       dependencies: null
     };
-  },
+  }
   componentDidMount(){
     var deps = require('json!../../../package.json');
     var state = [];
@@ -100,8 +111,8 @@ var Attribution = React.createClass({
       state.push(`${key} ${deps.devDependencies[key].split('^')[1]}`);
     }
     this.setState({dependencies: state});
-  },
-  render:function(){
+  }
+  render(){
     var s = this.state;
     console.log(this.state);
     if (s.dependencies) {
@@ -145,10 +156,13 @@ var Attribution = React.createClass({
       </div>
     );
   }
-});
+}
 
-var ReleaseNotes = React.createClass({
-  render:function(){
+class ReleaseNotes extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+  render(){
     function createMarkup() { return {__html: changelog};}
     var p = this.props;
     return (
@@ -164,14 +178,16 @@ var ReleaseNotes = React.createClass({
       </div>
     );
   }
-});
+}
 
-var About = React.createClass({
-  getInitialState(){
-    return {
+class About extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
       tab: 'release'
     };
-  },
+  }
   componentWillMount(){
     var p = this.props;
     p.modal.footer = (
@@ -181,8 +197,8 @@ var About = React.createClass({
       </div>
     );
     state.set({modal: p.modal});
-  },
-  render: function() {
+  }
+  render() {
     var p = this.props;
     var s = this.state;
     var tm5kLogo = `../../images/icon-128${tc(p.theme.settingsBg).isDark() ? '-light' : ''}.png`
@@ -219,6 +235,6 @@ var About = React.createClass({
       </div>
     );
   }
-});
+}
 
 export default About;
