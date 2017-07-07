@@ -114,16 +114,16 @@ class Tile extends React.Component {
     // Navigate to a tab when its clicked from the grid.
     if (!s.xHover || !s.pHover) {
       if (!s.close) {
-        if (p.prefs.mode === 'bookmarks' || p.prefs.mode === 'history' || p.prefs.mode === 'sessions' 
+        if (p.prefs.mode === 'bookmarks' || p.prefs.mode === 'history' || p.prefs.mode === 'sessions'
           || (p.prefs.allTabs && p.prefs.mode === 'tabs')) {
           if (p.tab.hasOwnProperty('openTab') && p.tab.openTab || (p.prefs.allTabs && p.prefs.mode === 'tabs')) {
             if (p.tab.windowId !== p.windowId && chrome.windows.update) {
-              chrome.windows.update(p.tab.windowId, {focused: true});  
+              chrome.windows.update(p.tab.windowId, {focused: true});
             }
             active();
           } else if (p.tab.hasOwnProperty('openTab') && !p.tab.openTab) {
             chrome.tabs.create({url: p.tab.url}, (t)=>{
-              _.merge(p[p.modeKey][p.i], t);
+              _.assignIn(p[p.modeKey][p.i], t);
               p[p.modeKey][p.i].openTab = true;
               stateUpdate[p.modeKey] = p[p.modeKey];
               state.set(stateUpdate);
@@ -203,10 +203,10 @@ class Tile extends React.Component {
   render() {
     var s = this.state;
     var p = this.props;
-    style.ssIconBg = _.cloneDeep(_.merge(style.ssIconBg, {
+    style.ssIconBg = _.cloneDeep(_.assignIn(style.ssIconBg, {
       backgroundColor: p.theme.tileButtonBg
     }));
-    style.ssPinnedIconBg = _.cloneDeep(_.merge(style.ssPinnedIconBg, {
+    style.ssPinnedIconBg = _.cloneDeep(_.assignIn(style.ssPinnedIconBg, {
       color: p.theme.tilePinned,
       backgroundColor: p.theme.tileButtonBg
     }));
@@ -227,7 +227,7 @@ class Tile extends React.Component {
       titleFontSize--;
     }
     var subTitleStyle = {
-      whiteSpace: 'nowrap', 
+      whiteSpace: 'nowrap',
       position: 'absolute',
       right: '9px',
       zIndex: '12',
@@ -238,11 +238,11 @@ class Tile extends React.Component {
       opacity: s.stHover ? '0.2' : '1',
       WebkitTransition: p.prefs.animations ? 'opacity 0.2s, white-space 0.1s' : 'initial'
     };
-    var ST1 = _.merge({
+    var ST1 = _.assignIn({
       top: `${p.prefs.tabSizeHeight - 40}px`,
       cursor: p.prefs.mode === 'sessions' || p.prefs.mode === 'bookmarks' ? 'default' : 'initial'
     }, subTitleStyle);
-    var ST2 = _.merge({
+    var ST2 = _.assignIn({
       top: `${p.prefs.tabSizeHeight - 55}px`,
       cursor: p.prefs.mode === 'sessions' || p.prefs.mode === 'bookmarks' ? 'pointer' : 'default'
     }, subTitleStyle);
@@ -260,37 +260,37 @@ class Tile extends React.Component {
           </div>
           <div className="media-left">
             <div style={{
-              color: p.theme.tileText, 
-              textShadow: `2px 2px ${p.theme.tileTextShadow}`, 
-              width: p.prefs.tabSizeHeight+40, 
+              color: p.theme.tileText,
+              textShadow: `2px 2px ${p.theme.tileTextShadow}`,
+              width: p.prefs.tabSizeHeight+40,
               overflow: 'hidden',
               cursor: 'pointer'
             }}>
               <a style={{
-                fontSize: `${titleFontSize}px`, 
-                color: p.theme.tileText, 
+                fontSize: `${titleFontSize}px`,
+                color: p.theme.tileText,
                 WebkitTransition: p.prefs.animations ? 'font-size 0.2s' : 'initial'
               }}>{p.tab.title.length > 0 ? p.tab.title : p.tab.domain ? p.tab.domain : p.tab.url.split('/')[2]}</a>
             </div>
-            {p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ? 
+            {p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ?
             <div className="text-muted text-size-small" style={{
-              whiteSpace: s.hover ? 'initial' : 'nowrap', 
+              whiteSpace: s.hover ? 'initial' : 'nowrap',
               WebkitTransition: p.prefs.animations ? 'white-space 0.1s' : 'initial',
               color: themeStore.opacify(p.theme.tileText, 0.8)
             }}>{p.tab.description}</div> : null}
-            {p.prefs.mode === 'tabs' || p.prefs.mode === 'history' || p.prefs.mode === 'bookmarks' || p.prefs.mode === 'sessions' ? 
+            {p.prefs.mode === 'tabs' || p.prefs.mode === 'history' || p.prefs.mode === 'bookmarks' || p.prefs.mode === 'sessions' ?
             <div onMouseEnter={()=>this.setState({stHover: true})} onMouseLeave={()=>this.setState({stHover: false})}>
               <div className="text-muted text-size-small" style={ST1}>{p.tab.domain ? p.tab.domain : p.tab.url.split('/')[2]}</div>
               {isTab && p.chromeVersion >= 54 && p.tab.discarded ?
               <div className="text-muted text-size-small" style={ST2}>Discarded</div> : null}
-              {p.prefs.mode === 'history' ? 
+              {p.prefs.mode === 'history' ?
               <div className="text-muted text-size-small" style={ST2}>{_.capitalize(moment(p.tab.lastVisitTime).fromNow())}</div> : null}
-              {p.prefs.mode === 'bookmarks' ? 
+              {p.prefs.mode === 'bookmarks' ?
               <div onClick={()=>this.filterFolders(p.tab.folder)} className="text-muted text-size-small" style={ST2}>{p.tab.folder}</div> : null}
-              {p.prefs.mode === 'sessions' ? 
+              {p.prefs.mode === 'sessions' ?
               <div onClick={()=>this.filterFolders(p.tab.originSession)} className="text-muted text-size-small" style={p.tab.hasOwnProperty('domain') && p.tab.domain ? ST2 : ST1}>{p.tab.label ? p.tab.label : _.capitalize(moment(p.tab.sTimeStamp).fromNow())}</div> : null}
             </div> : null}
-            {p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ? 
+            {p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ?
             <div onMouseEnter={()=>this.setState({stHover: true})} onMouseLeave={()=>this.setState({stHover: false})}>
               <div onClick={()=>this.filterFolders(p.tab.originSession)} className="text-muted text-size-small" style={ST1}>{`v${p.tab.version}`}</div>
             </div> : null}
@@ -300,28 +300,28 @@ class Tile extends React.Component {
       header={
         <div style={{position: 'relative', minHeight: '18px'}}>
           <ul className="icons-list" style={{
-            display: 'flex', 
-            position: 'relative', 
+            display: 'flex',
+            position: 'relative',
             left: `${p.prefs.tabSizeHeight + (isTab ? 27 : p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ? 46 : 62)}px`,
             top: '1px'
           }}>
             {p.chromeVersion >= 46 && openTab || p.chromeVersion >= 46 && p.prefs.mode === 'tabs' ?
             <li>
-              <i 
+              <i
               title={`${p.tab.mutedInfo.muted ? utils.t('unmute') : utils.t('mute')} ${utils.t('tab')}${p.tab.audible ? ' ('+utils.t('audible')+')' : ''}`}
               style={{
-                display: 'block', 
-                cursor: 'pointer', 
-                color: s.mHover ? p.tab.audible ? p.theme.tileMuteAudibleHover : p.theme.tileMuteHover : p.tab.audible ? p.theme.tileMuteAudible : p.theme.tileMute, 
+                display: 'block',
+                cursor: 'pointer',
+                color: s.mHover ? p.tab.audible ? p.theme.tileMuteAudibleHover : p.theme.tileMuteHover : p.tab.audible ? p.theme.tileMuteAudible : p.theme.tileMute,
                 opacity: s.hover || p.tab.mutedInfo.muted || p.tab.audible ? '1' : '0',
                 position: 'relative',
                 top: '2px',
                 right: '2px',
                 fontSize: '13.5px'
-              }} 
+              }}
               className={`icon-volume-${p.tab.mutedInfo.muted ? 'mute2' : p.tab.audible ? 'medium' : 'mute'}`}
-              onMouseEnter={this.handleTabMuteHoverIn} 
-              onMouseLeave={this.handleTabMuteHoverOut} 
+              onMouseEnter={this.handleTabMuteHoverIn}
+              onMouseLeave={this.handleTabMuteHoverOut}
               onClick={()=>utils.mute(this, p.tab)} />
             </li>
             : null}
@@ -330,17 +330,17 @@ class Tile extends React.Component {
               <i
               title={`${p.tab.pinned ? utils.t('unpin') : utils.t('pin')} ${utils.t('tab')}`}
               style={{
-                display: 'block', 
-                cursor: 'pointer', 
-                color: s.pHover ? p.theme.tilePinHover : p.theme.tilePin, 
+                display: 'block',
+                cursor: 'pointer',
+                color: s.pHover ? p.theme.tilePinHover : p.theme.tilePin,
                 opacity: s.hover || p.tab.pinned ? '1' : '0',
                 position: 'relative',
                 top: '2px',
                 right: '2px',
                 fontSize: '12px'
-              }} 
+              }}
               className="icon-pushpin"
-              onMouseEnter={this.handlePinHoverIn} 
+              onMouseEnter={this.handlePinHoverIn}
               onMouseLeave={this.handlePinHoverOut}
               onClick={()=>utils.pin(this, p.tab)} />
             </li>
@@ -350,18 +350,18 @@ class Tile extends React.Component {
               <i
               title={`${isTab ? utils.t('close') : utils.t('remove')} ${_.trimEnd(_.upperFirst(utils.t(p.prefs.mode)), 's')}${p.prefs.mode === 'sessions' ? ' '+utils.t('tab') : ''}`}
               style={{
-                display: 'block', 
-                cursor: 'pointer', 
-                color: s.xHover ? p.theme.tileXHover : p.theme.tileX, 
+                display: 'block',
+                cursor: 'pointer',
+                color: s.xHover ? p.theme.tileXHover : p.theme.tileX,
                 opacity: s.hover ? '1' : '0',
                 position: 'relative',
                 top: isTab ? '-1px' : '1px',
                 right: isTab ? 'initial' : '0px',
                 fontSize: isTab ? '16px' : '12px'
-              }} 
+              }}
               className={`icon-${isTab ? 'cross2' : 'eraser'} ntg-x`}
-              onMouseEnter={this.handleTabCloseHoverIn} 
-              onMouseLeave={this.handleTabCloseHoverOut} 
+              onMouseEnter={this.handleTabCloseHoverIn}
+              onMouseLeave={this.handleTabCloseHoverOut}
               onClick={()=>utils.closeTab(this, p.tab.id)} />
             </li> : null}
             {(p.prefs.mode === 'apps' || p.prefs.mode === 'extensions') ?
@@ -369,17 +369,17 @@ class Tile extends React.Component {
               <i
               title={utils.t('offlineEnabled')}
               style={{
-                display: 'block', 
-                cursor: 'pointer', 
-                color: s.pHover ? p.theme.tilePinHover : p.theme.tilePin, 
+                display: 'block',
+                cursor: 'pointer',
+                color: s.pHover ? p.theme.tilePinHover : p.theme.tilePin,
                 opacity: p.tab.offlineEnabled ? '1' : '0',
                 position: 'relative',
                 top: '2px',
                 right: '2px',
                 fontSize: '12px'
-              }} 
+              }}
               className="icon-power2"
-              onMouseEnter={this.handlePinHoverIn} 
+              onMouseEnter={this.handlePinHoverIn}
               onMouseLeave={this.handlePinHoverOut} />
             </li>
             : null}
@@ -388,18 +388,18 @@ class Tile extends React.Component {
               <i
               title={`${_.trimEnd(_.upperFirst(utils.t(p.prefs.mode)), 's')} ${utils.t('homepage')}`}
               style={{
-                display: 'block', 
-                cursor: 'pointer', 
-                color: s.xHover ? p.theme.tileXHover : p.theme.tileX, 
+                display: 'block',
+                cursor: 'pointer',
+                color: s.xHover ? p.theme.tileXHover : p.theme.tileX,
                 opacity: s.hover ? '1' : '0',
                 position: 'relative',
                 top: isTab ? '-1px' : '1px',
                 right: isTab ? 'initial' : '0px',
                 fontSize: isTab ? '16px' : '12px'
-              }} 
+              }}
               className={`icon-home5 ntg-x`}
-              onMouseEnter={this.handleTabCloseHoverIn} 
-              onMouseLeave={this.handleTabCloseHoverOut} 
+              onMouseEnter={this.handleTabCloseHoverIn}
+              onMouseLeave={this.handleTabCloseHoverOut}
               onClick={()=>chrome.tabs.create({url: p.tab.homepageUrl})} />
             </li> : null}
           </ul>
@@ -409,12 +409,12 @@ class Tile extends React.Component {
       style={{
         position: 'relative',
         display: s.render ? 'block' : 'none',
-        height: p.prefs.tabSizeHeight, 
-        width: `${p.prefs.tabSizeHeight + 80}px`, 
-        float: 'left', 
-        margin: '6px', 
-        backgroundColor: s.hover ? p.theme.tileBgHover : p.theme.tileBg, 
-        backgroundImage: `url('${s.screenshot ? s.screenshot : favIconUrl}')`, 
+        height: p.prefs.tabSizeHeight,
+        width: `${p.prefs.tabSizeHeight + 80}px`,
+        float: 'left',
+        margin: '6px',
+        backgroundColor: s.hover ? p.theme.tileBgHover : p.theme.tileBg,
+        backgroundImage: `url('${s.screenshot ? s.screenshot : favIconUrl}')`,
         backgroundBlendMode: s.screenshot ? 'multiply, lighten' : 'luminosity',
         backgroundPosition: 'center',
         backgroundSize: s.screenshot ? 'cover' : 'contain',
@@ -423,16 +423,16 @@ class Tile extends React.Component {
         zIndex: '50',
         opacity: s.close ? '0' : p.tab.hasOwnProperty('enabled') && !p.tab.enabled ? '0.5' : p.chromeVersion >= 54 && p.tab.discarded ? '0.5' : '1',
         WebkitTransition: p.prefs.animations ? 'opacity 0.2s' : 'initial',
-        WebkitAnimationIterationCount: s.duplicate ? 'infinite' : 'initial', 
+        WebkitAnimationIterationCount: s.duplicate ? 'infinite' : 'initial',
         WebkitAnimationDuration: s.duplicate ? '5s' : '0.2s',
         cursor: 'pointer'
       }}
       bodyStyle={{
-        height: s.hover ? `18px` : `${p.prefs.tabSizeHeight - 40}px`, 
+        height: s.hover ? `18px` : `${p.prefs.tabSizeHeight - 40}px`,
         width: p.prefs.tabSizeHeight+80,
         padding: s.hover ? '0px' : 'initial',
         borderRadius: '0px',
-        backgroundImage: `url('${favIconUrl}')`, 
+        backgroundImage: `url('${favIconUrl}')`,
         backgroundBlendMode: 'luminosity',
         backgroundPosition: 'center',
         backgroundSize: '1px, auto, contain',
@@ -443,18 +443,18 @@ class Tile extends React.Component {
         cursor: 'pointer'
       }}
       footerStyle={{
-        backgroundColor: s.hover ? p.theme.tileBgHover : p.theme.tileBg, 
-        borderBottomRightRadius: '2px', 
-        borderBottomLeftRadius: '2px', 
-        width: p.prefs.tabSizeHeight+80, 
-        position: 'absolute', 
-        padding: `${s.hover ? 4 : 0}px 6px`, 
-        minHeight: s.hover ? `100%` : '40px', 
+        backgroundColor: s.hover ? p.theme.tileBgHover : p.theme.tileBg,
+        borderBottomRightRadius: '2px',
+        borderBottomLeftRadius: '2px',
+        width: p.prefs.tabSizeHeight+80,
+        position: 'absolute',
+        padding: `${s.hover ? 4 : 0}px 6px`,
+        minHeight: s.hover ? `100%` : '40px',
         height: s.hover ? `100%` : '40px',
         maxHeight: s.hover ? `100%` : '40px',
         WebkitTransition: p.prefs.animations ? 'padding 0.1s, height 0.1s, min-height 0.1s, max-height 0.1s, background-color 0.2s' : 'initial',
         WebkitTransitionTimingFunction: 'ease-in-out',
-        overflow: 'hidden', 
+        overflow: 'hidden',
         zIndex: s.hover ? '1' : '2'
       }}
       headingStyle={{
@@ -624,7 +624,11 @@ class TileGrid extends React.Component {
     var end = this.over.i;
     this.dragged.el.style.display = 'block';
     if (start === end) {
-      _.defer(()=>this.dragged.el.parentNode.removeChild(this.placeholder));
+      _.defer(()=>{
+        try {
+          this.dragged.el.parentNode.removeChild(this.placeholder);
+        } catch (e) {}
+      });
       return;
     }
     if (start < end) {
@@ -667,15 +671,15 @@ class TileGrid extends React.Component {
         <Sidebar
         sessionsExist={p.s.sessions.length > 0}
         enabled={p.sidebar}
-        prefs={p.s.prefs} 
-        allTabs={p.s.allTabs} 
+        prefs={p.s.prefs}
+        allTabs={p.s.allTabs}
         labels={p.labels}
         keys={p.keys}
         sort={p.s.sort}
         direction={p.s.direction}
-        width={p.width} 
-        collapse={p.collapse} 
-        search={p.s.search} 
+        width={p.width}
+        collapse={p.collapse}
+        search={p.s.search}
         theme={p.theme}
         disableSidebarClickOutside={p.disableSidebarClickOutside} />
           <div id="grid" ref="grid">
@@ -697,11 +701,11 @@ class TileGrid extends React.Component {
                   apps={p.s.apps}
                   extensions={p.s.extensions}
                   modeKey={p.s.modeKey}
-                  render={p.render} 
-                  i={i}  
-                  tab={tab} 
-                  tileLimit={p.s.tileLimit} 
-                  init={p.init} 
+                  render={p.render}
+                  i={i}
+                  tab={tab}
+                  tileLimit={p.s.tileLimit}
+                  init={p.init}
                   screenshots={p.s.screenshots}
                   theme={p.theme}
                   wallpaper={p.wallpaper}
@@ -720,20 +724,20 @@ class TileGrid extends React.Component {
             })
             : null}
             {p.s.prefs.format === 'table' ?
-            <Table 
+            <Table
             s={p.s}
             theme={p.theme}
             cursor={p.cursor}
             /> : null}
           </div>
-          {!p.s.hasScrollbar && p.s.prefs.format === 'tile' && p.s[p.s.modeKey].length > p.s.tileLimit ? 
-          <Btn 
+          {!p.s.hasScrollbar && p.s.prefs.format === 'tile' && p.s[p.s.modeKey].length > p.s.tileLimit ?
+          <Btn
           onClick={()=>{
             state.set({tileLimit: p.s.tileLimit + 50}, ()=>{
               state.set({hasScrollbar: utils.scrollbarVisible(document.body)});
             });
             ReactTooltip.hide();
-          }} 
+          }}
           style={{
             position: 'fixed',
             left: '0px',
@@ -742,8 +746,8 @@ class TileGrid extends React.Component {
             bottom: '0px',
             zIndex: '50'
           }}
-          className="ntg-btn" 
-          data-place="top" 
+          className="ntg-btn"
+          data-place="top"
           data-tip={'Load more tiles.'}>Load More</Btn> : null}
       </div>
     );

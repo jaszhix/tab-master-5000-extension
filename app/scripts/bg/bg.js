@@ -1,12 +1,12 @@
 window._trackJs = {
   token: 'bd495185bd7643e3bc43fa62a30cec92',
   enabled: false,
-  onError: function (payload) { 
+  onError: function (payload) {
     console.log('payload', payload)
     if (payload.message.indexOf('unknown') !== -1) {
       return false;
     }
-    return true; 
+    return true;
   },
   version: "",
   callback: {
@@ -99,6 +99,9 @@ var syncSession = (sessions, prefs, windows=null, cb)=>{
     for (let i = 0, len = windows.length; i < len; i++) {
       allTabs.push(windows[i].tabs);
       for (let z = 0, _len = windows[i].tabs.length; z < _len; z++) {
+        if (typeof windows[i].tabs[z] === 'undefined') {
+          continue;
+        }
         if (windows[i].tabs[z].url === 'chrome://newtab/') {
           _.pullAt(windows[i].tabs, z);
         }
@@ -182,11 +185,11 @@ var createScreenshot = (t, refWindow, refTab, run=0)=>{
         return;
       }
       var screenshot = {
-        url: t.state.windows[refWindow].tabs[refTab].url, 
-        data: image, 
+        url: t.state.windows[refWindow].tabs[refTab].url,
+        data: image,
         timeStamp: Date.now()
       };
-      
+
       var refScreenshot = _.findIndex(t.state.screenshots, {url: t.state.windows[refWindow].tabs[refTab].url});
       if (refScreenshot !== -1) {
         t.state.screenshots[refScreenshot] = screenshot;
@@ -221,7 +224,7 @@ var setAction = (t, type, oldTabInstance, newTabInstance=null)=>{
   }
   if (newTabInstance && newTabInstance.title !== 'New Tab' || oldTabInstance && oldTabInstance.title !== 'New Tab') {
     var action = {
-      type: type, 
+      type: type,
       item: _.cloneDeep(type === 'update' ? newTabInstance : oldTabInstance),
       id: uuid.v4()
     };
@@ -250,6 +253,10 @@ var setActionThrottled = _.throttle(setAction, 100, {leading: true});
 var Bg = React.createClass({
   mixins: [Reflux.ListenerMixin],
   getInitialState(){
+    let version = 1;
+    try { // Firefox check
+      version = parseInt(/Chrome\/([0-9.]+)/.exec(navigator.userAgent)[1].split('.'))
+    } catch (e) {}
     return {
       eventState: eventState,
       prefs: null,
@@ -259,7 +266,7 @@ var Bg = React.createClass({
       sessions: [],
       screenshots: [],
       actions: [],
-      chromeVersion: parseInt(/Chrome\/([0-9.]+)/.exec(navigator.userAgent)[1].split('.'))
+      chromeVersion: version
     };
   },
   componentDidMount(){
@@ -355,8 +362,8 @@ var Bg = React.createClass({
         sendMsg({windows: this.state.windows, windowId: Window.id});
       });
     });
-    /* 
-    Windows removed 
+    /*
+    Windows removed
     */
     chrome.windows.onRemoved.addListener((windowId)=>{
       var refWindow = _.findIndex(this.state.windows, {windowId: windowId});
@@ -576,9 +583,9 @@ var Bg = React.createClass({
   convertV1Sessions(_item){
     for (let i = 0, len = _item.sessionData.length; i < len; i++) {
       var session = {
-        timeStamp: _item.sessionData[i].timeStamp, 
-        tabs: [_item.sessionData[i].tabs], 
-        label: _item.sessionData[i].label, 
+        timeStamp: _item.sessionData[i].timeStamp,
+        tabs: [_item.sessionData[i].tabs],
+        label: _item.sessionData[i].label,
         id: uuid.v4()
       };
       _item.sessionData[i] = session;
@@ -708,7 +715,7 @@ var Bg = React.createClass({
       return;
     }
     // Update timestamp for auto-discard feature's accuracy.
-    _.merge(this.state.windows[refWindow].tabs[refTab], {
+    _.assignIn(this.state.windows[refWindow].tabs[refTab], {
       timeStamp: new Date(Date.now()).getTime()
     });
 
@@ -732,7 +739,7 @@ var Bg = React.createClass({
         }
       }
       this.state.windows[refWindow].tabs.push(e);
-      this.state.windows[refWindow].tabs = v(this.state.windows[refWindow].tabs).move(_.findIndex(this.state.windows[refWindow].tabs, _.last(this.state.windows[refWindow].tabs)), e.index).ns;  
+      this.state.windows[refWindow].tabs = v(this.state.windows[refWindow].tabs).move(_.findIndex(this.state.windows[refWindow].tabs, _.last(this.state.windows[refWindow].tabs)), e.index).ns;
     } else {
       this.state.windows[refWindow].tabs.push(e);
     }
@@ -744,7 +751,9 @@ var Bg = React.createClass({
       var refNewTab = _.findIndex(this.state.newTabs, {windowId: e.windowId});
       if (refNewTab !== -1) {
         var refExistingTab = _.findIndex(this.state.windows[refWindow].tabs, {id: this.state.newTabs[refNewTab].id});
-        if (refExistingTab === -1 || this.state.windows[refWindow].tabs[refExistingTab].url.indexOf('chrome://newtab/') === -1) {
+        if (refExistingTab === -1
+          || (typeof this.state.windows[refWindow].tabs[refExistingTab] !== 'undefined'
+            && this.state.windows[refWindow].tabs[refExistingTab].url.indexOf('chrome://newtab/') === -1)) {
           _.pullAt(this.state.newTabs, refNewTab);
           this.setState({newTabs: this.state.newTabs}, ()=>{
             chrome.tabs.create({active: true});
@@ -804,7 +813,7 @@ var Bg = React.createClass({
         return;
       }
       setActionThrottled(this, 'update', this.state.windows[refWindow].tabs[refTab], e);
-      _.merge(e, {
+      _.assignIn(e, {
         timeStamp: new Date(Date.now()).getTime()
       });
 
@@ -844,7 +853,7 @@ var Bg = React.createClass({
         }
         this.setState({windows: this.state.windows});
         synchronizeSession(this.state.sessions, this.state.prefs, this.state.windows);
-        sendMsg({windows: this.state.windows, windowId: e.windowId});   
+        sendMsg({windows: this.state.windows, windowId: e.windowId});
       }
     });
   },

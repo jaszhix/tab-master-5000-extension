@@ -37,8 +37,8 @@ var state = Reflux.createStore({
       applyTabOrder: false,
       settings: 'preferences',
       modal: {
-        state: false, 
-        type: null, 
+        state: false,
+        type: null,
         opt: null,
         footer: null
       },
@@ -50,7 +50,7 @@ var state = Reflux.createStore({
       currentWallpaper: null,
       colorPickerOpen: false,
       // Chrome data
-      chromeVersion: null,
+      chromeVersion: 0,
       windowId: null,
       reQuery: {
         state: null,
@@ -78,9 +78,9 @@ var state = Reflux.createStore({
     if (obj.hasOwnProperty('prefs')) {
       _.merge(this.state, obj);
     } else {
-      _.assignIn(this.state, obj);  
+      _.assignIn(this.state, obj);
     }
-    
+
     console.log('STATE: ', this.state);
     this.trigger(this.state);
     if (cb && _.isFunction(cb)) {

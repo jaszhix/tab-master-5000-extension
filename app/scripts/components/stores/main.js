@@ -179,7 +179,7 @@ export var utilityStore = Reflux.createStore({
     return this.cursor;
   },
   restartNewTab(){
-    location.reload(); 
+    location.reload();
   },
   createTab(href){
     chrome.tabs.create({url: href}, (t)=>{
@@ -222,7 +222,7 @@ export var utilityStore = Reflux.createStore({
   },
   initTrackJs(prefs, savedThemes){
     window.trackJs.addMetadata('User Themes', savedThemes);
-    window.trackJs.addMetadata('User Preferences', prefs);  
+    window.trackJs.addMetadata('User Preferences', prefs);
   },
 });
 window.utilityStore = utilityStore;
@@ -285,7 +285,7 @@ var defaults = (iteration)=>{
     audible: false,
     active: false,
     favIconUrl: '',
-    highlighted: false,      
+    highlighted: false,
     pinned: false,
     selected: false,
     status: 'complete',
@@ -337,7 +337,13 @@ export var bookmarksStore = Reflux.createStore({
             bookmarks[i] = _.assignIn(bookmarks[i], _.cloneDeep(defaults(iter)));
           }
         }
-        bookmarks = _.chain(bookmarks).orderBy(['openTab'], ['asc']).uniqBy('id').value();
+        bookmarks = _.chain(bookmarks)
+          .orderBy(['openTab'], ['asc'])
+          .uniqBy('id')
+          .filter((bookmark) => {
+            return bookmark.url.substr(0, 10) !== 'javascript';
+          })
+          .value();
         if (bookmarks) {
           for (let i = 0, len = bookmarks.length; i < len; i++) {
             bookmarks = utils.checkFavicons({s: s}, bookmarks[i], i, bookmarks);
@@ -405,7 +411,7 @@ export var historyStore = Reflux.createStore({
             if (h[i].url === s.tabs[y].url) {
               h[i] = _.assignIn(h[i], _.cloneDeep(s.tabs[y]));
               h[i].openTab = ++openTab;
-            } 
+            }
           }
         }
         for (let i = 0, len = h.length; i < len; i++) {
@@ -514,7 +520,7 @@ export var chromeAppStore = Reflux.createStore({
             url: app ? _apps[i].appLaunchUrl : _apps[i].optionsUrl,
             title: _apps[i].name
           });
-          _apps[i] = _.merge(defaults(i), _apps[i]);
+          _apps[i] = _.assignIn(defaults(i), _apps[i]);
         }
         if (s.search.length > 0) {
           _apps = utils.searchChange({s: s}, _apps);
@@ -631,7 +637,7 @@ export var alertStore = Reflux.createStore({
     this.alertTimeout = 300;
   },
   set(alert){
-    _.merge(this.alert, alert);
+    _.assignIn(this.alert, alert);
     this.trigger(this.alert);
     var fadeOut = ()=>{
       _.delay(()=>{

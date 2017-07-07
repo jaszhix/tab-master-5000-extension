@@ -25,9 +25,9 @@ class Row extends React.Component {
     };
     var favIconUrl = p.row.favIconUrl ? utils.filterFavicons(p.row.favIconUrl, p.row.url) : '../images/file_paper_blank_document.png';
     return (
-      <tr 
-      className={p.className} 
-      style={p.style} 
+      <tr
+      className={p.className}
+      style={p.style}
       onMouseEnter={p.onMouseEnter}
       draggable={p.draggable}
       onDragEnd={p.onDragEnd}
@@ -46,7 +46,7 @@ class Row extends React.Component {
                   </div>
                   <div className="media-left">
                     <div style={textOverflow}><a style={{cursor: 'pointer', fontSize: '14px'}} onClick={()=>p.handleTitleClick(p.row)} className="text-default text-semibold">{p.row[column]}</a></div>
-                    {p.s.prefs.mode === 'apps' || p.s.prefs.mode === 'extensions' ? 
+                    {p.s.prefs.mode === 'apps' || p.s.prefs.mode === 'extensions' ?
                     <div className="text-muted text-size-small" style={{whiteSpace: 'nowrap', cursor: 'default'}}>{p.row.description}</div> : null}
                   </div>
                   {p.row.audible ?
@@ -146,7 +146,7 @@ export class Table extends React.Component {
   }
   handleTitleClick(row){
     var p = this.props;
-    
+
     if (p.s.prefs.mode === 'tabs') {
       chrome.tabs.update(row.id, {active: true});
     } else if (p.s.prefs.mode === 'apps' || p.s.prefs.mode === 'extensions') {
@@ -211,7 +211,11 @@ export class Table extends React.Component {
     var end = this.over.i;
     this.dragged.el.style.display = 'table-row';
     if (start === end) {
-      _.defer(()=>this.dragged.el.parentNode.removeChild(this.placeholder));
+      _.defer(()=>{
+        try {
+          this.dragged.el.parentNode.removeChild(this.placeholder);
+        } catch (e) {}
+      });
       return;
     }
     if (start < end) {
@@ -247,7 +251,7 @@ export class Table extends React.Component {
       try {
         parent.parentNode.insertBefore(this.placeholder, e.target.parentNode);
       } catch (e) {}
-    } 
+    }
   }
   handleSelect(i){
     var s = this.state;
@@ -336,12 +340,12 @@ export class Table extends React.Component {
                 {s.columns.map((column, i)=>{
                   var columnLabel = p.s.prefs.mode === 'apps' && column === 'domain' ? 'webWrapper' : column === 'mutedInfo' ? 'muted' : column;
                   return (
-                    <th 
-                    key={i} 
-                    className={`sorting${s.order === column ? '_'+s.direction : ''}`} 
+                    <th
+                    key={i}
+                    className={`sorting${s.order === column ? '_'+s.direction : ''}`}
                     style={{WebkitUserSelect: 'none'}}
-                    rowSpan="1" 
-                    colSpan="1" 
+                    rowSpan="1"
+                    colSpan="1"
                     onClick={()=>this.handleColumnClick(column)}>
                       {_.upperFirst(columnLabel.replace(/([A-Z])/g, ' $1'))}
                     </th>
@@ -356,8 +360,8 @@ export class Table extends React.Component {
                   <Row
                     s={p.s}
                     key={i}
-                    className={i % 2 === 0 ? 'even' : 'odd'} 
-                    style={{fontSize: '14px', backgroundColor: s.rowHover === i || s.selectedItems.indexOf(i) !== -1 ? themeStore.opacify(p.theme.lightBtnBg, 0.5) : 'initial'}} 
+                    className={i % 2 === 0 ? 'even' : 'odd'}
+                    style={{fontSize: '14px', backgroundColor: s.rowHover === i || s.selectedItems.indexOf(i) !== -1 ? themeStore.opacify(p.theme.lightBtnBg, 0.5) : 'initial'}}
                     onMouseEnter={()=>this.setState({rowHover: i})}
                     draggable={p.s.prefs.mode === 'tabs' && p.s.prefs.drag}
                     onDragEnd={this.dragEnd}

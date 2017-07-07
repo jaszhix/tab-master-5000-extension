@@ -8,24 +8,24 @@ var prefsStore = Reflux.createStore({
       autoDiscard: false,
       autoDiscardTime: 3600000,
       tabSizeHeight: 134,
-      settingsMax: false, 
-      drag: true, 
-      context: true, 
-      animations: true, 
-      duplicate: true, 
+      settingsMax: false,
+      drag: true,
+      context: true,
+      animations: true,
+      duplicate: true,
       screenshot: false,
       screenshotInit: false,
       screenshotChrome: true,
       screenshotBg: false,
       screenshotBgBlur: 5,
       screenshotBgOpacity: 5,
-      blacklist: true, 
-      sidebar: true, 
+      blacklist: true,
+      sidebar: true,
       sort: true,
       showViewMode: true,
       mode: 'tabs',
       format: 'tile',
-      installTime: Date.now(), 
+      installTime: Date.now(),
       actions: false,
       sessionsSync: false,
       singleNewTab: false,
@@ -63,7 +63,7 @@ var prefsStore = Reflux.createStore({
         autoDiscard: prefs.autoDiscard,
         autoDiscardTime: prefs.autoDiscardTime,
         tabSizeHeight: prefs.tabSizeHeight,
-        drag: prefs.drag, 
+        drag: prefs.drag,
         context: prefs.context,
         duplicate: prefs.duplicate,
         screenshot: prefs.screenshot,
@@ -176,7 +176,7 @@ var prefsStore = Reflux.createStore({
     chrome.storage.sync.set({preferences: parsedPrefs}, (result)=> {
       chrome.storage.sync.set({themePrefs: themePrefs}, (result)=> {
         console.log('Preferences saved: ', this.prefs, themePrefs);
-      }); 
+      });
     });
   },
   get_prefs() {

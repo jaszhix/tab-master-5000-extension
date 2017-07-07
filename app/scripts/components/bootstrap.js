@@ -32,7 +32,7 @@ export class Btn extends React.Component {
   componentWillUnmount(){
     try {
       v(ReactDOM.findDOMNode(this)).css({display: 'none'});
-    } catch (e) {} 
+    } catch (e) {}
   }
   themeChange(e){
     if (e.theme) {
@@ -70,24 +70,24 @@ export class Btn extends React.Component {
           textShadow: `1px 1px ${s.theme.lightBtnTextShadow}`
         };
       }
-      _.merge(style, {
+      _.assignIn(style, {
         boxShadow: `${s.theme.tileShadow} 1px 1px 5px -1px`,
         opacity: '1'
       });
-      _.merge(style, _.cloneDeep(p.style));
+      _.assignIn(style, _.cloneDeep(p.style));
       var faStyle = {
         paddingRight: !p.noIconPadding ? '6px' : null
       };
-      _.merge(faStyle, _.cloneDeep(p.faStyle));
+      _.assignIn(faStyle, _.cloneDeep(p.faStyle));
       return (
-        <button 
-          data-tip={p['data-tip'] ? `<div style="max-width: 350px;">${p['data-tip']}</div>` : null} 
-          ref="btn" 
+        <button
+          data-tip={p['data-tip'] ? `<div style="max-width: 350px;">${p['data-tip']}</div>` : null}
+          ref="btn"
           style={style}
-          onMouseEnter={this.handleHoverIn} 
-          onMouseLeave={this.handleHoverOut}  
+          onMouseEnter={this.handleHoverIn}
+          onMouseLeave={this.handleHoverOut}
           onClick={p.onClick}
-          id={p.id} 
+          id={p.id}
           className={p.className}>
             <div className="btn-label">{p.fa || p.icon ? <i style={{paddingRight: '2px'}} className={`${p.fa ? 'fa fa-'+p.fa : ''}${p.icon ? ' icon-'+p.icon : ''}`} style={faStyle}></i> : null}{p.fa ? ' ' : null}{p.children}</div>
           </button>
@@ -178,7 +178,7 @@ export class Panel extends React.Component {
       onDragEnd={p.onDragEnd}
       onDragStart={p.onDragStart}
       onDragOver={p.onDragOver}
-      className={`panel panel-${p.type}${p.className ? ' '+p.className : ''}`} 
+      className={`panel panel-${p.type}${p.className ? ' '+p.className : ''}`}
       style={defaultStyle}
       onMouseEnter={p.onMouseEnter}
       onMouseLeave={p.onMouseLeave}
@@ -248,8 +248,8 @@ export class ModalOverlay extends React.Component {
     overlayStyle = _.assignIn(overlayStyle, p.overlayStyle);
     return (
       <div className={`modal fade${s.fadeIn ? ' in' : ''}`} style={overlayStyle}>
-        <ModalDefault 
-        onClose={this.handleCloseClick} 
+        <ModalDefault
+        onClose={this.handleCloseClick}
         header={p.header}
         size={p.size}
         heightOffset={p.heightOffset}
@@ -367,7 +367,7 @@ export class Tabs extends React.Component {
           })}
         </ul>
 
-        {p.children ? 
+        {p.children ?
         <div className="tab-content">
           {p.children}
         </div> : null}
@@ -392,12 +392,12 @@ export class Context extends React.Component {
     var p = this.props;
     return (
       <ul className="dropdown-menu dropdown-menu-xs" style={{
-        display: 'block', 
-        position: 'relative', 
-        width: '100%', 
-        marginTop: '0', 
-        float: 'none', 
-        padding: '1px', 
+        display: 'block',
+        position: 'relative',
+        width: '100%',
+        marginTop: '0',
+        float: 'none',
+        padding: '1px',
         borderRadius: '1px',
         backgroundColor: p.theme.settingsBg
       }}>
@@ -412,9 +412,9 @@ export class Context extends React.Component {
                   <label style={{paddingLeft: '47px', paddingTop: '6px', paddingBottom: '6px', color: p.theme.bodyText}} onClick={option.onClick}>
                     <span className="switchery switchery-default" style={{
                       left: '8px',
-                      backgroundColor: option.switch ? p.theme.darkBtnBg : 'rgba(255, 255, 255, 0)', 
-                      borderColor: option.switch ? p.theme.textFieldBorder : p.theme.darkBtnBg, 
-                      boxShadow: `${option.switch ? p.theme.textFieldBorder : p.theme.darkBtnBg} 0px 0px 0px 8px inset`, 
+                      backgroundColor: option.switch ? p.theme.darkBtnBg : 'rgba(255, 255, 255, 0)',
+                      borderColor: option.switch ? p.theme.textFieldBorder : p.theme.darkBtnBg,
+                      boxShadow: `${option.switch ? p.theme.textFieldBorder : p.theme.darkBtnBg} 0px 0px 0px 8px inset`,
                       WebkitTransition: p.animations ? 'border 0.4s, box-shadow 0.4s, background-color 1.2s' : 'initial',
                     }}>
                       <small style={{left: option.switch ? '14px' : '0px', WebkitTransition: p.animations ? 'background-color 0.4s, left 0.2s' : 'initial', backgroundColor: option.switch ? p.theme.darkBtnText : p.theme.bodyText}} />
@@ -424,7 +424,7 @@ export class Context extends React.Component {
                 </li>
               );
             } else {
-              return <li key={i}><a style={{cursor: 'pointer', color: p.theme.bodyText}} onClick={option.onClick}><i style={{color: p.theme.bodyText}} className={option.icon} /> {option.label}</a></li>; 
+              return <li key={i}><a style={{cursor: 'pointer', color: p.theme.bodyText}} onClick={option.onClick}><i style={{color: p.theme.bodyText}} className={option.icon} /> {option.label}</a></li>;
             }
           } else {
             return null;

@@ -106,7 +106,7 @@ class Loading extends React.Component {
         {this.error && !p.top ?
           <div className="container">
             <div className="row">{utils.t('encounteredError')} <a style={errorLink} href="https://chrome.google.com/webstore/detail/tab-master-5000-tab-swiss/mippmhcfjhliihkkdobllhpdnmmciaim/support">{utils.t('chromeWebStore')}</a>, {utils.t('orAsAnIssueOn')} <a style={errorLink} href="https://github.com/jaszhix/tab-master-5000-chrome-extension/issues">{utils.t('github')}</a>, {utils.t('soThisIssueCanBeInvestigated')} </div>
-            
+
             <div className="row" style={{margin: '0px auto', position: 'fixed', right: '0px', bottom: '0px'}}>
               <button className="ntg-btn" onClick={()=>sessionsStore.exportSessions(p.sessions)}>Backup Sessions</button>
               <button className="ntg-btn" onClick={()=>themeStore.export()}>Backup Themes</button>
@@ -170,16 +170,16 @@ class Search extends React.Component {
   render() {
     var p = this.props;
     const headerStyle = {
-      backgroundColor: this.state.theme.headerBg, 
-      position: 'fixed', 
-      top: '0px', 
-      width: '100%', 
-      zIndex: '500', 
-      boxShadow: `${p.theme.tileShadow} 1px 1px 3px -1px`, 
+      backgroundColor: this.state.theme.headerBg,
+      position: 'fixed',
+      top: '0px',
+      width: '100%',
+      zIndex: '500',
+      boxShadow: `${p.theme.tileShadow} 1px 1px 3px -1px`,
       maxHeight: '52px'
     };
     const topNavButtonStyle = {
-      fontSize: p.s.width <= 841 ? '20px' : '14px', 
+      fontSize: p.s.width <= 841 ? '20px' : '14px',
       marginRight: 'initial'
     };
     return (
@@ -187,20 +187,20 @@ class Search extends React.Component {
         <Row style={{position: 'relative', top: '9px', maxHeight: '35px'}}>
           <Col size={p.s.width <= 825 ? p.s.width <= 630 ? p.s.width <= 514 ? '10' : '8' : '6' : '4'}>
             <div style={{display: 'flex', width: '100%', paddingLeft: '0px', paddingRight: '0px'}}>
-              <Btn 
-              onClick={this.handleSidebar} 
-              onMouseEnter={()=>state.set({disableSidebarClickOutside: true})} 
-              onMouseLeave={()=>state.set({disableSidebarClickOutside: false})} 
-              style={{marginRight: '0px', padding: '9px 12px 7px 12px'}} 
-              className="ntg-top-btn" 
+              <Btn
+              onClick={this.handleSidebar}
+              onMouseEnter={()=>state.set({disableSidebarClickOutside: true})}
+              onMouseLeave={()=>state.set({disableSidebarClickOutside: false})}
+              style={{marginRight: '0px', padding: '9px 12px 7px 12px'}}
+              className="ntg-top-btn"
               icon="menu7"
               noIconPadding={true} />
-              <input 
+              <input
                 type="text"
                 value={p.s.search}
-                className="form-control search-tabs" 
+                className="form-control search-tabs"
                 placeholder={`${utils.t('search')} ${utils.t(p.s.prefs.mode)}...`}
-                onChange={this.handleSearch} 
+                onChange={this.handleSearch}
                 onKeyDown={(e)=>this.handleEnter(e)}/>
             </div>
           </Col>
@@ -211,7 +211,7 @@ class Search extends React.Component {
             {p.s.topNavButton === 'installed' ? <Btn onClick={()=>this.handleTopNavButtonClick(()=>this.openAbout())} style={topNavButtonStyle} className="ntg-sort-btn pull-right" fa="thumbs-o-up" data-place="bottom" data-tip={p.s.width <= 841 ? utils.t('thankYouForInstallingTM5K') : null}>{p.s.width <= 841 ? '' : utils.t('thankYouForInstallingTM5K')}</Btn> : null}
             {p.topLoad ? <Loading top={true} /> : null}
             {p.s.topNavButton === 'dlFavicons' && p.topLoad ? <div><p className="tm5k-info pull-right" style={{color: p.theme.darkBtnText, textShadow: `2px 2px ${p.theme.darkBtnTextShadow}`, position: 'relative', top: '2px', marginRight: '8px'}}> {p.s.width <= 841 ? '' : utils.t('downloadingAndCachingFavicons')}</p></div> : null}
-          </Col>  
+          </Col>
         </Row>
       </div>
     );
@@ -244,7 +244,7 @@ class Root extends React.Component {
     this.listenTo(themeStore, this.themeChange);
     window._trackJs.version = utilityStore.get_manifest().version;
     this.init(this.props);
-    
+
   }
   componentWillReceiveProps(nP){
     var p = this.props;
@@ -269,7 +269,7 @@ class Root extends React.Component {
       stateUpdate.topNavButton = 'dlFavicons';
       sUChange = true;
     }
-    if (!_.isEqual(nP.s.reQuery, p.s.reQuery) && nP.s.reQuery.state 
+    if (!_.isEqual(nP.s.reQuery, p.s.reQuery) && nP.s.reQuery.state
       || nP.s.search.length < p.s.search.length) {
       nP.s.reQuery.state = true;
       this.reQuery(nP, stateUpdate, (sU)=>{
@@ -459,7 +459,7 @@ class Root extends React.Component {
       }
       .rc-slider-handle:hover {
         background-color: ${themeStore.opacify(e.theme.darkBtnBgHover, 0.9)};
-        border: solid 2px ${themeStore.opacify(e.theme.lightBtnBgHover, 0.85)}; 
+        border: solid 2px ${themeStore.opacify(e.theme.lightBtnBgHover, 0.85)};
       }
       .__react_component_tooltip {
         z-index: 9999 !important;
@@ -525,7 +525,7 @@ class Root extends React.Component {
         var filter = p.s.prefs.mode === 'bookmarks' ? {folder: e} : {originSession: e};
         console.log('filter', filter);
         stateUpdate[p.s.modeKey] = _.filter(p.s[p.s.modeKey], filter);
-        stateUpdate.tileCache = p.s[p.s.modeKey]; 
+        stateUpdate.tileCache = p.s[p.s.modeKey];
       } else {
         stateUpdate[p.s.modeKey] = p.s.tileCache;
         stateUpdate.tileCache = null;
@@ -536,7 +536,7 @@ class Root extends React.Component {
       } else {
         state.set(stateUpdate);
       }
-      
+
     } else {
       if (sU) {
         sU.tabs = p.s.tabs;
@@ -650,12 +650,12 @@ class Root extends React.Component {
   checkDuplicateTabs(stateUpdate, tabs){
     let tabUrls = [];
     for (let i = 0, len = tabs.length; i < len; i++) {
-      tabUrls.push(tabs[i].url);    
+      tabUrls.push(tabs[i].url);
     }
     console.log('Duplicates: ', utils.getDuplicates(tabUrls));
     if (utils.hasDuplicates(tabUrls)) {
       stateUpdate.duplicateTabs = utils.getDuplicates(tabUrls);
-    } 
+    }
     return stateUpdate;
   }
   reQuery(p=null, stateUpdate, cb) {
@@ -748,34 +748,34 @@ class Root extends React.Component {
       var options = v('#options').n;
       return (
         <div className="container-main">
-          {options ? <Preferences options={true} settingsMax={true} prefs={p.s.prefs} tabs={p.s.tabs} theme={s.theme} /> 
-          : 
+          {options ? <Preferences options={true} settingsMax={true} prefs={p.s.prefs} tabs={p.s.tabs} theme={s.theme} />
+          :
           <div>
-            {p.s.context.value ? 
+            {p.s.context.value ?
             <ContextMenu
             mode={p.s.prefs.mode}
             modeKey={p.s.modeKey}
             actions={p.s.actions}
-            search={p.s.search} 
+            search={p.s.search}
             tabs={p.s[p.s.prefs.mode]}
-            prefs={p.s.prefs} 
-            cursor={cursor} 
-            context={p.s.context} 
-            chromeVersion={p.s.chromeVersion} 
-            duplicateTabs={p.s.duplicateTabs} 
+            prefs={p.s.prefs}
+            cursor={cursor}
+            context={p.s.context}
+            chromeVersion={p.s.chromeVersion}
+            duplicateTabs={p.s.duplicateTabs}
             theme={s.theme} /> : null}
-            {p.s.modal ? 
-              <ModalHandler 
-              modal={p.s.modal} 
+            {p.s.modal ?
+              <ModalHandler
+              modal={p.s.modal}
               tabs={p.s.tabs}
               allTabs={p.s.allTabs}
-              sessions={p.s.sessions} 
-              prefs={p.s.prefs} 
-              favicons={p.s.favicons} 
-              collapse={p.s.collapse} 
+              sessions={p.s.sessions}
+              prefs={p.s.prefs}
+              favicons={p.s.favicons}
+              collapse={p.s.collapse}
               theme={s.theme}
               colorPickerOpen={p.s.colorPickerOpen}
-              savedThemes={s.savedThemes} 
+              savedThemes={s.savedThemes}
               standardThemes={s.standardThemes}
               wallpaper={s.wallpaper}
               wallpapers={s.wallpapers}
@@ -787,7 +787,7 @@ class Root extends React.Component {
                 <Search
                 s={p.s}
                 event={s.event}
-                topLoad={s.topLoad} 
+                topLoad={s.topLoad}
                 theme={s.theme}  />
                 <div style={{
                   position: 'absolute',
@@ -797,7 +797,7 @@ class Root extends React.Component {
                   width: `${p.s.width}px`,
                   top: p.s.prefs.format === 'tile' ? '57px' : '51px'
                 }}>
-                  {s.grid && p.s[p.s.modeKey] ? 
+                  {s.grid && p.s[p.s.modeKey] ?
                     <TileGrid
                     s={p.s}
                     data={p.s[p.s.modeKey]}
@@ -816,9 +816,9 @@ class Root extends React.Component {
                     />
                   : <Loading sessions={p.s.sessions}  />}
                 </div>
-                {p.s.modal && !p.s.modal.state && p.s.prefs.tooltip ? 
-                <ReactTooltip 
-                effect="solid" 
+                {p.s.modal && !p.s.modal.state && p.s.prefs.tooltip ?
+                <ReactTooltip
+                effect="solid"
                 place="bottom"
                 multiline={true}
                 html={true}
@@ -863,7 +863,7 @@ class App extends Reflux.Component {
       hasScrollbar: true
     };
     if (s.init) {
-      _.merge(stateUpdate, _stateUpdate);
+      _.assignIn(stateUpdate, _stateUpdate);
       this.setKeyboardShortcuts(stateUpdate);
     }
     state.set(stateUpdate);
@@ -916,8 +916,8 @@ var loadFavicons = (cb)=>{
 var loadPrefs = ()=>{
   chrome.runtime.sendMessage(chrome.runtime.id, {method: 'prefs'}, (response)=>{
     var stateUpdate = {
-      prefs: response.prefs, 
-      init: false, 
+      prefs: response.prefs,
+      init: false,
       chromeVersion: utilityStore.chromeVersion()
     };
     console.log('Prefs loaded: ', response);

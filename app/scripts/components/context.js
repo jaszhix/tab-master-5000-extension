@@ -22,7 +22,14 @@ class ContextMenu extends React.Component {
     this.handleOptions(this.props);
     _.defer(()=>{
       var positionedDiv = v('#main > div > div > div.ntg-context > div');
-      var divTop = positionedDiv.css().top.split('px')[0];
+      let top = positionedDiv.css().top;
+      let divTop = 0;
+      if (top && top.indexOf('px') > -1) {
+        divTop = top.split('px')[0];
+      }
+      if (isNaN(divTop)) {
+        divTop = 0;
+      }
       if (!positionedDiv.inViewport()) {
         positionedDiv.css({top: `${divTop - 100}px`});
       }
@@ -42,7 +49,7 @@ class ContextMenu extends React.Component {
     p.context.value = false;
     p.context.id = null;
     state.set({
-      context: p.context, 
+      context: p.context,
       disableSidebarClickOutside: false
     });
     if (p.context.hasOwnProperty('origin')) {
@@ -171,7 +178,7 @@ class ContextMenu extends React.Component {
       }
       p.context.options = contextOptions;
       state.set({
-        context: p.context, 
+        context: p.context,
         disableSidebarClickOutside: true
       });
     };
@@ -188,7 +195,7 @@ class ContextMenu extends React.Component {
     var isSelectedItems = _.isArray(p.context.id);
     var t = _.cloneDeep(this);
     p = recursion === 0 ? t.props : p;
-  
+
     if (isSelectedItems) {
       var selectedItems = p.context.id;
       for (let z = 0, len = selectedItems.length; z < len; z++) {
