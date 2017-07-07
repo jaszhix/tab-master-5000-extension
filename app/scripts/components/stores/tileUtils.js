@@ -242,7 +242,7 @@ export var filterFavicons = (faviconUrl, tabUrl, mode=null)=>{
     } else {
       return `../images/IDR_SETTINGS_FAVICON@2x.png`;
     }
-    
+
   } else if (tabUrl && tabUrl.indexOf('chrome://') !== -1 && mode === 'settings') {
     urlPart = tabUrl.split('chrome://')[1];
     var chromePage = urlPart.indexOf('/') !== -1 ? urlPart.split('/')[0] : urlPart;
@@ -296,7 +296,12 @@ export var formatBytes = (bytes, decimals)=>{
 };
 
 export var scrollbarVisible = (element)=>{
-  return element.scrollHeight > element.clientHeight;
+  let hasVScroll = document.body.scrollHeight > document.body.clientHeight;
+  let cStyle = document.body.currentStyle || window.getComputedStyle(document.body, '');
+  return !(cStyle.overflow === 'visible'
+    || cStyle.overflowY === 'visible'
+    || (hasVScroll && cStyle.overflow === 'auto')
+    || (hasVScroll && cStyle.overflowY === 'auto'));
 };
 
 export var searchChange = (p, tabs)=>{
