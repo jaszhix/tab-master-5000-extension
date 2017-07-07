@@ -111,6 +111,7 @@
         "no-undef": 0,
         "no-undefined": 0,
         "no-unused-vars": 1,
+        "react/jsx-uses-vars": 1,
         "no-use-before-define": [1,"nofunc"],
         "callback-return": 0,
         "handle-callback-err": 0,

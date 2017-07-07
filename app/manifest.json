@@ -1,7 +1,7 @@
 {
   "name": "__MSG_appName__",
   "short_name": "Tab Master 5000",
-  "version": "2.2.0",
+  "version": "2.2.2",
   "manifest_version": 2,
   "description": "__MSG_appDesc__",
   "icons": {
@@ -25,9 +25,6 @@
       "38": "images/icon-38.png"
     },
     "default_title": "__MSG_appName__"
-  },
-  "omnibox": {
-    "keyword": "tm5k"
   },
   "offline_enabled": true,
   "content_scripts": [

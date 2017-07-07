@@ -1,5 +1,12 @@
 #### Release Notes
 
+##### v2.2.2 / *7-6-17*
+
+*   Excluded the javascript domain from bookmark indexes.
+*   Ensured the "Press Enter to Search Google" text appears if any characters are entered in the search field.
+*   Addressed exceptions caught through TrackJS.
+*   Updated dependencies.
+
 ##### v2.2.1 / *2-28-17*
 
 *   Changed the way the blacklist works. Blacklisted domains no longer are comma separated. Each domain goes on a new line now. This change was made to address a bug preventing some domains from being added.
@@ -130,7 +137,7 @@
 *   New table mode.
 *   Cached favicons now load properly in history and bookmarks mode.
 *   New favicons are no longer downloaded in sessions mode.
-*   Tab action history, screenshot generation, and synchronized sessions now update persistently in the background. 
+*   Tab action history, screenshot generation, and synchronized sessions now update persistently in the background.
 *   Added new optional feature for Chrome 54+ - automatic discarding of tabs from memory. The expiration time before a tab's memory is dumped from Chrome can be adjusted in Preferences.
 *   Added the ability to restore individual windows to the session manager.
 *   Added a "Load More" button underneath the tile grid for users with large displays that cannot use scroll based pagination.
@@ -178,7 +185,7 @@
 ##### v1.6.0 / *7-1-16*
 
 *   Rewrote the session manager, it now tracks all windows in a session, and session synchronization is now faster and lighter.
-   *   Old session backup files will be converted to the new session format. 
+   *   Old session backup files will be converted to the new session format.
 *   The sidebar has been updated and now behaves like a dropdown, along with styling changes.
 
 ##### v1.5.5 / *6-28-16*
@@ -232,7 +239,7 @@
 
 ##### v1.4.0 / *5-7-16*
 
-*   Performance improvements in tabs view mode: Rewrote how tab tiles are updated, created, and removed. TM5K now only queries individual tabs that are updated or created. 
+*   Performance improvements in tabs view mode: Rewrote how tab tiles are updated, created, and removed. TM5K now only queries individual tabs that are updated or created.
 *   Added a new sorting option called Updated. It allows you to sort tabs by the last time they were updated by Chrome. Tab update times are only tracked while a New Tab page is open.
 
 ##### v1.3.2 / *5-1-16*
@@ -316,9 +323,9 @@ This is the first major version bump for TM5K. It still has plenty of room for i
 *   Added an Options page that will allow you to directly access the Preferences dialogue from the extensions page.
 *   Added a slider in Preferences that adjusts the tile size.
 *   Added a slider in Preferences that controls the strength of the screenshot background blur.
-*   Fixed the right click context menu not working after using it once. 
+*   Fixed the right click context menu not working after using it once.
 *   Fixed pinning animation not turning off when animations are disabled.
-*   Fixed the sidebar not loading correctly on initial load.  
+*   Fixed the sidebar not loading correctly on initial load.
 
 ##### v0.14 / *2-3-16*
 
@@ -335,7 +342,7 @@ This is the first major version bump for TM5K. It still has plenty of room for i
 
 ##### v0.13 / *1-26-16*
 
-*   Added favicon caching for tabs and sessions. Before, everytime you loaded a New Tab page, it would send an HTTP request to every website for the URL to its favicon file. Now, TM5K will only download the favicons once for each domain, and cache it in Chrome storage. 
+*   Added favicon caching for tabs and sessions. Before, everytime you loaded a New Tab page, it would send an HTTP request to every website for the URL to its favicon file. Now, TM5K will only download the favicons once for each domain, and cache it in Chrome storage.
 *   Added a loading indicator to the top bar for queries and favicon caching.
 *   Changed the top bar and side bar to a fixed position, so when you scroll down, all of the extension options are readily available.
 *   Changed the tile limit behavior from hiding tiles, to preventing their rendering. This increases the performance of TM5K when hundreds of tiles are being loaded in history, bookmarks, and session grid views. There is still a tile limit of 100, and scrolling to the bottom of the page loads 100 more tiles. When you search a view, all tiles will be searched still.
