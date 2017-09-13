@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import PropTypes from 'prop-types';
 import autoBind from 'react-autobind';
 import reactMixin from 'react-mixin';
 import Reflux from 'reflux';
@@ -80,7 +81,7 @@ class ColorPickerContainer extends React.Component {
               defaultAlpha={100}
               alpha={s.alpha}
               onChange={this.handleColorChange}
-            /> 
+            />
           </span>
           <div style={{display: 'inline-block', position: 'relative', top: '-5px', left: '6px'}}>
             {p.label}
@@ -175,18 +176,18 @@ class Theming extends React.Component {
     p.modal.footer = (
       <div>
         {s.showCustomButtons || p.savedThemes.length === 0 ?
-        <Btn 
-          onClick={s.isNewTheme || !s.selectedTheme ? ()=>this.handleSaveTheme() : ()=>this.handleUpdateTheme()} 
+        <Btn
+          onClick={s.isNewTheme || !s.selectedTheme ? ()=>this.handleSaveTheme() : ()=>this.handleUpdateTheme()}
           style={{fontWeight: s.boldUpdate ? '600' : '400'}}
           icon="floppy-disk"
           className="ntg-setting-btn">
           {`${s.isNewTheme ? utils.t('save') : utils.t('update')}${p.collapse ? ' '+utils.t('theme') : ''}`}
         </Btn> : null}
         <Btn onClick={this.handleNewTheme} icon="color-sampler" className="ntg-setting-btn" >{`${utils.t('new')} ${p.collapse ? utils.t('theme') : ''}`}</Btn>
-        {s.savedThemes.length > 0 ? 
+        {s.savedThemes.length > 0 ?
         <Btn onClick={()=>themeStore.export()} className="ntg-setting-btn" icon="database-export">{utils.t('export')}</Btn> : null}
         <Btn onClick={()=>this.triggerRefClick('import')} className="ntg-setting-btn" icon="database-insert">{utils.t('import')}</Btn>
-        {s.rightTab === 'wallpaper' ? 
+        {s.rightTab === 'wallpaper' ?
         <Btn onClick={()=>this.triggerRefClick('wallpaper')} className="ntg-setting-btn" icon="file-picture">{utils.t('importWallpaper')}</Btn> : null}
         {s.rightTab === 'color' ? <Btn onClick={()=>this.setState({colorGroup: 'general'})} className="ntg-setting-btn">{utils.t('bodyHeaderAndFields')}</Btn> : null}
         {s.rightTab === 'color' ? <Btn onClick={()=>this.setState({colorGroup: 'buttons'})} className="ntg-setting-btn">{utils.t('buttons')}</Btn> : null}
@@ -251,7 +252,7 @@ class Theming extends React.Component {
         <input children={undefined} type="file" onChange={(e)=>themeStore.import(e)} accept=".json" ref="import" style={style.hiddenInput} />
         <input children={undefined} type="file" onChange={(e)=>themeStore.importWallpaper(e, s.selectedTheme.id)} accept=".jpg,.jpeg,.png" ref="wallpaper" style={style.hiddenInput} />
         <Col size="3" className="ntg-tabs" style={{borderBottom: 'initial', position: 'fixed', zIndex: '9999', marginTop: '-20px', height: '50px', backgroundColor: p.theme.settingsBg}}>
-          <div role="tabpanel" style={{position: 'relative', top: '18px'}}> 
+          <div role="tabpanel" style={{position: 'relative', top: '18px'}}>
             <ul className="nav nav-tabs">
               <li style={{padding: '0px'}} className={`${s.leftTab === 'custom' ? 'active' : ''}`}>
                 <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({leftTab: 'custom'})}>{utils.t('custom')}</a>
@@ -267,18 +268,18 @@ class Theming extends React.Component {
               <Row>
                 {s.savedThemes.length > 0 ? s.savedThemes.map((theme, i)=>{
                   return (
-                    <Row 
+                    <Row
                     key={i}
                     className="ntg-session-row"
-                    style={p.prefs.theme === theme.id ? {backgroundColor: p.theme.darkBtnBg, color: s.themeHover === i ? p.theme.bodyText : p.theme.darkBtnText, maxHeight: '28px'} : {backgroundColor: s.themeHover === i ? p.theme.settingsItemHover : 'initial', maxHeight: '28px'}}  
+                    style={p.prefs.theme === theme.id ? {backgroundColor: p.theme.darkBtnBg, color: s.themeHover === i ? p.theme.bodyText : p.theme.darkBtnText, maxHeight: '28px'} : {backgroundColor: s.themeHover === i ? p.theme.settingsItemHover : 'initial', maxHeight: '28px'}}
                     onMouseEnter={()=>this.setState({themeHover: i})}>
-                      <div 
-                      className="ntg-session-text" 
-                      style={{width: 'auto', display: 'inline', cursor: p.prefs.theme !== theme.id ? 'pointer' : 'initial', fontWeight: p.prefs.theme === theme.id ? '600' : 'initial', color: p.prefs.theme === theme.id ? p.theme.darkBtnText : p.theme.bodyText}} 
+                      <div
+                      className="ntg-session-text"
+                      style={{width: 'auto', display: 'inline', cursor: p.prefs.theme !== theme.id ? 'pointer' : 'initial', fontWeight: p.prefs.theme === theme.id ? '600' : 'initial', color: p.prefs.theme === theme.id ? p.theme.darkBtnText : p.theme.bodyText}}
                       onClick={s.themeLabel !== i && theme.id !== p.prefs.theme ? ()=>this.handleSelectTheme(theme) : null}>
-                        {s.themeLabel === i ? 
-                        <input 
-                        children={undefined} 
+                        {s.themeLabel === i ?
+                        <input
+                        children={undefined}
                         type="text"
                         value={s.themeLabelValue}
                         className="form-control"
@@ -300,14 +301,14 @@ class Theming extends React.Component {
               <Row>
                 {p.standardThemes.map((theme, i)=>{
                   return (
-                    <Row 
+                    <Row
                     key={i}
                     className="ntg-session-row"
-                    style={p.prefs.theme === theme.id ? {backgroundColor: p.theme.darkBtnBg, color: p.theme.lightBtnText, maxHeight: '28px'} : {backgroundColor: s.themeHover === i ? p.theme.settingsItemHover : 'initial', maxHeight: '28px'}} 
+                    style={p.prefs.theme === theme.id ? {backgroundColor: p.theme.darkBtnBg, color: p.theme.lightBtnText, maxHeight: '28px'} : {backgroundColor: s.themeHover === i ? p.theme.settingsItemHover : 'initial', maxHeight: '28px'}}
                     onMouseEnter={()=>this.setState({themeHover: i})}>
-                      <div 
-                      className="ntg-session-text" 
-                      style={{width: 'auto', display: 'inline', cursor: p.prefs.theme !== theme.id ? 'pointer' : null, fontWeight: p.prefs.theme === theme.id ? '600' : 'initial', color: p.prefs.theme === theme.id ? p.theme.darkBtnText : p.theme.bodyText}} 
+                      <div
+                      className="ntg-session-text"
+                      style={{width: 'auto', display: 'inline', cursor: p.prefs.theme !== theme.id ? 'pointer' : null, fontWeight: p.prefs.theme === theme.id ? '600' : 'initial', color: p.prefs.theme === theme.id ? p.theme.darkBtnText : p.theme.bodyText}}
                       onClick={()=>this.handleSelectTheme(theme)}>
                         {utils.t(theme.camel)}
                       </div>
@@ -320,16 +321,16 @@ class Theming extends React.Component {
         </Col>
         <Row>
           <Col size="3">
-            
+
           </Col>
           <Col className="pickerCont" size="9" style={{marginTop: '8px', maxHeight: '218px', minHeight: '218px'}}>
             <Col size="8" className="ntg-tabs" style={{borderBottom: 'initial', position: 'fixed', zIndex: '9999', marginTop: '-28px', height: '50px', backgroundColor: p.theme.settingsBg}}>
-              <div role="tabpanel" style={{position: 'relative', top: '18px'}}> 
+              <div role="tabpanel" style={{position: 'relative', top: '18px'}}>
                 <ul className="nav nav-tabs">
                   <li style={{padding: '0px'}} className={`${s.rightTab === 'color' ? 'active' : ''}`}>
                     <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({rightTab: 'color'})}>{utils.t('colorScheme')}</a>
                   </li>
-                  {!s.isNewTheme && s.leftTab === 'custom' || s.leftTab === 'tm5k' && s.selectedTheme && s.selectedTheme !== undefined && s.selectedTheme.id !== 9000 ? 
+                  {!s.isNewTheme && s.leftTab === 'custom' || s.leftTab === 'tm5k' && s.selectedTheme && s.selectedTheme !== undefined && s.selectedTheme.id !== 9000 ?
                   <li style={{padding: '0px'}} className={`${s.rightTab === 'wallpaper' ? 'active' : ''}`}>
                     <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({rightTab: 'wallpaper'})}>{utils.t('wallpaper')}</a>
                   </li> : null}
@@ -362,32 +363,32 @@ class Theming extends React.Component {
             </Row> : null}
             {s.rightTab === 'wallpaper' ?
             <Row fluid={true} style={{marginTop: '28px', minHeight: '184px'}}>
-              <Col 
+              <Col
               size={p.wallpaper && p.wallpaper.data === -1 || !p.wallpaper || p.wallpaper.id >= 9000 ? '12' : '6'}
               style={{maxHeight: '211px', overflowY: 'auto'}}>
                 {p.wallpapers.length > 0 ? _.uniqBy(_.orderBy(p.wallpapers, ['desc'], ['created']), 'id').map((wp, i)=>{
                   var selectedWallpaper = p.wallpaper && wp.id === p.wallpaper.id;
                   return (
-                    <div 
-                    key={i} 
-                    onClick={p.prefs.wallpaper !== wp.id ? ()=>themeStore.selectWallpaper(s.selectedTheme.id, wp.id, true) : null} 
-                    className="wallpaper-tile" 
+                    <div
+                    key={i}
+                    onClick={p.prefs.wallpaper !== wp.id ? ()=>themeStore.selectWallpaper(s.selectedTheme.id, wp.id, true) : null}
+                    className="wallpaper-tile"
                     style={{
-                      backgroundColor: selectedWallpaper ? p.theme.darkBtnBg : p.theme.lightBtnBg, 
+                      backgroundColor: selectedWallpaper ? p.theme.darkBtnBg : p.theme.lightBtnBg,
                       backgroundImage: `url('${wp.data}')`,
-                      backgroundSize: 'cover', 
-                      height: '73px', 
-                      width: '130px', 
-                      padding: '6px', 
-                      display: 'inline-block', 
-                      margin: '8px', 
-                      border: selectedWallpaper ? `4px solid ${p.theme.darkBtnBg}` : 'initial', 
+                      backgroundSize: 'cover',
+                      height: '73px',
+                      width: '130px',
+                      padding: '6px',
+                      display: 'inline-block',
+                      margin: '8px',
+                      border: selectedWallpaper ? `4px solid ${p.theme.darkBtnBg}` : 'initial',
                       cursor: selectedWallpaper ? null : 'pointer'}}>
                         {selectedWallpaper ? <i className="icon-checkmark3" style={{
-                          position: 'relative', 
-                          top: '8px', 
-                          left: '37.5px', 
-                          display: 'table', 
+                          position: 'relative',
+                          top: '8px',
+                          left: '37.5px',
+                          display: 'table',
                           color: '#FFF',
                           textShadow: '1px 2px #000',
                           fontSize: '36px'
@@ -397,18 +398,18 @@ class Theming extends React.Component {
                 }) : null}
               </Col>
               {p.wallpaper && p.wallpaper.data !== -1 && p.wallpaper.id < 9000 ?
-              <Col 
+              <Col
               size="6"
               style={{paddingLeft: '24px'}}>
-                <div 
-                className="wallpaper-tile" 
+                <div
+                className="wallpaper-tile"
                 style={{
-                  backgroundColor: p.theme.lightBtnBg, 
-                  backgroundImage: `url('${p.wallpaper.data}')`, 
-                  backgroundSize: 'cover', 
-                  height: '180px', 
-                  width: '320px', 
-                  padding: '6px', 
+                  backgroundColor: p.theme.lightBtnBg,
+                  backgroundImage: `url('${p.wallpaper.data}')`,
+                  backgroundSize: 'cover',
+                  height: '180px',
+                  width: '320px',
+                  padding: '6px',
                   display: 'inline-block',
                   position: 'absolute',
                   margin: '0px auto',
@@ -572,60 +573,60 @@ class Sessions extends React.Component {
                     </div>
                   </div>
                   <div style={{width: 'auto', float: 'right', display: 'inline', position: 'relative', right: '5px', top: '1px'}}>
-                    {s.sessionHover === i ? 
-                    <Btn 
-                    onClick={()=>sessionsStore.v2Remove(p.sessions, session)} 
-                    className="ntg-session-btn" 
+                    {s.sessionHover === i ?
+                    <Btn
+                    onClick={()=>sessionsStore.v2Remove(p.sessions, session)}
+                    className="ntg-session-btn"
                     icon="cross"
-                    faStyle={{fontSize: '18px', position: 'relative', top: '0px'}} 
-                    noIconPadding={true} 
+                    faStyle={{fontSize: '18px', position: 'relative', top: '0px'}}
+                    noIconPadding={true}
                     data-tip={utils.t('removeSession')} /> : null}
-                    {s.sessionHover === i ? 
-                    <Btn 
-                    onClick={()=>sessionsStore.restore(session, p.prefs.screenshot)} 
-                    className="ntg-session-btn" 
+                    {s.sessionHover === i ?
+                    <Btn
+                    onClick={()=>sessionsStore.restore(session, p.prefs.screenshot)}
+                    className="ntg-session-btn"
                     icon="folder-open2"
                     faStyle={{fontSize: '14px', position: 'relative', top: '0px'}}
-                    noIconPadding={true} 
+                    noIconPadding={true}
                     data-tip={utils.t('restoreSession')}/> : null}
-                    {s.sessionHover === i && p.prefs.sessionsSync ? 
-                    <Btn 
-                    onClick={()=>msgStore.setPrefs({syncedSession: p.prefs.syncedSession === session.id ? null : session.id})} 
-                    className="ntg-session-btn" 
-                    icon="sync" 
-                    faStyle={{fontWeight: p.prefs.syncedSession === session.id ? '600' : 'initial', position: 'relative', top: '0px'}} 
-                    noIconPadding={true} 
+                    {s.sessionHover === i && p.prefs.sessionsSync ?
+                    <Btn
+                    onClick={()=>msgStore.setPrefs({syncedSession: p.prefs.syncedSession === session.id ? null : session.id})}
+                    className="ntg-session-btn"
+                    icon="sync"
+                    faStyle={{fontWeight: p.prefs.syncedSession === session.id ? '600' : 'initial', position: 'relative', top: '0px'}}
+                    noIconPadding={true}
                     data-tip={p.prefs.syncedSession === session.id ? utils.t('desynchronizeSession') : utils.t('synchronizeSession')}/> : null}
-                    {s.sessionHover === i ? 
-                    <Btn 
-                    onClick={()=>this.setState({searchField: i, expandedSession: i})} 
-                    className="ntg-session-btn" 
-                    icon="search4" 
-                    faStyle={{fontSize: '13px', position: 'relative', top: '0px'}} 
-                    noIconPadding={true} 
+                    {s.sessionHover === i ?
+                    <Btn
+                    onClick={()=>this.setState({searchField: i, expandedSession: i})}
+                    className="ntg-session-btn"
+                    icon="search4"
+                    faStyle={{fontSize: '13px', position: 'relative', top: '0px'}}
+                    noIconPadding={true}
                     data-tip={utils.t('searchSession')}/> : null}
-                    {!s.labelSession ? s.sessionHover === i && s.labelSession !== i ? 
-                    <Btn 
-                    onClick={()=>this.setState({labelSession: i, expandedSession: i})} 
-                    className="ntg-session-btn" 
+                    {!s.labelSession ? s.sessionHover === i && s.labelSession !== i ?
+                    <Btn
+                    onClick={()=>this.setState({labelSession: i, expandedSession: i})}
+                    className="ntg-session-btn"
                     icon="pencil"
-                    faStyle={{fontSize: '13px', position: 'relative', top: '0px'}} 
-                    noIconPadding={true} 
+                    faStyle={{fontSize: '13px', position: 'relative', top: '0px'}}
+                    noIconPadding={true}
                     data-tip={utils.t('editLabel')} /> : null : null}
                   </div>
                 </Row>
-                {s.expandedSession === i ? 
+                {s.expandedSession === i ?
                   <Row fluid={true} onMouseLeave={()=>this.setState({windowHover: -1})}>
                     <Row>
-                      {s.labelSession === i ? 
+                      {s.labelSession === i ?
                         <div>
                           <Col size="6">
                             <form onSubmit={(e)=>{
                               e.preventDefault();
                               this.labelSession(session);
                             }}>
-                              <input 
-                              children={undefined} 
+                              <input
+                              children={undefined}
                               type="text"
                               value={s.sessionLabelValue}
                               className="form-control label-session-input"
@@ -639,12 +640,12 @@ class Sessions extends React.Component {
                             <Btn style={{float: 'left', marginTop: '2px'}} faStyle={{fontSize: '14px', position: 'relative', top: '0px'}} onClick={()=>this.setState({labelSession: null})} className="ntg-session-btn" icon="cross" noIconPadding={true} data-tip="Cancel" />
                           </Col>
                         </div> : null}
-                        {s.searchField === i ? 
+                        {s.searchField === i ?
                         <Col size="12">
-                          <input 
-                          type="text" 
+                          <input
+                          type="text"
                           value={s.search}
-                          className="form-control session-field" 
+                          className="form-control session-field"
                           style={{backgroundColor: p.theme.settingsBg, color: p.theme.bodyText}}
                           placeholder={`${utils.t('searchSession')}...`}
                           onChange={(e)=>this.setState({search: e.target.value})} />
@@ -657,13 +658,13 @@ class Sessions extends React.Component {
                         <Row className="ntg-session-text" style={{marginBottom: s.selectedSavedSessionWindow === w || s.search.length > 0 ? '1px' : 'initial', minHeight: '22px'}}>
                           <span title={windowTitle} style={{position: 'relative', top: '1px', cursor: 'pointer'}} className="ntg-session-text" onClick={()=>this.setState({selectedSavedSessionWindow: s.selectedSavedSessionWindow === w ? -1 : w})}>{windowTitle}</span>
                           <div style={{width: 'auto', float: 'right', display: 'inline', position: 'relative', right: '5px', top: '1px'}}>
-                            {s.windowHover === w ? 
-                            <Btn 
-                            onClick={()=>sessionsStore.restoreWindow(session, w)} 
-                            className="ntg-session-btn" 
+                            {s.windowHover === w ?
+                            <Btn
+                            onClick={()=>sessionsStore.restoreWindow(session, w)}
+                            className="ntg-session-btn"
                             icon="folder-open2"
                             faStyle={{fontSize: '14px', position: 'relative', top: '0px'}}
-                            noIconPadding={true} 
+                            noIconPadding={true}
                             data-tip={utils.t('restoreWindow')}/> : null}
                           </div>
                         </Row>
@@ -679,18 +680,18 @@ class Sessions extends React.Component {
                               <Row onMouseEnter={()=>this.handleSelectedSessionTabHoverIn(x)} onMouseLeave={()=>this.handleSelectedSessionTabHoverOut(x)} key={x} style={{backgroundColor: s.selectedSessionTabHover === x ? p.theme.settingsItemHover : 'initial'}}>
                                 <Col size="8">
                                   <span title={t.title} onClick={()=>utilityStore.createTab(t.url)} style={{cursor: 'pointer'}}>
-                                    <img className="ntg-small-favicon" src={favIconUrl} /> 
+                                    <img className="ntg-small-favicon" src={favIconUrl} />
                                     {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {_.truncate(t.title, {length: 40})}
                                   </span>
                                 </Col>
                                 <Col size="4">
-                                  {s.selectedSessionTabHover === x ? 
-                                  <Btn 
-                                  onClick={()=>sessionsStore.v2RemoveTab(p.sessions, i, w, x)} 
-                                  className="ntg-session-btn" 
+                                  {s.selectedSessionTabHover === x ?
+                                  <Btn
+                                  onClick={()=>sessionsStore.v2RemoveTab(p.sessions, i, w, x)}
+                                  className="ntg-session-btn"
                                   icon="cross"
-                                  faStyle={{fontSize: '18px', position: 'relative', top: '0px'}}  
-                                  noIconPadding={true} 
+                                  faStyle={{fontSize: '18px', position: 'relative', top: '0px'}}
+                                  noIconPadding={true}
                                   data-tip={utils.t('removeTab')} />: null}
                                 </Col>
                               </Row>
@@ -706,7 +707,7 @@ class Sessions extends React.Component {
           })}
 
           <input children={undefined} type="file" onChange={(e)=>sessionsStore.importSessions(p.sessions, e)} accept=".json" ref="fileInput" style={style.hiddenInput} />
-          
+
         </Col>
         <Col size="6" className="session-col" onMouseLeave={()=>this.setState({currentSessionHover: -1})}>
           <h4>{utils.t('currentSession')}</h4>
@@ -717,13 +718,13 @@ class Sessions extends React.Component {
                 <Row className="ntg-session-text">
                   <span title={windowTitle} className="ntg-session-text" onClick={()=>this.setState({selectedCurrentSessionWindow: s.selectedCurrentSessionWindow === w ? -1 : w})} style={{cursor: 'pointer'}}>{windowTitle}</span>
                   <div style={{width: 'auto', float: 'right', display: 'inline', position: 'relative', right: '5px'}}>
-                    {s.currentSessionHover === w && _window.length > 0 ? 
-                    <Btn 
-                    onClick={()=>this.handleCurrentSessionCloseWindow(_window[0].windowId, w)} 
-                    className="ntg-session-btn" 
+                    {s.currentSessionHover === w && _window.length > 0 ?
+                    <Btn
+                    onClick={()=>this.handleCurrentSessionCloseWindow(_window[0].windowId, w)}
+                    className="ntg-session-btn"
                     icon="cross"
-                    faStyle={{fontSize: '18px', position: 'relative', top: '0px'}} 
-                    noIconPadding={true} 
+                    faStyle={{fontSize: '18px', position: 'relative', top: '0px'}}
+                    noIconPadding={true}
                     data-tip={utils.t('closeWindow')} /> : null}
                   </div>
                 </Row>
@@ -738,17 +739,17 @@ class Sessions extends React.Component {
                   return (
                     <Row className="ntg-session-text" key={i} style={{backgroundColor: s.currentSessionTabHover === i ? p.theme.settingsItemHover : 'initial', maxHeight: '20px'}} onMouseEnter={()=>this.setState({currentSessionTabHover: i})}>
                       <span title={t.title} onClick={()=>chrome.tabs.update(t.id, {active: true})} style={{cursor: 'pointer'}}>
-                        <img className="ntg-small-favicon" src={favIconUrl} />  
+                        <img className="ntg-small-favicon" src={favIconUrl} />
                         {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {t.title}
                       </span>
                       <div style={{width: 'auto', float: 'right', display: 'inline', position: 'relative', right: '5px'}}>
-                        {s.currentSessionTabHover === i ? 
-                        <Btn 
-                        onClick={()=>this.handleCurrentSessionCloseTab(t.id, w, i)} 
-                        className="ntg-session-btn" 
+                        {s.currentSessionTabHover === i ?
+                        <Btn
+                        onClick={()=>this.handleCurrentSessionCloseTab(t.id, w, i)}
+                        className="ntg-session-btn"
                         icon="cross"
-                        faStyle={{fontSize: '18px', position: 'relative', top: '0px'}} 
-                        noIconPadding={true} 
+                        faStyle={{fontSize: '18px', position: 'relative', top: '0px'}}
+                        noIconPadding={true}
                         data-tip={utils.t('closeTab')} /> : null}
                       </div>
                     </Row>
@@ -767,7 +768,7 @@ class Sessions extends React.Component {
 }
 
 Sessions.propTypes = {
-  collapse: React.PropTypes.bool
+  collapse: PropTypes.bool
 };
 Sessions.defaultProps = {
   collapse: true
@@ -790,35 +791,35 @@ export class Settings extends React.Component {
     return (
       <Container fluid={true}>
         <Row className="ntg-settings-pane">
-          {p.settings === 'sessions' ? 
-          <Sessions 
+          {p.settings === 'sessions' ?
+          <Sessions
           modal={p.modal}
-          sessions={p.sessions} 
-          tabs={p.tabs} 
-          prefs={p.prefs} 
-          favicons={p.favicons} 
-          collapse={p.collapse} 
-          theme={p.theme} 
+          sessions={p.sessions}
+          tabs={p.tabs}
+          prefs={p.prefs}
+          favicons={p.favicons}
+          collapse={p.collapse}
+          theme={p.theme}
           allTabs={p.allTabs} /> : null}
-          {p.settings === 'preferences' ? 
+          {p.settings === 'preferences' ?
           <Preferences
-          modal={p.modal} 
-          prefs={p.prefs} tabs={p.tabs} 
+          modal={p.modal}
+          prefs={p.prefs} tabs={p.tabs}
           theme={p.theme}
           chromeVersion={p.chromeVersion} /> : null}
-          {p.settings === 'theming' ? 
-          <Theming  
-          prefs={p.prefs} 
-          theme={p.theme} 
-          modal={p.modal} 
-          savedThemes={p.savedThemes} 
-          standardThemes={p.standardThemes} 
-          wallpaper={p.wallpaper} 
-          wallpapers={p.wallpapers} 
-          collapse={p.collapse} 
+          {p.settings === 'theming' ?
+          <Theming
+          prefs={p.prefs}
+          theme={p.theme}
+          modal={p.modal}
+          savedThemes={p.savedThemes}
+          standardThemes={p.standardThemes}
+          wallpaper={p.wallpaper}
+          wallpapers={p.wallpapers}
+          collapse={p.collapse}
           height={p.height}/> : null}
-          {p.settings === 'about' ? 
-          <About 
+          {p.settings === 'about' ?
+          <About
           modal={p.modal}
           theme={p.theme} /> : null}
         </Row>
@@ -828,7 +829,7 @@ export class Settings extends React.Component {
 }
 
 Settings.propTypes = {
-  collapse: React.PropTypes.bool
+  collapse: PropTypes.bool
 };
 Settings.defaultProps = {
   collapse: true

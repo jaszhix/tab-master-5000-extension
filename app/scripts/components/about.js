@@ -8,10 +8,10 @@ import {utilityStore} from './stores/main';
 
 import {Btn, Col, Row} from './bootstrap';
 
-import changelog from 'html!markdown!../../../changelog.md';
-/*let supportFile = `html!markdown!../../../support_${chrome.i18n.getUILanguage()}.md`;
+import changelog from 'html-loader!markdown-loader!../../../changelog.md';
+/*let supportFile = `html-loader!markdown-loader!../../../support_${chrome.i18n.getUILanguage()}.md`;
 import support from supportFile;*/
-import license from 'html!markdown!../../../COPYING';
+import license from 'html-loader!markdown-loader!../../../COPYING';
 
 class Contribute extends React.Component {
   constructor(props) {
@@ -21,9 +21,9 @@ class Contribute extends React.Component {
     let contributeFile;
     let locale = chrome.i18n.getUILanguage();
     if (locale === 'es') {
-      contributeFile = require('html!markdown!../../../contribute_es.md');
+      contributeFile = require('html-loader!markdown-loader!../../../contribute_es.md');
     } else {
-      contributeFile = require('html!markdown!../../../contribute.md');
+      contributeFile = require('html-loader!markdown-loader!../../../contribute.md');
     }
     function createMarkup() { return {__html: contributeFile};}
     return (
@@ -79,9 +79,9 @@ class Support extends React.Component {
     let supportFile;
     let locale = chrome.i18n.getUILanguage();
     if (locale === 'es') {
-      supportFile = require('html!markdown!../../../support_es.md');
+      supportFile = require('html-loader!markdown-loader!../../../support_es.md');
     } else {
-      supportFile = require('html!markdown!../../../support.md');
+      supportFile = require('html-loader!markdown-loader!../../../support.md');
     }
     function createMarkup() { return {__html: supportFile};}
     return (
@@ -105,7 +105,7 @@ class Attribution extends React.Component {
     };
   }
   componentDidMount(){
-    var deps = require('json!../../../package.json');
+    var deps = require('json-loader!../../../package.json');
     var state = [];
     for (var key in deps.devDependencies) {
       state.push(`${key} ${deps.devDependencies[key].split('^')[1]}`);
@@ -166,7 +166,7 @@ class ReleaseNotes extends React.Component {
     function createMarkup() { return {__html: changelog};}
     var p = this.props;
     return (
-      <div> 
+      <div>
         <img className="ntg-about" src={p.tm5kLogo}/>
         <a href="https://trackjs.com" target="_blank"><img style={{borderRadius: '2px', position: 'absolute', top: '0px', right:'5%', opacity: '0.7'}} src="../../images/trackjs.gif" height="40px" alt="Protected by TrackJS JavaScript Error Monitoring" /></a>
         <img style={{position: 'absolute', top: '50px', right:'8%', height: '120px', opacity: '0.7'}} src="../../images/eff.png" />
@@ -205,7 +205,7 @@ class About extends React.Component {
     return (
       <div>
         <Row className="ntg-tabs">
-          <div role="tabpanel"> 
+          <div role="tabpanel">
             <ul className="nav nav-tabs" style={{borderBottom: 'initial', position: 'absolute', zIndex: '9999'}} >
               <li style={{padding: '0px'}} className={`${s.tab === 'release' ? 'active' : ''}`}>
                 <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({tab: 'release'})}>{utils.t('releaseNotes')}</a>

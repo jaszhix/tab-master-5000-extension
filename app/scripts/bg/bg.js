@@ -32,9 +32,11 @@ window._trackJs = {
     promise: true
   }
 };
-var trackJs = require('trackjs');
+let trackJs = require('trackjs');
 import React from 'react';
 import ReactDOM from 'react-dom';
+import autoBind from 'react-autobind';
+import reactMixin from 'react-mixin';
 import Reflux from 'reflux';
 import _ from 'lodash';
 import v from 'vquery';
@@ -59,7 +61,7 @@ chrome.runtime.onInstalled.addListener((details)=>{
   eventState.onInstalled = details;
 });
 
-var checkChromeErrors = (err)=>{
+let checkChromeErrors = (err)=>{
   if (chrome.runtime.lastError) {
     window.trackJs.track(chrome.runtime.lastError);
   }
@@ -71,9 +73,9 @@ var checkChromeErrors = (err)=>{
   }
 };
 
-var checkChromeErrorsThrottled = _.throttle(checkChromeErrors, 2000, {leading: true});
+let checkChromeErrorsThrottled = _.throttle(checkChromeErrors, 2000, {leading: true});
 
-var sendMsg = (msg, res) => {
+let sendMsg = (msg, res) => {
   chrome.runtime.sendMessage(chrome.runtime.id, msg, (response)=>{
     if (response) {
       res(response);
@@ -81,7 +83,7 @@ var sendMsg = (msg, res) => {
   });
 };
 
-var reload = (reason)=>{
+let reload = (reason)=>{
   // console log messages before error triggered location.reload() calls. Preserve console logging in the browser to see them.
   console.log('Reload background script. Reason: ',reason);
   setTimeout(()=>{
@@ -89,10 +91,10 @@ var reload = (reason)=>{
   },0);
 };
 
-var syncSession = (sessions, prefs, windows=null, cb)=>{
-  var allTabs = [];
+let syncSession = (sessions, prefs, windows=null, cb)=>{
+  let allTabs = [];
   if (typeof prefs.syncedSession !== 'undefined' && prefs.syncedSession && prefs.sessionsSync) {
-    var refSession = _.findIndex(sessions, {id: prefs.syncedSession});
+    let refSession = _.findIndex(sessions, {id: prefs.syncedSession});
     if (refSession === -1) {
       return;
     }
@@ -114,8 +116,8 @@ var syncSession = (sessions, prefs, windows=null, cb)=>{
   }
 };
 
-var checkAutoDiscard = (windows, prefs)=>{
-  var discards = 0;
+let checkAutoDiscard = (windows, prefs)=>{
+  let discards = 0;
   if (prefs.autoDiscard) {
     for (let i = 0, len = windows.length; i < len; i++) {
       for (let z = 0, _len = windows[i].tabs.length; z < _len; z++) {
@@ -130,7 +132,7 @@ var checkAutoDiscard = (windows, prefs)=>{
   return discards;
 };
 
-var createScreenshot = (t, refWindow, refTab, run=0)=>{
+let createScreenshot = (t, refWindow, refTab, run=0)=>{
   if (refWindow === -1 || refTab === -1) {
     return;
   }
@@ -143,7 +145,7 @@ var createScreenshot = (t, refWindow, refTab, run=0)=>{
   if (t.state.screenshots === undefined) {
     t.state.screenshots = [];
   }
-  var capture = new Promise((resolve, reject)=>{
+  let capture = new Promise((resolve, reject)=>{
     try {
       _.delay(()=>{
         chrome.tabs.captureVisibleTab({format: 'jpeg', quality: 10}, (image)=> {
@@ -164,16 +166,16 @@ var createScreenshot = (t, refWindow, refTab, run=0)=>{
     }
   });
   capture.then((image)=>{
-    var resize = new Promise((resolve, reject)=>{
-      var sourceImage = new Image();
+    let resize = new Promise((resolve, reject)=>{
+      let sourceImage = new Image();
       sourceImage.onload = function() {
-        var imgWidth = sourceImage.width / 2;
-        var imgHeight = sourceImage.height / 2;
-        var canvas = document.createElement('canvas');
+        let imgWidth = sourceImage.width / 2;
+        let imgHeight = sourceImage.height / 2;
+        let canvas = document.createElement('canvas');
         canvas.width = imgWidth;
         canvas.height = imgHeight;
         canvas.getContext('2d').drawImage(sourceImage, 0, 0, imgWidth, imgHeight);
-        var newDataUri = canvas.toDataURL('image/jpeg', 0.25);
+        let newDataUri = canvas.toDataURL('image/jpeg', 0.25);
         if (newDataUri) {
           resolve(newDataUri);
         }
@@ -184,13 +186,13 @@ var createScreenshot = (t, refWindow, refTab, run=0)=>{
       if (typeof t.state.windows[refWindow].tabs[refTab] === 'undefined') {
         return;
       }
-      var screenshot = {
+      let screenshot = {
         url: t.state.windows[refWindow].tabs[refTab].url,
         data: image,
         timeStamp: Date.now()
       };
 
-      var refScreenshot = _.findIndex(t.state.screenshots, {url: t.state.windows[refWindow].tabs[refTab].url});
+      let refScreenshot = _.findIndex(t.state.screenshots, {url: t.state.windows[refWindow].tabs[refTab].url});
       if (refScreenshot !== -1) {
         t.state.screenshots[refScreenshot] = screenshot;
       } else {
@@ -208,22 +210,22 @@ var createScreenshot = (t, refWindow, refTab, run=0)=>{
   });
 };
 
-var createScreenshotThrottled = _.throttle(createScreenshot, 2000, {leading: true});
+let createScreenshotThrottled = _.throttle(createScreenshot, 2000, {leading: true});
 
-var synchronizeSession = _.throttle(syncSession, 100, {leading: true});
+let synchronizeSession = _.throttle(syncSession, 100, {leading: true});
 
-var setAction = (t, type, oldTabInstance, newTabInstance=null)=>{
+let setAction = (t, type, oldTabInstance, newTabInstance=null)=>{
   if (t.state.prefs && !t.state.prefs.actions) {
     return;
   }
   if (t.state.actions.length > 30) {
-    var firstAction = _.findIndex(t.state.actions, {id: _.first(t.state.actions).id});
+    let firstAction = _.findIndex(t.state.actions, {id: _.first(t.state.actions).id});
     if (firstAction !== -1) {
       _.pullAt(t.state.actions, firstAction);
     }
   }
   if (newTabInstance && newTabInstance.title !== 'New Tab' || oldTabInstance && oldTabInstance.title !== 'New Tab') {
-    var action = {
+    let action = {
       type: type,
       item: _.cloneDeep(type === 'update' ? newTabInstance : oldTabInstance),
       id: uuid.v4()
@@ -239,7 +241,7 @@ var setAction = (t, type, oldTabInstance, newTabInstance=null)=>{
     }
     t.state.actions.push(action);
     t.setState({actions: t.state.actions});
-    var msgToSend = {};
+    let msgToSend = {};
     if (oldTabInstance !== undefined) {
       msgToSend.windowId = oldTabInstance.windowId;
     }
@@ -248,16 +250,16 @@ var setAction = (t, type, oldTabInstance, newTabInstance=null)=>{
   }
 };
 
-var setActionThrottled = _.throttle(setAction, 100, {leading: true});
+let setActionThrottled = _.throttle(setAction, 100, {leading: true});
 
-var Bg = React.createClass({
-  mixins: [Reflux.ListenerMixin],
-  getInitialState(){
+class Bg extends React.Component {
+  constructor(props) {
+    super(props);
     let version = 1;
     try { // Firefox check
       version = parseInt(/Chrome\/([0-9.]+)/.exec(navigator.userAgent)[1].split('.'))
     } catch (e) {}
-    return {
+    this.state = {
       eventState: eventState,
       prefs: null,
       init: true,
@@ -268,13 +270,13 @@ var Bg = React.createClass({
       actions: [],
       chromeVersion: version
     };
-  },
+  }
   componentDidMount(){
     this.listenTo(prefsStore, this.prefsChange);
     this.querySessions();
-  },
+  }
   prefsChange(e){
-    var s = this.state;
+    let s = this.state;
     console.log('prefsChange');
     s.prefs = e;
     this.setState({prefs: s.prefs});
@@ -287,9 +289,9 @@ var Bg = React.createClass({
     } else {
       sendMsg({e: e, type: 'prefs'});
     }
-  },
+  }
   attachListeners(state){
-    var s = this.state.init ? state : this.state;
+    let s = this.state.init ? state : this.state;
     /*
     App state
     */
@@ -300,7 +302,7 @@ var Bg = React.createClass({
     }
     if (eventState.onInstalled) {
       if (eventState.onInstalled.reason === 'update' || eventState.onInstalled.reason === 'install') {
-        var newTabIsOpen = false;
+        let newTabIsOpen = false;
         chrome.tabs.query({title: 'New Tab'},(tabs)=>{
           for (let i = 0, len = tabs.length; i < len; i++) {
             newTabIsOpen = true;
@@ -366,7 +368,7 @@ var Bg = React.createClass({
     Windows removed
     */
     chrome.windows.onRemoved.addListener((windowId)=>{
-      var refWindow = _.findIndex(this.state.windows, {windowId: windowId});
+      let refWindow = _.findIndex(this.state.windows, {windowId: windowId});
       if (refWindow !== -1) {
         _.pullAt(this.state.windows, refWindow);
         this.setState({windows: this.state.windows});
@@ -473,13 +475,13 @@ var Bg = React.createClass({
     });
     this.attachMessageListener(s);
     this.setState({init: false});
-  },
+  }
   attachMessageListener(s){
     chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       console.log('Message from front-end: ', msg, sender);
       // requests from front-end javascripts
       if (msg.method === 'captureTabs') {
-        var capture = new Promise((resolve, reject)=>{
+        let capture = new Promise((resolve, reject)=>{
           try {
             chrome.tabs.captureVisibleTab({format: 'jpeg', quality: 10}, (image)=> {
               if (image) {
@@ -536,18 +538,18 @@ var Bg = React.createClass({
       } else if (msg.method === 'removeSingleWindow') {
         this.removeSingleWindow(msg.windowId);
       } else if (msg.method === 'undoAction') {
-        var refWindow = _.findIndex(this.state.windows, {id: msg.windowId});
+        let refWindow = _.findIndex(this.state.windows, {id: msg.windowId});
         this.undoAction(this.state.windows[refWindow].tabs, this.state.chromeVersion);
       } else if (msg.method === 'getActions') {
         sendResponse({actions: this.state.actions});
       }
       return true;
     });
-  },
+  }
   formatTabs(prefs, tabs){
-    var blacklisted = [];
+    let blacklisted = [];
     for (let i = 0, len = tabs.length; i < len; i++) {
-      var urlMatch = tabs[i].url.match(/^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n]+)/im);
+      let urlMatch = tabs[i].url.match(/^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n]+)/im);
       _.assign(tabs[i], {
         timeStamp: new Date(Date.now()).getTime(),
         domain: urlMatch ? urlMatch[1] : tabs[i].url.split('/')[2]
@@ -557,7 +559,7 @@ var Bg = React.createClass({
       }
     }
     if (blacklisted.length > 0 && prefs && prefs.singleNewTab) {
-      var extraNewTabs = _.tail(blacklisted);
+      let extraNewTabs = _.tail(blacklisted);
       console.log(extraNewTabs, blacklisted);
       for (let i = 0, len = extraNewTabs.length; i < len; i++) {
         chrome.tabs.remove(extraNewTabs[i].id);
@@ -568,7 +570,7 @@ var Bg = React.createClass({
     }
     this.setState({newTabs: _.uniqBy(this.state.newTabs, 'id')});
     return tabs;
-  },
+  }
   queryTabs(send=null, prefs){
     chrome.windows.getAll({populate: true}, (w)=>{
       for (let i = 0, len = w.length; i < len; i++) {
@@ -579,10 +581,10 @@ var Bg = React.createClass({
         sendMsg({windows: this.state.windows});
       }
     });
-  },
+  }
   convertV1Sessions(_item){
     for (let i = 0, len = _item.sessionData.length; i < len; i++) {
-      var session = {
+      let session = {
         timeStamp: _item.sessionData[i].timeStamp,
         tabs: [_item.sessionData[i].tabs],
         label: _item.sessionData[i].label,
@@ -591,14 +593,14 @@ var Bg = React.createClass({
       _item.sessionData[i] = session;
     }
     return _item;
-  },
+  }
   querySessions(){
     chrome.storage.local.get('sessions',(item)=>{
-      var sessions = [];
+      let sessions = [];
       console.log('item retrieved: ',item);
       if (item && item.sessions) {
         // Sort sessionData array to show the newest sessions at the top of the list.
-        //var reverse = _.orderBy(item.sessions, ['timeStamp'], ['desc']);
+        //let reverse = _.orderBy(item.sessions, ['timeStamp'], ['desc']);
         sessions = item.sessions;
       } else {
         chrome.storage.local.get('sessionData',(_item)=>{
@@ -616,15 +618,15 @@ var Bg = React.createClass({
       this.setState({sessions: sessions});
       sendMsg({sessions: sessions});
     });
-  },
+  }
   queryScreenshots(){
-    var save = (index)=>{
+    let save = (index)=>{
       chrome.storage.local.set({screenshots: index}, (result)=> {
 
       });
     };
     chrome.storage.local.get('screenshots', (shots)=>{
-      var index = [];
+      let index = [];
       if (shots && shots.screenshots) {
         index = shots.screenshots;
       } else {
@@ -632,7 +634,7 @@ var Bg = React.createClass({
       }
       this.setState({screenshots: index});
     });
-  },
+  }
   keepNewTabOpen() {
     // Work around to prevent losing focus of New Tab page when a tab is closed or pinned from the grid.
     chrome.tabs.query({
@@ -645,18 +647,18 @@ var Bg = React.createClass({
         });
       }
     });
-  },
+  }
   undoAction(tabs, chromeVersion){
-    var removeLastAction = (lastAction)=>{
+    let removeLastAction = (lastAction)=>{
       if (lastAction !== undefined) {
-        var refAction = _.findIndex(this.state.actions, {id: lastAction.id});
+        let refAction = _.findIndex(this.state.actions, {id: lastAction.id});
         if (refAction !== -1) {
           _.pullAt(this.state.actions, refAction);
         }
       }
     };
-    var undo = ()=>{
-      var lastAction = _.last(this.state.actions);
+    let undo = ()=>{
+      let lastAction = _.last(this.state.actions);
       if (lastAction) {
         if (lastAction.type === 'remove') {
           this.keepNewTabOpen();
@@ -684,7 +686,7 @@ var Bg = React.createClass({
       sendMsg({actions: this.state.actions, windowId: tabs[0].windowId});
     };
     undo();
-  },
+  }
   getSingleTab(id){
     if (_.isObject(id)) {
       id = id.tabId;
@@ -701,13 +703,13 @@ var Bg = React.createClass({
         }
       });
     });
-  },
+  }
   handleActivation(e){
-    var refWindow = _.findIndex(this.state.windows, {id: e.windowId});
+    let refWindow = _.findIndex(this.state.windows, {id: e.windowId});
     if (refWindow === -1) {
       return;
     }
-    var refTab = _.findIndex(this.state.windows[refWindow].tabs, {id: e.tabId});
+    let refTab = _.findIndex(this.state.windows[refWindow].tabs, {id: e.tabId});
     if (refTab === -1) {
       return;
     }
@@ -723,9 +725,9 @@ var Bg = React.createClass({
     if (this.state.prefs && this.state.prefs.screenshot && this.state.prefs.screenshotChrome) {
       createScreenshotThrottled(this, refWindow, refTab);
     }
-  },
+  }
   createSingleItem(e){
-    var refWindow = _.findIndex(this.state.windows, {id: e.windowId});
+    let refWindow = _.findIndex(this.state.windows, {id: e.windowId});
     if (refWindow === -1) {
       return;
     }
@@ -748,9 +750,9 @@ var Bg = React.createClass({
     this.setState({windows: this.state.windows});
     // Activate the first new tab if it is open, and if this is a second new tab being created.
     if (e.url.indexOf('chrome://newtab/') !== -1 && this.state.prefs.singleNewTab) {
-      var refNewTab = _.findIndex(this.state.newTabs, {windowId: e.windowId});
+      let refNewTab = _.findIndex(this.state.newTabs, {windowId: e.windowId});
       if (refNewTab !== -1) {
-        var refExistingTab = _.findIndex(this.state.windows[refWindow].tabs, {id: this.state.newTabs[refNewTab].id});
+        let refExistingTab = _.findIndex(this.state.windows[refWindow].tabs, {id: this.state.newTabs[refNewTab].id});
         if (refExistingTab === -1
           || (typeof this.state.windows[refWindow].tabs[refExistingTab] !== 'undefined'
             && this.state.windows[refWindow].tabs[refExistingTab].url.indexOf('chrome://newtab/') === -1)) {
@@ -769,20 +771,20 @@ var Bg = React.createClass({
     setActionThrottled(this, 'create', e);
     synchronizeSession(this.state.sessions, this.state.prefs, this.state.windows);
     sendMsg({windows: this.state.windows, windowId: e.windowId});
-  },
+  }
   removeSingleItem(e, windowId){
-    var refWindow = _.findIndex(this.state.windows, {id: windowId});
+    let refWindow = _.findIndex(this.state.windows, {id: windowId});
     if (refWindow === -1) {
       return;
     }
     // Check if this is a new tab, and clean up newTabs state.
-    var refNewTab = _.findIndex(this.state.newTabs, {id: e});
+    let refNewTab = _.findIndex(this.state.newTabs, {id: e});
     if (refNewTab !== -1) {
       _.pullAt(this.state.newTabs, refNewTab);
       this.setState({newTabs: this.state.newTabs});
     }
 
-    var refTab = _.findIndex(this.state.windows[refWindow].tabs, {id: e});
+    let refTab = _.findIndex(this.state.windows[refWindow].tabs, {id: e});
     if (refTab > -1) {
       setActionThrottled(this, 'remove', this.state.windows[refWindow].tabs[refTab]);
       _.pullAt(this.state.windows[refWindow].tabs, refTab);
@@ -792,23 +794,23 @@ var Bg = React.createClass({
       synchronizeSession(this.state.sessions, this.state.prefs, this.state.windows);
       sendMsg({windows: this.state.windows, windowId: windowId});
     }
-  },
+  }
   removeSingleWindow(id){
     console.log('removeSingleWindow', id);
-    var refWindow = _.findIndex(this.state.windows, {id: id});
+    let refWindow = _.findIndex(this.state.windows, {id: id});
     if (refWindow !== -1) {
       _.pullAt(this.state.windows, refWindow);
       this.setState({windows: this.state.windows});
       sendMsg({windows: this.state.windows});
     }
-  },
+  }
   updateSingleItem(id){
     this.getSingleTab(id).then((e)=>{
-      var refWindow = _.findIndex(this.state.windows, {id: e.windowId});
+      let refWindow = _.findIndex(this.state.windows, {id: e.windowId});
       if (refWindow === -1) {
         return;
       }
-      var refTab = _.findIndex(this.state.windows[refWindow].tabs, {id: e.id});
+      let refTab = _.findIndex(this.state.windows[refWindow].tabs, {id: e.id});
       if (refTab === -1) {
         return;
       }
@@ -826,7 +828,7 @@ var Bg = React.createClass({
         }
         this.setState({windows: this.state.windows});
         synchronizeSession(this.state.sessions, this.state.prefs, this.state.windows);
-        var discards = checkAutoDiscard(this.state.windows, this.state.prefs);
+        let discards = checkAutoDiscard(this.state.windows, this.state.prefs);
         if (discards > 0) {
           this.queryTabs(true, this.state.prefs);
         } else {
@@ -834,14 +836,14 @@ var Bg = React.createClass({
         }
       }
     });
-  },
+  }
   moveSingleItem(id){
     this.getSingleTab(id).then((e)=>{
-      var refWindow = _.findIndex(this.state.windows, {id: e.windowId});
+      let refWindow = _.findIndex(this.state.windows, {id: e.windowId});
       if (refWindow === -1) {
         return;
       }
-      var refTab = _.findIndex(this.state.windows[refWindow].tabs, {id: e.id});
+      let refTab = _.findIndex(this.state.windows[refWindow].tabs, {id: e.id});
       setActionThrottled(this, 'move', this.state.windows[refWindow].tabs[refTab], e);
       if (refTab > -1) {
         this.state.windows[refWindow].tabs = v(this.state.windows[refWindow].tabs).move(refTab, e.index).ns;
@@ -856,10 +858,13 @@ var Bg = React.createClass({
         sendMsg({windows: this.state.windows, windowId: e.windowId});
       }
     });
-  },
+  }
   render(){
     console.log('BG STATE: ',this.state);
     return null;
   }
-});
+};
+
+reactMixin(Bg.prototype, Reflux.ListenerMixin);
+
 ReactDOM.render(<Bg />, document.body);

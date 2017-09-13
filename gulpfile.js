@@ -51,7 +51,7 @@ var increaseVersion = function(opt){
 var plugins = [];
 var env = {production: false};
 var uglify = function(){
-  if (env.production) {
+  if (env.production) { // Needs to check node env
     config.plugins.push(new webpack.optimize.UglifyJsPlugin({
       compress: {
         warnings: false,
@@ -75,27 +75,29 @@ var uglify = function(){
     }));
     plugins.push(new webpack.optimize.OccurenceOrderPlugin(true));
     plugins.push(new webpack.DefinePlugin({
-      'process.env': { 
+      'process.env': {
          NODE_ENV: JSON.stringify('production')
        }
     }));
+    plugins.push(new webpack.optimize.DedupePlugin()),
+    plugins.push(new ExtractTextPlugin({ filename: '[name]---[hash].css' }))
   }
 };
 
 gulp.task('build', ['build-bg'], function() {
   if (env.production) {
     uglify();
-    config.entry = './app/scripts/components/root.js';
+    config.entry = 'app.js';
     config.output.filename = 'app.js';
     config.output.publicPath = '/';
   }
-  return gulp.src('./app/scripts/components/root.js')
+  return gulp.src('./app/scripts/components/app.js')
     .pipe(webpackStream(config))
     .pipe(gulp.dest('./app/scripts/'));
 });
 gulp.task('build-bg', ['build-content'],function() {
   uglify();
-  config.entry = './app/scripts/bg/bg.js';
+  config.entry = '../bg/bg.js';
   config.output.filename = 'background.js';
   return gulp.src('./app/scripts/background.js')
     .pipe(webpackStream(config))
@@ -103,7 +105,7 @@ gulp.task('build-bg', ['build-content'],function() {
 });
 gulp.task('build-content',function() {
   uglify();
-  config.entry = './app/scripts/content/content.js';
+  config.entry = '../content/content.js';
   config.output.filename = 'content.js';
   return gulp.src('./app/scripts/content.js')
     .pipe(webpackStream(config))
@@ -131,8 +133,8 @@ gulp.task('imgmin', function() {
 });
 gulp.task('package', function() {
   del.sync([
-    './dist/scripts/components/', 
-    './dist/scripts/bg/', 
+    './dist/scripts/components/',
+    './dist/scripts/bg/',
     './dist/scripts/content/',
     './dist/styles/*.scss',
     './dist/newtab_prod.html'

@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import PropTypes from 'prop-types';
 import Reflux from 'reflux';
 import autoBind from 'react-autobind';
 import reactMixin from 'react-mixin';
@@ -755,10 +756,10 @@ class TileGrid extends React.Component {
 }
 
 TileGrid.propTypes = {
-  data: React.PropTypes.array,
-  keys: React.PropTypes.array,
-  labels: React.PropTypes.object,
-  collapse: React.PropTypes.bool
+  data: PropTypes.array,
+  keys: PropTypes.array,
+  labels: PropTypes.object,
+  collapse: PropTypes.bool
 };
 TileGrid.defaultProps = {
   tabs: [],

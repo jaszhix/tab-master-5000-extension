@@ -1,6 +1,6 @@
 window._trackJs = {
   token: 'bd495185bd7643e3bc43fa62a30cec92',
-  enabled: false,
+  enabled: true,
   onError: function (payload) { return true; },
   version: "",
   callback: {
@@ -32,14 +32,12 @@ import moment from 'moment';
 import tc from 'tinycolor2';
 v('.startup-p').text(moment().format('h:mm A'));
 import React from 'react';
-import ReactDOM from 'react-dom';
 import autoBind from 'react-autobind';
 import reactMixin from 'react-mixin';
 import Reflux from 'reflux';
 import _ from 'lodash';
 import ReactUtils from 'react-utils';
 import ReactTooltip from 'react-tooltip';
-import '../../styles/app.scss';
 window.v = v;
 import state from './stores/state';
 import {keyboardStore, utilityStore, msgStore} from './stores/main';
@@ -867,7 +865,7 @@ class App extends Reflux.Component {
       this.setKeyboardShortcuts(stateUpdate);
     }
     state.set(stateUpdate);
-    if (s.prefs.screenshotBg || s.prefs.screenshot) {
+    if (s.prefs && (s.prefs.screenshotBg || s.prefs.screenshot)) {
       document.getElementById('bgImg').style.width = window.innerWidth + 30;
       document.getElementById('bgImg').style.height = window.innerHeight + 5;
     }
@@ -896,40 +894,4 @@ class App extends Reflux.Component {
 reactMixin(App.prototype, ReactUtils.Mixins.WindowSizeWatch);
 reactMixin(App.prototype, ReactUtils.Mixins.ViewportWatch);
 
-var renderApp = (stateUpdate)=>{
-  ReactDOM.render(<App stateUpdate={stateUpdate} />, document.getElementById('main'));
-};
-
-var loadFavicons = (cb)=>{
-  chrome.storage.local.get('favicons', (fv)=>{
-    if (fv && fv.favicons) {
-      cb(fv.favicons);
-    } else {
-      chrome.storage.local.set({favicons: []}, (result)=> {
-        console.log('Init favicons saved.');
-        cb([]);
-      });
-    }
-  });
-};
-
-var loadPrefs = ()=>{
-  chrome.runtime.sendMessage(chrome.runtime.id, {method: 'prefs'}, (response)=>{
-    var stateUpdate = {
-      prefs: response.prefs,
-      init: false,
-      chromeVersion: utilityStore.chromeVersion()
-    };
-    console.log('Prefs loaded: ', response);
-    loadFavicons((fv)=>{
-      stateUpdate.favicons = fv;
-      renderApp(stateUpdate);
-    });
-  });
-};
-
-v(document).ready(()=>{
-  try {
-    loadPrefs();
-  } catch (e) {}
-});
+export default App;

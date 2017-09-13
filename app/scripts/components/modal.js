@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import autoBind from 'react-autobind';
 import reactMixin from 'react-mixin';
 import Reflux from 'reflux';
@@ -50,9 +51,9 @@ class ModalHandler extends React.Component {
     var s = this.state;
     var p = this.props;
     var tabOptions = [
-      {label: utils.t('preferences'), key: 'preferences'}, 
-      {label: _.upperFirst(utils.t('sessions')), key: 'sessions'}, 
-      {label: utils.t('theming'), key: 'theming'}, 
+      {label: utils.t('preferences'), key: 'preferences'},
+      {label: _.upperFirst(utils.t('sessions')), key: 'sessions'},
+      {label: utils.t('theming'), key: 'theming'},
       {label: utils.t('about'), key: 'about'}
     ];
     var headerBgIsLight = tc(p.theme.headerBg).isLight();
@@ -66,8 +67,8 @@ class ModalHandler extends React.Component {
         closeBtnStyle={{color: headerBgIsLight ? p.theme.lightBtnText : p.theme.darkBtnText}}
         animations={p.prefs.animations}
         backdropStyle={{
-          zIndex: 11, 
-          backgroundColor: p.settings === 'theming' ? 'rgba(255, 255, 255, 0)' : '#000', 
+          zIndex: 11,
+          backgroundColor: p.settings === 'theming' ? 'rgba(255, 255, 255, 0)' : '#000',
           WebkitTransition: p.prefs.animations ? 'background-color 0.2s' : 'initial'
         }}
         overlayStyle={{top: p.settings === 'theming' ? '55%' : '0'}}
@@ -80,7 +81,7 @@ class ModalHandler extends React.Component {
           top: '3.5%'
         }}
         headerStyle={{
-          backgroundColor: p.theme.headerBg, 
+          backgroundColor: p.theme.headerBg,
           color: headerBgIsLight ? p.theme.lightBtnText : p.theme.darkBtnText
         }}
         bodyStyle={{
@@ -94,23 +95,23 @@ class ModalHandler extends React.Component {
           <Tabs
           initActiveOption={_.findIndex(tabOptions, (opt)=>p.settings.indexOf(opt.label.toLowerCase()) !== -1)}
           style={{position: 'relative', top: '16px'}}
-          options={tabOptions} 
+          options={tabOptions}
           onClick={(setting)=>state.set({settings: setting.key})}
           borderTopColor={p.theme.darkBtnText}
           borderLeftRightColor={p.theme.headerBg}
           settings={p.settings} />
         }
         footerComponent={p.modal.footer}>
-          <Settings 
-          sessions={p.sessions} 
-          modal={s.modal} 
-          tabs={p.tabs} 
+          <Settings
+          sessions={p.sessions}
+          modal={s.modal}
+          tabs={p.tabs}
           allTabs={p.allTabs}
-          prefs={p.prefs} 
-          favicons={p.favicons} 
-          collapse={p.collapse} 
-          theme={p.theme} 
-          savedThemes={p.savedThemes} 
+          prefs={p.prefs}
+          favicons={p.favicons}
+          collapse={p.collapse}
+          theme={p.theme}
+          savedThemes={p.savedThemes}
           standardThemes={p.standardThemes}
           wallpaper={p.wallpaper}
           wallpapers={p.wallpapers}
@@ -118,8 +119,8 @@ class ModalHandler extends React.Component {
           height={p.height}
           chromeVersion={p.chromeVersion} />
           {p.prefs.tooltip ?
-          <ReactTooltip 
-          effect="solid" 
+          <ReactTooltip
+          effect="solid"
           place="top"
           multiline={true}
           html={true}/> : null}
@@ -127,12 +128,12 @@ class ModalHandler extends React.Component {
       );
     } else {
       return null;
-    } 
+    }
   }
 }
 
 ModalHandler.propTypes = {
-  collapse: React.PropTypes.bool
+  collapse: PropTypes.bool
 };
 ModalHandler.defaultProps = {
   collapse: true

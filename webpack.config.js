@@ -1,53 +1,115 @@
-var path = require('path');
-var webpack = require('webpack');
-var autoprefixer = require('autoprefixer');
+const path = require('path');
+const webpack = require('webpack');
+const autoprefixer = require('autoprefixer');
+const cssnano = require('cssnano');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
-var scssIncludePaths = [
-  path.join(__dirname, './node_modules')
-];
-
-var autoprefixerOptions = {
-  browsers: [
-    'chrome >= 34',
-  ]
-};
+const publicPath = 'http://127.0.0.1:8009/app/scripts/';
+const PROD = false;
+const postcssPlugins = () => {
+  let processors = [
+    autoprefixer({
+      browsers: [
+        'ff >= 30',
+        'chrome >= 34',
+        'opera >= 23'
+      ]
+    })
+  ];
+  processors.push(cssnano({
+    safe: true,
+    discardComments: {
+      removeAll: true
+    }
+  }));
+  return processors;
+}
 
 module.exports = {
-  context: __dirname,
+  context: path.resolve(__dirname, 'app/scripts/components'),
   entry: [
+    'react-hot-loader/patch',
     'webpack-dev-server/client?http://127.0.0.1:8009',
     'webpack/hot/only-dev-server',
-    './app/scripts/components/root.js'
+    'app.js',
   ],
   output: {
-    path: path.resolve('./app/scripts/'),
-    filename: "app.js",
-    //chunkFilename: "[chunkhash].js",
-    publicPath: 'http://127.0.0.1:8009/app/scripts/'
+    path: path.resolve('./scripts/'),
+    filename: 'app.js',
+    publicPath
   },
   plugins: [
+    new ExtractTextPlugin({ disable: true }),
+    new webpack.NoEmitOnErrorsPlugin(),
     new webpack.HotModuleReplacementPlugin(),
+    new webpack.NamedModulesPlugin(),
+    new webpack.LoaderOptionsPlugin({
+      debug: true,
+    })
   ],
-  postcss: function () {
-    return [autoprefixer(autoprefixerOptions)];
-  },
   module: {
     loaders: [
       // we pass the output from babel loader to react-hot loader
-      { test: /\.(js|jsx)$/, 
-        exclude: /node_modules/, 
-        loaders: [
-          'react-hot', 
-          'babel'
+      { test: /\.(js|jsx)$/,
+        exclude: /node_modules/,
+        use: [
+          //{loader: 'react-hot'},
+          {loader: 'babel-loader'}
         ],
       },
       {
         test: /\.css$/,
-        loader: 'style-loader!css-loader'
+        use: ExtractTextPlugin.extract({
+          fallback: 'style-loader',
+          use: [
+            {
+              loader: 'css-loader',
+              options: {
+                sourceMap: true,
+                importLoaders: 1
+              }
+            },
+            {
+              loader: 'postcss-loader',
+              options: {
+                sourceMap: true,
+                plugins: postcssPlugins
+              }
+            },
+          ],
+        }),
       },
       {
         test: /\.scss$/,
-        loader: 'style-loader!css-loader!autoprefixer-loader?' + JSON.stringify(autoprefixerOptions) + '!sass-loader?outputStyle=compressed&sourceComments=false&' + scssIncludePaths.join('&includePaths[]=')
+        use: ExtractTextPlugin.extract({
+          fallback: 'style-loader',
+          use: [
+            {
+              loader: 'css-loader',
+              options: {
+                sourceMap: true,
+                importLoaders: 1
+              },
+            },
+            {
+              loader: 'postcss-loader',
+              options: {
+                sourceMap: true,
+                plugins: postcssPlugins
+              }
+            },
+            {
+              loader: 'sass-loader',
+              options: {
+                sourceMap: true,
+                includePaths: [
+                  path.join(__dirname, 'node_modules')
+                ],
+                outputStyle: PROD ? 'compressed' : 'expanded'
+              }
+            }
+          ],
+        }),
       },
       {
         test: /\.(ttf|eot|svg|woff(2)?)(\S+)?$/,
@@ -63,13 +125,27 @@ module.exports = {
       }
     ],
   },
-
+  devtool: 'cheap-module-source-map',
+  stats: {
+    children: false
+  },
   resolve: {
-    root:  path.resolve(__dirname, '.'),
-    modulesDirectories: ['node_modules', 'bower_components'],
-    extensions: ['', '.js', '.jsx'],
+    modules: [
+      'node_modules',
+       path.join(__dirname, 'app/scripts/components')
+    ],
+    extensions: ['.js', '.jsx'],
     alias: {
       'underscore': 'lodash'
     }
+  },
+  devServer: {
+    port: 8009,
+    hot: true,
+    inline: false,
+    historyApiFallback: true,
+    contentBase: path.join(__dirname, 'dist'),
+    headers:    {'Access-Control-Allow-Origin': '*'},
+    publicPath
   },
 };

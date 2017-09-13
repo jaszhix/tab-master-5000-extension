@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import PropTypes from 'prop-types';
 import autoBind from 'react-autobind';
 import reactMixin from 'react-mixin';
 import Reflux from 'reflux';
@@ -118,7 +119,7 @@ export class Col extends React.Component {
 }
 
 Col.propTypes = {
-  size: React.PropTypes.string.isRequired
+  size: PropTypes.string.isRequired
 };
 
 export class Row extends React.Component {
@@ -134,7 +135,7 @@ export class Row extends React.Component {
 }
 
 Row.propTypes = {
-  fluid: React.PropTypes.bool,
+  fluid: PropTypes.bool,
 };
 Row.defaultProps = {
   fluid: false,
@@ -153,7 +154,7 @@ export class Container extends React.Component {
 }
 
 Container.propTypes = {
-  fluid: React.PropTypes.bool
+  fluid: PropTypes.bool
 };
 Container.defaultProps = {
   fluid: false
