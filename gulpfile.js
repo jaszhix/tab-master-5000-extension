@@ -1,56 +1,18 @@
-var fs = require('fs');
-var gulp = require('gulp');
-var webpack = require('webpack');
-var webpackStream = require('webpack-stream');
-var imagemin = require('gulp-imagemin');
-var htmlclean = require('gulp-htmlclean');
-var del = require('del');
-var zip = require('gulp-zip');
-var runSequence = require('run-sequence');
-var clear = require('clear');
-var rename = require('gulp-rename');
-var config = require('./webpack.config');
-//var exec = require('child_process').exec;
+const gulp = require('gulp');
+const webpack = require('webpack');
+const webpackStream = require('webpack-stream');
+const imagemin = require('gulp-imagemin');
+const htmlclean = require('gulp-htmlclean');
+const del = require('del');
+const zip = require('gulp-zip');
+const runSequence = require('run-sequence');
+const clear = require('clear');
+const rename = require('gulp-rename');
+const config = require('./webpack.config');
 
-var manifest = JSON.parse(fs.readFileSync('./app/manifest.json', 'utf8'));
-var packageJSON = JSON.parse(fs.readFileSync('./package.json', 'utf8'));
-var increaseVersion = function(opt){
-  var version = manifest.version.split('.');
-  var index = null;
-  if (opt === 'patch') {
-    index = 2;
-  } else if (opt === 'minor') {
-    index = 1;
-    version[2] = '0';
-  } else if (opt === 'major') {
-    index = 0;
-    version[1] = '0';
-    version[2] = '0';
-  }
-  var versionNumber = parseInt(version[index]);
-  versionNumber = ++versionNumber;
-  version[index] = versionNumber.toString();
-  manifest.version = version.join('.');
-  var data = JSON.stringify(manifest, null, 2);
-  fs.writeFile('./app/manifest.json', data, function(err) {
-    if (err) {
-      console.log(err);
-    } else {
-      packageJSON.version = manifest.version;
-      data = JSON.stringify(packageJSON, null, 2);
-      fs.writeFile('./package.json', data, function(err) {
-        if (err) {
-          console.log(err);
-        } else {
-          console.log('Updated project to version '+manifest.version);
-        }
-      });
-    }
-  });
-};
-var plugins = [];
-var env = {production: false};
-var uglify = function(){
+let plugins = [];
+let env = {production: false};
+let uglify = function(){
   if (env.production) { // Needs to check node env
     config.plugins.push(new webpack.optimize.UglifyJsPlugin({
       compress: {
@@ -95,7 +57,7 @@ gulp.task('build', ['build-bg'], function() {
     .pipe(webpackStream(config))
     .pipe(gulp.dest('./app/scripts/'));
 });
-gulp.task('build-bg', ['build-content'],function() {
+gulp.task('build-bg', ['build-content'], function() {
   uglify();
   config.entry = '../bg/bg.js';
   config.output.filename = 'background.js';
@@ -103,7 +65,7 @@ gulp.task('build-bg', ['build-content'],function() {
     .pipe(webpackStream(config))
     .pipe(gulp.dest('./app/scripts/'));
 });
-gulp.task('build-content',function() {
+gulp.task('build-content', function() {
   uglify();
   config.entry = '../content/content.js';
   config.output.filename = 'content.js';
@@ -122,6 +84,11 @@ gulp.task('htmlmin', function() {
     .pipe(htmlclean())
     .pipe(rename('newtab.html'))
     .pipe(gulp.dest('./dist'));
+});
+gulp.task('firefox-manifest-rename', function() {
+  del.sync(['./dist/manifest.json']);
+  return gulp.src('./dist/manifest_firefox.json')
+    .pipe(rename('manifest.json'))
 });
 gulp.task('imgmin', function() {
   return gulp.src('./dist/images/*.{png,jpg,gif}')
@@ -143,21 +110,13 @@ gulp.task('package', function() {
     .pipe(zip('tm5k-dist-' + Date.now() + '.zip'))
     .pipe(gulp.dest('./dist/'));
 });
-gulp.task('patch',  function () {
-  increaseVersion('patch');
-  runSequence('dist');
-});
-gulp.task('minor',  function () {
-  increaseVersion('minor');
-  runSequence('dist');
-});
-gulp.task('major',  function () {
-  increaseVersion('major');
-  runSequence('dist');
-});
 gulp.task('dist',  function (callback) {
   env.production = true;
   runSequence('build', 'copy', 'htmlmin', 'imgmin', 'package', callback);
+});
+gulp.task('dist-firefox',  function (callback) {
+  env.production = true;
+  runSequence('build', 'copy', 'htmlmin', 'imgmin', 'firefox-manifest-rename', 'package', callback);
 });
 gulp.task('watch', function() {
   //gulp.watch('./app/scripts/components/**/*.{js,jsx,es6}', ['build']);
@@ -169,8 +128,8 @@ gulp.task('clear-terminal', function() {
   clear();
 });
 gulp.task('spawn-watch', ['clear-terminal'], function() {
- var spawnWatch = function() {
-    var proc = require('child_process').spawn('gulp', ['watch'], {stdio: 'inherit'});
+ let spawnWatch = function() {
+    let proc = require('child_process').spawn('gulp', ['watch'], {stdio: 'inherit'});
     proc.on('close', function (code) {
       spawnWatch();
     });

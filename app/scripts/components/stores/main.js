@@ -150,14 +150,18 @@ export var clickStore = Reflux.createStore({
 
 export var utilityStore = Reflux.createStore({
   init: function() {
+    this.version = this.chromeVersion();
     this.focusedWindow = null;
-    this.version = /Chrome\/([0-9.]+)/.exec(navigator.userAgent)[1].split('.');
     this.cursor = {page: {x: null, y: null}, offset: {x: null, y: null}, keys: {shift: null, ctrl: null}};
     this.systemState = null;
     this.bytesInUse = null;
   },
   chromeVersion(){
-    return parseInt(/Chrome\/([0-9.]+)/.exec(navigator.userAgent)[1].split('.'));
+    let version = 1;
+    try { // Firefox check
+      version = parseInt(/Chrome\/([0-9.]+)/.exec(navigator.userAgent)[1].split('.'))
+    } catch (e) {}
+    return version;
   },
   get_bytesInUse(item){
     return new Promise((resolve, reject)=>{
