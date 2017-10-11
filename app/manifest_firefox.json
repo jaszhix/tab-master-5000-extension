@@ -12,6 +12,8 @@
     "newtab": "newtab.html"
   },
   "options_ui": {
+    "browser_style": false,
+    "open_in_tab": true,
     "page": "options.html"
   },
   "default_locale": "en",
@@ -21,6 +23,7 @@
     ]
   },
   "page_action": {
+    "browser_style": false,
     "default_icon": {
       "19": "images/icon-19.png",
       "38": "images/icon-38.png"

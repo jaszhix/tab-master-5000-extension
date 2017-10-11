@@ -322,6 +322,10 @@ class Root extends React.Component {
       let sessionFieldColor = themeStore.balance(e.theme.settingsBg);
       let vendor = p.s.version > 1 ? 'webkit' : 'moz';
       let inputPlaceholder = p.s.version > 1 ? `${vendor}-input` : vendor;
+      let style = v('style').n;
+      if (!style) {
+        return;
+      }
       v('style').n.innerHTML += `
       a, a:focus, a:hover {
         color: ${themeStore.opacify(e.theme.bodyText, 0.9)};
