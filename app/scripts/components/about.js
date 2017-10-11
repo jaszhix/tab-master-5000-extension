@@ -114,13 +114,12 @@ class Attribution extends React.Component {
   }
   render(){
     let s = this.state;
-    console.log(this.state);
-    if (s.dependencies) {
-      let slice2 = Math.ceil(s.dependencies.length / 2);
-      let list1 = s.dependencies.slice(0, slice2);
-      let list2 = s.dependencies.slice(slice2, s.dependencies.length);
-      console.log(list1, list2);
+    if (!s.dependencies) {
+      return null;
     }
+    let slice2 = Math.ceil(s.dependencies.length / 2);
+    let list1 = s.dependencies.slice(0, slice2);
+    let list2 = s.dependencies.slice(slice2, s.dependencies.length);
     return (
       <div style={{marginTop: '49px'}}>
         <h3 style={{textAlign: 'center'}}>{utils.t('attributionHeader')}</h3>
@@ -192,8 +191,19 @@ class About extends React.Component {
     let p = this.props;
     p.modal.footer = (
       <div>
-        <Btn onClick={()=>utilityStore.createTab('https://github.com/jaszhix/tab-master-5000-chrome-extension')} className="ntg-setting-btn" icon="github">Github</Btn>
-        <Btn onClick={()=>utilityStore.createTab('https://chrome.google.com/webstore/detail/tab-master-5000-tab-swiss/mippmhcfjhliihkkdobllhpdnmmciaim')} className="ntg-setting-btn" icon="chrome">Chrome Web Store</Btn>
+        <Btn
+        onClick={()=>utilityStore.createTab('https://github.com/jaszhix/tab-master-5000-chrome-extension')}
+        className="ntg-setting-btn"
+        icon="github">
+          Github
+        </Btn>
+        {this.props.chromeVersion > 1 ?
+          <Btn
+          onClick={()=>utilityStore.createTab('https://chrome.google.com/webstore/detail/tab-master-5000-tab-swiss/mippmhcfjhliihkkdobllhpdnmmciaim')}
+          className="ntg-setting-btn"
+          icon="chrome">
+            Chrome Web Store
+          </Btn> : null}
       </div>
     );
     state.set({modal: p.modal});

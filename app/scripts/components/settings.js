@@ -953,7 +953,8 @@ export class Settings extends React.Component {
           {p.settings === 'about' ?
           <About
           modal={p.modal}
-          theme={p.theme} /> : null}
+          theme={p.theme}
+          chromeVersion={p.chromeVersion} /> : null}
         </Row>
       </Container>
     );
