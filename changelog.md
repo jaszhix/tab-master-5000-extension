@@ -1,5 +1,11 @@
 #### Release Notes
 
+##### v2.3.0 / *10-11-17*
+
+*   Added compatibility for Firefox.
+*   Cleaned up code.
+*   Updated dependencies.
+
 ##### v2.2.2 / *7-6-17*
 
 *   Excluded the javascript domain from bookmark indexes.

@@ -1,7 +1,7 @@
 {
   "name": "__MSG_appName__",
   "short_name": "TM5K",
-  "version": "2.2.2",
+  "version": "2.3.0",
   "manifest_version": 2,
   "description": "__MSG_appDesc__",
   "icons": {
@@ -11,13 +11,14 @@
   "chrome_url_overrides": {
     "newtab": "newtab.html"
   },
-  "options_page": "options.html",
+  "options_ui": {
+    "page": "options.html"
+  },
   "default_locale": "en",
   "background": {
     "scripts": [
       "scripts/background.js"
-    ],
-    "persistent": true
+    ]
   },
   "page_action": {
     "default_icon": {
@@ -26,7 +27,6 @@
     },
     "default_title": "__MSG_appName__"
   },
-  "offline_enabled": true,
   "content_scripts": [
     {
       "matches": [
@@ -49,8 +49,6 @@
     "storage",
     "unlimitedStorage",
     "idle",
-    "system.memory",
-    "tabCapture",
     "management",
     "bookmarks",
     "history"

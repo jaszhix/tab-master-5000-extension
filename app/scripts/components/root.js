@@ -1,6 +1,6 @@
 window._trackJs = {
   token: 'bd495185bd7643e3bc43fa62a30cec92',
-  enabled: false,
+  enabled: true,
   onError: function (payload) { return true; },
   version: "",
   callback: {
@@ -8,7 +8,7 @@ window._trackJs = {
     bindStack: true
   },
   console: {
-    enabled: false,
+    enabled: true,
     display: true,
     error: true,
     warn: false,
