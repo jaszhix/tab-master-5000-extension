@@ -10,8 +10,8 @@ const postcssPlugins = () => {
   let processors = [
     autoprefixer({
       browsers: [
-        'ff >= 30',
-        'chrome >= 34',
+        'ff >= 52',
+        'chrome >= 58',
         'opera >= 23'
       ]
     })
@@ -43,6 +43,7 @@ module.exports = {
     new webpack.NoEmitOnErrorsPlugin(),
     new webpack.HotModuleReplacementPlugin(),
     new webpack.NamedModulesPlugin(),
+    new webpack.optimize.ModuleConcatenationPlugin(),
     new webpack.LoaderOptionsPlugin({
       debug: true,
     })

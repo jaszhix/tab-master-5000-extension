@@ -9,6 +9,7 @@ const runSequence = require('run-sequence');
 const clear = require('clear');
 const rename = require('gulp-rename');
 const config = require('./webpack.config');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 let plugins = [];
 let env = {production: false};
@@ -35,7 +36,6 @@ let uglify = function(){
         comments: false
       }
     }));
-    plugins.push(new webpack.optimize.OccurenceOrderPlugin(true));
     plugins.push(new webpack.DefinePlugin({
       'process.env': {
          NODE_ENV: JSON.stringify('production')
@@ -89,6 +89,7 @@ gulp.task('firefox-manifest-rename', function() {
   del.sync(['./dist/manifest.json']);
   return gulp.src('./dist/manifest_firefox.json')
     .pipe(rename('manifest.json'))
+    .pipe(gulp.dest('./dist'));
 });
 gulp.task('imgmin', function() {
   return gulp.src('./dist/images/*.{png,jpg,gif}')
