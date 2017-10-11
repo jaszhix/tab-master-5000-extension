@@ -27,7 +27,7 @@ button.ntg-btn {
     white-space: nowrap;
     vertical-align: middle;
     touch-action: manipulation;
-    -webkit-user-select: none;
+    user-select: none;
     overflow: hidden;
 }
 button.ntg-top-btn {
@@ -48,7 +48,7 @@ button.ntg-top-btn {
     white-space: wrap;
     vertical-align: middle;
     touch-action: manipulation;
-    -webkit-user-select: none;
+    user-select: none;
     top: 1px;
 }
 button.ntg-sort-btn {
@@ -68,7 +68,7 @@ button.ntg-sort-btn {
     white-space: wrap;
     vertical-align: middle;
     touch-action: manipulation;
-    -webkit-user-select: none;
+    user-select: none;
     top: 1px;
 }
 
@@ -90,7 +90,7 @@ button.ntg-apply-btn {
     white-space: wrap;
     vertical-align: middle;
     touch-action: manipulation;
-    -webkit-user-select: none;
+    user-select: none;
     top: 1px;
 }
 button.ntg-setting-btn {
@@ -110,7 +110,7 @@ button.ntg-setting-btn {
     white-space: wrap;
     vertical-align: middle;
     touch-action: manipulation;
-    -webkit-user-select: none;
+    user-select: none;
     top: 1px;
 }
 button.ntg-impexp-btn {
@@ -128,7 +128,7 @@ button.ntg-impexp-btn {
     white-space: nowrap;
     vertical-align: middle;
     touch-action: manipulation;
-    -webkit-user-select: none;
+    user-select: none;
     overflow: hidden;
     position: fixed;
     top: 80%;
@@ -146,7 +146,7 @@ button.ntg-session-btn {
     white-space: nowrap;
     vertical-align: middle;
     touch-action: manipulation;
-    -webkit-user-select: none;
+    user-select: none;
     overflow: hidden;
     float: right;
 }
@@ -166,7 +166,7 @@ button.ntg-expanded-session-tab-btn {
     white-space: nowrap;
     vertical-align: middle;
     touch-action: manipulation;
-    -webkit-user-select: none;
+    user-select: none;
     overflow: hidden;
     float: right;
 }
@@ -186,7 +186,7 @@ button.ntg-context-btn {
     white-space: nowrap;
     vertical-align: middle;
     touch-action: manipulation;
-    -webkit-user-select: none;
+    user-select: none;
     overflow: hidden;
     float: right;
     padding-left: 8px;
@@ -209,7 +209,7 @@ button.ntg-context-btn-close-all {
     white-space: nowrap;
     vertical-align: middle;
     touch-action: manipulation;
-    -webkit-user-select: none;
+    user-select: none;
     overflow: hidden;
     float: right;
     padding-left: 8px;
@@ -230,7 +230,7 @@ button.ntg-modal-btn-close {
     white-space: nowrap;
     vertical-align: middle;
     touch-action: manipulation;
-    -webkit-user-select: none;
+    user-select: none;
     overflow: hidden;
     padding-top: 4px;
     padding-bottom: 4px;
@@ -248,7 +248,7 @@ button.ntg-modal-btn-max {
     white-space: nowrap;
     vertical-align: middle;
     touch-action: manipulation;
-    -webkit-user-select: none;
+    user-select: none;
     overflow: hidden;
     margin-right: 4px;
     padding-top: 4px;
@@ -272,6 +272,6 @@ button.more-btn {
     white-space: wrap;
     vertical-align: middle;
     touch-action: manipulation;
-    -webkit-user-select: none;
+    user-select: none;
     top: 1px;
 }

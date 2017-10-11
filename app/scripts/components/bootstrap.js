@@ -21,7 +21,7 @@ export class Btn extends React.Component {
   }
   componentDidMount(){
     this.listenTo(themeStore, this.themeChange);
-    var selectedTheme = themeStore.getSelectedTheme();
+    let selectedTheme = themeStore.getSelectedTheme();
     this.setState({theme: selectedTheme});
     this.themeChange({theme: selectedTheme});
   }
@@ -54,9 +54,9 @@ export class Btn extends React.Component {
     }
   }
   render() {
-    var p = this.props;
-    var s = this.state;
-    var style = {};
+    let p = this.props;
+    let s = this.state;
+    let style = {};
     if (s.theme) {
       if (p.className === 'ntg-btn' || p.className === 'ntg-top-btn') {
         style = {
@@ -76,7 +76,7 @@ export class Btn extends React.Component {
         opacity: '1'
       });
       _.assignIn(style, _.cloneDeep(p.style));
-      var faStyle = {
+      let faStyle = {
         paddingRight: !p.noIconPadding ? '6px' : null
       };
       _.assignIn(faStyle, _.cloneDeep(p.faStyle));
@@ -111,7 +111,7 @@ export class Col extends React.Component {
     super(props);
   }
   render(){
-    var p = this.props;
+    let p = this.props;
     return (
       <div data-tip={p['data-tip'] ? `<div style="max-width: 350px;">${p['data-tip']}</div>` : null} onContextMenu={p.onContextMenu} onDragEnter={p.onDragEnter} onMouseEnter={p.onMouseEnter} onMouseLeave={p.onMouseLeave} onClick={p.onClick} style={p.style} id={p.id} className={p.className ? 'col-xs-'+p.size+' '+p.className : 'col-xs-'+p.size}>{p.children}</div>
     )
@@ -127,7 +127,7 @@ export class Row extends React.Component {
     super(props);
   }
   render(){
-    var p = this.props;
+    let p = this.props;
     return (
       <div data-tip={p['data-tip'] ? `<div style="max-width: 350px;">${p['data-tip']}</div>` : null} onContextMenu={p.onContextMenu} onDragEnter={p.onDragEnter} onMouseEnter={p.onMouseEnter} onMouseLeave={p.onMouseLeave} onClick={p.onClick} style={p.style} id={p.id} className={p.fluid ? p.className ? 'row-fluid '+p.className : 'row-fluid' : p.className ? 'row '+p.className : 'row'}>{p.children}</div>
     );
@@ -146,7 +146,7 @@ export class Container extends React.Component {
     super(props);
   }
   render() {
-    var p = this.props;
+    let p = this.props;
     return (
       <div data-tip={p['data-tip'] ? `<div style="max-width: 350px;">${p['data-tip']}</div>` : null} onContextMenu={p.onContextMenu} onDragEnter={p.onDragEnter} onMouseEnter={p.onMouseEnter} onMouseLeave={p.onMouseLeave} onClick={p.onClick} style={p.style} id={p.id} className={p.fluid ? p.className ? 'container-fluid '+p.className : 'container-fluid' : p.className ? 'container '+p.className : 'container'}>{p.children}</div>
     );
@@ -165,8 +165,8 @@ export class Panel extends React.Component {
     super(props);
   }
   render(){
-    var p = this.props;
-    var defaultStyle = {};
+    let p = this.props;
+    let defaultStyle = {};
     if (p.content) {
       _.assignIn(defaultStyle, {
         boxShadow: p.type === 'default' ? '0 1px 3px rgba(0, 0, 0, 0), 0 1px 2px rgba(0, 0, 0, 0)' : 'initial'
@@ -243,9 +243,9 @@ export class ModalOverlay extends React.Component {
     _.defer(()=>this.props.onClose());
   }
   render(){
-    var s = this.state;
-    var p = this.props;
-    var overlayStyle = {display: 'block', paddingRight: '15px', WebkitTransition: p.animations ? 'top 0.2s' : 'initial'};
+    let s = this.state;
+    let p = this.props;
+    let overlayStyle = {display: 'block', paddingRight: '15px', transition: p.animations ? 'top 0.2s' : 'initial'};
     overlayStyle = _.assignIn(overlayStyle, p.overlayStyle);
     return (
       <div className={`modal fade${s.fadeIn ? ' in' : ''}`} style={overlayStyle}>
@@ -291,11 +291,11 @@ export class ModalDefault extends React.Component {
     }
   }
   render(){
-    var p = this.props;
-    var heightOffset = p.heightOffset ? p.heightOffset : p.footerComponent ? 200 : 140;
-    var bodyStyle = {maxHeight: `${window.innerHeight - heightOffset}px`, overflowY: 'auto', WebkitTransition: p.animations ? 'max-height 0.2s' : 'initial'};
+    let p = this.props;
+    let heightOffset = p.heightOffset ? p.heightOffset : p.footerComponent ? 200 : 140;
+    let bodyStyle = {maxHeight: `${window.innerHeight - heightOffset}px`, overflowY: 'auto', transition: p.animations ? 'max-height 0.2s' : 'initial'};
     bodyStyle = _.assignIn(bodyStyle, _.cloneDeep(p.bodyStyle));
-    var headerStyle = {paddingTop: '0px'};
+    let headerStyle = {paddingTop: '0px'};
     headerStyle = _.assignIn(headerStyle, _.cloneDeep(p.headerStyle));
     return (
       <div className={`modal-dialog${p.size ? ' modal-'+p.size : ''}`} style={p.dialogStyle}>
@@ -345,14 +345,14 @@ export class Tabs extends React.Component {
     this.setState({active: i});
   }
   render(){
-    var p = this.props;
-    var s = this.state;
+    let p = this.props;
+    let s = this.state;
     return (
       <div className="tabbable" style={p.style}>
         <ul className="nav nav-tabs nav-tabs-highlight nav-justified">
           {p.options.map((option, i)=>{
-            var active = option.label.toLowerCase() === p.settings;
-            var tabStyle = {
+            let active = option.label.toLowerCase() === p.settings;
+            let tabStyle = {
               cursor: 'pointer',
               borderTopColor: active ? p.borderTopColor : 'rgba(255, 255, 255, 0)',
               borderBottomColor: active ? 'rgba(255, 255, 255, 0)' : p.borderTopColor,
@@ -390,7 +390,7 @@ export class Context extends React.Component {
     this.props.onClickOutside();
   }
   render(){
-    var p = this.props;
+    let p = this.props;
     return (
       <ul className="dropdown-menu dropdown-menu-xs" style={{
         display: 'block',
@@ -416,9 +416,9 @@ export class Context extends React.Component {
                       backgroundColor: option.switch ? p.theme.darkBtnBg : 'rgba(255, 255, 255, 0)',
                       borderColor: option.switch ? p.theme.textFieldBorder : p.theme.darkBtnBg,
                       boxShadow: `${option.switch ? p.theme.textFieldBorder : p.theme.darkBtnBg} 0px 0px 0px 8px inset`,
-                      WebkitTransition: p.animations ? 'border 0.4s, box-shadow 0.4s, background-color 1.2s' : 'initial',
+                      transition: p.animations ? 'border 0.4s, box-shadow 0.4s, background-color 1.2s' : 'initial',
                     }}>
-                      <small style={{left: option.switch ? '14px' : '0px', WebkitTransition: p.animations ? 'background-color 0.4s, left 0.2s' : 'initial', backgroundColor: option.switch ? p.theme.darkBtnText : p.theme.bodyText}} />
+                      <small style={{left: option.switch ? '14px' : '0px', transition: p.animations ? 'background-color 0.4s, left 0.2s' : 'initial', backgroundColor: option.switch ? p.theme.darkBtnText : p.theme.bodyText}} />
                     </span>
                      {option.label}
                   </label>

@@ -4,12 +4,12 @@ import _ from 'lodash';
 import state from './state';
 import {utilityStore} from './main';
 
-var screenshotStore = Reflux.createStore({
+let screenshotStore = Reflux.createStore({
   capture(id, wid, imageData, type){
     console.log('screenshotStore capture:', id, wid, type);
-    var s = state.get();
-    var refTab = _.find(s.tabs, {id: id});
-    var getScreenshot = new Promise((resolve, reject)=>{
+    let s = state.get();
+    let refTab = _.find(s.tabs, {id: id});
+    let getScreenshot = new Promise((resolve, reject)=>{
       if (imageData) {
         console.log('response from content canvas: ', id, wid, type);
         resolve(imageData);
@@ -28,17 +28,18 @@ var screenshotStore = Reflux.createStore({
     });
     if (s.prefs.screenshot && refTab !== undefined && refTab.url.indexOf('newtab') === -1) {
       getScreenshot.then((img, err)=>{
-        var resize = new Promise((resolve, reject)=>{
-          var sourceImage = new Image();
+        let resize = new Promise((resolve, reject)=>{
+          let sourceImage = new Image();
           sourceImage.onload = function() {
-            var imgWidth = sourceImage.width / 2;
-            var imgHeight = sourceImage.height / 2;
-            var canvas = document.createElement("canvas");
+            let imgWidth = sourceImage.width / 2;
+            let imgHeight = sourceImage.height / 2;
+            let canvas = document.createElement('canvas');
+            let newDataUri;
             canvas.width = imgWidth;
             canvas.height = imgHeight;
-            canvas.getContext("2d").drawImage(sourceImage, 0, 0, imgWidth, imgHeight);
+            canvas.getContext('2d').drawImage(sourceImage, 0, 0, imgWidth, imgHeight);
             try {
-              var newDataUri = canvas.toDataURL('image/jpeg', 0.25);
+              newDataUri = canvas.toDataURL('image/jpeg', 0.25);
             } catch (e) {
               // Likely tainted canvas from alternative method
               reject();
@@ -50,13 +51,13 @@ var screenshotStore = Reflux.createStore({
           sourceImage.src = img;
         });
         resize.then((image)=>{
-          var screenshot = {
-            url: refTab.url, 
-            data: image, 
+          let screenshot = {
+            url: refTab.url,
+            data: image,
             timeStamp: Date.now()
           };
-          
-          var refScreenshot = _.findIndex(s.screenshots, {url: refTab.url});
+
+          let refScreenshot = _.findIndex(s.screenshots, {url: refTab.url});
           if (refScreenshot !== -1) {
             s.screenshots[refScreenshot] = screenshot;
           } else {
@@ -82,7 +83,7 @@ var screenshotStore = Reflux.createStore({
   },
   clear(){
     chrome.storage.local.remove('screenshots', (result)=>{
-      console.log('Screenshot cache cleared: ',result);
+      console.log('Screenshot cache cleared: ', result);
       _.defer(()=>{
         state.set({reQuery: {state: true, type: 'create'}});
       });
@@ -91,20 +92,20 @@ var screenshotStore = Reflux.createStore({
   },
   purge(index, windowId){
     utilityStore.get_bytesInUse('screenshots').then((bytes)=>{
-      var timeStamp = null;
-      var timeStampIndex = null;
-      console.log('bytes: ',bytes);
+      let timeStamp = null;
+      let timeStampIndex = null;
+      console.log('bytes: ', bytes);
       // If screenshot cache is above 50MB, start purging screenshots that are 3 days old.
       if (bytes > 52428800) {
-        var now = new Date(Date.now()).getTime();
+        let now = new Date(Date.now()).getTime();
         for (let i = 0, len = index.length; i < len; i++) {
           timeStampIndex = _.find(index, { timeStamp: index[i].timeStamp });
           timeStamp = new Date(timeStampIndex.timeStamp).getTime();
           if (timeStamp + 259200000 < now) {
-            console.log('3 days old: ',index[i]);
+            console.log('3 days old: ', index[i]);
             _.pullAt(index, i);
           }
-          
+
         }
         chrome.storage.local.set({screenshots: index});
       }

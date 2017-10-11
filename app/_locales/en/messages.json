@@ -1,10 +1,10 @@
 {
   "appName": {
-    "message": "Tab Master 5000: Chrome Swiss Army Knife",
+    "message": "Tab Master 5000",
     "description": "The title of the application, displayed in the web store."
   },
   "appDesc": {
-    "message": "The swiss army knife of tab, history, bookmark, session, and extension management.", 
+    "message": "The swiss army knife of tab, history, bookmark, session, and extension management.",
     "description":"The description of the application, displayed in the web store."
   },
   "hi": {

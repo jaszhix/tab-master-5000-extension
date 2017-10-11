@@ -105,20 +105,20 @@ class Attribution extends React.Component {
     };
   }
   componentDidMount(){
-    var deps = require('json-loader!../../../package.json');
-    var state = [];
-    for (var key in deps.devDependencies) {
+    let deps = require('json-loader!../../../package.json');
+    let state = [];
+    for (let key in deps.devDependencies) {
       state.push(`${key} ${deps.devDependencies[key].split('^')[1]}`);
     }
     this.setState({dependencies: state});
   }
   render(){
-    var s = this.state;
+    let s = this.state;
     console.log(this.state);
     if (s.dependencies) {
-      var slice2 = Math.ceil(s.dependencies.length / 2);
-      var list1 = s.dependencies.slice(0, slice2);
-      var list2 = s.dependencies.slice(slice2, s.dependencies.length);
+      let slice2 = Math.ceil(s.dependencies.length / 2);
+      let list1 = s.dependencies.slice(0, slice2);
+      let list2 = s.dependencies.slice(slice2, s.dependencies.length);
       console.log(list1, list2);
     }
     return (
@@ -130,7 +130,7 @@ class Attribution extends React.Component {
             <Col size="6">
               <ul>
                 {s.dependencies ? list1.map((dep, i)=>{
-                  var pkg = dep.split(' ');
+                  let pkg = dep.split(' ');
                   return (
                     <li key={i}><a target="_blank" href={`https://www.npmjs.com/package/${pkg[0]}`}>{pkg[0]}</a>  {pkg[1]}</li>
                   );
@@ -140,7 +140,7 @@ class Attribution extends React.Component {
             <Col size="6">
               <ul>
                 {s.dependencies ? list2.map((dep, i)=>{
-                  var pkg = dep.split(' ');
+                  let pkg = dep.split(' ');
                   return (
                     <li key={i}><a target="_blank" href={`https://www.npmjs.com/package/${pkg[0]}`}>{pkg[0]}</a>  {pkg[1]}</li>
                   );
@@ -164,7 +164,7 @@ class ReleaseNotes extends React.Component {
   }
   render(){
     function createMarkup() { return {__html: changelog};}
-    var p = this.props;
+    let p = this.props;
     return (
       <div>
         <img className="ntg-about" src={p.tm5kLogo}/>
@@ -189,7 +189,7 @@ class About extends React.Component {
     };
   }
   componentWillMount(){
-    var p = this.props;
+    let p = this.props;
     p.modal.footer = (
       <div>
         <Btn onClick={()=>utilityStore.createTab('https://github.com/jaszhix/tab-master-5000-chrome-extension')} className="ntg-setting-btn" icon="github">Github</Btn>
@@ -199,9 +199,9 @@ class About extends React.Component {
     state.set({modal: p.modal});
   }
   render() {
-    var p = this.props;
-    var s = this.state;
-    var tm5kLogo = `../../images/icon-128${tc(p.theme.settingsBg).isDark() ? '-light' : ''}.png`
+    let p = this.props;
+    let s = this.state;
+    let tm5kLogo = `../../images/icon-128${tc(p.theme.settingsBg).isDark() ? '-light' : ''}.png`
     return (
       <div>
         <Row className="ntg-tabs">

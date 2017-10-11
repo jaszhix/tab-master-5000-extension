@@ -23,14 +23,21 @@ class Alert extends React.Component {
     this.setState(e);
   }
   render() {
-    var s = this.state;
-    var createPostMarkup = (postContent)=> { return {__html: postContent};};
+    let createPostMarkup = (postContent)=> { return {__html: postContent};};
     return (
-      <div style={{zIndex: '9999', position: 'fixed', bottom: '0px', right: '2%', WebkitTransition: 'opacity 0.1s', opacity: s.open ? '1' : '0', cursor: 'pointer'}} onClick={()=>this.setState({open: !s.open})}>
-        {s.open && this.props.enabled ? 
-          <div className={`message-response-box animated ${s.class}`} >
-          <div className={`alert message-response ${s.tag}`} role="alert">
-            <div dangerouslySetInnerHTML={createPostMarkup(s.text)} />
+      <div style={{
+        zIndex: '9999',
+        position: 'fixed',
+        bottom: '0px',
+        right: '2%',
+        transition: 'opacity 0.1s',
+        opacity: this.state.open ? '1' : '0',
+        cursor: 'pointer'
+      }} onClick={()=>this.setState({open: !this.state.open})}>
+        {this.state.open && this.props.enabled ?
+          <div className={`message-response-box animated ${this.state.class}`} >
+          <div className={`alert message-response ${this.state.tag}`} role="alert">
+            <div dangerouslySetInnerHTML={createPostMarkup(this.state.text)} />
           </div>
         </div> : null}
       </div>

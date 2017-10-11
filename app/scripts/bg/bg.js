@@ -270,6 +270,7 @@ class Bg extends React.Component {
       actions: [],
       chromeVersion: version
     };
+    autoBind(this);
   }
   componentDidMount(){
     this.listenTo(prefsStore, this.prefsChange);
@@ -509,15 +510,18 @@ class Bg extends React.Component {
         chrome.tabs.remove(sender.tab.id);
       } else if (msg.method === 'restoreWindow') {
         for (let i = 0, len = msg.tabs.length; i < len; i++) {
-          chrome.tabs.create({
+          let options = {
             windowId: msg.windowId,
             index: msg.tabs[i].index,
             url: msg.tabs[i].url,
             active: msg.tabs[i].active,
-            selected: msg.tabs[i].selected,
             pinned: msg.tabs[i].pinned
-          }, (t)=>{
-            console.log('restored: ',t);
+          };
+          if (this.state.chromeVersion > 1) {
+            options.selected = msg.tabs[i].selected;
+          }
+          chrome.tabs.create(options, (t)=>{
+            console.log('restored: ', t);
             checkChromeErrorsThrottled();
           });
         }
@@ -549,22 +553,23 @@ class Bg extends React.Component {
   formatTabs(prefs, tabs){
     let blacklisted = [];
     for (let i = 0, len = tabs.length; i < len; i++) {
-      let urlMatch = tabs[i].url.match(/^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n]+)/im);
+      let urlMatch = tabs[i].url.match(/^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:/\n]+)/im);
       _.assign(tabs[i], {
         timeStamp: new Date(Date.now()).getTime(),
         domain: urlMatch ? urlMatch[1] : tabs[i].url.split('/')[2]
       });
-      if (tabs[i].url.indexOf('chrome://newtab/') !== -1) {
+      let isNewTab = tabs[i].url.indexOf('chrome://newtab/') > -1 || tabs[i].url.substr(-11) === 'newtab.html';
+      if (isNewTab) {
         blacklisted.push({id: tabs[i].id, windowId: tabs[i].windowId});
       }
     }
     if (blacklisted.length > 0 && prefs && prefs.singleNewTab) {
-      let extraNewTabs = _.tail(blacklisted);
-      console.log(extraNewTabs, blacklisted);
+      // TODO: Fix this leaving two tabs per window when singleNewTab is true in FF.
+      let [firstNewTab, ...extraNewTabs] = blacklisted;
       for (let i = 0, len = extraNewTabs.length; i < len; i++) {
         chrome.tabs.remove(extraNewTabs[i].id);
       }
-      this.state.newTabs.push(blacklisted[0]);
+      this.state.newTabs.push(firstNewTab);
     } else {
       this.state.newTabs = _.concat(this.state.newTabs, blacklisted);
     }
@@ -664,12 +669,12 @@ class Bg extends React.Component {
           this.keepNewTabOpen();
 
           chrome.tabs.create({url: lastAction.item.url, index: lastAction.item.index}, (t)=>{
-            console.log('Tab created from tabStore.createTab: ',t);
+            console.log('Tab created from tabStore.createTab: ', t);
           });
         } else if (lastAction.type === 'update') {
           this.state.actions = _.without(this.state.actions, _.last(this.state.actions));
           undo();
-        } else if (lastAction.type.indexOf('mut') !== -1 && chromeVersion >= 46) {
+        } else if (lastAction.type.indexOf('mut') !== -1 && (chromeVersion >= 46 || chromeVersion === 1)) {
           chrome.tabs.update(lastAction.item.id, {muted: !lastAction.item.mutedInfo.muted});
         } else if (lastAction.type.indexOf('pin') !== -1) {
           chrome.tabs.update(lastAction.item.id, {pinned: !lastAction.item.pinned});

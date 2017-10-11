@@ -15,7 +15,7 @@ import * as utils from './stores/tileUtils';
 
 import {ModalOverlay, Tabs} from './bootstrap';
 
-var mount = false;
+let mount = false;
 
 class ModalHandler extends React.Component {
   constructor(props) {
@@ -34,8 +34,8 @@ class ModalHandler extends React.Component {
       this.setState({modal: nP.modal});
         if (nP.prefs.animations) {
           v('.tile-container').css({
-            WebkitFilter: `blur(${nP.modal.state && nP.settings !== 'theming' ? '5' : '0'}px)`,
-            WebkitTransition: '-webkit-filter 0.2s'
+            filter: `blur(${nP.modal.state && nP.settings !== 'theming' ? '5' : '0'}px)`,
+            transition: 'filter 0.2s'
           });
         }
     }
@@ -48,15 +48,15 @@ class ModalHandler extends React.Component {
     state.set({modal: {state: false}});
   }
   render() {
-    var s = this.state;
-    var p = this.props;
-    var tabOptions = [
+    let s = this.state;
+    let p = this.props;
+    let tabOptions = [
       {label: utils.t('preferences'), key: 'preferences'},
       {label: _.upperFirst(utils.t('sessions')), key: 'sessions'},
       {label: utils.t('theming'), key: 'theming'},
       {label: utils.t('about'), key: 'about'}
     ];
-    var headerBgIsLight = tc(p.theme.headerBg).isLight();
+    let headerBgIsLight = tc(p.theme.headerBg).isLight();
     if (p.modal.state && p.modal.type === 'settings') {
       return (
         <ModalOverlay
@@ -69,13 +69,13 @@ class ModalHandler extends React.Component {
         backdropStyle={{
           zIndex: 11,
           backgroundColor: p.settings === 'theming' ? 'rgba(255, 255, 255, 0)' : '#000',
-          WebkitTransition: p.prefs.animations ? 'background-color 0.2s' : 'initial'
+          transition: p.prefs.animations ? 'background-color 0.2s' : 'initial'
         }}
         overlayStyle={{top: p.settings === 'theming' ? '55%' : '0'}}
         dialogStyle={{
           zIndex: '50',
           opacity: p.settings === 'theming' ? '0.95' : '1',
-          WebkitTransition: p.prefs.animations ? 'opacity 0.2s' : 'initial',
+          transition: p.prefs.animations ? 'opacity 0.2s' : 'initial',
           width: `${p.width > 3100 ? 55 : p.width > 2700 ? 60 : p.width > 2450 ? 65 : p.width > 2200 ? 70 : p.width > 1880 ? 75 : 85}%`,
           margin: '0px auto',
           top: '3.5%'

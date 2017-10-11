@@ -1,8 +1,5 @@
 import Reflux from 'reflux';
-import _ from 'lodash';
-import kmp from 'kmp';
-import state from './state';
-import {msgStore, utilityStore} from './main';
+// TODO: Get rid of this
 
 var tabStore = Reflux.createStore({
   promise(){

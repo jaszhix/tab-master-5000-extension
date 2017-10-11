@@ -16,13 +16,13 @@ body {
     z-index: 9990;
 }
 #bgImg {
-    -webkit-transition: background-color .02s ease-in, opacity .02s ease-in, -webkit-filter 0.2s ease-in;
+    transition: background-color .02s ease-in, opacity .02s ease-in, filter 0.2s ease-in;
     position: fixed;
     display: none;
     left: -5px;
     right: 0;
     z-index: 1;
-    overflow-x: none;
+    overflow-x: hidden;
     background-color: rgba(255, 255, 255, 0.45);
     background-blend-mode: soft-light;
     background-size: cover;
@@ -75,8 +75,9 @@ body {
 }
 .label-session-input {
     position: relative;
-    height: 24px;
+    height: 28px;
     margin-bottom: -10px;
+    padding-left: 8px;
 }
 .preferences {
     margin-top: 8px;
@@ -153,7 +154,7 @@ body {
 }
 .ntg-favicon-blur {
     opacity: 0.3;
-    -webkit-filter: blur(3px);
+    filter: blur(3px);
     width: 40px;
     position: relative;
 }
@@ -161,7 +162,7 @@ body {
     width: 15px;
 }
 .ntg-pinned {
-    -webkit-transition: color .05s ease-in;
+    transition: color .05s ease-in;
     width: 15px;
     height: 15px;
     position: absolute;
@@ -170,7 +171,7 @@ body {
     padding:1px;
 }
 .ntg-pinned-hover {
-    -webkit-transition: color .05s ease-in;
+    transition: color .05s ease-in;
     width: 15px;
     height: 15px;
     position: absolute;
@@ -178,7 +179,7 @@ body {
     padding:1px;
 }
 .ntg-mute {
-    -webkit-transition: color .05s ease-in;
+    transition: color .05s ease-in;
     width: 15px;
     height: 15px;
     position: absolute;
@@ -187,7 +188,7 @@ body {
     padding:1px;
 }
 .ntg-mute-hover {
-    -webkit-transition: color .05s ease-in;
+    transition: color .05s ease-in;
     width: 15px;
     height: 15px;
     position: absolute;
@@ -195,7 +196,7 @@ body {
     padding:1px;
 }
 .ntg-mute-audible {
-    -webkit-transition: color .05s ease-in;
+    transition: color .05s ease-in;
     width: 15px;
     height: 15px;
     position: absolute;
@@ -205,7 +206,7 @@ body {
     color: #B67777;
 }
 .ntg-mute-audible-hover {
-    -webkit-transition: color .05s ease-in;
+    transition: color .05s ease-in;
     width: 15px;
     height: 15px;
     position: absolute;
@@ -214,7 +215,7 @@ body {
     color: #B67777;
 }
 .ntg-x {
-    -webkit-transition: color .05s ease-in;
+    transition: color .05s ease-in;
     width: 15px;
     height: 15px;
     position: absolute;
@@ -223,7 +224,7 @@ body {
     padding:1px;
 }
 .ntg-x-hover {
-    -webkit-transition: color .05s ease-in;
+    transition: color .05s ease-in;
     width: 15px;
     height: 15px;
     position: absolute;
@@ -231,7 +232,7 @@ body {
     padding:1px;
 }
 .ntg-move {
-    -webkit-transition: color .05s ease-in;
+    transition: color .05s ease-in;
     width: 15px;
     height: 15px;
     position: absolute;
@@ -242,7 +243,7 @@ body {
     cursor: move;
 }
 .ntg-move-hover {
-    -webkit-transition: color .05s ease-in;
+    transition: color .05s ease-in;
     color: #FFF;
     width: 15px;
     height: 15px;
@@ -258,7 +259,7 @@ div.row.ntg-tile-row-top > div.col-xs-3 > div > i {
 .ntg-tile {
     background-color: rgb(237, 237, 237);
     box-shadow: rgb(133, 132, 132) 1px 1px 5px -1px;
-    -webkit-transition: background-color .05s ease-in;
+    transition: background-color .05s ease-in;
     background-size: cover;
     margin: 6px;
     height: auto;
@@ -276,12 +277,12 @@ div.row.ntg-tile-row-top > div.col-xs-3 > div > i {
     overflow-wrap: break-word;
     float: left;
     opacity: 0.4;
-    cursor: 'default';
+    cursor: default;
 }
 .ntg-tile-hover {
     background-color: rgb(247, 247, 247);
     box-shadow: rgb(133, 132, 132) 1px 1px 5px -1px;
-    -webkit-transition: background-color .05s ease-in;
+    transition: background-color .05s ease-in;
     background-size: cover;
     margin: 6px;
     height: 134px;
@@ -294,7 +295,7 @@ div.row.ntg-tile-row-top > div.col-xs-3 > div > i {
     text-align: center;
     background-color: rgb(247, 247, 247);
     box-shadow: rgb(133, 132, 132) 1px 1px 5px -1px;
-    -webkit-transition: background-color .05s ease-in;
+    transition: background-color .05s ease-in;
     background-size: cover;
     margin: 3px;
     height: 134px;
@@ -307,7 +308,7 @@ div.row.ntg-tile-row-top > div.col-xs-3 > div > i {
     display: inline;
     background-color: rgb(247, 247, 247);
     box-shadow: rgb(133, 132, 132) 1px 1px 5px -1px;
-    -webkit-transition: background-color .05s ease-in;
+    transition: background-color .05s ease-in;
 }
 .ntg-session-pin {
     padding-left: 3px;
@@ -320,7 +321,7 @@ div.row.ntg-tile-row-top > div.col-xs-3 > div > i {
     height: auto;
 }
 .ntg-session-text {
-    -webkit-transition: color .05s ease-in;
+    transition: color .05s ease-in;
     font-size:14px;
     padding-left: 8px;
     overflow: hidden;
@@ -368,7 +369,7 @@ div.row.ntg-tile-row-top > div.col-xs-3 > div > i {
 .ntg-context-menu {
     position: absolute;
     background-color: rgba(255, 255, 255, 0);
-    overflow: overlay;
+    overflow: hidden;
     -webkit-overflow-scrolling: touch;
     width: auto;
     height: auto;
@@ -388,7 +389,11 @@ div.row.ntg-tile-row-top > div.col-xs-3 > div > i {
     text-shadow: 1px 1px #fff;
 }
 .form-control::-webkit-input-placeholder {
-    -webkit-transition: color .01s ease-in;
+    transition: color .01s ease-in;
+    color: #CCCCCC;
+}
+.form-control::-moz-placeholder {
+    transition: color .01s ease-in;
     color: #CCCCCC;
 }
 .small-tab {

@@ -15,15 +15,15 @@ class Row extends React.Component {
     super(props);
   }
   render(){
-    var p = this.props;
-    var textOverflow = {
+    let p = this.props;
+    let textOverflow = {
       whiteSpace: 'nowrap',
       width: `${p.s.width <= 1186 ? p.s.width / 3 : p.s.width <= 1015 ? p.s.width / 6 : p.s.width / 2}px`,
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       display: 'inline-block'
     };
-    var favIconUrl = p.row.favIconUrl ? utils.filterFavicons(p.row.favIconUrl, p.row.url) : '../images/file_paper_blank_document.png';
+    let favIconUrl = p.row.favIconUrl ? utils.filterFavicons(p.row.favIconUrl, p.row.url) : '../images/file_paper_blank_document.png';
     return (
       <tr
       className={p.className}
@@ -40,7 +40,7 @@ class Row extends React.Component {
           if (p.row.hasOwnProperty(column)) {
             if (column === 'title' || column === 'name') {
               return (
-                <td key={z} style={{maxWidth: p.s.width <= 950 ? '300px' : p.s.width <= 1015 ? '400px' : '700px', WebkitUserSelect: 'none'}}>
+                <td key={z} style={{maxWidth: p.s.width <= 950 ? '300px' : p.s.width <= 1015 ? '400px' : '700px', userSelect: 'none'}}>
                   <div className="media-left media-middle">
                     <img src={favIconUrl} style={{width: '16px', height: '16px'}}/>
                   </div>
@@ -59,8 +59,8 @@ class Row extends React.Component {
             } else if (p.s.prefs.mode === 'apps' && column === 'domain') {
               return <td key={z}><i className={`icon-${_.isString(p.row[column]) ? 'check2' : 'cross'}`} /></td>;
             } else if (_.isBoolean(p.row[column]) || column === 'mutedInfo') {
-              var bool = column === 'mutedInfo' ? p.row[column].muted : p.row[column];
-              var toggleBool = ['pinned', 'enabled', 'mutedInfo'];
+              let bool = column === 'mutedInfo' ? p.row[column].muted : p.row[column];
+              let toggleBool = ['pinned', 'enabled', 'mutedInfo'];
               return <td key={z}><i className={`icon-${bool ? 'check2' : 'cross'}`} style={{cursor: toggleBool.indexOf(column) !== -1 ? 'pointer' : 'initial'}} onClick={toggleBool.indexOf(column) !== -1 ? ()=>p.handleBooleanClick(column) : null} /></td>;
             } else if (column === 'launchType') {
               return <td key={z}>{p.row[column].indexOf('TAB') !== -1 ? 'Tab' : 'Window'}</td>;
@@ -91,14 +91,14 @@ export class Table extends React.Component {
     autoBind(this);
   }
   componentDidMount(){
-    var p = this.props;
+    let p = this.props;
     this.buildTable(p);
     mouseTrap.bind('del', ()=>{
       this.removeSelectedItems();
     });
   }
   componentWillReceiveProps(nP){
-    var p = this.props;
+    let p = this.props;
     if (!_.isEqual(nP.s[p.s.modeKey], p.s[p.s.modeKey])) {
       this.buildTable(nP);
     }
@@ -107,19 +107,19 @@ export class Table extends React.Component {
     }
   }
   buildTable(p){
-    var s = this.state;
-    var rows = [];
+    let s = this.state;
+    let rows = [];
 
     for (let i = 0, len = p.s[p.s.modeKey].length; i < len; i++) {
-      var row = p.s[p.s.modeKey][i];
+      let row = p.s[p.s.modeKey][i];
       if (row === undefined || !row || row.url === undefined || !row.url) {
         continue;
       }
-      var urlMatch = row.url.match(/^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n]+)/im);
+      let urlMatch = row.url.match(/^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:/\n]+)/im);
       row.domain = urlMatch ? urlMatch[1] : false;
       rows.push(row);
     }
-    var columns = ['title', 'domain'];
+    let columns = ['title', 'domain'];
     if (p.s.prefs.mode === 'tabs' || p.s.prefs.mode === 'sessions' || p.s.prefs.mode === 'history') {
       columns = columns.concat(['pinned', 'mutedInfo']);
     } else if (p.s.prefs.mode === 'apps' || p.s.prefs.mode === 'extensions') {
@@ -135,9 +135,9 @@ export class Table extends React.Component {
     console.log('buildTable: ', s);
   }
   handleColumnClick(column){
-    var s = this.state;
-    var order = column;
-    var direction = s.order === column && s.direction === 'asc' ? 'desc' : 'asc';
+    let s = this.state;
+    let order = column;
+    let direction = s.order === column && s.direction === 'asc' ? 'desc' : 'asc';
     this.setState({
       order: order,
       direction: direction,
@@ -145,7 +145,7 @@ export class Table extends React.Component {
     });
   }
   handleTitleClick(row){
-    var p = this.props;
+    let p = this.props;
 
     if (p.s.prefs.mode === 'tabs') {
       chrome.tabs.update(row.id, {active: true});
@@ -170,8 +170,8 @@ export class Table extends React.Component {
     }
   }
   handleBooleanClick(column, row){
-    var p = this.props;
-    var s = this.state;
+    let p = this.props;
+    let s = this.state;
     if (column === 'pinned') {
       chrome.tabs.update(row.id, {pinned: !row.pinned});
       if (p.s.prefs.mode !== 'tabs') {
@@ -180,7 +180,7 @@ export class Table extends React.Component {
     } else if (column === 'mutedInfo') {
       chrome.tabs.update(row.id, {muted: !row.mutedInfo.muted}, ()=>{
         if (s.muteInit) {
-          var refRow = _.findIndex(s.rows, {id: row.id});
+          let refRow = _.findIndex(s.rows, {id: row.id});
           s.rows[refRow].mutedInfo.muted = !row.mutedInfo.muted;
           this.setState({rows: s.rows, muteInit: false});
         }
@@ -195,20 +195,21 @@ export class Table extends React.Component {
     }
   }
   dragStart(e, i) {
-    this.dragged = {el: e.currentTarget, i: i};
+    e.dataTransfer.setData(1, 2); // FF fix
     e.dataTransfer.effectAllowed = 'move';
+    this.dragged = {el: e.currentTarget, i: i};
     this.placeholder = v(this.dragged.el).clone().n;
     v(this.placeholder).allChildren().removeAttr('data-reactid');
     this.placeholder.removeAttribute('id');
     this.placeholder.classList.add('tileClone');
   }
   dragEnd(e) {
-    var s = this.state;
-    var start = this.dragged.i;
+    let s = this.state;
+    let start = this.dragged.i;
     if (this.over === undefined) {
       return;
     }
-    var end = this.over.i;
+    let end = this.over.i;
     this.dragged.el.style.display = 'table-row';
     if (start === end) {
       _.defer(()=>{
@@ -230,16 +231,16 @@ export class Table extends React.Component {
   }
   dragOver(e, i) {
     e.preventDefault();
-    var s = this.state;
+    let s = this.state;
     if (this.dragged === undefined || e.target === this.placeholder) {
       return;
     }
     this.dragged.el.style.display = 'none';
     this.over = {el: e.target, i: i};
     console.log(s.rows[i].title);
-    var relY = e.clientY - this.over.el.offsetTop;
-    var height = this.over.el.offsetHeight / 2;
-    var parent = e.target.parentNode;
+    let relY = e.clientY - this.over.el.offsetTop;
+    let height = this.over.el.offsetHeight / 2;
+    let parent = e.target.parentNode;
 
     if (relY > height) {
       this.nodePlacement = 'after';
@@ -254,8 +255,8 @@ export class Table extends React.Component {
     }
   }
   handleSelect(i){
-    var s = this.state;
-    var p = this.props;
+    let s = this.state;
+    let p = this.props;
     console.log('p.cursor', p.cursor);
     if (p.cursor.keys.ctrl) {
       if (s.selectedItems.indexOf(i) !== -1) {
@@ -277,15 +278,15 @@ export class Table extends React.Component {
         this.setState({shiftRange: i});
         return;
       } else {
-        var rows = _.clone(s.rows);
+        let rows = _.clone(s.rows);
         if (i < s.shiftRange) {
-          var i_cache = i;
+          let i_cache = i;
           i = s.shiftRange;
           s.shiftRange = i_cache;
         }
-        var range = _.slice(rows, s.shiftRange, i);
+        let range = _.slice(rows, s.shiftRange, i);
         for (let z = 0, len = range.length; z < len; z++) {
-          var refRow = _.findIndex(s.rows, {id: range[z].id});
+          let refRow = _.findIndex(s.rows, {id: range[z].id});
           if (s.selectedItems.indexOf(refRow) !== -1 && refRow !== s.shiftRange && refRow !== i) {
             _.pull(s.selectedItems, refRow);
           } else {
@@ -301,9 +302,9 @@ export class Table extends React.Component {
     this.setState({selectedItems: s.selectedItems, shiftRange: s.shiftRange});
   }
   removeSelectedItems(){
-    var s = this.state;
-    var p = this.props;
-    var cT = _.cloneDeep(this);
+    let s = this.state;
+    let p = this.props;
+    let cT = _.cloneDeep(this);
     cT.props.prefs = p.s.prefs;
     for (let i = 0, len = s.selectedItems.length; i < len; i++) {
       cT.props.tab = s.rows[s.selectedItems[i]];
@@ -313,12 +314,12 @@ export class Table extends React.Component {
     this.setState({rows: s.rows, selectedItems: [], shiftRange: null});
   }
   handleContext(e, row){
-    var s = this.state;
-    var p = this.props;
+    let s = this.state;
+    let p = this.props;
     if (p.s.prefs.context) {
       e.preventDefault();
       if (s.selectedItems.length > 0) {
-        var rows = [];
+        let rows = [];
         for (let z = 0, len = s.selectedItems.length; z < len; z++) {
           rows.push(s.rows[s.selectedItems[z]]);
         }
@@ -329,8 +330,8 @@ export class Table extends React.Component {
     }
   }
   render(){
-    var s = this.state;
-    var p = this.props;
+    let s = this.state;
+    let p = this.props;
     if (s.columns && s.rows) {
       return (
         <div className="datatable-scroll">
@@ -338,12 +339,12 @@ export class Table extends React.Component {
             <thead>
               <tr role="row">
                 {s.columns.map((column, i)=>{
-                  var columnLabel = p.s.prefs.mode === 'apps' && column === 'domain' ? 'webWrapper' : column === 'mutedInfo' ? 'muted' : column;
+                  let columnLabel = p.s.prefs.mode === 'apps' && column === 'domain' ? 'webWrapper' : column === 'mutedInfo' ? 'muted' : column;
                   return (
                     <th
                     key={i}
                     className={`sorting${s.order === column ? '_'+s.direction : ''}`}
-                    style={{WebkitUserSelect: 'none'}}
+                    style={{userSelect: 'none'}}
                     rowSpan="1"
                     colSpan="1"
                     onClick={()=>this.handleColumnClick(column)}>

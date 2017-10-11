@@ -8,7 +8,6 @@ import _ from 'lodash';
 import v from 'vquery';
 import moment from 'moment';
 
-import onClickOutside from 'react-onclickoutside';
 import ReactTooltip from 'react-tooltip';
 import state from './stores/state';
 import {msgStore} from './stores/main';
@@ -16,7 +15,7 @@ import themeStore from './stores/theme';
 import tabStore from './stores/tab';
 
 import {Table} from './table';
-import {Btn, Col, Row, Panel} from './bootstrap';
+import {Btn, Panel} from './bootstrap';
 import style from './style';
 import * as utils from './stores/tileUtils';
 
@@ -48,7 +47,7 @@ class Tile extends React.Component {
     this.initMethods();
   }
   componentWillReceiveProps(nP){
-    var p = this.props;
+    let p = this.props;
     if (nP.prefs.mode === 'tabs') {
       utils.checkDuplicateTabs(this, nP, '');
     }
@@ -74,16 +73,16 @@ class Tile extends React.Component {
     }
   }
   initMethods(){
-    var p = this.props;
+    let p = this.props;
     this.updateScreenshot('init', p);
     if (p.prefs.mode === 'tabs') {
       utils.checkDuplicateTabs(this, p, '');
     }
   }
   updateScreenshot(opt, p){
-    var setScreeenshot = ()=>{
+    let setScreeenshot = () => {
       if (p.prefs.screenshot) {
-        var refSS = _.findIndex(p.screenshots, {url: p.tab.url});
+        let refSS = _.findIndex(p.screenshots, {url: p.tab.url});
         if (refSS !== -1) {
           this.setState({screenshot: p.screenshots[refSS].data});
         }
@@ -98,15 +97,15 @@ class Tile extends React.Component {
     }
   }
   filterFolders(folderName){
-    var p = this.props;
+    let p = this.props;
     state.set({folder: p.folder ? false : folderName});
   }
-  handleClick(id, e) {
-    var s = this.state;
-    var p = this.props;
-    var stateUpdate = {};
+  handleClick(id) {
+    let s = this.state;
+    let p = this.props;
+    let stateUpdate = {};
     this.setState({render: false});
-    var active = (cb)=>{
+    let active = (cb) =>{
       chrome.tabs.update(id, {active: true});
       if (cb !== undefined) {
         cb();
@@ -123,7 +122,7 @@ class Tile extends React.Component {
             }
             active();
           } else if (p.tab.hasOwnProperty('openTab') && !p.tab.openTab) {
-            chrome.tabs.create({url: p.tab.url}, (t)=>{
+            chrome.tabs.create({url: p.tab.url}, (t) =>{
               _.assignIn(p[p.modeKey][p.i], t);
               p[p.modeKey][p.i].openTab = true;
               stateUpdate[p.modeKey] = p[p.modeKey];
@@ -142,13 +141,13 @@ class Tile extends React.Component {
     this.setState({render: true});
   }
   // Trigger hovers states that will update the inline CSS in style.js.
-  handleHoverIn(e) {
-    var s = this.state;
-    var p = this.props;
+  handleHoverIn() {
+    let s = this.state;
+    let p = this.props;
     this.setState({hover: true});
     if (p.prefs.screenshot && p.prefs.screenshotBg && s.screenshot && p.prefs.mode !== 'apps') {
       document.getElementById('bgImg').style.backgroundImage = `url("${s.screenshot}")`;
-      document.getElementById('bgImg').style.WebkitFilter = `blur(${p.prefs.screenshotBgBlur}px)`;
+      document.getElementById('bgImg').style.filter = `blur(${p.prefs.screenshotBgBlur}px)`;
     } else {
       if (p.wallpaper && p.wallpaper.data !== -1) {
         document.getElementById('bgImg').style.backgroundImage = `url("${p.wallpaper.data}")`;
@@ -157,13 +156,13 @@ class Tile extends React.Component {
       }
     }
   }
-  handleHoverOut(e) {
+  handleHoverOut() {
     this.setState({hover: false});
   }
-  handleTabCloseHoverIn(e) {
+  handleTabCloseHoverIn() {
     this.setState({xHover: true});
   }
-  handleTabCloseHoverOut(e) {
+  handleTabCloseHoverOut() {
     this.setState({xHover: false});
   }
   handlePinHoverIn() {
@@ -180,9 +179,9 @@ class Tile extends React.Component {
   }
   applyTabOrder() {
     // Apply the sorted tab grid state to the Chrome window.
-    var s = this.state;
-    var p = this.props;
-    var tabs = _.orderBy(p.tabs, ['index'], ['desc']);
+    let s = this.state;
+    let p = this.props;
+    let tabs = _.orderBy(p.tabs, ['index'], ['desc']);
     if (tabs.length > 0) {
       if (p.tab.title === 'New Tab') {
         chrome.tabs.move(p.tab.id, {
@@ -202,8 +201,8 @@ class Tile extends React.Component {
     }
   }
   render() {
-    var s = this.state;
-    var p = this.props;
+    let s = this.state;
+    let p = this.props;
     style.ssIconBg = _.cloneDeep(_.assignIn(style.ssIconBg, {
       backgroundColor: p.theme.tileButtonBg
     }));
@@ -211,13 +210,14 @@ class Tile extends React.Component {
       color: p.theme.tilePinned,
       backgroundColor: p.theme.tileButtonBg
     }));
-    var titleFontSize = p.tab.title.length >= 115 ? 13 : 14;
+    let titleFontSize = p.tab.title.length >= 115 ? 13 : 14;
 
-    var openTab = p.tab.hasOwnProperty('openTab') && p.tab.openTab;
-    var isTab = p.prefs.mode === 'tabs' || openTab;
+    let hasDiscarded = (p.chromeVersion >= 54 || p.chromeVersion === 1); // should be in parent
+    let openTab = p.tab.hasOwnProperty('openTab') && p.tab.openTab;
+    let isTab = p.prefs.mode === 'tabs' || openTab;
 
-    var sanitize = (str)=>{
-      var result = str.replace(/[^a-z0-9]/gi,'')[0];
+    let sanitize = (str) =>{
+      let result = str.replace(/[^a-z0-9]/gi, '')[0];
       if (result !== undefined) {
         return result.toUpperCase();
       } else {
@@ -227,7 +227,7 @@ class Tile extends React.Component {
     if (s.hover) {
       titleFontSize--;
     }
-    var subTitleStyle = {
+    let subTitleStyle = {
       whiteSpace: 'nowrap',
       position: 'absolute',
       right: '9px',
@@ -237,20 +237,21 @@ class Tile extends React.Component {
       paddingLeft: '4px',
       paddingRight: '4px',
       opacity: s.stHover ? '0.2' : '1',
-      WebkitTransition: p.prefs.animations ? 'opacity 0.2s, white-space 0.1s' : 'initial'
+      transition: p.prefs.animations ? 'opacity 0.2s, white-space 0.1s' : 'initial'
     };
-    var ST1 = _.assignIn({
+    let ST1 = _.assignIn({
       top: `${p.prefs.tabSizeHeight - 40}px`,
       cursor: p.prefs.mode === 'sessions' || p.prefs.mode === 'bookmarks' ? 'default' : 'initial'
     }, subTitleStyle);
-    var ST2 = _.assignIn({
+    let ST2 = _.assignIn({
       top: `${p.prefs.tabSizeHeight - 55}px`,
       cursor: p.prefs.mode === 'sessions' || p.prefs.mode === 'bookmarks' ? 'pointer' : 'default'
     }, subTitleStyle);
-    var favIconUrl = p.tab.favIconUrl ? utils.filterFavicons(p.tab.favIconUrl, p.tab.url) : '../images/file_paper_blank_document.png';
+    let favIconUrl = p.tab.favIconUrl ? utils.filterFavicons(p.tab.favIconUrl, p.tab.url) : '../images/file_paper_blank_document.png';
     return (
       <Panel
       draggable={p.prefs.mode === 'tabs' && p.prefs.drag}
+      ondragstart
       onDragEnd={p.onDragEnd}
       onDragStart={p.onDragStart}
       onDragOver={p.onDragOver}
@@ -270,30 +271,30 @@ class Tile extends React.Component {
               <a style={{
                 fontSize: `${titleFontSize}px`,
                 color: p.theme.tileText,
-                WebkitTransition: p.prefs.animations ? 'font-size 0.2s' : 'initial'
+                transition: p.prefs.animations ? 'font-size 0.2s' : 'initial'
               }}>{p.tab.title.length > 0 ? p.tab.title : p.tab.domain ? p.tab.domain : p.tab.url.split('/')[2]}</a>
             </div>
             {p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ?
             <div className="text-muted text-size-small" style={{
               whiteSpace: s.hover ? 'initial' : 'nowrap',
-              WebkitTransition: p.prefs.animations ? 'white-space 0.1s' : 'initial',
+              transition: p.prefs.animations ? 'white-space 0.1s' : 'initial',
               color: themeStore.opacify(p.theme.tileText, 0.8)
             }}>{p.tab.description}</div> : null}
             {p.prefs.mode === 'tabs' || p.prefs.mode === 'history' || p.prefs.mode === 'bookmarks' || p.prefs.mode === 'sessions' ?
-            <div onMouseEnter={()=>this.setState({stHover: true})} onMouseLeave={()=>this.setState({stHover: false})}>
+            <div onMouseEnter={() => this.setState({stHover: true})} onMouseLeave={() => this.setState({stHover: false})}>
               <div className="text-muted text-size-small" style={ST1}>{p.tab.domain ? p.tab.domain : p.tab.url.split('/')[2]}</div>
-              {isTab && p.chromeVersion >= 54 && p.tab.discarded ?
+              {isTab && hasDiscarded && p.tab.discarded ?
               <div className="text-muted text-size-small" style={ST2}>Discarded</div> : null}
               {p.prefs.mode === 'history' ?
               <div className="text-muted text-size-small" style={ST2}>{_.capitalize(moment(p.tab.lastVisitTime).fromNow())}</div> : null}
               {p.prefs.mode === 'bookmarks' ?
-              <div onClick={()=>this.filterFolders(p.tab.folder)} className="text-muted text-size-small" style={ST2}>{p.tab.folder}</div> : null}
+              <div onClick={() => this.filterFolders(p.tab.folder)} className="text-muted text-size-small" style={ST2}>{p.tab.folder}</div> : null}
               {p.prefs.mode === 'sessions' ?
-              <div onClick={()=>this.filterFolders(p.tab.originSession)} className="text-muted text-size-small" style={p.tab.hasOwnProperty('domain') && p.tab.domain ? ST2 : ST1}>{p.tab.label ? p.tab.label : _.capitalize(moment(p.tab.sTimeStamp).fromNow())}</div> : null}
+              <div onClick={() => this.filterFolders(p.tab.originSession)} className="text-muted text-size-small" style={p.tab.hasOwnProperty('domain') && p.tab.domain ? ST2 : ST1}>{p.tab.label ? p.tab.label : _.capitalize(moment(p.tab.sTimeStamp).fromNow())}</div> : null}
             </div> : null}
             {p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ?
-            <div onMouseEnter={()=>this.setState({stHover: true})} onMouseLeave={()=>this.setState({stHover: false})}>
-              <div onClick={()=>this.filterFolders(p.tab.originSession)} className="text-muted text-size-small" style={ST1}>{`v${p.tab.version}`}</div>
+            <div onMouseEnter={() => this.setState({stHover: true})} onMouseLeave={() => this.setState({stHover: false})}>
+              <div onClick={() => this.filterFolders(p.tab.originSession)} className="text-muted text-size-small" style={ST1}>{`v${p.tab.version}`}</div>
             </div> : null}
           </div>
         </div>
@@ -306,7 +307,7 @@ class Tile extends React.Component {
             left: `${p.prefs.tabSizeHeight + (isTab ? 27 : p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ? 46 : 62)}px`,
             top: '1px'
           }}>
-            {p.chromeVersion >= 46 && openTab || p.chromeVersion >= 46 && p.prefs.mode === 'tabs' ?
+            {(p.chromeVersion >= 46 || p.chromeVersion === 1) && (openTab || p.prefs.mode === 'tabs') ?
             <li>
               <i
               title={`${p.tab.mutedInfo.muted ? utils.t('unmute') : utils.t('mute')} ${utils.t('tab')}${p.tab.audible ? ' ('+utils.t('audible')+')' : ''}`}
@@ -323,7 +324,7 @@ class Tile extends React.Component {
               className={`icon-volume-${p.tab.mutedInfo.muted ? 'mute2' : p.tab.audible ? 'medium' : 'mute'}`}
               onMouseEnter={this.handleTabMuteHoverIn}
               onMouseLeave={this.handleTabMuteHoverOut}
-              onClick={()=>utils.mute(this, p.tab)} />
+              onClick={() => utils.mute(this, p.tab)} />
             </li>
             : null}
             {isTab ?
@@ -343,7 +344,7 @@ class Tile extends React.Component {
               className="icon-pushpin"
               onMouseEnter={this.handlePinHoverIn}
               onMouseLeave={this.handlePinHoverOut}
-              onClick={()=>utils.pin(this, p.tab)} />
+              onClick={() => utils.pin(this, p.tab)} />
             </li>
             : null}
             {p.prefs.mode !== 'apps' && p.prefs.mode !== 'extensions' ?
@@ -363,7 +364,7 @@ class Tile extends React.Component {
               className={`icon-${isTab ? 'cross2' : 'eraser'} ntg-x`}
               onMouseEnter={this.handleTabCloseHoverIn}
               onMouseLeave={this.handleTabCloseHoverOut}
-              onClick={()=>utils.closeTab(this, p.tab.id)} />
+              onClick={() => utils.closeTab(this, p.tab.id)} />
             </li> : null}
             {(p.prefs.mode === 'apps' || p.prefs.mode === 'extensions') ?
             <li>
@@ -401,7 +402,7 @@ class Tile extends React.Component {
               className={`icon-home5 ntg-x`}
               onMouseEnter={this.handleTabCloseHoverIn}
               onMouseLeave={this.handleTabCloseHoverOut}
-              onClick={()=>chrome.tabs.create({url: p.tab.homepageUrl})} />
+              onClick={() => chrome.tabs.create({url: p.tab.homepageUrl})} />
             </li> : null}
           </ul>
         </div>
@@ -422,10 +423,10 @@ class Tile extends React.Component {
         backgroundRepeat: s.screenshot ? 'initial' : 'no-repeat',
         overflow: 'hidden',
         zIndex: '50',
-        opacity: s.close ? '0' : p.tab.hasOwnProperty('enabled') && !p.tab.enabled ? '0.5' : p.chromeVersion >= 54 && p.tab.discarded ? '0.5' : '1',
-        WebkitTransition: p.prefs.animations ? 'opacity 0.2s' : 'initial',
-        WebkitAnimationIterationCount: s.duplicate ? 'infinite' : 'initial',
-        WebkitAnimationDuration: s.duplicate ? '5s' : '0.2s',
+        opacity: s.close ? '0' : p.tab.hasOwnProperty('enabled') && !p.tab.enabled ? '0.5' : hasDiscarded && p.tab.discarded ? '0.5' : '1',
+        transition: p.prefs.animations ? 'opacity 0.2s' : 'initial',
+        animationIterationCount: s.duplicate ? 'infinite' : 'initial',
+        animationDuration: s.duplicate ? '5s' : '0.2s',
         cursor: 'pointer'
       }}
       bodyStyle={{
@@ -438,8 +439,8 @@ class Tile extends React.Component {
         backgroundPosition: 'center',
         backgroundSize: '1px, auto, contain',
         opacity: s.screenshot ? '0.4' : '0.8',
-        WebkitTransition: p.prefs.animations ? 'padding 0.1s, height 0.1s, opacity 0.1s, background-size 0.1s' : 'initial',
-        WebkitTransitionTimingFunction: 'ease-in-out',
+        transition: p.prefs.animations ? 'padding 0.1s, height 0.1s, opacity 0.1s, background-size 0.1s' : 'initial',
+        transitionTimingFunction: 'ease-in-out',
         zIndex: s.hover ? '2' : '1',
         cursor: 'pointer'
       }}
@@ -453,8 +454,8 @@ class Tile extends React.Component {
         minHeight: s.hover ? `100%` : '40px',
         height: s.hover ? `100%` : '40px',
         maxHeight: s.hover ? `100%` : '40px',
-        WebkitTransition: p.prefs.animations ? 'padding 0.1s, height 0.1s, min-height 0.1s, max-height 0.1s, background-color 0.2s' : 'initial',
-        WebkitTransitionTimingFunction: 'ease-in-out',
+        transition: p.prefs.animations ? 'padding 0.1s, height 0.1s, min-height 0.1s, max-height 0.1s, background-color 0.2s' : 'initial',
+        transitionTimingFunction: 'ease-in-out',
         overflow: 'hidden',
         zIndex: s.hover ? '1' : '2'
       }}
@@ -465,13 +466,13 @@ class Tile extends React.Component {
         backgroundColor: s.hover ? p.theme.tileBg : p.tab.pinned || p.tab.mutedInfo.muted || p.tab.audible ? themeStore.opacify(p.theme.tileBg, 0.8) : 'rgba(255, 255, 255, 0)',
         position: 'absolute',
         zIndex: '11',
-        WebkitTransition: p.prefs.animations ? 'opacity 0.2s, background-color 0.1s' : 'initial',
+        transition: p.prefs.animations ? 'opacity 0.2s, background-color 0.1s' : 'initial',
         cursor: 'default'
       }}
       onMouseEnter={this.handleHoverIn}
       onMouseLeave={this.handleHoverOut}
-      onBodyClick={()=>this.handleClick(p.tab.id)}
-      onFooterClick={!s.stHover ? ()=>this.handleClick(p.tab.id) : null}
+      onBodyClick={() => this.handleClick(p.tab.id)}
+      onFooterClick={!s.stHover ? () => this.handleClick(p.tab.id) : null}
       onContextMenu={this.handleContextClick}>
         {!favIconUrl || (p.tab.domain && p.tab.domain === 'chrome') ?
         <div style={{
@@ -493,73 +494,6 @@ class Tile extends React.Component {
 
 reactMixin(Tile.prototype, Reflux.ListenerMixin);
 
-import {SidebarMenu} from './sidebar';
-
-class Sidebar extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      enabled: false
-    }
-    autoBind(this);
-  }
-  componentWillReceiveProps(nP){
-    ReactTooltip.rebuild();
-    if (!_.isEqual(nP.enabled, this.props.enabled)) {
-      _.defer(()=>{
-        if (nP.enabled) {
-          this.setState({enabled: true});
-        } else {
-          _.delay(()=>{
-            this.setState({enabled: false});
-          }, 200);
-        }
-      });
-    }
-  }
-  handleClickOutside(){
-    if (!this.props.disableSidebarClickOutside && this.props.enabled) {
-      state.set({sidebar: false});
-    }
-  }
-  handleSort(){
-    msgStore.setPrefs({sort: !this.props.prefs.sort});
-  }
-  render() {
-    var p = this.props;
-    var s = this.state;
-    const sideStyle = {
-      width: '280px',
-      maxWidth: '280px',
-      height: '100%',
-      position: 'fixed',
-      top: '52px',
-      opacity: p.enabled ? '1' : '0',
-      left: p.enabled ? '0px' : '-168px',
-      zIndex: s.enabled ? '6000' : '-999',
-      backgroundColor: themeStore.opacify(p.theme.headerBg, 0.9),
-      WebkitTransition: p.prefs.animations ? 'left 0.2s, opacity 0.2s' : 'initial'
-    };
-    return (
-      <div className="side-div" style={sideStyle}>
-        {s.enabled ?
-        <SidebarMenu
-        allTabs={p.allTabs}
-        prefs={p.prefs}
-        theme={p.theme}
-        labels={p.labels}
-        keys={p.keys}
-        sort={p.sort}
-        direction={p.direction}
-        sessionsExist={p.sessionsExist} /> : null}
-      </div>
-    );
-  }
-}
-
-Sidebar = onClickOutside(Sidebar);
-
 class TileGrid extends React.Component {
   constructor(props) {
     super(props);
@@ -580,7 +514,7 @@ class TileGrid extends React.Component {
         display: 'inline-block',
         width: window.innerWidth + 30,
         height: window.innerHeight + 5,
-        WebkitFilter: `blur(${p.s.prefs.screenshotBgBlur}px)`,
+        filter: `blur(${p.s.prefs.screenshotBgBlur}px)`,
         opacity: 0.1 * p.s.prefs.screenshotBgOpacity
       });
     } else {
@@ -589,25 +523,26 @@ class TileGrid extends React.Component {
         display: 'none',
         backgroundImage: 'none',
         backgroundBlendMode: 'normal',
-        WebkitFilter: `blur(${p.s.prefs.screenshotBgBlur}px)`,
+        filter: `blur(${p.s.prefs.screenshotBgBlur}px)`,
         opacity: 1
       });
     }
   }
   componentWillReceiveProps(nP){
-    var p = this.props;
+    let p = this.props;
     if (!_.isEqual(nP.prefs, p.prefs) || !_.isEqual(nP.wallpaper, p.wallpaper)) {
       this.prefsInit(nP);
     }
     if (nP.s.sort !== p.s.sort || nP.s.direction !== p.s.direction && nP.s.modeKey === p.s.modeKey && nP.s.prefs.mode === p.s.prefs.mode) {
-      var sU = {};
+      let sU = {};
       sU[nP.s.modeKey] = utils.sort(nP, nP.data);
       state.set(sU);
     }
   }
   dragStart(e, i) {
-    this.dragged = {el: e.currentTarget, i: i};
+    e.dataTransfer.setData(1, 2); // FF fix
     e.dataTransfer.effectAllowed = 'move';
+    this.dragged = {el: e.currentTarget, i: i};
     this.placeholder = v(this.dragged.el).clone().empty().n;
     v(this.placeholder).allChildren().removeAttr('data-reactid');
     v(this.placeholder).css({
@@ -616,16 +551,16 @@ class TileGrid extends React.Component {
     this.placeholder.removeAttribute('id');
     this.placeholder.classList.add('tileClone');
   }
-  dragEnd(e) {
-    var p = this.props;
-    var start = this.dragged.i;
+  dragEnd() {
+    let p = this.props;
+    let start = this.dragged.i;
     if (this.over === undefined) {
       return;
     }
-    var end = this.over.i;
+    let end = this.over.i;
     this.dragged.el.style.display = 'block';
     if (start === end) {
-      _.defer(()=>{
+      _.defer(() => {
         try {
           this.dragged.el.parentNode.removeChild(this.placeholder);
         } catch (e) {}
@@ -635,22 +570,22 @@ class TileGrid extends React.Component {
     if (start < end) {
       end--;
     }
-    chrome.tabs.move(p.s.tabs[start].id, {index: p.s.tabs[end].index}, (t)=>{
+    chrome.tabs.move(p.s.tabs[start].id, {index: p.s.tabs[end].index}, () =>{
       msgStore.queryTabs();
-      _.defer(()=>this.dragged.el.parentNode.removeChild(this.placeholder));
+      _.defer(() => this.dragged.el.parentNode.removeChild(this.placeholder));
     });
   }
   dragOver(e, i) {
-    var p = this.props;
+    let p = this.props;
     e.preventDefault();
     if (p.s.tabs[i] === undefined || this.dragged === undefined || p.s.tabs[i].pinned !== p.s.tabs[this.dragged.i].pinned) {
       return;
     }
     this.dragged.el.style.display = 'none';
     this.over = {el: e.target, i: i};
-    var relY = e.clientY - this.over.el.offsetTop;
-    var height = this.over.el.offsetHeight / 2;
-    var parent = e.target.parentNode;
+    let relY = e.clientY - this.over.el.offsetTop;
+    let height = this.over.el.offsetHeight / 2;
+    let parent = e.target.parentNode;
     if (relY > height) {
       this.nodePlacement = 'after';
       try {
@@ -664,34 +599,20 @@ class TileGrid extends React.Component {
     }
   }
   render() {
-    var p = this.props;
-    var tileLetterTopPos = p.s.prefs.tabSizeHeight >= 175 ? parseInt((p.s.prefs.tabSizeHeight + 80).toString()[0]+(p.s.prefs.tabSizeHeight + 80).toString()[1]) - 10 : p.s.prefs.tabSizeHeight <= 136 ? -5 : p.s.prefs.tabSizeHeight <= 150 ? 0 : p.s.prefs.tabSizeHeight <= 160 ? 5 : 10;
-    var data = utils.sort(p, p.data);
+    let p = this.props;
+    let tileLetterTopPos = p.s.prefs.tabSizeHeight >= 175 ? parseInt((p.s.prefs.tabSizeHeight + 80).toString()[0]+(p.s.prefs.tabSizeHeight + 80).toString()[1]) - 10 : p.s.prefs.tabSizeHeight <= 136 ? -5 : p.s.prefs.tabSizeHeight <= 150 ? 0 : p.s.prefs.tabSizeHeight <= 160 ? 5 : 10;
+    let data = utils.sort(p, p.data);
     return (
       <div className="tile-body">
-        <Sidebar
-        sessionsExist={p.s.sessions.length > 0}
-        enabled={p.sidebar}
-        prefs={p.s.prefs}
-        allTabs={p.s.allTabs}
-        labels={p.labels}
-        keys={p.keys}
-        sort={p.s.sort}
-        direction={p.s.direction}
-        width={p.width}
-        collapse={p.collapse}
-        search={p.s.search}
-        theme={p.theme}
-        disableSidebarClickOutside={p.disableSidebarClickOutside} />
           <div id="grid" ref="grid">
-            {p.s.prefs.format === 'tile' ? data.map((tab, i)=> {
+            {p.s.prefs.format === 'tile' ? data.map((tab, i) => {
               if ((i <= p.s.tileLimit && p.s.prefs.mode !== 'tabs' || p.s.prefs.mode === 'tabs') && tab.url && tab.url.indexOf('chrome://newtab/') === -1) {
                 return (
                   <Tile
                   key={i}
                   onDragEnd={this.dragEnd}
-                  onDragStart={(e)=>this.dragStart(e, i)}
-                  onDragOver={(e)=>this.dragOver(e, i)}
+                  onDragStart={(e) => this.dragStart(e, i)}
+                  onDragOver={(e) => this.dragOver(e, i)}
                   prefs={p.s.prefs}
                   tabs={p.s.tabs}
                   duplicateTabs={p.s.duplicateTabs}
@@ -733,8 +654,8 @@ class TileGrid extends React.Component {
           </div>
           {!p.s.hasScrollbar && p.s.prefs.format === 'tile' && p.s[p.s.modeKey].length > p.s.tileLimit ?
           <Btn
-          onClick={()=>{
-            state.set({tileLimit: p.s.tileLimit + 50}, ()=>{
+          onClick={() => {
+            state.set({tileLimit: p.s.tileLimit + 50}, () => {
               state.set({hasScrollbar: utils.scrollbarVisible(document.body)});
             });
             ReactTooltip.hide();

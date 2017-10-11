@@ -1,7 +1,7 @@
 import Reflux from 'reflux';
 import _ from 'lodash';
 
-var state = Reflux.createStore({
+const state = Reflux.createStore({
   init(){
     this.state = {
       // Core
@@ -62,7 +62,7 @@ var state = Reflux.createStore({
       allTabs: null,
       newTabs: null,
       duplicateTabs: [],
-      domainRegEx: /^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n]+)/im,
+      domainRegEx: /^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:/\n]+)/im,
       bookmarks: [],
       history: [],
       apps: [],

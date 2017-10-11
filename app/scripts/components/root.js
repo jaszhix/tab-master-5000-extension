@@ -1,6 +1,6 @@
 window._trackJs = {
   token: 'bd495185bd7643e3bc43fa62a30cec92',
-  enabled: true,
+  enabled: false,
   onError: function (payload) { return true; },
   version: "",
   callback: {
@@ -8,7 +8,7 @@ window._trackJs = {
     bindStack: true
   },
   console: {
-    enabled: true,
+    enabled: false,
     display: true,
     error: true,
     warn: false,
@@ -26,7 +26,7 @@ window._trackJs = {
     promise: true
   }
 };
-var trackJs = require('trackjs');
+let trackJs = require('trackjs');
 import v from 'vquery';
 import moment from 'moment';
 import tc from 'tinycolor2';
@@ -45,6 +45,7 @@ import themeStore from './stores/theme';
 import sessionsStore from './stores/sessions';
 import * as utils from './stores/tileUtils';
 import {Btn, Col, Row} from './bootstrap';
+import Sidebar from './sidebar';
 import TileGrid from './tile';
 import ModalHandler from './modal';
 import ContextMenu from './context';
@@ -77,17 +78,17 @@ class Loading extends React.Component {
     };
   }
   handleReset(){
-    var c = confirm(utils.t('resetData'));
+    let c = confirm(utils.t('resetData'));
     if (c) {
       chrome.storage.local.clear();
       chrome.runtime.reload();
     }
   }
   render() {
-    var p = this.props;
-    var topStyle = {width: '20px', height: '20px', margin: '0px', float: 'right', marginRight: '4px', marginTop: '7px'};
-    var fullStyle = {marginTop: `${window.innerHeight / 2.4}px`};
-    var errorLink = {color: 'rgba(34, 82, 144, 0.9)'};
+    let p = this.props;
+    let topStyle = {width: '20px', height: '20px', margin: '0px', float: 'right', marginRight: '4px', marginTop: '7px'};
+    let fullStyle = {marginTop: `${window.innerHeight / 2.4}px`};
+    let errorLink = {color: 'rgba(34, 82, 144, 0.9)'};
     return (
       <div>
         <div style={p.top ? topStyle : fullStyle} className="sk-cube-grid">
@@ -166,9 +167,9 @@ class Search extends React.Component {
     cb();
   }
   render() {
-    var p = this.props;
+    let p = this.props;
     const headerStyle = {
-      backgroundColor: this.state.theme.headerBg,
+      backgroundColor: p.theme.headerBg,
       position: 'fixed',
       top: '0px',
       width: '100%',
@@ -245,9 +246,9 @@ class Root extends React.Component {
 
   }
   componentWillReceiveProps(nP){
-    var p = this.props;
-    var stateUpdate = {};
-    var sUChange = false;
+    let p = this.props;
+    let stateUpdate = {};
+    let sUChange = false;
     if (nP.s.modeKey !== p.s.modeKey && nP.s.prefs.mode === p.s.prefs.mode) {
       if (nP.s.search.length > 0) {
         stateUpdate[nP.s.modeKey] = utils.searchChange(nP, nP.s[nP.s.modeKey]);
@@ -311,19 +312,21 @@ class Root extends React.Component {
     this.setState({apps: e});
   }
   themeChange(e){
-    var p = this.props;
-    var stateUpdate = {};
+    let p = this.props;
+    let stateUpdate = {};
     stateUpdate.standardThemes = themeStore.getStandardThemes();
     if (e.savedThemes) {
       stateUpdate.savedThemes = e.savedThemes;
     }
     if (e.theme) {
-      var sessionFieldColor = themeStore.balance(e.theme.settingsBg);
+      let sessionFieldColor = themeStore.balance(e.theme.settingsBg);
+      let vendor = p.s.version > 1 ? 'webkit' : 'moz';
+      let inputPlaceholder = p.s.version > 1 ? `${vendor}-input` : vendor;
       v('style').n.innerHTML += `
       a, a:focus, a:hover {
         color: ${themeStore.opacify(e.theme.bodyText, 0.9)};
       }
-      .form-control::-webkit-input-placeholder {
+      .form-control::-${inputPlaceholder}-placeholder {
         color: ${e.theme.textFieldsPlaceholder};
       }
       .form-control {
@@ -423,11 +426,11 @@ class Root extends React.Component {
         border-top: 1px solid ${e.theme.darkBtnBg};
       }
       body > div.ReactModalPortal > div > div {
-        -webkit-transition: ${p.s.prefs.animations ? 'background 0.5s ease-in, height 0.2s, width 0.2s, top 0.2s, left 0.2s, right 0.2s, bottom 0.2s' : 'initial'};
+        -${vendor}-transition: ${p.s.prefs.animations ? 'background 0.5s ease-in, height 0.2s, width 0.2s, top 0.2s, left 0.2s, right 0.2s, bottom 0.2s' : 'initial'};
         border: ${e.theme.tileShadow};
       }
       body > div.ReactModalPortal > div > div > div > div.row.ntg-tabs > div:nth-child(2) {
-        -webkit-transition: ${p.s.prefs.animations ? 'background 0.5s ease-in, top 0.2s, left 0.2s' : 'initial'};
+        -${vendor}-transition: ${p.s.prefs.animations ? 'background 0.5s ease-in, top 0.2s, left 0.2s' : 'initial'};
       }
       .rc-color-picker-panel {
         background-color: ${e.theme.settingsBg};
@@ -475,7 +478,7 @@ class Root extends React.Component {
         border-right: 6px solid ${themeStore.opacify(e.theme.darkBtnBg, 1)} !important;
       }
       #main {
-        -webkit-transition: ${p.s.prefs.animations ? '-webkit-filter 0.2s ease-in' : 'initial'};
+        -${vendor}-transition: ${p.s.prefs.animations ? `-${vendor}-filter 0.2s ease-in` : 'initial'};
       }
       .alert-success {
         color: ${e.theme.lightBtnText};
@@ -515,12 +518,12 @@ class Root extends React.Component {
     this.setState(stateUpdate);
   }
   updateTabState(e, opt, sU=null){
-    var p = this.props;
+    let p = this.props;
     console.log('updateTabState: ',e);
-    var stateUpdate = {};
+    let stateUpdate = {};
     if (opt === 'folder') {
       if (e) {
-        var filter = p.s.prefs.mode === 'bookmarks' ? {folder: e} : {originSession: e};
+        let filter = p.s.prefs.mode === 'bookmarks' ? {folder: e} : {originSession: e};
         console.log('filter', filter);
         stateUpdate[p.s.modeKey] = _.filter(p.s[p.s.modeKey], filter);
         stateUpdate.tileCache = p.s[p.s.modeKey];
@@ -549,14 +552,14 @@ class Root extends React.Component {
     }
   }
   captureTabs(p=null, opt, bg, sU, cb) {
-    var s = this.state;
+    let s = this.state;
     if (!p) {
       p = this.props;
     }
     this.setState({topLoad: true});
 
-    var handleSessionTabs = (stateUpdate)=>{
-      var sessionTabs = sessionsStore.flatten(p.s.sessions, _.flatten(allTabs), opt === 'init' ? stateUpdate.windowId : p.s.windowId);
+    let handleSessionTabs = (stateUpdate)=>{
+      let sessionTabs = sessionsStore.flatten(p.s.sessions, _.flatten(allTabs), opt === 'init' ? stateUpdate.windowId : p.s.windowId);
       for (let i = 0, len = sessionTabs.length; i < len; i++) {
         sessionTabs = utils.checkFavicons(p, sessionTabs[i], i, sessionTabs);
       }
@@ -568,10 +571,10 @@ class Root extends React.Component {
     };
 
     // Query current Chrome window for tabs.
-    var stateUpdate = {};
-    var allTabs = [];
+    let stateUpdate = {};
+    let allTabs = [];
 
-    var handleWindow = (res, Window)=>{
+    let handleWindow = (res, Window)=>{
       _.each(Window.tabs, (tVal, tKey)=>{
         Window.tabs = utils.checkFavicons(p, tVal, tKey, Window.tabs);
       });
@@ -614,12 +617,12 @@ class Root extends React.Component {
       }
     };
 
-    var handleWindows = (res)=>{
+    let handleWindows = (res)=>{
       for (let i = 0, len = res.windows.length; i < len; i++) {
         allTabs.push(res.windows[i].tabs);
-        var wId = opt === 'bg' ? p.s.windowId : res.windowId;
+        let wId = opt === 'bg' ? p.s.windowId : res.windowId;
         if (p.s.prefs.allTabs && i === res.windows.length - 1) {
-          var allTabsFlattened = _.flatten(allTabs);
+          let allTabsFlattened = _.flatten(allTabs);
           handleWindow(res, {tabs: allTabsFlattened});
         } else if (!p.s.prefs.allTabs && p.s.tabs.length > 0 && res.windows[i].id === p.s.tabs[0].windowId || res.windows[i].id === wId) {
           handleWindow(res, res.windows[i]);
@@ -683,12 +686,12 @@ class Root extends React.Component {
     }
   }
   render() {
-    var s = this.state;
-    var p = this.props;
+    let s = this.state;
+    let p = this.props;
     if (s.theme && p.s.prefs) {
-      var cursor = utilityStore.get_cursor();
-      var keys = [];
-      var labels = {};
+      let cursor = utilityStore.get_cursor();
+      let keys = [];
+      let labels = {};
       if (p.s.prefs.mode === 'bookmarks') {
         keys = ['openTab', 'url', 'title', 'dateAdded', 'folder', 'index'];
         labels = {
@@ -734,8 +737,8 @@ class Root extends React.Component {
           title: utils.t('title'),
           'timeStamp': utils.t('updated')
         };
-        if (p.s.chromeVersion >= 46) {
-          var init = _.initial(keys);
+        if ((p.s.chromeVersion >= 46 || p.s.chromeVersion === 1)) {
+          let init = _.initial(keys);
           init.push('audible');
           keys = _.union(init, keys);
           _.assign(labels, {
@@ -743,7 +746,7 @@ class Root extends React.Component {
           });
         }
       }
-      var options = v('#options').n;
+      let options = v('#options').n;
       return (
         <div className="container-main">
           {options ? <Preferences options={true} settingsMax={true} prefs={p.s.prefs} tabs={p.s.tabs} theme={s.theme} />
@@ -781,6 +784,21 @@ class Root extends React.Component {
               width={p.s.width}
               height={p.s.height}
               chromeVersion={p.s.chromeVersion} /> : null}
+              <Sidebar
+              sessionsExist={p.s.sessions.length > 0}
+              enabled={p.s.sidebar}
+              prefs={p.s.prefs}
+              allTabs={p.s.allTabs}
+              labels={labels}
+              keys={keys}
+              sort={p.s.sort}
+              direction={p.s.direction}
+              width={p.s.width}
+              collapse={p.s.collapse}
+              search={p.s.search}
+              theme={s.theme}
+              disableSidebarClickOutside={p.s.disableSidebarClickOutside}
+              chromeVersion={p.s.chromeVersion} />
               <div className="tile-container">
                 <Search
                 s={p.s}
@@ -853,8 +871,8 @@ class App extends Reflux.Component {
     }
   }
   onWindowResize(e, _stateUpdate) {
-    var s = this.state;
-    var stateUpdate = {
+    let s = this.state;
+    let stateUpdate = {
       collapse: e.width >= 1565,
       width: e.width,
       height: e.height,
@@ -875,7 +893,7 @@ class App extends Reflux.Component {
     });
   }
   onViewportChange(viewport) {
-    var wrapper = document.body;
+    let wrapper = document.body;
     if (this.state.hasScrollbar && this.state.tileLimit < this.state[this.state.modeKey].length) {
       if (wrapper.scrollTop + window.innerHeight >= wrapper.scrollHeight + wrapper.offsetTop - 200) {
         state.set({tileLimit: this.state.tileLimit + 50});

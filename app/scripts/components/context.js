@@ -21,7 +21,7 @@ class ContextMenu extends React.Component {
   componentDidMount(){
     this.handleOptions(this.props);
     _.defer(()=>{
-      var positionedDiv = v('#main > div > div > div.ntg-context > div');
+      let positionedDiv = v('#main > div > div > div.ntg-context > div');
       let top = positionedDiv.css().top;
       let divTop = 0;
       if (top && top.indexOf('px') > -1) {
@@ -36,7 +36,7 @@ class ContextMenu extends React.Component {
     });
   }
   componentWillReceiveProps(nextProps){
-    var p = this.props;
+    let p = this.props;
     if (!_.isEqual(nextProps.actions, p.actions)) {
       this.setState({actions: nextProps.actions});
     }
@@ -45,7 +45,7 @@ class ContextMenu extends React.Component {
     }
   }
   handleClickOutside(e){
-    var p = this.props;
+    let p = this.props;
     p.context.value = false;
     p.context.id = null;
     state.set({
@@ -57,15 +57,16 @@ class ContextMenu extends React.Component {
     }
   }
   handleOptions(p){
-    var s = this.state;
+    let s = this.state;
 
-    var isSelectedItems = _.isArray(p.context.id);
-    var addContextMenuItems = (hasBookmark, bk)=>{
-      var close = p.prefs.mode !== 'apps' && p.prefs.mode !== 'tabs' && !s.openTab ? utils.t('remove') : utils.t('close');
-      var notBookmarksHistorySessAppsExt = p.prefs.mode !== 'bookmarks' && p.prefs.mode !== 'history' && p.prefs.mode !== 'sessions' && p.prefs.mode !== 'apps' && p.prefs.mode !== 'extensions';
-      var notAppsExt = p.prefs.mode !== 'apps' && p.prefs.mode !== 'extensions';
-      var actionsStatus = this.getStatus('actions');
-      var contextOptions = [
+    let isSelectedItems = _.isArray(p.context.id);
+    let addContextMenuItems = (hasBookmark, bk)=>{
+      let hasMute = p.chromeVersion >= 46 || p.chromeVersion === 1;
+      let close = p.prefs.mode !== 'apps' && p.prefs.mode !== 'tabs' && !s.openTab ? utils.t('remove') : utils.t('close');
+      let notBookmarksHistorySessAppsExt = p.prefs.mode !== 'bookmarks' && p.prefs.mode !== 'history' && p.prefs.mode !== 'sessions' && p.prefs.mode !== 'apps' && p.prefs.mode !== 'extensions';
+      let notAppsExt = p.prefs.mode !== 'apps' && p.prefs.mode !== 'extensions';
+      let actionsStatus = this.getStatus('actions');
+      let contextOptions = [
         {
           argument: notAppsExt && p.prefs.mode !== 'sessions', // Temporary until session removal is fixed
           onClick: ()=>this.handleMenuOption(p, 'close'),
@@ -102,7 +103,7 @@ class ContextMenu extends React.Component {
           divider: null
         },
         {
-          argument: (p.chromeVersion >= 46 && isSelectedItems && p.prefs.mode === 'tabs') || p.chromeVersion >= 46 && (notBookmarksHistorySessAppsExt || p.context.id.openTab),
+          argument: (hasMute && (isSelectedItems && p.prefs.mode === 'tabs') || notBookmarksHistorySessAppsExt || p.context.id.openTab),
           onClick: ()=>this.handleMenuOption(p, 'mute'),
           icon: `icon-${isSelectedItems || p.context.id.mutedInfo.muted ? 'volume-medium' : 'volume-mute'}`,
           label: isSelectedItems ? `${utils.t('toggleMutingOf')} ${p.context.id.length} tabs` : p.context.id.mutedInfo.muted ? utils.t('unmute') : utils.t('mute'),
@@ -146,7 +147,7 @@ class ContextMenu extends React.Component {
       if (!isSelectedItems && p.prefs.mode === 'apps' && p.context.id.enabled) {
         _.filter(p.context.id.availableLaunchTypes, (launchType)=>{
           if (launchType !== p.context.id.launchType) {
-            var launchOption = {
+            let launchOption = {
               argument: true,
               onClick: ()=>this.handleMenuOption(p, launchType),
               icon: 'icon-gear',
@@ -158,7 +159,7 @@ class ContextMenu extends React.Component {
         });
       }
       if (p.prefs.mode === 'apps' || p.prefs.mode === 'extensions') {
-        var appToggleOptions = [
+        let appToggleOptions = [
           {
             argument: true,
             onClick: ()=>this.handleMenuOption(p, 'toggleEnable'),
@@ -192,12 +193,12 @@ class ContextMenu extends React.Component {
   }
   handleMenuOption(p, opt, recursion=0, hasBookmark=null, bk=null){
     // Create wrapper context for utils until component centric logic is revised.
-    var isSelectedItems = _.isArray(p.context.id);
-    var t = _.cloneDeep(this);
+    let isSelectedItems = _.isArray(p.context.id);
+    let t = _.cloneDeep(this);
     p = recursion === 0 ? t.props : p;
 
     if (isSelectedItems) {
-      var selectedItems = p.context.id;
+      let selectedItems = p.context.id;
       for (let z = 0, len = selectedItems.length; z < len; z++) {
         p.context.id = selectedItems[z];
         p.tab = selectedItems[z];
@@ -240,19 +241,19 @@ class ContextMenu extends React.Component {
     this.handleClickOutside();
   }
   getStatus(opt){
-    var p = this.props;
-    var isSelectedItems = _.isArray(p.context.id);
+    let p = this.props;
+    let isSelectedItems = _.isArray(p.context.id);
     if (isSelectedItems) {
       return true;
     }
     if (opt === 'muted') {
       return p.context.id.mutedInfo.muted;
     } else if (opt === 'duplicate') {
-      var duplicateTabs = _.filter(p.tabs, {url: p.context.id.url});
+      let duplicateTabs = _.filter(p.tabs, {url: p.context.id.url});
       return _.includes(p.duplicateTabs, p.context.id.url) && p.context.id.id !== _.first(duplicateTabs).id;
     } else if (opt === 'actions') {
-      var lastAction = _.last(p.actions);
-      console.log('lastAction: ',lastAction);
+      let lastAction = _.last(p.actions);
+      console.log('lastAction: ', lastAction);
       if (lastAction && lastAction.hasOwnProperty('item')) {
         if (lastAction.type === 'remove') {
           return ` ${utils.t('removalOf')} ${lastAction.item.title}`;
@@ -277,8 +278,8 @@ class ContextMenu extends React.Component {
     }
   }
   render() {
-    var p = this.props;
-    var s = this.state;
+    let p = this.props;
+    let s = this.state;
     return (
       <div ref="context" className="ntg-context">
         <div style={{left: s.cursor.page.x, top: s.cursor.page.y}} className="ntg-context-menu">

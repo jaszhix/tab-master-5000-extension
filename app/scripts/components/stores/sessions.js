@@ -1,20 +1,18 @@
 import Reflux from 'reflux';
 import _ from 'lodash';
-import v from 'vquery';
 import {saveAs} from 'filesaver.js';
 import uuid from 'node-uuid';
 import ReactTooltip from 'react-tooltip';
-import tabStore from './tab';
 import state from './state';
 import {msgStore, utilityStore, alertStore} from './main';
 
-var sessionsStore = Reflux.createStore({
+let sessionsStore = Reflux.createStore({
   convertV1(_item){
     for (let i = 0, len = _item.sessionData.length; i < len; i++) {
-      var session = {
-        timeStamp: _item.sessionData[i].timeStamp, 
-        tabs: [_item.sessionData[i].tabs], 
-        label: _item.sessionData[i].label, 
+      let session = {
+        timeStamp: _item.sessionData[i].timeStamp,
+        tabs: [_item.sessionData[i].tabs],
+        label: _item.sessionData[i].label,
         id: uuid.v4()
       };
       _item.sessionData[i] = session;
@@ -23,13 +21,12 @@ var sessionsStore = Reflux.createStore({
   },
   restore(session){
     // Opens a new chrome window with the selected tabs object.
-    console.log('session.tabs: ',session.tabs);
+    console.log('session.tabs: ', session.tabs);
     for (let i = 0, len = session.tabs.length; i < len; i++) {
-      chrome.windows.create({
-        focused: true
-      }, (Window)=>{
-        console.log('restored session...',Window);
-        var tabs = _.orderBy(session.tabs[i], ['pinned', 'index'], ['desc', 'asc']);
+      let options = {};
+
+      chrome.windows.create(options, (Window)=>{
+        let tabs = _.orderBy(session.tabs[i], ['pinned', 'index'], ['desc', 'asc']);
         for (let z = 0, _len = tabs.length; z < _len; z++) {
           tabs[z].index = z;
         }
@@ -38,14 +35,19 @@ var sessionsStore = Reflux.createStore({
       });
     }
   },
-  restoreWindow(session, windowIndex){
+  restoreWindow(session, windowIndex, chromeVersion){
     // Opens a new chrome window with the selected tabs object.
-    console.log('session.tabs: ',session);
-    chrome.windows.create({
-      focused: true
-    }, (Window)=>{
+    console.log('session.tabs: ', session);
+    let options = {};
+    // TBD: Alternative to the focused prop in FF?
+    if (chromeVersion > 1) {
+      options.push({
+        focused: true
+      });
+    }
+    chrome.windows.create(options, (Window)=>{
       console.log('restored session...',Window);
-      var tabs = _.orderBy(session.tabs[windowIndex], ['pinned', 'index'], ['desc', 'asc']);
+      let tabs = _.orderBy(session.tabs[windowIndex], ['pinned', 'index'], ['desc', 'asc']);
       for (let z = 0, len = tabs.length; z < len; z++) {
         tabs[z].index = z;
       }
@@ -56,18 +58,18 @@ var sessionsStore = Reflux.createStore({
   exportSessions(_sessions){
     // Stringify sessionData and export as JSON.
     this.cleanSessions(_sessions, (sessions)=>{
-      var json = JSON.stringify(sessions);
-      var filename = 'TM5K-Sessions-'+utilityStore.now();
-      var blob = new Blob([json], {type: 'application/json;charset=utf-8'});
+      let json = JSON.stringify(sessions);
+      let filename = 'TM5K-Sessions-'+utilityStore.now();
+      let blob = new Blob([json], {type: 'application/json;charset=utf-8'});
       saveAs(blob, filename+'.json');
     });
   },
   importSessions(sessions, e){
     // Load the JSON file, parse it, and set it to state.
-    var reader = new FileReader();
+    let reader = new FileReader();
     reader.onload = (e)=> {
-      var json = JSON.parse(reader.result);
-      var _sessions = {};
+      let json = JSON.parse(reader.result);
+      let _sessions = {};
       if (typeof json[0].tabs !== 'undefined' && _.isArray(json[0].tabs)) {
         if (typeof json[0].sync !== 'undefined') {
           _sessions.sessionData = json;
@@ -83,14 +85,14 @@ var sessionsStore = Reflux.createStore({
           sessions = _.cloneDeep(_sessions.sessions);
           chrome.storage.local.set(_sessions);
         }
-        var s = state.get();
+        let s = state.get();
         state.set({sessions: sessions, sessionTabs: this.flatten(sessions, s.tabs, s.windowId)});
         alertStore.set({
           text: `Successfully imported ${sessions.length} sessions.`,
           tag: 'alert-success',
           open: true
         });
-        console.log('sessions imported: ',sessions);
+        console.log('sessions imported: ', sessions);
       } else {
         alertStore.set({
           text: 'Please import a valid session file.',
@@ -103,12 +105,12 @@ var sessionsStore = Reflux.createStore({
   },
   flatten(sessions, tabs, windowId){
     if (sessions) {
-      var allTabs = [];
-      var openTab = 0;
+      let allTabs = [];
+      let openTab = 0;
       for (let i = 0, len = sessions.length; i < len; i++) {
         for (let y = 0, _len = sessions[i].tabs.length; y < _len; y++) {
           for (let z = 0, __len = sessions[i].tabs[y].length; z < __len; z++) {
-            var sessionTab = {
+            let sessionTab = {
               openTab: null,
               pinned: false,
               mutedInfo: {muted: false},
@@ -122,7 +124,7 @@ var sessionsStore = Reflux.createStore({
               originSession: sessions[i].id
             };
             sessions[i].tabs[y][z] = _.assignIn(sessions[i].tabs[y][z], sessionTab);
-            var refOpenTab = _.findIndex(tabs, {url: sessions[i].tabs[y][z].url});
+            let refOpenTab = _.findIndex(tabs, {url: sessions[i].tabs[y][z].url});
             if (refOpenTab !== -1) {
               sessions[i].tabs[y][z] = _.assignIn(sessions[i].tabs[y][z], tabs[refOpenTab]);
               sessions[i].tabs[y][z].openTab = ++openTab;
@@ -131,7 +133,7 @@ var sessionsStore = Reflux.createStore({
           allTabs.push(sessions[i].tabs[y]);
         }
       }
-      var _tabs = _.chain(allTabs)
+      let _tabs = _.chain(allTabs)
         .flatten()
         .orderBy(['sTimeStamp'], ['desc'])
         .uniqBy('url').value();
@@ -141,10 +143,9 @@ var sessionsStore = Reflux.createStore({
     }
   },
   v2RemoveTab(sessions, session, _window, tab, sessionTabs, sortOrder){
-    var stateUpdate = {};
+    let stateUpdate = {};
     if (sessionTabs) {
-      var refSessionTab = _.findIndex(_.orderBy(sessionTabs, sortOrder), {id: sessions[session].tabs[_window][tab].id});
-      console.log('### ref', refSessionTab);
+      let refSessionTab = _.findIndex(_.orderBy(sessionTabs, sortOrder), {id: sessions[session].tabs[_window][tab].id});
       if (sessionTabs.length === 0) {
         stateUpdate.search = '';
       }
@@ -161,7 +162,7 @@ var sessionsStore = Reflux.createStore({
     });
   },
   v2Remove(sessions, session){
-    var refSession = _.findIndex(sessions, {id: session.id});
+    let refSession = _.findIndex(sessions, {id: session.id});
     _.pullAt(sessions, refSession);
     state.set({sessions: sessions});
     chrome.storage.local.set({sessions: sessions}, ()=> {
@@ -170,7 +171,7 @@ var sessionsStore = Reflux.createStore({
     ReactTooltip.hide();
   },
   v2Update(sessions, session){
-    var refSession = _.findIndex(sessions, {id: session.id});
+    let refSession = _.findIndex(sessions, {id: session.id});
     sessions[refSession] = session;
     state.set({sessions: sessions});
     chrome.storage.local.set({sessions: sessions}, (result)=> {
@@ -200,33 +201,33 @@ var sessionsStore = Reflux.createStore({
         }
       })
     });
-    var session = {
-      timeStamp: utilityStore.now(), 
-      tabs: opt.tabs, 
-      label: opt.label, 
+    let session = {
+      timeStamp: utilityStore.now(),
+      tabs: opt.tabs,
+      label: opt.label,
       id: uuid.v4()
     };
-    var sessions;
+    let sessions;
     console.log(session);
-    chrome.storage.local.get('sessions',(item)=>{
+    chrome.storage.local.get('sessions', (item)=>{
       if (!item.sessions) {
         sessions = {sessions: []};
         sessions.sessions.push(session);
       } else {
-        console.log('item: ',item);
+        console.log('item: ', item);
         sessions = item;
         sessions.sessions.push(session);
       }
-      var result = _.orderBy(sessions.sessions, ['timeStamp'], ['desc']);
+      let result = _.orderBy(sessions.sessions, ['timeStamp'], ['desc']);
       state.set({sessions: result});
       chrome.storage.local.set({sessions: result}, (result)=> {
-        console.log('session saved...',result);
+        console.log('session saved...', result);
         alertStore.set({
           text: `Successfully saved new session.`,
           tag: 'alert-success',
           open: true
         });
-      });   
+      });
     });
   },
 });

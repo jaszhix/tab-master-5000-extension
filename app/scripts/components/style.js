@@ -21,7 +21,7 @@ var style = {
   },
   ssPinnedIconBg: {
     color: '#B67777',
-    backgroundColor: '#fff', 
+    backgroundColor: '#fff',
     backgroundBlendMode: 'multiply'
   },
   modal: {
@@ -46,9 +46,9 @@ var style = {
       overflow: 'hidden',
       WebkitOverflowScrolling: 'touch',
       borderRadius: '4px',
-      WebkitBoxShadow: '2px 2px 15px -2px rgba(0,0,0,0.75)',
+      boxShadow: '2px 2px 15px -2px rgba(0,0,0,0.75)',
       outline: 'none',
-      padding: '20px'  
+      padding: '20px'
     }
   },
   hiddenInput: {

@@ -1,7 +1,7 @@
 import Reflux from 'reflux';
 import _ from 'lodash';
 
-var prefsStore = Reflux.createStore({
+let prefsStore = Reflux.createStore({
   init: function() {
     this.prefs = {};
     this.defaultPrefs = {
@@ -38,13 +38,11 @@ var prefsStore = Reflux.createStore({
       alerts: true,
       allTabs: true
     };
-    var getPrefs = new Promise((resolve, reject)=>{
+    let getPrefs = new Promise((resolve, reject)=>{
       chrome.storage.sync.get('preferences', (prefs)=>{
         chrome.storage.sync.get('themePrefs', (themePrefs)=>{
           if (prefs && prefs.preferences && themePrefs && themePrefs.themePrefs) {
-            var result = _.merge(prefs.preferences, themePrefs.themePrefs);
-
-            resolve(result);
+            resolve(_.merge(prefs.preferences, themePrefs.themePrefs));
           } else {
             if (chrome.extension.lastError) {
               reject(chrome.extension.lastError);
@@ -162,13 +160,13 @@ var prefsStore = Reflux.createStore({
   set_prefs(obj, init) {
     _.merge(this.prefs, obj);
     this.trigger(this.prefs);
-    var themePrefs = {
+    let themePrefs = {
       wallpaper: this.prefs.wallpaper,
       theme: this.prefs.theme,
       alerts: this.prefs.alerts,
       syncedSession: this.prefs.syncedSession
     };
-    var parsedPrefs = _.cloneDeep(this.prefs);
+    let parsedPrefs = _.cloneDeep(this.prefs);
     delete parsedPrefs.wallpaper;
     delete parsedPrefs.theme;
     delete parsedPrefs.alerts;

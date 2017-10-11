@@ -3,7 +3,7 @@ import _ from 'lodash';
 import {saveAs} from 'filesaver.js';
 import {utilityStore, alertStore, msgStore} from './main';
 
-export var themeStore = Reflux.createStore({
+export const themeStore = Reflux.createStore({
   init(){
       this.defaultTheme = {
         textFieldsBg: 'rgba(255, 255, 255, 1)',
@@ -315,7 +315,7 @@ export var themeStore = Reflux.createStore({
           id: 9004
         }
       ];
-      var now = utilityStore.now();
+      let now = utilityStore.now();
       this.standardThemes = [
         {
           id: 9000,
@@ -403,7 +403,7 @@ export var themeStore = Reflux.createStore({
         savedThemes: this.savedThemes,
         wallpapers: this.wallpapers
       };
-      
+
   },
   setTriggers(){
     this.trigger({currentWallpaper: this.currentWallpaper});
@@ -415,8 +415,8 @@ export var themeStore = Reflux.createStore({
     console.log('init.prefs.theme', prefs.theme);
     this.getSavedThemes().then((themes)=>{
       this.getWallpapers().then((wallpapers)=>{
-        var refTheme;
-        var selectThemeIsCustom = false;
+        let refTheme;
+        let selectThemeIsCustom = false;
         if (themes.themes !== 'undefined') {
           if (prefs.theme >= 9000) {
             refTheme = _.find(this.standardThemes, {id: prefs.theme});
@@ -445,7 +445,7 @@ export var themeStore = Reflux.createStore({
         if (typeof wallpapers.wallpapers !== 'undefined') {
           this.wallpapers = _.concat(wallpapers.wallpapers, this.standardWallpapers);
           try {
-            var lastSavedWallpaper = _.last(wallpapers.wallpapers);
+            let lastSavedWallpaper = _.last(wallpapers.wallpapers);
             if (typeof lastSavedWallpaper !== 'undefined' && typeof lastSavedWallpaper.id !== 'undefined' && lastSavedWallpaper) {
               this.wallpaperId = _.last(wallpapers.wallpapers).id;
             } else {
@@ -540,10 +540,10 @@ export var themeStore = Reflux.createStore({
     ];
   },
   save(){
-    var now = utilityStore.now();
-    var currentWallpaper = typeof this.currentWallpaper !== 'undefined' && typeof this.currentWallpaper.id !== 'undefined' ? this.currentWallpaper.id : null;
-    var newThemeId = ++this.themeId;
-    var newTheme = {
+    let now = utilityStore.now();
+    let currentWallpaper = typeof this.currentWallpaper !== 'undefined' && typeof this.currentWallpaper.id !== 'undefined' ? this.currentWallpaper.id : null;
+    let newThemeId = ++this.themeId;
+    let newTheme = {
       id: newThemeId,
       created: now,
       modified: now,
@@ -574,14 +574,14 @@ export var themeStore = Reflux.createStore({
   selectTheme(id){
     //debugger;
     console.log('themeStore selectTheme: ', id);
-    var standard = id >= 9000;
-    var refTheme = standard ? _.find(this.standardThemes, {id: id}) : _.find(this.savedThemes, {id: id});
-    
+    let standard = id >= 9000;
+    let refTheme = standard ? _.find(this.standardThemes, {id: id}) : _.find(this.savedThemes, {id: id});
+
     this.theme = refTheme.theme;
     if (refTheme.id !== 9000 || refTheme.id !== 9001) {
       this.currentWallpaper = _.find(this.wallpapers, {id: refTheme.wallpaper});
     }
-    
+
     this.trigger({theme: this.theme});
     this.trigger({currentWallpaper: this.currentWallpaper});
     msgStore.setPrefs({
@@ -596,8 +596,8 @@ export var themeStore = Reflux.createStore({
   },
   selectWallpaper(themeId, wpId){
     console.log('selectWallpaper', themeId, wpId);
-    var refWallpaper;
-    var setPrefs = false;
+    let refWallpaper;
+    let setPrefs = false;
     if (wpId) {
       setPrefs = true;
       refWallpaper = _.find(this.wallpapers, {id: wpId});
@@ -607,8 +607,8 @@ export var themeStore = Reflux.createStore({
 
     this.currentWallpaper = refWallpaper;
 
-    var themeCollectionKey;
-    var refTheme;
+    let themeCollectionKey;
+    let refTheme;
     if (themeId <= 9000) {
       themeCollectionKey = 'savedThemes';
       refTheme = _.findIndex(this.savedThemes, {id: themeId});
@@ -629,7 +629,7 @@ export var themeStore = Reflux.createStore({
   },
   update(id){
     if (id < 9000) {
-      var refTheme = _.findIndex(this.savedThemes, {id: id});
+      let refTheme = _.findIndex(this.savedThemes, {id: id});
       _.merge(this.savedThemes[refTheme], {
         theme: this.theme,
         modified: utilityStore.now(),
@@ -648,7 +648,7 @@ export var themeStore = Reflux.createStore({
     }
   },
   remove(id){
-    var refTheme = _.find(this.savedThemes, {id: id});
+    let refTheme = _.find(this.savedThemes, {id: id});
     if (_.isEqual(refTheme.theme, this.theme)) {
       this.theme = this.standardThemes[0].theme;
       this.currentWallpaper = {data: -1};
@@ -658,11 +658,11 @@ export var themeStore = Reflux.createStore({
     chrome.storage.local.set({themes: this.savedThemes}, (t)=>{
       console.log('themeStore theme removed: ', id);
     });
-  
+
     this.setTriggers();
   },
   removeWallpaper(wpId){
-    var refWallpaper = _.find(this.wallpapers, {id: wpId});
+    let refWallpaper = _.find(this.wallpapers, {id: wpId});
     this.wallpapers = _.without(this.wallpapers, _.remove(this.wallpapers, refWallpaper));
     this.currentWallpaper = {data: -1};
     chrome.storage.local.set({wallpapers: this.wallpapers}, (wp)=>{
@@ -672,21 +672,25 @@ export var themeStore = Reflux.createStore({
     this.setTriggers();
   },
   label(id, label){
-    var refTheme = _.findIndex(this.savedThemes, {id: id});
+    let refTheme = _.findIndex(this.savedThemes, {id: id});
     this.savedThemes[refTheme].label = label;
     this.update(id, false);
   },
   export(){
-    var json = JSON.stringify(this.savedThemes);
-    var filename = 'TM5K-Themes-'+utilityStore.now();
-    var blob = new Blob([json], {type: "application/json;charset=utf-8"});
-    saveAs(blob, filename+'.json');
+    try {
+      let json = JSON.stringify(this.savedThemes);
+      let filename = 'TM5K-Themes-'+utilityStore.now();
+      let blob = new Blob([json], {type: "application/json;charset=utf-8"});
+      saveAs(blob, filename+'.json');
+    } catch (e) {
+      console.log(e);
+    }
   },
   import(e){
     if (e.target.files[0].name.split('-')[1] === 'Themes') {
-      var reader = new FileReader();
+      let reader = new FileReader();
         reader.onload = (e)=> {
-          var themeImport = _.cloneDeep(JSON.parse(reader.result));
+          let themeImport = _.cloneDeep(JSON.parse(reader.result));
           if (typeof themeImport[0].theme !== 'undefined') {
             this.savedThemes = themeImport;
             chrome.storage.local.set({themes: this.savedThemes}, (t)=>{
@@ -710,25 +714,25 @@ export var themeStore = Reflux.createStore({
     }
   },
   importWallpaper(e, id){
-    var reader = new FileReader();
+    let reader = new FileReader();
     reader.onload = (e)=> {
-      var sourceImage = new Image();
+      let sourceImage = new Image();
       sourceImage.onload = ()=> {
-        var imgWidth = sourceImage.width / 2;
-        var imgHeight = sourceImage.height / 2;
-        var canvas = document.createElement("canvas");
+        let imgWidth = sourceImage.width / 2;
+        let imgHeight = sourceImage.height / 2;
+        let canvas = document.createElement("canvas");
         canvas.width = imgWidth;
         canvas.height = imgHeight;
         canvas.getContext("2d").drawImage(sourceImage, 0, 0, imgWidth, imgHeight);
-        var newDataUri = canvas.toDataURL('image/jpeg', 0.25);
+        let newDataUri = canvas.toDataURL('image/jpeg', 0.25);
         if (newDataUri) {
-          var newWallpaper = {
+          let newWallpaper = {
             data: newDataUri,
             id: ++this.wallpaperId
           };
           this.wallpapers = [newWallpaper].concat(this.wallpapers);
           //this.wallpapers.push(newWallpaper);
-          var savedWallpapers = _.filter(this.wallpapers, (wp)=>{
+          let savedWallpapers = _.filter(this.wallpapers, (wp)=>{
             if (wp.id < 9000) {
               return wp;
             }
@@ -745,22 +749,22 @@ export var themeStore = Reflux.createStore({
     reader.readAsDataURL(e.target.files[0]);
   },
   opacify(rgba, opacity){
-    var _rgba = rgba.split(', ');
+    let _rgba = rgba.split(', ');
     _rgba[3] = `${opacity})`;
     return _rgba.join(', ');
   },
   balance(color){
-    var rgb = color;
-    var colors = rgb.match(/^rgba\((\d+),\s*(\d+),\s*(\d+),\s*(\d+(\.\d*)?)|(\.\d+)\)$/);
+    let rgb = color;
+    let colors = rgb.match(/^rgba\((\d+),\s*(\d+),\s*(\d+),\s*(\d+(\.\d*)?)|(\.\d+)\)$/);
     if (colors !== undefined && colors) {
-      var r = colors[1];
-      var g = colors[2];
-      var b = colors[3];
-      var brightness = colors[4];
+      let r = colors[1];
+      let g = colors[2];
+      let b = colors[3];
+      let brightness = colors[4];
 
-      var ir = Math.floor((255-r)*brightness);
-      var ig = Math.floor((255-g)*brightness);
-      var ib = Math.floor((255-b)*brightness);
+      let ir = Math.floor((255-r)*brightness);
+      let ig = Math.floor((255-g)*brightness);
+      let ib = Math.floor((255-b)*brightness);
 
       return 'rgb('+ir+','+ig+','+ib+')';
     } else {
