@@ -296,7 +296,7 @@ class Preferences extends React.Component {
             on={p.prefs.allTabs} label={utils.t('allTabs')}
             hoverBg={p.theme.settingsItemHover}
             data-tip={utils.t('allTabsTip')} />
-            {(p.chromeVersion >= 54 || p.chromeVersion === 1) ?
+            {p.chromeVersion >= 54?
             <Toggle
             theme={p.theme}
             onMouseEnter={()=>this.handleToggle('autoDiscard')}

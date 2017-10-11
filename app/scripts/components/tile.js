@@ -212,7 +212,7 @@ class Tile extends React.Component {
     }));
     let titleFontSize = p.tab.title.length >= 115 ? 13 : 14;
 
-    let hasDiscarded = (p.chromeVersion >= 54 || p.chromeVersion === 1); // should be in parent
+    let hasDiscarded = p.chromeVersion >= 54; // should be in parent
     let openTab = p.tab.hasOwnProperty('openTab') && p.tab.openTab;
     let isTab = p.prefs.mode === 'tabs' || openTab;
 

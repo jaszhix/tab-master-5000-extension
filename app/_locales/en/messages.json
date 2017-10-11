@@ -421,9 +421,6 @@
   "save": {
     "message": "Save"
   },
-  "saveSession": {
-    "message": "Save Session"
-  },
   "savedSessions": {
     "message": "Saved Sessions"
   },
