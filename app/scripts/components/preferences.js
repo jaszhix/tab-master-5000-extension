@@ -90,9 +90,11 @@ class Blacklist extends React.Component {
     autoBind(this);
   }
   componentDidMount(){
-    this.setState({
-      blacklistValue: blacklistStore.get_blacklist().join(' \n') + ' ',
-    });
+    let blacklist = blacklistStore.get_blacklist() || '';
+    if (blacklist) {
+      blacklist = blacklist.join(' \n') + ' ';
+    }
+    this.setState({blacklistValue: blacklist});
   }
   blacklistFieldChange (e) {
     let blacklistNeedsSave = this.state.blacklistNeedsSave;
