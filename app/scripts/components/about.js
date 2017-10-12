@@ -62,7 +62,7 @@ class License extends React.Component {
         <Col size="8" className="ntg-release">
           <p>The MIT License (MIT)</p>
 
-          <p>{`Copyright © ${moment(Date.now()).format('YYYY')} Jason Hicks`}</p>
+          <p>{`Copyright © ${moment(Date.now()).format('YYYY')} Jason Hicks and Contributors`}</p>
           <div dangerouslySetInnerHTML={createMarkup()} />
         </Col>
         <Col size="2"/>
@@ -108,7 +108,11 @@ class Attribution extends React.Component {
     let deps = require('json-loader!../../../package.json');
     let state = [];
     for (let key in deps.devDependencies) {
-      state.push(`${key} ${deps.devDependencies[key].split('^')[1]}`);
+      let version = deps.devDependencies[key];
+      if (deps.devDependencies[key].indexOf('^') > -1) {
+        version = version.split('^')[1];
+      }
+      state.push(`${key} ${version}`);
     }
     this.setState({dependencies: state});
   }
@@ -128,7 +132,7 @@ class Attribution extends React.Component {
           <Col size="8">
             <Col size="6">
               <ul>
-                {s.dependencies ? list1.map((dep, i)=>{
+                {s.dependencies ? list1.map((dep, i) => {
                   let pkg = dep.split(' ');
                   return (
                     <li key={i}><a target="_blank" href={`https://www.npmjs.com/package/${pkg[0]}`}>{pkg[0]}</a>  {pkg[1]}</li>
@@ -138,7 +142,7 @@ class Attribution extends React.Component {
             </Col>
             <Col size="6">
               <ul>
-                {s.dependencies ? list2.map((dep, i)=>{
+                {s.dependencies ? list2.map((dep, i) => {
                   let pkg = dep.split(' ');
                   return (
                     <li key={i}><a target="_blank" href={`https://www.npmjs.com/package/${pkg[0]}`}>{pkg[0]}</a>  {pkg[1]}</li>
@@ -192,18 +196,25 @@ class About extends React.Component {
     p.modal.footer = (
       <div>
         <Btn
-        onClick={()=>utilityStore.createTab('https://github.com/jaszhix/tab-master-5000-chrome-extension')}
+        onClick={() => utilityStore.createTab('https://github.com/jaszhix/tab-master-5000-chrome-extension')}
         className="ntg-setting-btn"
         icon="github">
           Github
         </Btn>
         {this.props.chromeVersion > 1 ?
           <Btn
-          onClick={()=>utilityStore.createTab('https://chrome.google.com/webstore/detail/tab-master-5000-tab-swiss/mippmhcfjhliihkkdobllhpdnmmciaim')}
+          onClick={() => utilityStore.createTab('https://chrome.google.com/webstore/detail/tab-master-5000-tab-swiss/mippmhcfjhliihkkdobllhpdnmmciaim')}
           className="ntg-setting-btn"
           icon="chrome">
             Chrome Web Store
-          </Btn> : null}
+          </Btn>
+          :
+          <Btn
+          onClick={() => utilityStore.createTab('https://addons.mozilla.org/en-US/firefox/addon/tab-master-5000/')}
+          className="ntg-setting-btn"
+          icon="firefox">
+            Firefox Add-ons
+          </Btn>}
       </div>
     );
     state.set({modal: p.modal});
@@ -218,19 +229,19 @@ class About extends React.Component {
           <div role="tabpanel">
             <ul className="nav nav-tabs" style={{borderBottom: 'initial', position: 'absolute', zIndex: '9999'}} >
               <li style={{padding: '0px'}} className={`${s.tab === 'release' ? 'active' : ''}`}>
-                <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({tab: 'release'})}>{utils.t('releaseNotes')}</a>
+                <a style={{padding: '5px 7.5px'}} href="#" onClick={() => this.setState({tab: 'release'})}>{utils.t('releaseNotes')}</a>
               </li>
               <li style={{padding: '0px'}} className={`${s.tab === 'support' ? 'active' : ''}`}>
-                <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({tab: 'support'})}>{utils.t('support')}</a>
+                <a style={{padding: '5px 7.5px'}} href="#" onClick={() => this.setState({tab: 'support'})}>{utils.t('support')}</a>
               </li>
               <li style={{padding: '0px'}} className={`${s.tab === 'attribution' ? 'active' : ''}`}>
-                <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({tab: 'attribution'})}>{utils.t('attribution')}</a>
+                <a style={{padding: '5px 7.5px'}} href="#" onClick={() => this.setState({tab: 'attribution'})}>{utils.t('attribution')}</a>
               </li>
               <li style={{padding: '0px'}} className={`${s.tab === 'contribute' ? 'active' : ''}`}>
-                <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({tab: 'contribute'})}>{utils.t('contribute')}</a>
+                <a style={{padding: '5px 7.5px'}} href="#" onClick={() => this.setState({tab: 'contribute'})}>{utils.t('contribute')}</a>
               </li>
               <li style={{padding: '0px'}} className={`${s.tab === 'license' ? 'active' : ''}`}>
-                <a style={{padding: '5px 7.5px'}} href="#" onClick={()=>this.setState({tab: 'license'})}>{utils.t('license')}</a>
+                <a style={{padding: '5px 7.5px'}} href="#" onClick={() => this.setState({tab: 'license'})}>{utils.t('license')}</a>
               </li>
             </ul>
           </div>
