@@ -19,6 +19,8 @@ import {Btn, Panel} from './bootstrap';
 import style from './style';
 import * as utils from './stores/tileUtils';
 
+const headerContainerStyle = {position: 'relative', minHeight: '18px'};
+
 class Tile extends React.Component {
   constructor(props) {
     super(props);
@@ -256,7 +258,7 @@ class Tile extends React.Component {
       onDragStart={p.onDragStart}
       onDragOver={p.onDragOver}
       footerLeft={
-        <div>
+        <div className="metadata-container">
           <div className="media-left" style={{paddingRight: '6px'}}>
             <img src={favIconUrl} style={{width: '16px', height: '16px'}}/>
           </div>
@@ -300,7 +302,7 @@ class Tile extends React.Component {
         </div>
       }
       header={
-        <div style={{position: 'relative', minHeight: '18px'}}>
+        <div style={headerContainerStyle}>
           <ul className="icons-list" style={{
             display: 'flex',
             position: 'relative',
@@ -572,7 +574,11 @@ class TileGrid extends React.Component {
     }
     chrome.tabs.move(p.s.tabs[start].id, {index: p.s.tabs[end].index}, () =>{
       msgStore.queryTabs();
-      _.defer(() => this.dragged.el.parentNode.removeChild(this.placeholder));
+      _.defer(() => {
+        try {
+          this.dragged.el.parentNode.removeChild(this.placeholder);
+        } catch (e) {}
+      });
     });
   }
   dragOver(e, i) {
@@ -589,12 +595,18 @@ class TileGrid extends React.Component {
     if (relY > height) {
       this.nodePlacement = 'after';
       try {
-        parent.parentNode.insertBefore(this.placeholder, e.target.nextElementSibling.parentNode);
+        if (e.target.nextElementSibling.parentNode.classList.value.indexOf('media') === -1
+          && e.target.nextElementSibling.parentNode.classList.value.indexOf('metadata-container') === -1) {
+          parent.parentNode.insertBefore(this.placeholder, e.target.nextElementSibling.parentNode);
+        }
       } catch (e) {}
     } else if (relY < height) {
       this.nodePlacement = 'before';
       try {
-        parent.parentNode.insertBefore(this.placeholder, e.target.parentNode);
+        if (e.target.parentNode.classList.value.indexOf('media') === -1
+          && e.target.parentNode.classList.value.indexOf('metadata-container') === -1) {
+          parent.parentNode.insertBefore(this.placeholder, e.target.parentNode);
+        }
       } catch (e) {}
     }
   }
