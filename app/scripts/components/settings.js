@@ -382,9 +382,7 @@ class Theming extends React.Component {
           </Row>
         </Col>
         <Row>
-          <Col size="3">
-
-          </Col>
+          <Col size="3" />
           <Col className="pickerCont" size="9" style={colorPickerTabContainerStyle}>
             <Col size="8" className="ntg-tabs" style={{borderBottom: 'initial', position: 'fixed', zIndex: '9999', marginTop: '-28px', height: '50px', backgroundColor: p.theme.settingsBg}}>
               <div role="tabpanel" style={tabPanelStyle}>

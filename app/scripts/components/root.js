@@ -803,7 +803,10 @@ class Root extends React.Component {
               theme={s.theme}
               disableSidebarClickOutside={p.s.disableSidebarClickOutside}
               chromeVersion={p.s.chromeVersion} />
-              <div className="tile-container">
+              <div className="tile-container" style={{
+                filter: p.s.modal && p.s.modal.state && p.s.settings !== 'theming' ? `blur(5px)` : 'initial',
+                transition: 'filter 0.2s'
+              }}>
                 <Search
                 s={p.s}
                 event={s.event}

@@ -32,12 +32,6 @@ class ModalHandler extends React.Component {
   componentWillReceiveProps(nP){
     if (!_.isEqual(nP.modal, this.props.modal) && mount || nP.settings !== this.props.settings) {
       this.setState({modal: nP.modal});
-        if (nP.prefs.animations) {
-          v('.tile-container').css({
-            filter: `blur(${nP.modal.state && nP.settings !== 'theming' ? '5' : '0'}px)`,
-            transition: 'filter 0.2s'
-          });
-        }
     }
   }
   componentWillUnmount(){
