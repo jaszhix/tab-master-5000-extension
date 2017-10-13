@@ -16,7 +16,7 @@ Tab Master 5K replaces your New Tab page with a full-featured tabs, history, boo
 - Full control of the New Tab's appearance with a flexible theme editor.
 - Import any wallpaper as a background.
 - Adjust the size of the grid tiles.
-- View a screenshot of each tab in the grid. 
+- View a screenshot of each tab in the grid.
 - Enable screenshots to cover the background of a New Tab page when you hover over a tab tile. You can adjust the strength of the blur and opacity of backgrounds in Preferences.
 
 #### Session Management
@@ -32,12 +32,10 @@ Tab Master 5K replaces your New Tab page with a full-featured tabs, history, boo
 - Add websites you do not want to view to a comma separated blacklist in Settings -> Preferences. Websites added to the blacklist will have their tabs closed under any circumstance.
 
 ### Contributing
-- Install node modules with ```npm install```.
-- In ```/node_modules/react-modal/```, rename ```.babelrc``` to ```.babelrc.presets```.
-- Start build/watch tasks with ```gulp spawn-watch``` for content and background scripts.
-- Start the Webpack dev server with ```node server.js``` for the main app JS.
+- Install the project dependencies with ```yarn``` or ```npm install```.
+- Start the development environment with ```npm run dev```.
 - Load the ```app``` directory as an unpackaged extension.
-- To build for production, run ```gulp dist```.
+- To build for production, run ```gulp dist``` for Chrome, or ```gulp dist-firefox``` for Firefox.
 
 <div>
     <a href="">
