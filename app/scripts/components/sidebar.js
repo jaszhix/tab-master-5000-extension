@@ -1,12 +1,12 @@
 import React from 'react';
 import autoBind from 'react-autobind';
 import _ from 'lodash';
-
 import onClickOutside from 'react-onclickoutside';
 import ReactTooltip from 'react-tooltip';
 import state from './stores/state';
 import themeStore from './stores/theme';
 import tc from 'tinycolor2';
+import {map} from './utils';
 import {utilityStore, msgStore} from './stores/main';
 import * as utils from './stores/tileUtils';
 
@@ -101,7 +101,7 @@ export class SidebarMenu extends React.Component {
         <div className="sidebar-content">
           <div className="tabbable sortable ui-sortable">
             <ul className="nav nav-lg nav-tabs nav-justified">
-              {sidebarTabs.map((tab, i) => {
+              {map(sidebarTabs, (tab, i) => {
                 let tabStyle = {
                   color: lightBtnIsDark ? p.theme.lightBtnText : p.theme.darkBtnText,
                   backgroundColor: lightBtnIsDark ? p.theme.lightBtnBg : p.theme.darkBtnBg,
@@ -139,13 +139,13 @@ export class SidebarMenu extends React.Component {
                   {p.prefs.showViewMode ?
                   <div className="category-content" style={{height: p.prefs.showViewMode ? 'initial' : '0px', transition: 'height 0.2s'}}>
                     <div className="row" onMouseLeave={() => this.setState({lgBtnHover: ''})}>
-                      {lgBtnOptions.map((row, i) => {
+                      {map(lgBtnOptions, (row, i) => {
                         return (
                           <div key={i} className="row">
-                            {row.map((column, c) => {
+                            {map(row, (column, c) => {
                               return (
                                 <div key={c} className="col-xs-6">
-                                  {column.map((option, o) => {
+                                  {map(column, (option, o) => {
                                     if (option) {
                                       let lgBtnStyle = {
                                         color: p.prefs.mode === option.label.toLowerCase() ? p.theme.lightBtnText : p.theme.darkBtnText,
@@ -158,7 +158,7 @@ export class SidebarMenu extends React.Component {
                                         style={lgBtnStyle}
                                         icon={option.icon}
                                         label={option.label}
-                                        onClick={() => utilityStore.handleMode(option.key, p.allTabs)}
+                                        onClick={() => utilityStore.handleMode(option.key)}
                                         onMouseEnter={() => this.setState({lgBtnHover: option.label})}
                                          />
                                       );
@@ -192,7 +192,7 @@ export class SidebarMenu extends React.Component {
                   <div className="category-content" style={{display: 'block'}}>
                     <form action="#">
                         <div className="form-group">
-                          {p.keys.map((key, i) => {
+                          {map(p.keys, (key, i) => {
                             return (
                               <div key={i} className="radio">
                                 <label>

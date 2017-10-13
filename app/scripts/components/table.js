@@ -3,7 +3,7 @@ import autoBind from 'react-autobind';
 import _ from 'lodash';
 import v from 'vquery';
 import mouseTrap from 'mousetrap';
-
+import {findIndex, map} from './utils'
 import state from './stores/state';
 import {alertStore, msgStore} from './stores/main';
 import tabStore from './stores/tab';
@@ -36,7 +36,7 @@ class Row extends React.Component {
       onClick={p.onClick}
       onContextMenu={(e)=>p.onContextMenu(e, p.row)}
       >
-        {p.columns.map((column, z)=>{
+        {map(p.columns, (column, z)=>{
           if (p.row.hasOwnProperty(column)) {
             if (column === 'title' || column === 'name') {
               return (
@@ -180,7 +180,7 @@ export class Table extends React.Component {
     } else if (column === 'mutedInfo') {
       chrome.tabs.update(row.id, {muted: !row.mutedInfo.muted}, ()=>{
         if (s.muteInit) {
-          let refRow = _.findIndex(s.rows, {id: row.id});
+          let refRow = findIndex(s.rows, _row => _row.id === row.id);
           s.rows[refRow].mutedInfo.muted = !row.mutedInfo.muted;
           this.setState({rows: s.rows, muteInit: false});
         }
@@ -257,8 +257,7 @@ export class Table extends React.Component {
   handleSelect(i){
     let s = this.state;
     let p = this.props;
-    console.log('p.cursor', p.cursor);
-    if (p.cursor.keys.ctrl) {
+    if (window.cursor.keys.ctrl) {
       if (s.selectedItems.indexOf(i) !== -1) {
         _.pull(s.selectedItems, i);
       } else {
@@ -272,7 +271,7 @@ export class Table extends React.Component {
         }
         s.selectedItems.push(i);
       }
-    } else if (p.cursor.keys.shift) {
+    } else if (window.cursor.keys.shift) {
       if (!s.shiftRange) {
         s.selectedItems.push(i);
         this.setState({shiftRange: i});
@@ -286,7 +285,7 @@ export class Table extends React.Component {
         }
         let range = _.slice(rows, s.shiftRange, i);
         for (let z = 0, len = range.length; z < len; z++) {
-          let refRow = _.findIndex(s.rows, {id: range[z].id});
+          let refRow = findIndex(s.rows, row => row.id === range[z].id);
           if (s.selectedItems.indexOf(refRow) !== -1 && refRow !== s.shiftRange && refRow !== i) {
             _.pull(s.selectedItems, refRow);
           } else {
@@ -308,7 +307,7 @@ export class Table extends React.Component {
     cT.props.prefs = p.s.prefs;
     for (let i = 0, len = s.selectedItems.length; i < len; i++) {
       cT.props.tab = s.rows[s.selectedItems[i]];
-      utils.closeTab(cT, s.rows[s.selectedItems[i]].id);
+      utils.closeTab(s.rows[s.selectedItems[i]]);
       _.pullAt(s.rows, s.selectedItems[i]);
     }
     this.setState({rows: s.rows, selectedItems: [], shiftRange: null});
@@ -338,7 +337,7 @@ export class Table extends React.Component {
           <table className="table datatable-responsive dataTable no-footer dtr-inline" id="DataTables_Table_0">
             <thead>
               <tr role="row">
-                {s.columns.map((column, i)=>{
+                {map(s.columns, (column, i)=>{
                   let columnLabel = p.s.prefs.mode === 'apps' && column === 'domain' ? 'webWrapper' : column === 'mutedInfo' ? 'muted' : column;
                   return (
                     <th
@@ -355,28 +354,26 @@ export class Table extends React.Component {
               </tr>
             </thead>
             <tbody onMouseLeave={()=>this.setState({rowHover: -1})}>
-            {s.rows.map((row, i)=>{
-              if ((i <= p.s.tileLimit && p.s.prefs.mode !== 'tabs' || p.s.prefs.mode === 'tabs') && row.url.indexOf('chrome://newtab/') === -1) {
-                return (
-                  <Row
-                    s={p.s}
-                    key={i}
-                    className={i % 2 === 0 ? 'even' : 'odd'}
-                    style={{fontSize: '14px', backgroundColor: s.rowHover === i || s.selectedItems.indexOf(i) !== -1 ? themeStore.opacify(p.theme.lightBtnBg, 0.5) : 'initial'}}
-                    onMouseEnter={()=>this.setState({rowHover: i})}
-                    draggable={p.s.prefs.mode === 'tabs' && p.s.prefs.drag}
-                    onDragEnd={this.dragEnd}
-                    onDragStart={(e)=>this.dragStart(e, i)}
-                    onDragOver={(e)=>this.dragOver(e, i)}
-                    onClick={()=>this.handleSelect(i)}
-                    onContextMenu={this.handleContext}
-                    handleTitleClick={this.handleTitleClick}
-                    handleBooleanClick={(column)=>this.handleBooleanClick(column, row)}
-                    row={row}
-                    columns={s.columns}
-                  />
-                );
-              }
+            {map(s.rows, (row, i)=>{
+              return (
+                <Row
+                  s={p.s}
+                  key={i}
+                  className={i % 2 === 0 ? 'even' : 'odd'}
+                  style={{fontSize: '14px', backgroundColor: s.rowHover === i || s.selectedItems.indexOf(i) !== -1 ? themeStore.opacify(p.theme.lightBtnBg, 0.5) : 'initial'}}
+                  onMouseEnter={()=>this.setState({rowHover: i})}
+                  draggable={p.s.prefs.mode === 'tabs' && p.s.prefs.drag}
+                  onDragEnd={this.dragEnd}
+                  onDragStart={(e)=>this.dragStart(e, i)}
+                  onDragOver={(e)=>this.dragOver(e, i)}
+                  onClick={()=>this.handleSelect(i)}
+                  onContextMenu={this.handleContext}
+                  handleTitleClick={this.handleTitleClick}
+                  handleBooleanClick={(column)=>this.handleBooleanClick(column, row)}
+                  row={row}
+                  columns={s.columns}
+                />
+              );
             })}
             </tbody>
           </table>

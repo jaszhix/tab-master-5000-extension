@@ -1,9 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
-import Reflux from 'reflux';
 import autoBind from 'react-autobind';
-import reactMixin from 'react-mixin';
 import _ from 'lodash';
 import v from 'vquery';
 import moment from 'moment';
@@ -17,6 +15,7 @@ import tabStore from './stores/tab';
 import {Table} from './table';
 import {Btn, Panel} from './bootstrap';
 import style from './style';
+import {map, findIndex, whichToShow} from './utils';
 import * as utils from './stores/tileUtils';
 
 const headerContainerStyle = {position: 'relative', minHeight: '18px'};
@@ -40,8 +39,7 @@ class Tile extends React.Component {
       screenshot: null,
       openTab: false,
       tab: this.props.tab,
-      i: this.props.i,
-      muteInit: true
+      i: this.props.i
     }
     autoBind(this);
   }
@@ -51,7 +49,7 @@ class Tile extends React.Component {
   componentWillReceiveProps(nP){
     let p = this.props;
     if (nP.prefs.mode === 'tabs') {
-      utils.checkDuplicateTabs(this, nP, '');
+      utils.checkDuplicateTabs(nP.tab, () => this.setState({duplicate: true}));
     }
     if (!_.isEqual(nP.screenshots, p.screenshots) && nP.prefs.screenshot) {
       this.updateScreenshot('init', nP);
@@ -77,15 +75,15 @@ class Tile extends React.Component {
   initMethods(){
     let p = this.props;
     this.updateScreenshot('init', p);
-    if (p.prefs.mode === 'tabs') {
-      utils.checkDuplicateTabs(this, p, '');
-    }
+    /*if (p.prefs.mode === 'tabs') {
+      utils.checkDuplicateTabs(() => this.setState({duplicate: true}));
+    }*/
   }
   updateScreenshot(opt, p){
     let setScreeenshot = () => {
       if (p.prefs.screenshot) {
-        let refSS = _.findIndex(p.screenshots, {url: p.tab.url});
-        if (refSS !== -1) {
+        let refSS = findIndex(p.screenshots, ss => ss.url === p.tab.url);
+        if (refSS > -1) {
           this.setState({screenshot: p.screenshots[refSS].data});
         }
       }
@@ -201,6 +199,19 @@ class Tile extends React.Component {
       e.preventDefault();
       state.set({context: {value: true, id: this.props.tab}});
     }
+  }
+  handleCloseTab() {
+    this.setState({duplicate: false, close: true, screenshot: null});
+    utils.closeTab(this.props.tab);
+  }
+  handleMute() {
+    utils.mute(this.props.tab);
+  }
+  handlePinning() {
+    if (state.prefs.animations) {
+      this.setState({pinning: true});
+    }
+    utils.pin(this.props.tab);
   }
   render() {
     let s = this.state;
@@ -326,7 +337,7 @@ class Tile extends React.Component {
               className={`icon-volume-${p.tab.mutedInfo.muted ? 'mute2' : p.tab.audible ? 'medium' : 'mute'}`}
               onMouseEnter={this.handleTabMuteHoverIn}
               onMouseLeave={this.handleTabMuteHoverOut}
-              onClick={() => utils.mute(this, p.tab)} />
+              onClick={this.handleMute} />
             </li>
             : null}
             {isTab ?
@@ -346,7 +357,7 @@ class Tile extends React.Component {
               className="icon-pushpin"
               onMouseEnter={this.handlePinHoverIn}
               onMouseLeave={this.handlePinHoverOut}
-              onClick={() => utils.pin(this, p.tab)} />
+              onClick={this.handlePinning} />
             </li>
             : null}
             {p.prefs.mode !== 'apps' && p.prefs.mode !== 'extensions' ?
@@ -366,7 +377,7 @@ class Tile extends React.Component {
               className={`icon-${isTab ? 'cross2' : 'eraser'} ntg-x`}
               onMouseEnter={this.handleTabCloseHoverIn}
               onMouseLeave={this.handleTabCloseHoverOut}
-              onClick={() => utils.closeTab(this, p.tab.id)} />
+              onClick={this.handleCloseTab} />
             </li> : null}
             {(p.prefs.mode === 'apps' || p.prefs.mode === 'extensions') ?
             <li>
@@ -494,8 +505,6 @@ class Tile extends React.Component {
   }
 }
 
-reactMixin(Tile.prototype, Reflux.ListenerMixin);
-
 class TileGrid extends React.Component {
   constructor(props) {
     super(props);
@@ -505,9 +514,21 @@ class TileGrid extends React.Component {
       hover: false
     }
     autoBind(this);
+    this.range = {start: 0, length: 0};
+    this.height = 0;
+    this._setViewableRange = _.throttle(this.setViewableRange, 2000, {leading: true});
   }
   componentDidMount(){
     this.prefsInit(this.props);
+    let checkNode = ()=>{
+      if (this.ref) {
+        window.addEventListener('scroll', this.handleScroll);
+        this.setViewableRange(this.ref);
+      } else {
+        _.delay(() => checkRemote(), 500);
+      }
+    };
+    checkNode();
   }
   prefsInit(p){
     if (p.s.prefs.screenshotBg || p.s.prefs.screenshot || p.wallpaper && p.wallpaper.data !== -1) {
@@ -540,6 +561,45 @@ class TileGrid extends React.Component {
       sU[nP.s.modeKey] = utils.sort(nP, nP.data);
       state.set(sU);
     }
+  }
+  componentWillUnmount(){
+    if (this.ref) {
+      window.removeEventListener('scroll', this.handleScroll);
+    }
+  }
+  handleScroll(){
+    this.scrollListener();
+    if (this.scrollTimeout) {
+      clearTimeout(this.scrollTimeout);
+    }
+    this.scrollTimeout = setTimeout(this.scrollListener, 25);
+  }
+  scrollListener(){
+    if (!this.ref) {
+      return;
+    }
+    this.setViewableRange(this.ref);
+  }
+  setViewableRange(node){
+    if (!node) {
+      return;
+    }
+    let isTableView = state.prefs.format === 'table';
+    let offset = isTableView ? 101 : 57;
+    let config = {
+      outerHeight: window.innerHeight - offset,
+      scrollTop: document.body.scrollTop - 57,
+      itemHeight: isTableView ? 45 : this.props.s.prefs.tabSizeHeight + 12,
+      columns: isTableView ? 1 : Math.floor(window.innerWidth / (this.props.s.prefs.tabSizeHeight + 80))
+    };
+    console.log(config);
+    if (node.clientHeight > 0) {
+      this.height = node.clientHeight;
+    }
+    this.range = whichToShow(config);
+    console.log(this.range);
+    this.scrollTimeout = null;
+    this.forceUpdate();
   }
   dragStart(e, i) {
     e.dataTransfer.setData(1, 2); // FF fix
@@ -610,79 +670,66 @@ class TileGrid extends React.Component {
       } catch (e) {}
     }
   }
+  getRef(ref){
+    this.ref = ref;
+  }
   render() {
     let p = this.props;
     let tileLetterTopPos = p.s.prefs.tabSizeHeight >= 175 ? parseInt((p.s.prefs.tabSizeHeight + 80).toString()[0]+(p.s.prefs.tabSizeHeight + 80).toString()[1]) - 10 : p.s.prefs.tabSizeHeight <= 136 ? -5 : p.s.prefs.tabSizeHeight <= 150 ? 0 : p.s.prefs.tabSizeHeight <= 160 ? 5 : 10;
-    let data = utils.sort(p, p.data);
     return (
       <div className="tile-body">
-          <div id="grid" ref="grid">
-            {p.s.prefs.format === 'tile' ? data.map((tab, i) => {
-              if ((i <= p.s.tileLimit && p.s.prefs.mode !== 'tabs' || p.s.prefs.mode === 'tabs') && tab.url && tab.url.indexOf('chrome://newtab/') === -1) {
-                return (
-                  <Tile
-                  key={i}
-                  onDragEnd={this.dragEnd}
-                  onDragStart={(e) => this.dragStart(e, i)}
-                  onDragOver={(e) => this.dragOver(e, i)}
-                  prefs={p.s.prefs}
-                  tabs={p.s.tabs}
-                  duplicateTabs={p.s.duplicateTabs}
-                  bookmarks={p.s.bookmarks}
-                  history={p.s.history}
-                  sessions={p.s.sessions}
-                  sessionTabs={p.s.sessionTabs}
-                  apps={p.s.apps}
-                  extensions={p.s.extensions}
-                  modeKey={p.s.modeKey}
-                  render={p.render}
-                  i={i}
-                  tab={tab}
-                  tileLimit={p.s.tileLimit}
-                  init={p.init}
-                  screenshots={p.s.screenshots}
-                  theme={p.theme}
-                  wallpaper={p.wallpaper}
-                  width={p.width}
-                  context={p.s.context}
-                  folder={p.s.folder}
-                  applyTabOrder={p.s.applyTabOrder}
-                  search={p.s.search}
-                  sort={p.s.sort}
-                  windowId={p.s.windowId}
-                  chromeVersion={p.s.chromeVersion}
-                  tileLetterTopPos={tileLetterTopPos}
-                  screenshotClear={p.s.screenshotClear} />
-                );
+        <div id="grid" ref={this.getRef}>
+          {p.s.prefs.format === 'tile' ? map(utils.sort(p, p.data), (tab, i) => {
+            if ((p.s.prefs.mode !== 'tabs' || p.s.prefs.mode === 'tabs') && tab.url && tab.url.indexOf('chrome://newtab/') === -1) {
+              let isVisible = i >= this.range.start && i <= this.range.start + this.range.length;
+              if (!isVisible) {
+                let style = state.prefs.format === 'table' ? [window.innerWidth, 45] : [p.s.prefs.tabSizeHeight + 80, p.s.prefs.tabSizeHeight + 12]
+                return <div key={i} style={{width: style[0], height: style[1]}}/>
               }
-            })
-            : null}
-            {p.s.prefs.format === 'table' ?
-            <Table
-            s={p.s}
-            theme={p.theme}
-            cursor={p.cursor}
-            /> : null}
-          </div>
-          {!p.s.hasScrollbar && p.s.prefs.format === 'tile' && p.s[p.s.modeKey].length > p.s.tileLimit ?
-          <Btn
-          onClick={() => {
-            state.set({tileLimit: p.s.tileLimit + 50}, () => {
-              state.set({hasScrollbar: utils.scrollbarVisible(document.body)});
-            });
-            ReactTooltip.hide();
-          }}
-          style={{
-            position: 'fixed',
-            left: '0px',
-            right: '0px',
-            margin: '0px auto',
-            bottom: '0px',
-            zIndex: '50'
-          }}
-          className="ntg-btn"
-          data-place="top"
-          data-tip={'Load more tiles.'}>Load More</Btn> : null}
+              return (
+                <Tile
+                key={i}
+                onDragEnd={this.dragEnd}
+                onDragStart={(e) => this.dragStart(e, i)}
+                onDragOver={(e) => this.dragOver(e, i)}
+                prefs={p.s.prefs}
+                tabs={p.s.tabs}
+                duplicateTabs={p.s.duplicateTabs}
+                bookmarks={p.s.bookmarks}
+                history={p.s.history}
+                sessions={p.s.sessions}
+                sessionTabs={p.s.sessionTabs}
+                apps={p.s.apps}
+                extensions={p.s.extensions}
+                modeKey={p.s.modeKey}
+                render={p.render}
+                i={i}
+                tab={tab}
+                tileLimit={p.s.tileLimit}
+                init={p.init}
+                screenshots={p.s.screenshots}
+                theme={p.theme}
+                wallpaper={p.wallpaper}
+                width={p.width}
+                context={p.s.context}
+                folder={p.s.folder}
+                applyTabOrder={p.s.applyTabOrder}
+                search={p.s.search}
+                sort={p.s.sort}
+                windowId={p.s.windowId}
+                chromeVersion={p.s.chromeVersion}
+                tileLetterTopPos={tileLetterTopPos}
+                screenshotClear={p.s.screenshotClear} />
+              );
+            }
+          })
+          : null}
+          {p.s.prefs.format === 'table' ?
+          <Table
+          s={p.s}
+          theme={p.theme}
+          /> : null}
+        </div>
       </div>
     );
   }
@@ -700,7 +747,6 @@ TileGrid.defaultProps = {
   labels: {},
   collapse: true
 };
-reactMixin(TileGrid.prototype, Reflux.ListenerMixin);
 
 module.exports = TileGrid;
 

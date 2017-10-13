@@ -1,7 +1,7 @@
 import Reflux from 'reflux';
 import _ from 'lodash';
-import {saveAs} from 'filesaver.js';
 import {utilityStore, alertStore, msgStore} from './main';
+import {findIndex, find} from '../utils';
 
 export const themeStore = Reflux.createStore({
   init(){
@@ -419,10 +419,10 @@ export const themeStore = Reflux.createStore({
         let selectThemeIsCustom = false;
         if (themes.themes !== 'undefined') {
           if (prefs.theme >= 9000) {
-            refTheme = _.find(this.standardThemes, {id: prefs.theme});
+            refTheme = find(this.standardThemes, theme => theme.id === prefs.theme);
           } else {
             selectThemeIsCustom = true;
-            refTheme = _.find(themes.themes, {id: prefs.theme});
+            refTheme = find(themes.themes, theme => theme.id === prefs.theme);
           }
           try {
             this.theme = refTheme.theme;
@@ -431,7 +431,7 @@ export const themeStore = Reflux.createStore({
           }
           this.savedThemes = typeof themes.themes !== 'undefined' ? themes.themes : [];
         } else {
-          refTheme = _.find(this.standardThemes, {id: prefs.theme});
+          refTheme = find(this.standardThemes, theme => theme.id === prefs.theme);
           this.theme = refTheme.theme;
           this.savedThemes = [];
         }
@@ -460,7 +460,7 @@ export const themeStore = Reflux.createStore({
           this.wallpapers = this.standardWallpapers;
         }
         if (refTheme.id !== 9000 || refTheme.id !== 9001) {
-          this.currentWallpaper = _.find(this.wallpapers, {id: prefs.wallpaper});
+          this.currentWallpaper = find(this.wallpapers, wallpaper => wallpaper.id === prefs.wallpaper);
         }
 
         console.log('themeStore init current theme: ', this.theme);
@@ -575,11 +575,12 @@ export const themeStore = Reflux.createStore({
     //debugger;
     console.log('themeStore selectTheme: ', id);
     let standard = id >= 9000;
-    let refTheme = standard ? _.find(this.standardThemes, {id: id}) : _.find(this.savedThemes, {id: id});
+    let findFn = theme => theme.id === id;
+    let refTheme = standard ? find(this.standardThemes, findFn) : find(this.savedThemes, findFn);
 
     this.theme = refTheme.theme;
     if (refTheme.id !== 9000 || refTheme.id !== 9001) {
-      this.currentWallpaper = _.find(this.wallpapers, {id: refTheme.wallpaper});
+      this.currentWallpaper = find(this.wallpapers, wallpaper => wallpaper.id === refTheme.wallpaper);
     }
 
     this.trigger({theme: this.theme});
@@ -600,7 +601,7 @@ export const themeStore = Reflux.createStore({
     let setPrefs = false;
     if (wpId) {
       setPrefs = true;
-      refWallpaper = _.find(this.wallpapers, {id: wpId});
+      refWallpaper = find(this.wallpapers, wallpaper => wallpaper.id === wpId);
     } else {
       refWallpaper = {data: null};
     }
@@ -611,10 +612,10 @@ export const themeStore = Reflux.createStore({
     let refTheme;
     if (themeId <= 9000) {
       themeCollectionKey = 'savedThemes';
-      refTheme = _.findIndex(this.savedThemes, {id: themeId});
+      refTheme = findIndex(this.savedThemes, theme => theme.id === themeId);
     } else {
       themeCollectionKey = 'standardThemes';
-      refTheme = _.findIndex(this.standardThemes, {id: themeId});
+      refTheme = findIndex(this.standardThemes, theme => theme.id === themeId);
     }
     if (refWallpaper && refWallpaper.data) {
       this[themeCollectionKey][refTheme].wallpaper = refWallpaper.id;
@@ -629,7 +630,7 @@ export const themeStore = Reflux.createStore({
   },
   update(id){
     if (id < 9000) {
-      let refTheme = _.findIndex(this.savedThemes, {id: id});
+      let refTheme = findIndex(this.savedThemes, theme => theme.id === id);
       _.merge(this.savedThemes[refTheme], {
         theme: this.theme,
         modified: utilityStore.now(),
@@ -648,7 +649,7 @@ export const themeStore = Reflux.createStore({
     }
   },
   remove(id){
-    let refTheme = _.find(this.savedThemes, {id: id});
+    let refTheme = find(this.savedThemes, theme => theme.id === id);
     if (_.isEqual(refTheme.theme, this.theme)) {
       this.theme = this.standardThemes[0].theme;
       this.currentWallpaper = {data: -1};
@@ -662,7 +663,7 @@ export const themeStore = Reflux.createStore({
     this.setTriggers();
   },
   removeWallpaper(wpId){
-    let refWallpaper = _.find(this.wallpapers, {id: wpId});
+    let refWallpaper = find(this.wallpapers, wallpaper => wallpaper.id === wpId);
     this.wallpapers = _.without(this.wallpapers, _.remove(this.wallpapers, refWallpaper));
     this.currentWallpaper = {data: -1};
     chrome.storage.local.set({wallpapers: this.wallpapers}, (wp)=>{
@@ -672,7 +673,7 @@ export const themeStore = Reflux.createStore({
     this.setTriggers();
   },
   label(id, label){
-    let refTheme = _.findIndex(this.savedThemes, {id: id});
+    let refTheme = findIndex(this.savedThemes, theme => theme.id === id);
     this.savedThemes[refTheme].label = label;
     this.update(id, false);
   },
@@ -681,7 +682,12 @@ export const themeStore = Reflux.createStore({
       let json = JSON.stringify(this.savedThemes);
       let filename = 'TM5K-Themes-'+utilityStore.now();
       let blob = new Blob([json], {type: "application/json;charset=utf-8"});
-      saveAs(blob, filename+'.json');
+      chrome.downloads.download({
+        url: URL.createObjectURL(blob),
+        body: json,
+        filename,
+        saveAs: true
+      });
     } catch (e) {
       console.log(e);
     }

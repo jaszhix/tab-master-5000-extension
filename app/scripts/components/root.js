@@ -1,6 +1,6 @@
 window._trackJs = {
   token: 'bd495185bd7643e3bc43fa62a30cec92',
-  enabled: true,
+  enabled: false,
   onError: function (payload) { return true; },
   version: "",
   callback: {
@@ -8,7 +8,7 @@ window._trackJs = {
     bindStack: true
   },
   console: {
-    enabled: true,
+    enabled: false,
     display: true,
     error: true,
     warn: false,
@@ -30,7 +30,7 @@ let trackJs = require('trackjs');
 import v from 'vquery';
 import moment from 'moment';
 import tc from 'tinycolor2';
-v('.startup-p').text(moment().format('h:mm A'));
+document.querySelector('.startup-text-wrapper > .startup-p').innerText = moment().format('h:mm A');
 import React from 'react';
 import autoBind from 'react-autobind';
 import reactMixin from 'react-mixin';
@@ -44,6 +44,7 @@ import {keyboardStore, utilityStore, msgStore} from './stores/main';
 import themeStore from './stores/theme';
 import sessionsStore from './stores/sessions';
 import * as utils from './stores/tileUtils';
+import {each} from './utils';
 import {Btn, Col, Row} from './bootstrap';
 import Sidebar from './sidebar';
 import TileGrid from './tile';
@@ -268,7 +269,7 @@ class Root extends React.Component {
       stateUpdate.topNavButton = 'dlFavicons';
       sUChange = true;
     }
-    if (!_.isEqual(nP.s.reQuery, p.s.reQuery) && nP.s.reQuery.state
+    if ((!_.isEqual(nP.s.reQuery, p.s.reQuery) && nP.s.reQuery.state)
       || nP.s.search.length < p.s.search.length) {
       nP.s.reQuery.state = true;
       this.reQuery(nP, stateUpdate, (sU)=>{
@@ -552,15 +553,18 @@ class Root extends React.Component {
       }
     }
     if (p.s.prefs.mode !== 'tabs' && p.s.prefs.mode !== 'sessions') {
-      utilityStore.handleMode(p.s.prefs.mode, _.flatten(p.s.allTabs));
+      utilityStore.handleMode(p.s.prefs.mode);
     }
   }
-  captureTabs(p=null, opt, bg, sU, cb) {
+  captureTabs(p = this.props, opt, bg, sU, cb) {
     let s = this.state;
-    if (!p) {
-      p = this.props;
-    }
-    this.setState({topLoad: true});
+    // Query current Chrome window for tabs.
+    let stateUpdate = {};
+    let allTabs = [];
+    this.setState({
+      topLoad: true,
+      init: false
+    });
 
     let handleSessionTabs = (stateUpdate)=>{
       let sessionTabs = sessionsStore.flatten(p.s.sessions, _.flatten(allTabs), opt === 'init' ? stateUpdate.windowId : p.s.windowId);
@@ -574,20 +578,14 @@ class Root extends React.Component {
       return stateUpdate;
     };
 
-    // Query current Chrome window for tabs.
-    let stateUpdate = {};
-    let allTabs = [];
-
     let handleWindow = (res, Window)=>{
-      _.each(Window.tabs, (tVal, tKey)=>{
+      each(Window.tabs, (tVal, tKey)=>{
         Window.tabs = utils.checkFavicons(p, tVal, tKey, Window.tabs);
       });
 
       if (opt === 'init') {
         stateUpdate.windowId = res.windowId;
       }
-
-      this.setState({init: false});
 
       if (p.s.prefs.mode === 'sessions' && p.s.sessions.length > 0) {
         stateUpdate = handleSessionTabs(stateUpdate);
@@ -596,7 +594,7 @@ class Root extends React.Component {
         }
       } else if (p.s.prefs.mode !== 'tabs') {
         stateUpdate.direction = 'asc';
-        utilityStore.handleMode(p.s.prefs.mode, _.flatten(allTabs));
+        utilityStore.handleMode(p.s.prefs.mode);
       }
 
       if (p.s.prefs.mode === 'tabs') {
@@ -607,6 +605,7 @@ class Root extends React.Component {
           stateUpdate.tabs = utils.searchChange(p, Window.tabs);
         }
       }
+
       _.assignIn(stateUpdate, {
         reQuery: {state: false},
       });
@@ -667,8 +666,12 @@ class Root extends React.Component {
     if (!p) {
       p = this.props;
     }
-    console.log('### reQuery', p.s.reQuery);
-    if (p.s.reQuery.state && !p.s.modal.state && p.s.settings !== 'sessions') {
+    console.log('reQuery', p.s.reQuery);
+    if (p.s.modal.state && p.s.settings === 'sessions') {
+      msgStore.queryTabs(true);
+      return;
+    }
+    if (p.s.reQuery.state && !p.s.modal.state) {
       // Treat attaching/detaching and created tabs with a full re-render.
       if (p.s.reQuery.hasOwnProperty('bg')) {
         if (stateUpdate) {
@@ -693,7 +696,6 @@ class Root extends React.Component {
     let s = this.state;
     let p = this.props;
     if (s.theme && p.s.prefs) {
-      let cursor = utilityStore.get_cursor();
       let keys = [];
       let labels = {};
       if (p.s.prefs.mode === 'bookmarks') {
@@ -764,7 +766,6 @@ class Root extends React.Component {
             search={p.s.search}
             tabs={p.s[p.s.prefs.mode]}
             prefs={p.s.prefs}
-            cursor={cursor}
             context={p.s.context}
             chromeVersion={p.s.chromeVersion}
             duplicateTabs={p.s.duplicateTabs}
@@ -830,7 +831,6 @@ class Root extends React.Component {
                     collapse={p.s.collapse}
                     width={p.s.width}
                     sidebar={p.s.sidebar}
-                    cursor={cursor}
                     sessions={p.s.sessions}
                     init={s.init}
                     theme={s.theme}
@@ -859,16 +859,25 @@ class Root extends React.Component {
 
 reactMixin(Root.prototype, Reflux.ListenerMixin);
 
-class App extends Reflux.Component {
+class App extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = {};
-    this.store = state;
+    this.state = state
+      .setMergeKeys(['prefs'])
+      .get('*');
+    this.connectId = state.connect('*', (newState) => {
+      console.log('STATE INPUT: ', newState);
+      this.setState(newState, () => console.log('STATE: ', this.state));
+    });
+    console.log(this.state);
     autoBind(this);
   }
   componentDidMount(){
     this.onWindowResize({width: window.innerWidth, height: window.innerHeight}, this.props.stateUpdate);
+  }
+  componentWillUnmount() {
+    state.disconnect(this.connectId);
   }
   setKeyboardShortcuts(e){
     if (e.prefs.keyboardShortcuts) {
@@ -900,12 +909,12 @@ class App extends Reflux.Component {
     });
   }
   onViewportChange(viewport) {
-    let wrapper = document.body;
+    /*let wrapper = document.body;
     if (this.state.hasScrollbar && this.state.tileLimit < this.state[this.state.modeKey].length) {
       if (wrapper.scrollTop + window.innerHeight >= wrapper.scrollHeight + wrapper.offsetTop - 200) {
         state.set({tileLimit: this.state.tileLimit + 50});
       }
-    }
+    }*/
   }
   render(){
     if (!this.state.init) {

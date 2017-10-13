@@ -2,8 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import autoBind from 'react-autobind';
-import reactMixin from 'react-mixin';
-import Reflux from 'reflux';
 import moment from 'moment';
 import _ from 'lodash';
 import kmp from 'kmp';
@@ -13,6 +11,7 @@ import ColorPicker from 'rc-color-picker';
 import ReactTooltip from 'react-tooltip';
 
 import * as utils from './stores/tileUtils';
+import {each, find, map} from './utils';
 import state from './stores/state';
 import {msgStore, faviconStore, utilityStore} from './stores/main';
 import themeStore from './stores/theme';
@@ -145,11 +144,11 @@ class Theming extends React.Component {
     let isNewTheme = true;
     let showCustomButtons;
     if (p.prefs.theme < 9000) {
-      refTheme = _.find(p.savedThemes, {id: p.prefs.theme});
+      refTheme = find(p.savedThemes, theme => theme.id === p.prefs.theme);
       isNewTheme = false;
       showCustomButtons = true;
     } else {
-      refTheme = _.find(p.standardThemes, {id: p.prefs.theme});
+      refTheme = find(p.standardThemes, theme => theme.id === p.prefs.theme);
       showCustomButtons = false;
     }
     this.setState({
@@ -169,10 +168,10 @@ class Theming extends React.Component {
     let p = this.props;
     let refTheme;
     if (nP.prefs.theme < 9000) {
-      refTheme = _.find(nP.savedThemes, {id: nP.prefs.theme});
+      refTheme = find(nP.savedThemes, theme => theme.id === nP.prefs.theme);
       this.setState({showCustomButtons: true});
     } else {
-      refTheme = _.find(nP.standardThemes, {id: nP.prefs.theme});
+      refTheme = find(nP.standardThemes, theme => theme.id === nP.prefs.theme);
       this.setState({showCustomButtons: false});
     }
     if (!_.isEqual(nP.prefs, p.prefs)) {
@@ -218,7 +217,7 @@ class Theming extends React.Component {
         {p.wallpaper && p.wallpaper.data !== -1 && p.wallpaper.id < 9000 ? <Btn onClick={() => themeStore.removeWallpaper(p.prefs.wallpaper)} className="ntg-setting-btn pull-right">{utils.t('remove')}</Btn> : null}
       </div>
     );
-    state.set({modal: p.modal});
+    state.set({modal: p.modal}, true);
   }
   handleSelectTheme(theme){
     this.setState({
@@ -289,7 +288,7 @@ class Theming extends React.Component {
             <Col size="12" style={themeContainerStyle} onMouseLeave={() => this.setState({themeHover: -1})}>
               {s.leftTab === 'custom' ?
               <Row>
-                {s.savedThemes.length > 0 ? s.savedThemes.map((theme, i)=>{
+                {s.savedThemes.length > 0 ? map(s.savedThemes, (theme, i) => {
                   return (
                     <Row
                     key={i}
@@ -348,7 +347,7 @@ class Theming extends React.Component {
               </Row> : null}
               {s.leftTab === 'tm5k' ?
               <Row>
-                {p.standardThemes.map((theme, i)=>{
+                {map(p.standardThemes, (theme, i) => {
                   return (
                     <Row
                     key={i}
@@ -399,14 +398,14 @@ class Theming extends React.Component {
             </Col>
             {s.rightTab === 'color' ?
             <Row style={colorPickerRowStyle}>
-              {themeFields.map((fields, f) => {
+              {map(themeFields, (fields, q) => {
                 return (
                   <Col
-                  key={f}
+                  key={q}
                   size="4"
                   style={colorPickerColumnStyle}>
                     <Row>
-                      {fields.map((field, i)=>{
+                      {map(fields, (field, i) => {
                         return (
                           <ColorPickerContainer
                           key={field.themeKey}
@@ -427,7 +426,7 @@ class Theming extends React.Component {
               <Col
               size={p.wallpaper && p.wallpaper.data === -1 || !p.wallpaper || p.wallpaper.id >= 9000 ? '12' : '6'}
               style={wallpaperColumnStyle}>
-                {p.wallpapers.length > 0 ? _.uniqBy(_.orderBy(p.wallpapers, ['desc'], ['created']), 'id').map((wp, i)=>{
+                {p.wallpapers.length > 0 ? map(_.uniqBy(_.orderBy(p.wallpapers, ['desc'], ['created']), 'id'), (wp, i) => {
                   let selectedWallpaper = p.wallpaper && wp.id === p.wallpaper.id;
                   return (
                     <div
@@ -523,26 +522,27 @@ class Sessions extends React.Component {
         <Btn onClick={() => sessionsStore.v2Save({tabs: p.allTabs, label: s.sessionLabelValue})} className="ntg-setting-btn pull-right" icon="floppy-disk">{utils.t('saveSession')}</Btn>
       </div>
     );
-    state.set({modal: p.modal});
+    state.set({modal: p.modal}, true);
     this.handleSessionsState(p);
   }
   componentDidUpdate(){
     ReactTooltip.rebuild();
   }
   handleSessionsState(p){
-    _.each(p.sessions, (session, sKey)=>{
-      _.each(session.tabs, (Window, wKey)=>{
-        _.each(Window, (tab, tKey)=>{
-          if (tab) {
-            if (tab.url.indexOf('chrome://newtab/') === -1) {
-              if (!_.find(p.favicons, {domain: tab.url.split('/')[2]}) && tab.url.indexOf('127.0.0.1') === -1 && tab.url.indexOf('localhost') === -1) {
-                faviconStore.set_favicon(tab, session.tabs.length, tKey);
-              }
-              let fvData = _.result(_.find(p.favicons, { domain: tab.url.split('/')[2] }), 'favIconUrl');
-              p.sessions[sKey].tabs[wKey][tKey].favIconUrl = fvData ? fvData : utils.filterFavicons(tab.favIconUrl, tab.url, 'settings');
-            } else {
-              _.pullAt(p.sessions[sKey].tabs[wKey], tKey);
+    each(p.sessions, (session, sKey) => {
+      each(session.tabs, (Window, wKey) => {
+        each(Window, (tab, tKey) => {
+          if (!tab) {
+            return;
+          }
+          if (tab.url.indexOf('chrome://newtab/') === -1) {
+            if (!find(p.favicons, fv => fv.domain === tab.url.split('/')[2]) && tab.url.indexOf('127.0.0.1') === -1 && tab.url.indexOf('localhost') === -1) {
+              faviconStore.set_favicon(tab, session.tabs.length, tKey);
             }
+            let fvData = _.result(find(p.favicons, fv => fv.domain === tab.url.split('/')[2]), 'favIconUrl');
+            p.sessions[sKey].tabs[wKey][tKey].favIconUrl = fvData ? fvData : utils.filterFavicons(tab.favIconUrl, tab.url, 'settings');
+          } else {
+            _.pullAt(p.sessions[sKey].tabs[wKey], tKey);
           }
         });
       });
@@ -553,9 +553,6 @@ class Sessions extends React.Component {
     if (!_.isEqual(nP.favicons, this.props.favicons)) {
       this.handleSessionsState(nP);
     }
-  }
-  componentWillUnmount(){
-    faviconStore.clean();
   }
   labelSession(session){
     session.label = this.state.sessionLabelValue;
@@ -577,12 +574,14 @@ class Sessions extends React.Component {
     this.setState({sessionHover: i});
   }
   handleSessionHoverOut(i){
+    ReactTooltip.hide();
     this.setState({sessionHover: i});
   }
   handleSelectedSessionTabHoverIn(i){
     this.setState({selectedSessionTabHover: i});
   }
   handleSelectedSessionTabHoverOut(i){
+    ReactTooltip.hide();
     this.setState({selectedSessionTabHover: i});
   }
   expandSelectedSession(i, e){
@@ -622,7 +621,7 @@ class Sessions extends React.Component {
         className="session-col"
         onMouseLeave={() => this.handleSessionHoverOut(-1)}>
           <h4>{utils.t('savedSessions')} {p.sessions.length > 0 ? `(${p.sessions.length})` : null}</h4>
-          {p.sessions.map((session, i)=>{
+          {map(p.sessions, (session, i) => {
             let time = _.capitalize(moment(session.timeStamp).fromNow());
             let _time = time === 'A few seconds ago' ? 'Seconds ago' : time;
             let getTabsCount = () => {
@@ -701,7 +700,7 @@ class Sessions extends React.Component {
                       {s.labelSession === i ?
                         <div>
                           <Col size="6">
-                            <form onSubmit={(e)=>{
+                            <form onSubmit={(e) => {
                               e.preventDefault();
                               this.labelSession(session);
                             }}>
@@ -744,7 +743,7 @@ class Sessions extends React.Component {
                           onChange={(e)=>this.setState({search: e.target.value})} />
                         </Col> : null}
                     </Row>
-                  {session.tabs.map((_window, w)=>{
+                  {map(session.tabs, (_window, w) => {
                     let windowTitle = `${utils.t('window')} ${w + 1}: ${_window.length} ${_.upperFirst(utils.t('tabs'))}`;
                     return (
                       <Row
@@ -775,9 +774,9 @@ class Sessions extends React.Component {
                         </Row>
                         {s.selectedSavedSessionWindow === w || s.search.length > 0 ?
                         <Row className="ntg-session-expanded" style={sessionExpandedRowStyle} onMouseLeave={() => this.handleSelectedSessionTabHoverOut(-1)}>
-                        {_window.map((t, x)=>{
+                        {map(_window, (t, x) => {
                           if (s.search.length === 0 || kmp(t.title.toLowerCase(), s.search) !== -1) {
-                            if (!_.find(p.favicons, {domain: t.url.split('/')[2]}) && t.url.indexOf('127.0.0.1') === -1) {
+                            if (!find(p.favicons, fv => fv.domain === t.url.split('/')[2]) && t.url.indexOf('127.0.0.1') === -1) {
                               faviconStore.set_favicon(t, session.tabs.length, x);
                             }
                             let favIconUrl = t.favIconUrl ? utils.filterFavicons(t.favIconUrl, t.url) : '../images/file_paper_blank_document.png';
@@ -823,7 +822,7 @@ class Sessions extends React.Component {
         className="session-col"
         onMouseLeave={() => this.setState({currentSessionHover: -1})}>
           <h4>{utils.t('currentSession')}</h4>
-          {p.allTabs ? p.allTabs.map((_window, w)=>{
+          {p.allTabs ? map(state.allTabs, (_window, w) => {
             let windowTitle = `${utils.t('window')} ${w + 1}: ${_window.length} ${_.upperFirst(utils.t('tabs'))}`;
             return (
               <Row
@@ -853,7 +852,10 @@ class Sessions extends React.Component {
                 </Row>
                 {s.selectedCurrentSessionWindow === w ?
                 <Row className="ntg-session-expanded" style={sessionExpandedRowStyle}>
-                {_window.map((t, i)=>{
+                {map(_window, (t, i) => {
+                  if (!t) {
+                    return null;
+                  }
                   let favIconUrl = t.favIconUrl ? utils.filterFavicons(t.favIconUrl, t.url) : '../images/file_paper_blank_document.png';
                   if (t.url.indexOf('chrome://newtab/') !== -1) {
                     _.pullAt(_window, i);
@@ -909,7 +911,6 @@ export class Settings extends React.Component {
     autoBind(this);
   }
   componentDidMount(){
-    this.listenTo(msgStore, this.prefsChange);
     state.set({sidebar: false});
   }
   handleTabClick(opt){
@@ -965,6 +966,5 @@ Settings.propTypes = {
 Settings.defaultProps = {
   collapse: true
 };
-reactMixin(Settings.prototype, Reflux.ListenerMixin);
 
 export default Settings;

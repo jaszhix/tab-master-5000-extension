@@ -1,190 +1,114 @@
 import _ from 'lodash';
 import kmp from 'kmp';
 import Fuse from 'fuse.js';
+import {each, findIndex, filter} from '../utils';
 import state from './state';
 import {historyStore, bookmarksStore, chromeAppStore, faviconStore} from './main';
 import sessionsStore from './sessions';
 
-export var closeTab = (t, id, search)=>{
-  let p = t.props;
+export var closeTab = (tab) => {
   let stateUpdate = {};
-  t.setState({duplicate: false});
-  let reRender = (defer)=>{
-    state.set({reQuery: {state: true, type: defer ? 'cycle' : 'create', id: id}});
-  };
-  let close = ()=>{
-    chrome.tabs.remove(id, ()=>{
-      if (p.prefs.mode !== 'tabs') {
-        _.defer(()=>{
-          reRender(true);
-        });
+
+  if (state.prefs.mode === 'tabs' || tab.openTab) {
+    chrome.tabs.remove(tab.id);
+  } else if (state.prefs.mode === 'bookmarks') {
+    chrome.bookmarks.remove(tab.bookmarkId, (b) => {
+      console.log('Bookmark deleted: ', b);
+      bookmarksStore.remove(state.bookmarks, bookmarkId);
+      item.removed = true;
+    });
+  } else if (state.prefs.mode === 'history') {
+    chrome.history.deleteUrl({url: tab.url}, (h) => {
+      console.log('History url deleted: ', h);
+      historyStore.remove(state.history, tab.url);
+    });
+  } else if (state.prefs.mode === 'sessions') {
+    let refSession = findIndex(state.sessions, session => session.id === tab.originSession);
+    each(state.sessions[refSession], (w) => {
+      if (!w || !w[tab.originWindow]) {
+        return;
+      }
+      let index = findIndex(w[tab.originWindow], w => w.id === tab.id);
+      if (index > -1) {
+        sessionsStore.v2RemoveTab(state.sessions, refSession, tab.originWindow, index, state.sessionTabs, state.sort);
+        return;
       }
     });
-  };
-  if (p.tab !== undefined && (!p.tab.hasOwnProperty('openTab') || !p.tab.openTab)) {
-    t.setState({close: true});
   }
-  if (t.state.hasOwnProperty('screenshot')) {
-    t.setState({screenshot: null});
-  }
-  if (p.prefs.mode !== 'tabs') {
-    if (p.tab !== undefined && p.tab.hasOwnProperty('openTab') && p.tab.openTab) {
-      close(true);
-      if (p.modeKey !== undefined || p.i !== undefined) {
-        p[p.modeKey][p.i].openTab = null;
-        stateUpdate[p.modeKey] = p[p.modeKey];
-        state.set(stateUpdate);
-      }
-    } else {
-      if (p.prefs.mode === 'bookmarks') {
-        let bookmarkId = search ? id.bookmarkId : p.tab.bookmarkId;
-        chrome.bookmarks.remove(bookmarkId,(b)=>{
-          console.log('Bookmark deleted: ',b);
-          bookmarksStore.remove(p.bookmarks, bookmarkId);
-        });
-      } else if (p.prefs.mode === 'history') {
-        let historyUrl = search ? id.url : p.tab.url;
-        chrome.history.deleteUrl({url: historyUrl},(h)=>{
-          console.log('History url deleted: ', h);
-          historyStore.remove(p.history, historyUrl);
-        });
-      } else if (p.prefs.mode === 'sessions') {
-        // TBD
-        let refSession = _.findIndex(p.sessions, {id: p.tab.originSession});
-        _.each(p.sessions[refSession], (w)=>{
-          if (w) {
-            let tab = _.findIndex(w[p.tab.originWindow], {id: id});
-            if (tab !== -1) {
-              console.log('####', tab);
-              sessionsStore.v2RemoveTab(p.sessions, refSession, p.tab.originWindow, tab, p.sessionTabs, p.sort);
-              return;
-            }
-          }
-        });
-      }
+
+  if (state.modeKey) {
+    let refItem = findIndex(state[state.modeKey], item => item.id === tab.id);
+    if (state[state.modeKey][refItem].openTab) {
+      state[state.modeKey][refItem].openTab = null;
     }
-  } else {
-    close();
-  }
-  if (p.prefs.mode === 'sessions') {
-    t.closeTimeout = setTimeout(()=>{
-      t.setState({close: true, render: false});
-    }, 200);
+    state[state.modeKey].splice(refItem, 1);
+    stateUpdate[state.modeKey] = state[state.modeKey];
+    state.set(stateUpdate, true);
   }
 };
 
-export var closeAll = (t, tab)=>{
+export var closeAllTabs = (tab) => {
   let urlPath = tab.url.split('/');
   chrome.tabs.query({
     url: '*://'+urlPath[2]+'/*'
   }, (Tab)=> {
     for (let i = 0, len = Tab.length; i < len; i++) {
-      closeTab(t, Tab[i].id);
+      closeTab(Tab[i]);
     }
   });
 };
 
-export var closeAllSearched = (t)=>{
-  let p = t.props;
-  let s = t.state;
-  for (let i = 0, len = p.tabs.length; i < len; i++) {
-    if (p.prefs.mode === 'history' || p.prefs.mode === 'bookmarks') {
-      if (!s.openTab) {
-        closeTab(t, p.tabs[i], true);
-      }
-    } else {
-      closeTab(t, p.tabs[i].id);
+export var closeAllItems = () => {
+  let items = state.get(state.modeKey);
+  for (let i = 0, len = items.length; i < len; i++) {
+    if (!items[i]) {
+      continue;
     }
+    closeTab(items[i])
   }
 };
 
-export var pin = (t, tab, opt)=>{
-  let s = t.state;
-  let p = t.props;
-  let id = null;
-  if (opt === 'context') {
-    id = tab;
-  } else {
-    id = tab.id;
-  }
-
-  if (p.prefs.animations) {
-    t.setState({pinning: true});
-  }
-  p.tab.pinned = !p.tab.pinned;
-  chrome.tabs.update(id, {
-    pinned: p.tab.pinned
-  });
-  if (p.prefs.mode !== 'tabs' && p.prefs.format === 'tile') {
-    let refItem = _.findIndex(p[p.modeKey], tab);
-    if (refItem !== -1) {
-      p[p.modeKey][refItem].pinned = !p[p.modeKey][refItem].pinned;
-    }
-  }
+export var pin = (tab) => {
+  chrome.tabs.update(tab.id, {pinned: !tab.pinned});
 };
 
-export var mute = (t, tab)=>{
-  let p = t.props;
-  let s = t.state;
-  p.tab.mutedInfo.muted = !p.tab.mutedInfo.muted;
-  chrome.tabs.update(tab.id, {muted: p.tab.mutedInfo.muted}, ()=>{
-    if (s.muteInit) {
-      t.setState({muteInit: false});
-    }
-  });
-  if (t.props.prefs.mode !== 'tabs' && p.prefs.format === 'tile') {
-    let refItem = _.findIndex(p[p.modeKey], tab);
-    if (refItem !== -1) {
-      p[p.modeKey][refItem].mutedInfo.muted = !p[p.modeKey][refItem].mutedInfo.muted;
-    }
-  }
+export var mute = (tab) => {
+  chrome.tabs.update(tab.id, {muted: !tab.mutedInfo.muted});
 };
 
-export var discard = (id)=>{
+export var discard = (id) => {
   chrome.tabs.discard(id);
 };
 
-export var checkDuplicateTabs = (t, p, opt)=>{
-  if (p.prefs.duplicate && p.prefs.mode === 'tabs') {
-    let s = t.state;
-    let first;
-    if (opt === 'closeAllDupes') {
-      let duplicates;
-      for (let y = 0, len = p.duplicateTabs.length; y < len; y++) {
-        duplicates = _.filter(p.tabs, {url: p.duplicateTabs[y]});
-        first = _.first(duplicates);
-        if (duplicates) {
-          for (let x = 0, _len = duplicates.length; x < _len; x++) {
-            if (duplicates[x].id !== first.id && !chrome.runtime.lastError) {
-              closeTab(t, duplicates[x].id);
-            }
-          }
-        }
-      }
+export var checkDuplicateTabs = (tab, cb) => {
+  if (!state.prefs.duplicate || state.prefs.mode !== 'tabs' || state.duplicateTabs.indexOf(tab.url) === -1) {
+    return;
+  }
+  let [first, ...duplicates] = filter(state.tabs, function(_tab) {
+    return state.duplicateTabs.indexOf(_tab.url) > -1;
+  });
+  if (!first) {
+    if (cb) cb(false);
+    return;
+  }
+  for (let y = 0, len = duplicates.length; y < len; y++) {
+    if (duplicates[y].id === first.id || (duplicates[y].id !== tab.id && cb)) {
+      continue;
     }
-    if (_.includes(p.duplicateTabs, p.tab.url)) {
-      let tabs = _.filter(p.tabs, {url: p.tab.url});
-      first = _.first(tabs);
-      let activeTab = _.map(_.find(tabs, { 'active': true }), 'id');
-      for (let i = 0, len = tabs.length; i < len; i++) {
-        if (tabs[i].id !== first.id && tabs[i].title !== 'New Tab' && tabs[i].id !== activeTab && tabs[i].id === p.tab.id) {
-          if (opt === 'closeDupes') {
-            closeTab(t, tabs[i].id, s.i);
-          } else if (p.duplicateTabs.length > 0) {
-            t.setState({duplicate: true});
-          }
-        }
-      }
+    if (cb) {
+      cb(true);
+      continue;
     }
+    closeTab(duplicates[y]);
   }
 };
 
-export var app = (t, opt)=>{
+export var app = (t, opt) => {
   let p = t.props;
   if (opt === 'toggleEnable') {
     chrome.management.setEnabled(p.tab.id, !p.tab.enabled);
   } else if (opt === 'uninstallApp') {
-    chrome.management.uninstall(p.tab.id, ()=>{
+    chrome.management.uninstall(p.tab.id, () => {
       chromeAppStore.set(p.prefs.mode === 'apps');
     });
   } else if (opt  === 'createAppShortcut') {
@@ -199,7 +123,7 @@ export var app = (t, opt)=>{
   }
 };
 
-export var handleAppClick = (p)=>{
+export var handleAppClick = (p) => {
   if (p.tab.enabled) {
     if (p.prefs.mode === 'extensions' || p.tab.launchType === 'OPEN_AS_REGULAR_TAB') {
       if (p.tab.url.length > 0) {
@@ -213,7 +137,7 @@ export var handleAppClick = (p)=>{
   }
 };
 
-export var checkFavicons = (p, tab, key, tabs)=>{
+export var checkFavicons = (p, tab, key, tabs) => {
   if (p.s.favicons.length > 0) {
     let match = false;
     for (let i = 0, len = p.s.favicons.length; i < len; i++) {
@@ -235,7 +159,7 @@ const isStandardChromePage = function(chromePage) {
   return chromePage === 'DOWNLOADADS' || chromePage === 'EXTENSIONS' || chromePage === 'HISTORY' || chromePage === 'SETTINGS';
 };
 
-export var filterFavicons = (faviconUrl, tabUrl, mode=null)=>{
+export var filterFavicons = (faviconUrl, tabUrl, mode=null) => {
   // Work around for Chrome favicon useage restriction.
   // TODO: Check this behavior in FF, and clean this up.
   let urlPart, chromePage;
@@ -261,7 +185,7 @@ export var filterFavicons = (faviconUrl, tabUrl, mode=null)=>{
   }
 };
 
-export var sort = (p, data, sortChange=null)=>{
+export var sort = (p, data, sortChange=null) => {
   let result;
 
   if (p.s.prefs && p.s.prefs.mode === 'tabs') {
@@ -276,20 +200,20 @@ export var sort = (p, data, sortChange=null)=>{
   return result;
 };
 
-export var hasDuplicates = (array)=>{
+export var hasDuplicates = (array) => {
   return (new Set(array)).size !== array.length;
 };
-export var getDuplicates = (array)=>{
+export var getDuplicates = (array) => {
   return _.filter(array, (x, i, array) => {
     return _.includes(array, x, i + 1);
   });
 };
-export var arrayMove = (arr, fromIndex, toIndex)=>{
+export var arrayMove = (arr, fromIndex, toIndex) => {
   let element = arr[fromIndex];
   arr.splice(fromIndex, 1);
   arr.splice(toIndex, 0, element);
 };
-export var formatBytes = (bytes, decimals)=>{
+export var formatBytes = (bytes, decimals) => {
   if (bytes === 0) {
     return '0 Byte';
   }
@@ -300,16 +224,16 @@ export var formatBytes = (bytes, decimals)=>{
   return (bytes / Math.pow(k, i)).toPrecision(dm) + ' ' + sizes[i];
 };
 
-export var scrollbarVisible = (element)=>{
+export var scrollbarVisible = (element) => {
   let hasVScroll = document.body.scrollHeight > document.body.clientHeight;
   let cStyle = document.body.currentStyle || window.getComputedStyle(document.body, '');
-  return !(cStyle.overflow === 'visible'
+  return (cStyle.overflow === 'visible'
     || cStyle.overflowY === 'visible'
     || (hasVScroll && cStyle.overflow === 'auto')
     || (hasVScroll && cStyle.overflowY === 'auto'));
 };
 
-export var searchChange = (p, tabs)=>{
+export var searchChange = (p, tabs) => {
   let _tabs;
   try {
     let tabsSearch = new Fuse(tabs, {
@@ -331,6 +255,6 @@ export var searchChange = (p, tabs)=>{
 
 };
 
-export var t = (key)=>{
+export var t = (key) => {
   return chrome.i18n.getMessage(key);
 };

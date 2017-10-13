@@ -54,7 +54,8 @@
     "idle",
     "management",
     "bookmarks",
-    "history"
+    "history",
+    "downloads"
   ],
   "applications": {
     "gecko": {

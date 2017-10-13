@@ -53,7 +53,8 @@
     "tabCapture",
     "management",
     "bookmarks",
-    "history"
+    "history",
+    "downloads"
   ],
   "content_security_policy": "script-src http://127.0.0.1:8009 https://cdn.trackjs.com 'unsafe-eval'; connect-src http://127.0.0.1:8009 http://127.0.0.1:8009 ws://127.0.0.1:8009/ https://capture.trackjs.com; object-src 'self'; style-src * 'unsafe-inline' 'self' blob:;"
 }

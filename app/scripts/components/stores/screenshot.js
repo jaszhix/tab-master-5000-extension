@@ -3,12 +3,13 @@ import _ from 'lodash';
 
 import state from './state';
 import {utilityStore} from './main';
+import {findIndex, find} from '../utils';
 
 let screenshotStore = Reflux.createStore({
   capture(id, wid, imageData, type){
     console.log('screenshotStore capture:', id, wid, type);
     let s = state.get();
-    let refTab = _.find(s.tabs, {id: id});
+    let refTab = find(s.tabs, tab => tab.id === id);
     let getScreenshot = new Promise((resolve, reject)=>{
       if (imageData) {
         console.log('response from content canvas: ', id, wid, type);
@@ -57,7 +58,7 @@ let screenshotStore = Reflux.createStore({
             timeStamp: Date.now()
           };
 
-          let refScreenshot = _.findIndex(s.screenshots, {url: refTab.url});
+          let refScreenshot = findIndex(s.screenshots, ss => ss.url === refTab.url);
           if (refScreenshot !== -1) {
             s.screenshots[refScreenshot] = screenshot;
           } else {
@@ -99,7 +100,7 @@ let screenshotStore = Reflux.createStore({
       if (bytes > 52428800) {
         let now = new Date(Date.now()).getTime();
         for (let i = 0, len = index.length; i < len; i++) {
-          timeStampIndex = _.find(index, { timeStamp: index[i].timeStamp });
+          timeStampIndex = find(index, ss => ss.timeStamp === index[i].timeStamp);
           timeStamp = new Date(timeStampIndex.timeStamp).getTime();
           if (timeStamp + 259200000 < now) {
             console.log('3 days old: ', index[i]);

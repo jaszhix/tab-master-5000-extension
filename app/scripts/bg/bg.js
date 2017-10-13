@@ -42,6 +42,7 @@ import _ from 'lodash';
 import v from 'vquery';
 import uuid from 'node-uuid';
 import prefsStore from '../components/stores/prefs';
+import {findIndex} from '../components/utils';
 
 const eventState = {
   onStartup: null,
@@ -94,7 +95,7 @@ let reload = (reason)=>{
 let syncSession = (sessions, prefs, windows=null, cb)=>{
   let allTabs = [];
   if (typeof prefs.syncedSession !== 'undefined' && prefs.syncedSession && prefs.sessionsSync) {
-    let refSession = _.findIndex(sessions, {id: prefs.syncedSession});
+    let refSession = findIndex(sessions, session => session.id === prefs.syncedSession);
     if (refSession === -1) {
       return;
     }
@@ -192,7 +193,7 @@ let createScreenshot = (t, refWindow, refTab, run=0)=>{
         timeStamp: Date.now()
       };
 
-      let refScreenshot = _.findIndex(t.state.screenshots, {url: t.state.windows[refWindow].tabs[refTab].url});
+      let refScreenshot = findIndex(t.state.screenshots, ss => ss.url === t.state.windows[refWindow].tabs[refTab].url);
       if (refScreenshot !== -1) {
         t.state.screenshots[refScreenshot] = screenshot;
       } else {
@@ -219,7 +220,7 @@ let setAction = (t, type, oldTabInstance, newTabInstance=null)=>{
     return;
   }
   if (t.state.actions.length > 30) {
-    let firstAction = _.findIndex(t.state.actions, {id: _.first(t.state.actions).id});
+    let firstAction = findIndex(t.state.actions, action => action.id === _.first(t.state.actions).id);
     if (firstAction !== -1) {
       _.pullAt(t.state.actions, firstAction);
     }
@@ -369,7 +370,7 @@ class Bg extends React.Component {
     Windows removed
     */
     chrome.windows.onRemoved.addListener((windowId)=>{
-      let refWindow = _.findIndex(this.state.windows, {windowId: windowId});
+      let refWindow = findIndex(this.state.windows, win => win.windowId === windowId);
       if (refWindow !== -1) {
         _.pullAt(this.state.windows, refWindow);
         this.setState({windows: this.state.windows});
@@ -534,7 +535,7 @@ class Bg extends React.Component {
       } else if (msg.method === 'getTabs') {
         sendResponse({windows: this.state.windows, windowId: sender.tab.windowId});
       } else if (msg.method === 'queryTabs') {
-        this.queryTabs(true, this.state.prefs);
+        this.queryTabs(true, this.state.prefs, msg.refresh);
       } else if (msg.method === 'getSessions') {
         sendResponse({sessions: this.state.sessions});
       } else if (msg.method === 'getScreenshots') {
@@ -542,7 +543,7 @@ class Bg extends React.Component {
       } else if (msg.method === 'removeSingleWindow') {
         this.removeSingleWindow(msg.windowId);
       } else if (msg.method === 'undoAction') {
-        let refWindow = _.findIndex(this.state.windows, {id: msg.windowId});
+        let refWindow = findIndex(this.state.windows, win => win.id === msg.windowId);
         this.undoAction(this.state.windows[refWindow].tabs, this.state.chromeVersion);
       } else if (msg.method === 'getActions') {
         sendResponse({actions: this.state.actions});
@@ -576,14 +577,14 @@ class Bg extends React.Component {
     this.setState({newTabs: _.uniqBy(this.state.newTabs, 'id')});
     return tabs;
   }
-  queryTabs(send=null, prefs){
+  queryTabs(send=null, prefs, refresh){
     chrome.windows.getAll({populate: true}, (w)=>{
       for (let i = 0, len = w.length; i < len; i++) {
         w[i].tabs = this.formatTabs(prefs, w[i].tabs);
       }
       this.setState({windows: w});
       if (send) {
-        sendMsg({windows: this.state.windows});
+        sendMsg({windows: this.state.windows, refresh});
       }
     });
   }
@@ -656,7 +657,7 @@ class Bg extends React.Component {
   undoAction(tabs, chromeVersion){
     let removeLastAction = (lastAction)=>{
       if (lastAction !== undefined) {
-        let refAction = _.findIndex(this.state.actions, {id: lastAction.id});
+        let refAction = findIndex(this.state.actions, action => action.id === lastAction.id);
         if (refAction !== -1) {
           _.pullAt(this.state.actions, refAction);
         }
@@ -710,11 +711,11 @@ class Bg extends React.Component {
     });
   }
   handleActivation(e){
-    let refWindow = _.findIndex(this.state.windows, {id: e.windowId});
+    let refWindow = findIndex(this.state.windows, win => win.id === e.windowId);
     if (refWindow === -1) {
       return;
     }
-    let refTab = _.findIndex(this.state.windows[refWindow].tabs, {id: e.tabId});
+    let refTab = findIndex(this.state.windows[refWindow].tabs, tab => tab.id === e.tabId);
     if (refTab === -1) {
       return;
     }
@@ -732,7 +733,7 @@ class Bg extends React.Component {
     }
   }
   createSingleItem(e){
-    let refWindow = _.findIndex(this.state.windows, {id: e.windowId});
+    let refWindow = findIndex(this.state.windows, win => win.id === e.windowId);
     if (refWindow === -1) {
       return;
     }
@@ -746,7 +747,10 @@ class Bg extends React.Component {
         }
       }
       this.state.windows[refWindow].tabs.push(e);
-      this.state.windows[refWindow].tabs = v(this.state.windows[refWindow].tabs).move(_.findIndex(this.state.windows[refWindow].tabs, _.last(this.state.windows[refWindow].tabs)), e.index).ns;
+      this.state.windows[refWindow].tabs = v(this.state.windows[refWindow].tabs).move(
+        findIndex(this.state.windows[refWindow].tabs, tab => _.isEqual(_.last(this.state.windows[refWindow].tabs)), tab),
+        e.index
+      ).ns;
     } else {
       this.state.windows[refWindow].tabs.push(e);
     }
@@ -755,9 +759,9 @@ class Bg extends React.Component {
     this.setState({windows: this.state.windows});
     // Activate the first new tab if it is open, and if this is a second new tab being created.
     if (e.url.indexOf('chrome://newtab/') !== -1 && this.state.prefs.singleNewTab) {
-      let refNewTab = _.findIndex(this.state.newTabs, {windowId: e.windowId});
+      let refNewTab = findIndex(this.state.newTabs, tab => tab.windowId === e.windowId);
       if (refNewTab !== -1) {
-        let refExistingTab = _.findIndex(this.state.windows[refWindow].tabs, {id: this.state.newTabs[refNewTab].id});
+        let refExistingTab = findIndex(this.state.windows[refWindow].tabs, tab => tab.id === this.state.newTabs[refNewTab].id);
         if (refExistingTab === -1
           || (typeof this.state.windows[refWindow].tabs[refExistingTab] !== 'undefined'
             && this.state.windows[refWindow].tabs[refExistingTab].url.indexOf('chrome://newtab/') === -1)) {
@@ -778,18 +782,18 @@ class Bg extends React.Component {
     sendMsg({windows: this.state.windows, windowId: e.windowId});
   }
   removeSingleItem(e, windowId){
-    let refWindow = _.findIndex(this.state.windows, {id: windowId});
+    let refWindow = findIndex(this.state.windows, win => win.id === windowId);
     if (refWindow === -1) {
       return;
     }
     // Check if this is a new tab, and clean up newTabs state.
-    let refNewTab = _.findIndex(this.state.newTabs, {id: e});
+    let refNewTab = findIndex(this.state.newTabs, tab => tab === e);
     if (refNewTab !== -1) {
       _.pullAt(this.state.newTabs, refNewTab);
       this.setState({newTabs: this.state.newTabs});
     }
 
-    let refTab = _.findIndex(this.state.windows[refWindow].tabs, {id: e});
+    let refTab = findIndex(this.state.windows[refWindow].tabs, tab => tab.id === e);
     if (refTab > -1) {
       setActionThrottled(this, 'remove', this.state.windows[refWindow].tabs[refTab]);
       _.pullAt(this.state.windows[refWindow].tabs, refTab);
@@ -802,7 +806,7 @@ class Bg extends React.Component {
   }
   removeSingleWindow(id){
     console.log('removeSingleWindow', id);
-    let refWindow = _.findIndex(this.state.windows, {id: id});
+    let refWindow = findIndex(this.state.windows, win => win.id === id);
     if (refWindow !== -1) {
       _.pullAt(this.state.windows, refWindow);
       this.setState({windows: this.state.windows});
@@ -811,11 +815,11 @@ class Bg extends React.Component {
   }
   updateSingleItem(id){
     this.getSingleTab(id).then((e)=>{
-      let refWindow = _.findIndex(this.state.windows, {id: e.windowId});
+      let refWindow = findIndex(this.state.windows, win => win.id === e.windowId);
       if (refWindow === -1) {
         return;
       }
-      let refTab = _.findIndex(this.state.windows[refWindow].tabs, {id: e.id});
+      let refTab = findIndex(this.state.windows[refWindow].tabs, tab => tab.id === e.id);
       if (refTab === -1) {
         return;
       }
@@ -844,11 +848,11 @@ class Bg extends React.Component {
   }
   moveSingleItem(id){
     this.getSingleTab(id).then((e)=>{
-      let refWindow = _.findIndex(this.state.windows, {id: e.windowId});
+      let refWindow = findIndex(this.state.windows, win => win.id === e.windowId);
       if (refWindow === -1) {
         return;
       }
-      let refTab = _.findIndex(this.state.windows[refWindow].tabs, {id: e.id});
+      let refTab = findIndex(this.state.windows[refWindow].tabs, tab => tab.id === e.id);
       setActionThrottled(this, 'move', this.state.windows[refWindow].tabs[refTab], e);
       if (refTab > -1) {
         this.state.windows[refWindow].tabs = v(this.state.windows[refWindow].tabs).move(refTab, e.index).ns;

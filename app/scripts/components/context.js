@@ -13,7 +13,6 @@ class ContextMenu extends React.Component {
 
     this.state = {
       actions: this.props.actions,
-      cursor: this.props.cursor,
       inViewport: true
     }
     autoBind(this);
@@ -193,49 +192,42 @@ class ContextMenu extends React.Component {
   }
   handleMenuOption(p, opt, recursion=0, hasBookmark=null, bk=null){
     // Create wrapper context for utils until component centric logic is revised.
-    let isSelectedItems = _.isArray(p.context.id);
-    let t = _.cloneDeep(this);
-    p = recursion === 0 ? t.props : p;
+    let isSelectedItems = Array.isArray(p.context.id);
+    p = recursion === 0 ? this.props : p;
 
     if (isSelectedItems) {
       let selectedItems = p.context.id;
       for (let z = 0, len = selectedItems.length; z < len; z++) {
         p.context.id = selectedItems[z];
-        p.tab = selectedItems[z];
         this.handleMenuOption(p, opt, ++recursion);
       }
       return;
     }
-    _.assignIn(t.props, {tab: p.context.id});
     if (opt === 'actions') {
       msgStore.undoAction();
     } else if (opt === 'close') {
-      utils.closeTab(t, p.tab.id);
+      utils.closeTab(p.context.id);
     } else if (opt === 'closeAll') {
-      utils.closeAll(t, p.tab);
+      utils.closeAllTabs(p.context.id);
     } else if (opt === 'pin') {
-      utils.pin(t, p.tab);
+      utils.pin(p.context.id);
     } else if (opt === 'mute') {
-      utils.mute(t, p.tab);
+      utils.mute(p.context.id);
     } else if (opt === 'closeAllDupes') {
-      utils.checkDuplicateTabs(t, p, opt);
+      utils.checkDuplicateTabs(p.context.id, null);
     } else if (opt === 'closeSearched') {
-      utils.closeAllSearched(t);
-    } else if (opt === 'toggleEnable') {
-      utils.app(t, opt);
-    } else if (opt === 'uninstallApp') {
-      utils.app(t, opt);
-    } else if (opt === 'createAppShortcut') {
-      utils.app(t, opt);
-    } else if (opt === 'launchApp') {
-      utils.app(t, opt);
-    } else if (_.first(_.words(opt)) === 'OPEN') {
-      utils.app(t, opt);
+      utils.closeAllItems();
+    } else if (opt === 'uninstallApp'
+      || opt === 'createAppShortcut'
+      || opt === 'launchApp'
+      || opt === 'toggleEnable'
+      || _.first(_.words(opt)) === 'OPEN') {
+      utils.app(p.context.id, opt);
     } else if (opt === 'toggleBookmark') {
       if (hasBookmark) {
         chrome.bookmarks.remove(bk[0].id, (bk)=>console.log(bk));
       } else {
-        chrome.bookmarks.create({title: p.tab.title, url: p.tab.url}, (bk)=>console.log(bk));
+        chrome.bookmarks.create({title: p.context.id.title, url: p.context.id.url}, (bk)=>console.log(bk));
       }
     }
     this.handleClickOutside();
@@ -277,12 +269,31 @@ class ContextMenu extends React.Component {
       return p.context.id.pinned;
     }
   }
+  getRef(ref) {
+    if (!ref) {
+      return;
+    }
+    console.log(ref.clientHeight);
+    _.delay(() => {
+      let topChange;
+      if (window.cursor.page.y + ref.clientHeight > window.innerHeight) {
+        ref.style.top = window.innerHeight - ref.clientHeight;
+        topChange = true;
+      }
+      if (window.cursor.page.x + ref.clientWidth > window.innerWidth) {
+        ref.style.left = window.innerWidth - ref.clientWidth;
+        if (!topChange) {
+          ref.style.top = window.cursor.page.y;
+        }
+      }
+      ref.style.opacity = 1;
+    }, 50);
+  }
   render() {
     let p = this.props;
-    let s = this.state;
     return (
-      <div ref="context" className="ntg-context">
-        <div style={{left: s.cursor.page.x, top: s.cursor.page.y}} className="ntg-context-menu">
+      <div className="ntg-context">
+        <div ref={this.getRef} style={{left: window.cursor.page.x, top: window.cursor.page.y, opacity: 0}} className="ntg-context-menu">
           <Context
           theme={p.theme}
           options={p.context.options}

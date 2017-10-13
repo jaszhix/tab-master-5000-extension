@@ -4,6 +4,10 @@ const autoprefixer = require('autoprefixer');
 const cssnano = require('cssnano');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
+const aliases = Object.assign({
+  underscore: 'lodash'
+}, require('lodash-loader').createLodashAliases());
+
 const publicPath = 'http://127.0.0.1:8009/app/scripts/';
 const PROD = false;
 const postcssPlugins = () => {
@@ -54,7 +58,7 @@ module.exports = {
       { test: /\.(js|jsx)$/,
         exclude: /node_modules/,
         use: [
-          //{loader: 'react-hot'},
+          {loader: 'lodash-loader'},
           {loader: 'babel-loader'}
         ],
       },
@@ -136,9 +140,7 @@ module.exports = {
        path.join(__dirname, 'app/scripts/components')
     ],
     extensions: ['.js', '.jsx'],
-    alias: {
-      'underscore': 'lodash'
-    }
+    alias: aliases
   },
   devServer: {
     port: 8009,

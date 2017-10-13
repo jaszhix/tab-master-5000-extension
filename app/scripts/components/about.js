@@ -25,6 +25,11 @@ class Contribute extends React.Component {
     } else {
       contributeFile = require('html-loader!markdown-loader!../../../contribute.md');
     }
+    if (this.props.chromeVersion === 1) {
+      contributeFile = contributeFile
+        .replace(/Chrome Web Store/g, 'Add-ons website')
+        .replace(/Chrome/g, 'Firefox');
+    }
     function createMarkup() { return {__html: contributeFile};}
     return (
       <div style={{marginTop: '49px'}}>
@@ -196,7 +201,7 @@ class About extends React.Component {
     p.modal.footer = (
       <div>
         <Btn
-        onClick={() => utilityStore.createTab('https://github.com/jaszhix/tab-master-5000-chrome-extension')}
+        onClick={() => utilityStore.createTab('https://github.com/jaszhix/tab-master-5000-extension')}
         className="ntg-setting-btn"
         icon="github">
           Github
@@ -217,7 +222,7 @@ class About extends React.Component {
           </Btn>}
       </div>
     );
-    state.set({modal: p.modal});
+    state.set({modal: p.modal}, true);
   }
   render() {
     let p = this.props;
@@ -250,7 +255,7 @@ class About extends React.Component {
           {s.tab === 'release' ? <ReleaseNotes tm5kLogo={tm5kLogo}/> : null}
           {s.tab === 'support' ? <Support /> : null}
           {s.tab === 'attribution' ? <Attribution /> : null}
-          {s.tab === 'contribute' ? <Contribute /> : null}
+          {s.tab === 'contribute' ? <Contribute chromeVersion={p.chromeVersion} /> : null}
           {s.tab === 'license' ? <License /> : null}
         </Col>
       </div>

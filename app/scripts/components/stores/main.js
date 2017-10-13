@@ -7,6 +7,7 @@ import screenshotStore from './screenshot';
 import sessionsStore from './sessions';
 import state from './state';
 import * as utils from './tileUtils';
+import {findIndex, find, map} from '../utils';
 
 const DOMAIN_REGEX = /^(?!:\/\/)([a-zA-Z0-9]+\.)?[a-zA-Z0-9][a-zA-Z0-9-]+\.[a-zA-Z]{2,6}?$/i;
 
@@ -78,14 +79,14 @@ let defaults = (iteration)=>{
   };
 };
 
-export var bookmarksStore = Reflux.createStore({
-  set_bookmarks(tabs) {
+export var bookmarksStore = {
+  set_bookmarks() {
     return new Promise((resolve, reject)=>{
       chrome.bookmarks.getTree((bk)=>{
         let bookmarks = [];
         let folders = [];
         let s = state.get();
-        s.tabs = tabs ? tabs : _.flatten(s.allTabs);
+        let tabs = _.flatten(s.allTabs);
         let openTab = 0;
         let iter = -1;
         let addBookmarkChildren = (bookmarkLevel, title='')=> {
@@ -113,9 +114,10 @@ export var bookmarksStore = Reflux.createStore({
         };
         addBookmarkChildren(bk[0]);
         for (let i = 0, len = bookmarks.length; i < len; i++) {
-          let refOpenTab = _.findIndex(s.tabs, {url: bookmarks[i].url});
+          let refOpenTab = findIndex(tabs, tab => tab.url === bookmarks[i].url);
           if (refOpenTab !== -1) {
-            bookmarks[i] = _.assignIn(bookmarks[i], s.tabs[refOpenTab]);
+            console.log('refOpenTab', refOpenTab);
+            bookmarks[i] = _.assignIn(bookmarks[i], _.cloneDeep(tabs[refOpenTab]));
             bookmarks[i].openTab = ++openTab;
           } else {
             bookmarks[i] = _.assignIn(bookmarks[i], _.cloneDeep(defaults(iter)));
@@ -138,9 +140,9 @@ export var bookmarksStore = Reflux.createStore({
       });
     });
   },
-  get_bookmarks(tabs) {
-    let s = state.get();
-    this.set_bookmarks(tabs).then((bk)=>{
+  getBookmarks() {
+    this.set_bookmarks().then((bk)=>{
+      let s = state.get();
       bk = utils.sort({s: s}, bk);
       if (s.search.length > 0) {
         bk = utils.searchChange({s: s}, bk);
@@ -149,12 +151,9 @@ export var bookmarksStore = Reflux.createStore({
       _.defer(()=>state.set({hasScrollbar: utils.scrollbarVisible(document.body)}));
     });
   },
-  get_folder(folder){
-    return _.filter(this.bookmarks, {folder: folder});
-  },
   remove(bookmarks, bookmarkId){
     let stateUpdate = {};
-    let refBookmark = _.findIndex(bookmarks, {bookmarkId: bookmarkId});
+    let refBookmark = findIndex(bookmarks, bk => bk.bookmarkId === bookmarkId);
     if (refBookmark !== -1) {
       _.pullAt(bookmarks, refBookmark);
       stateUpdate.bookmarks = bookmarks;
@@ -164,15 +163,20 @@ export var bookmarksStore = Reflux.createStore({
       state.set(stateUpdate);
     }
   }
-});
+};
 
-export var historyStore = Reflux.createStore({
-  set_history(tabs) {
+export var historyStore = {
+  setHistory() {
     return new Promise((resolve, reject)=>{
-      chrome.history.search({text: '', maxResults: 1000}, (h)=>{
-        console.log(h);
+      let now = Date.now();
+      chrome.history.search({
+        text: '',
+        maxResults: 1000,
+        startTime: now - 6.048e+8,
+        endTime: now
+      }, (h)=>{
         let s = state.get();
-        s.tabs = tabs ? tabs : _.flatten(s.allTabs);
+        let tabs = _.flatten(s.allTabs);
         let openTab = 0;
         for (let i = 0, len = h.length; i < len; i++) {
           let urlMatch = h[i].url.match(s.domainRegEx);
@@ -191,9 +195,10 @@ export var historyStore = Reflux.createStore({
             index: i,
             windowId: s.windowId
           });
-          for (let y = 0, _len = s.tabs.length; y < _len; y++) {
-            if (h[i].url === s.tabs[y].url) {
-              h[i] = _.assignIn(h[i], _.cloneDeep(s.tabs[y]));
+          for (let y = 0, _len = tabs.length; y < _len; y++) {
+            if (h[i].url === tabs[y].url) {
+              console.log(h[i].url);
+              h[i] = _.assignIn(h[i], _.cloneDeep(tabs[y]));
               h[i].openTab = ++openTab;
             }
           }
@@ -201,13 +206,13 @@ export var historyStore = Reflux.createStore({
         for (let i = 0, len = h.length; i < len; i++) {
           h = utils.checkFavicons({s: s}, h[i], i, h);
         }
-        resolve(h);
+        resolve(_.uniqBy(h, 'url'));
       });
     });
   },
-  get_history(tabs) {
-    let s = state.get();
-    this.set_history(tabs).then((h)=>{
+  getHistory() {
+    this.setHistory().then((h)=>{
+      let s = state.get();
       if (s.search.length > 0) {
         h = utils.searchChange({s: s}, h);
       }
@@ -217,7 +222,7 @@ export var historyStore = Reflux.createStore({
   },
   remove(history, url){
     let stateUpdate = {};
-    let refHistory = _.findIndex(history, {url: url});
+    let refHistory = findIndex(history, item => item.url === url);
     if (refHistory !== -1) {
       _.pullAt(history, refHistory);
       stateUpdate.history = history;
@@ -227,9 +232,9 @@ export var historyStore = Reflux.createStore({
       state.set(stateUpdate);
     }
   }
-});
+};
 
-export var chromeAppStore = Reflux.createStore({
+export var chromeAppStore = {
   set(app){
     let s = state.get()
     chrome.management.getAll((apps)=>{
@@ -254,26 +259,10 @@ export var chromeAppStore = Reflux.createStore({
         console.log('installed apps: ', _apps);
       }
     });
-  },
-  get(app){
-    this.set(app).then((apps)=>{
-      this.apps = apps;
-      this.trigger(this.apps);
-    }).catch(()=>{
-      console.log('No apps were found.');
-    });
-    return this.apps;
   }
-});
+};
 
-export var utilityStore = Reflux.createStore({
-  init: function() {
-    this.version = this.chromeVersion();
-    this.focusedWindow = null;
-    this.cursor = {page: {x: null, y: null}, offset: {x: null, y: null}, keys: {shift: null, ctrl: null}};
-    this.systemState = null;
-    this.bytesInUse = null;
-  },
+export var utilityStore = {
   chromeVersion(){
     let version = 1;
     try { // Firefox check
@@ -284,21 +273,12 @@ export var utilityStore = Reflux.createStore({
   get_bytesInUse(item){
     return new Promise((resolve, reject)=>{
       chrome.storage.local.getBytesInUse(item, (bytes)=>{
-        this.bytesInUse = bytes;
-        this.bytesInUse = resolve(this.bytesInUse);
-        console.log('bytes in use: ', this.bytesInUse);
+        resolve(bytes);
       });
-      return this.bytesInUse;
     });
   },
   get_manifest(){
     return chrome.runtime.getManifest();
-  },
-  set_cursor(obj){
-    _.assignIn(this.cursor, _.cloneDeep(obj));
-  },
-  get_cursor(){
-    return this.cursor;
   },
   restartNewTab(){
     location.reload();
@@ -308,7 +288,7 @@ export var utilityStore = Reflux.createStore({
       console.log('Tab created from utilityStore.createTab: ',t);
     });
   },
-  handleMode(mode, tabs=null){
+  handleMode(mode){
     let currentMode = state.get().prefs.mode;
     let stateUpdate = {};
     if (currentMode !== mode) {
@@ -326,16 +306,13 @@ export var utilityStore = Reflux.createStore({
     if (mode === 'apps' || mode === 'extensions') {
       chromeAppStore.set(mode === 'apps');
     } else if (mode === 'bookmarks') {
-      bookmarksStore.get_bookmarks(tabs);
+      bookmarksStore.getBookmarks();
     } else if (mode === 'history') {
-      historyStore.get_history(tabs);
-    } else {
-      if (!tabs || tabs.length === 0) {
-        mode = 'tabs';
-      }
+      historyStore.getHistory();
+    } else if (mode === 'sessions') {
       stateUpdate.reQuery = {state: true, type: 'create'};
     }
-    _.assignIn(stateUpdate, {mode: mode, modeKey: mode === 'sessions' ? 'sessionTabs' : mode});
+    _.assignIn(stateUpdate, {modeKey: mode === 'sessions' ? 'sessionTabs' : mode});
     state.set(stateUpdate);
     msgStore.setPrefs({mode: mode});
   },
@@ -346,10 +323,10 @@ export var utilityStore = Reflux.createStore({
     window.trackJs.addMetadata('User Themes', savedThemes);
     window.trackJs.addMetadata('User Preferences', prefs);
   },
-});
+};
 window.utilityStore = utilityStore;
 
-export var keyboardStore = Reflux.createStore({
+export var keyboardStore = {
   state(key){
     if (this.key === key) {
       this.key = '';
@@ -430,20 +407,27 @@ export var keyboardStore = Reflux.createStore({
   reset(){
     mouseTrap.reset();
   }
-});
+};
 
 // Chrome event listeners set to trigger re-renders.
-export var msgStore = Reflux.createStore({
-  init(){
-    this.response = null;
+export var msgStore = {
+  init() {
     chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-      let s = state.get();
-      console.log('msg: ', msg, 'sender: ', sender);
-      if (msg.type === 'prefs' && msg.e && msg.e.mode === 'sessions') {
-        state.set({reQuery: {state: true, type: 'cycle'}});
+      let s = state.get('*');
+      if (!s.prefs.allTabs
+        && msg.windowId !== s.windowId
+        && s.settings !== 'sessions') {
         return;
       }
+      console.log('msg: ', msg, 'sender: ', sender);
       if (msg.hasOwnProperty('windows')) {
+        if (msg.refresh) {
+          let allTabs = map(msg.windows, function(win) {
+            return win.tabs;
+          });
+          state.set({allTabs});
+          return;
+        }
         state.set({reQuery: {state: true, bg: msg}});
       } else if (msg.hasOwnProperty('sessions')) {
         state.set({sessions: msg.sessions});
@@ -454,9 +438,9 @@ export var msgStore = Reflux.createStore({
       } else if (msg.hasOwnProperty('focusSearchEntry')) {
         keyboardStore.focusSearchEntry();
       } else if (msg.type === 'bookmarks' && s.prefs.mode === msg.type) {
-        bookmarksStore.get_bookmarks();
+        bookmarksStore.getBookmarks();
       } else if (msg.type === 'history' && s.prefs.mode === msg.type) {
-        historyStore.get_history(s.allTabs);
+        historyStore.getHistory();
       } else if (msg.type === 'app') {
         chromeAppStore.set(s.prefs.mode === 'apps');
       } else if (msg.type === 'appState') {
@@ -499,8 +483,8 @@ export var msgStore = Reflux.createStore({
       });
     });
   },
-  queryTabs(){
-    chrome.runtime.sendMessage(chrome.runtime.id, {method: 'queryTabs'});
+  queryTabs(refresh = false){
+    chrome.runtime.sendMessage(chrome.runtime.id, {method: 'queryTabs', refresh});
   },
   getSessions(){
     return new Promise((resolve, reject)=>{
@@ -543,40 +527,19 @@ export var msgStore = Reflux.createStore({
         }
       });
     });
-  },
-  get(){
-    return this.response;
   }
-});
+};
+msgStore.init();
 window.msgStore = msgStore;
 
-export var clickStore = Reflux.createStore({
-  init: function() {
-    this.click = false;
-  },
-  set_click: function(value, manual) {
-    this.click = value;
-    if (!manual) {
-      _.delay(()=>{
-        this.click = false;
-      }, 600);
-    }
-    console.log('click: ', value);
-    this.trigger(this.click);
-  },
-  get_click: function() {
-    return this.click;
-  }
-});
-
-export var faviconStore = Reflux.createStore({
+export var faviconStore = {
   set_favicon: function(tab, queryLength, i) {
     let s = state.get();
     if (tab.url.indexOf('chrome://') !== -1) {
       return;
     }
     let domain = tab.url.split('/')[2];
-    if (tab && tab.favIconUrl && !_.find(s.favicons, {domain: domain})) {
+    if (tab && tab.favIconUrl && !find(s.favicons, fv => fv.domain === domain)) {
       let saveFavicon = (__img)=>{
         s.favicons.push({
           favIconUrl: __img,
@@ -614,21 +577,10 @@ export var faviconStore = Reflux.createStore({
       sourceImage.src = tab.favIconUrl;
     }
   },
-  clean(){
-    let s = state.get();
-    for (let i = 0, len = s.favicons.length; i < len; i++) {
-      if (!s.favicons[i]) {
-        this.favicons = _.without(s.favicons, s.favicons[i]);
-      }
-    }
-    chrome.storage.local.set({favicons: s.favicons}, (result)=> {
-      console.log('cleaned dud favicon entries: ', result);
-    });
-  },
   clear(){
     chrome.storage.local.remove('favicons');
   },
-});
+};
 
 export var alertStore = Reflux.createStore({
   init(){
@@ -667,10 +619,12 @@ export var alertStore = Reflux.createStore({
   }
 });
 
-(function() {
+window.cursor = {page: {x: null, y: null}, offset: {x: null, y: null}, keys: {shift: null, ctrl: null}};
+
+(function(window) {
     document.onmousemove = handleMouseMove;
     function handleMouseMove(e) {
-      utilityStore.set_cursor({
+      window.cursor = {
         page: {
           x: e.pageX,
           y: e.pageY
@@ -683,6 +637,6 @@ export var alertStore = Reflux.createStore({
           ctrl: e.ctrlKey,
           shift: e.shiftKey
         }
-      });
+      };
     }
-})();
+})(window);

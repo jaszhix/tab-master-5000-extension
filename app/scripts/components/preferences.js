@@ -10,6 +10,7 @@ import * as utils from './stores/tileUtils';
 import Slider from 'rc-slider';
 import ReactTooltip from 'react-tooltip';
 import state from './stores/state';
+import {map} from './utils'
 import {msgStore, utilityStore, blacklistStore, faviconStore} from './stores/main';
 import screenshotStore from './stores/screenshot';
 
@@ -212,7 +213,7 @@ class Preferences extends React.Component {
           {p.prefs.screenshot ? <Btn onClick={this.handleScreenshotClear} className="ntg-setting-btn" icon="trash" faStyle={{paddingRight: '8px'}}>{utils.t('clearScreenshotCache')}</Btn> : null}
         </div>
       );
-      state.set({modal: p.modal});
+      state.set({modal: p.modal}, true);
     }
   }
   getBytesInUse(){
@@ -315,7 +316,7 @@ class Preferences extends React.Component {
                 placeholder={utils.t('time')}
                 value={`${p.prefs.autoDiscardTime < 1800000 ? '15' : p.prefs.autoDiscardTime < 3600000 ? '30' : autoDiscardTimeHourDivided} ${p.prefs.autoDiscardTime < 3600000 ? utils.t('minutes') : utils.t('hour')}${autoDiscardTimeHourDivided > 1 && p.prefs.autoDiscardTime >= 3600000 ? utils.t('s') : ''}`}
                 onChange={this.handleAutoDiscardTime}>
-                  {autoDiscardTimeOptions.map((option, x)=>{
+                  {map(autoDiscardTimeOptions, (option, x)=>{
                     return <option key={x}>{`${option} ${x >= 2 ? utils.t('hour') : utils.t('minute')}${option > 1 ? utils.t('s') : ''}`}</option>;
                   })}
                 </select>

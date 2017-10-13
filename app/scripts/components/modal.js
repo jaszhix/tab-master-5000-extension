@@ -10,6 +10,7 @@ import ReactTooltip from 'react-tooltip';
 
 import Settings from './settings';
 
+import {findIndex} from './utils';
 import state from './stores/state';
 import * as utils from './stores/tileUtils';
 
@@ -39,7 +40,10 @@ class ModalHandler extends React.Component {
   }
   handleClose(){
     msgStore.queryTabs();
-    state.set({modal: {state: false}});
+    state.set({
+      modal: {state: false},
+      settings: 'preferences'
+    });
   }
   render() {
     let s = this.state;
@@ -87,7 +91,7 @@ class ModalHandler extends React.Component {
         footerStyle={{backgroundColor: p.theme.settingsBg, paddingTop: '8px'}}
         headerComponent={
           <Tabs
-          initActiveOption={_.findIndex(tabOptions, (opt)=>p.settings.indexOf(opt.label.toLowerCase()) !== -1)}
+          initActiveOption={findIndex(tabOptions, opt => p.settings.indexOf(opt.label.toLowerCase()) > -1)}
           style={{position: 'relative', top: '16px'}}
           options={tabOptions}
           onClick={(setting)=>state.set({settings: setting.key})}

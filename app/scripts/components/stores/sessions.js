@@ -1,8 +1,8 @@
 import Reflux from 'reflux';
 import _ from 'lodash';
-import {saveAs} from 'filesaver.js';
 import uuid from 'node-uuid';
 import ReactTooltip from 'react-tooltip';
+import {each, findIndex} from '../utils';
 import state from './state';
 import {msgStore, utilityStore, alertStore} from './main';
 
@@ -61,7 +61,12 @@ let sessionsStore = Reflux.createStore({
       let json = JSON.stringify(sessions);
       let filename = 'TM5K-Sessions-'+utilityStore.now();
       let blob = new Blob([json], {type: 'application/json;charset=utf-8'});
-      saveAs(blob, filename+'.json');
+      chrome.downloads.download({
+        url: URL.createObjectURL(blob),
+        body: json,
+        filename,
+        saveAs: true
+      });
     });
   },
   importSessions(sessions, e){
@@ -124,7 +129,7 @@ let sessionsStore = Reflux.createStore({
               originSession: sessions[i].id
             };
             sessions[i].tabs[y][z] = _.assignIn(sessions[i].tabs[y][z], sessionTab);
-            let refOpenTab = _.findIndex(tabs, {url: sessions[i].tabs[y][z].url});
+            let refOpenTab = findIndex(tabs, tab => tab.url === sessions[i].tabs[y][z].url);
             if (refOpenTab !== -1) {
               sessions[i].tabs[y][z] = _.assignIn(sessions[i].tabs[y][z], tabs[refOpenTab]);
               sessions[i].tabs[y][z].openTab = ++openTab;
@@ -145,7 +150,7 @@ let sessionsStore = Reflux.createStore({
   v2RemoveTab(sessions, session, _window, tab, sessionTabs, sortOrder){
     let stateUpdate = {};
     if (sessionTabs) {
-      let refSessionTab = _.findIndex(_.orderBy(sessionTabs, sortOrder), {id: sessions[session].tabs[_window][tab].id});
+      let refSessionTab = findIndex(_.orderBy(sessionTabs, sortOrder), _tab => _tab.id === sessions[session].tabs[_window][tab].id);
       if (sessionTabs.length === 0) {
         stateUpdate.search = '';
       }
@@ -162,7 +167,7 @@ let sessionsStore = Reflux.createStore({
     });
   },
   v2Remove(sessions, session){
-    let refSession = _.findIndex(sessions, {id: session.id});
+    let refSession = findIndex(sessions, _session => _session.id === session.id);
     _.pullAt(sessions, refSession);
     state.set({sessions: sessions});
     chrome.storage.local.set({sessions: sessions}, ()=> {
@@ -171,7 +176,7 @@ let sessionsStore = Reflux.createStore({
     ReactTooltip.hide();
   },
   v2Update(sessions, session){
-    let refSession = _.findIndex(sessions, {id: session.id});
+    let refSession = findIndex(sessions, _session => _session.id === session.id);
     sessions[refSession] = session;
     state.set({sessions: sessions});
     chrome.storage.local.set({sessions: sessions}, (result)=> {
@@ -179,9 +184,9 @@ let sessionsStore = Reflux.createStore({
     });
   },
   cleanSessions(sessions, cb){
-    _.each(sessions, (session, sKey)=>{
-      _.each(session.tabs, (Window, wKey)=>{
-        _.each(Window, (Tab, tKey)=>{
+    each(sessions, (session, sKey)=>{
+      each(session.tabs, (Window, wKey)=>{
+        each(Window, (Tab, tKey)=>{
           if (Tab.favIconUrl !== undefined && Tab.favIconUrl && Tab.favIconUrl.indexOf('data') !== -1) {
             sessions[sKey].tabs[wKey][tKey].favIconUrl = '';
           }
@@ -194,8 +199,8 @@ let sessionsStore = Reflux.createStore({
     cb(sessions);
   },
   v2Save(opt){
-    _.each(opt.tabs, (Window, wKey)=>{
-      _.each(Window, (Tab, tKey)=>{
+    each(opt.tabs, (Window, wKey)=>{
+      each(Window, (Tab, tKey)=>{
         if (Tab.favIconUrl !== undefined && Tab.favIconUrl && Tab.favIconUrl.indexOf('data') !== -1) {
           opt.tabs[wKey][tKey].favIconUrl = '';
         }
