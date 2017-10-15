@@ -236,12 +236,19 @@ class Root extends React.Component {
       wallpaper: null,
       wallpapers: []
     };
+    this.connections = [
+      themeStore.connect('*', (e) => this.themeChange(e)),
+      state.connect(['sort', 'direction'], () => {
+        let sU = {};
+        sU[this.props.s.modeKey] = utils.sort(this.props, this.props.s[this.props.s.modeKey]);
+        state.set(sU);
+      })
+    ];
     autoBind(this);
   }
   componentDidMount() {
     // Initialize Reflux listeners.
     themeStore.load(this.props.s.prefs);
-    this.listenTo(themeStore, this.themeChange);
     window._trackJs.version = utilityStore.get_manifest().version;
     this.init(this.props);
 
@@ -284,10 +291,14 @@ class Root extends React.Component {
       }
     }
   }
-  componentDidUpdate(pP, pS){
+/*  componentDidUpdate(pP, pS){
     if (!_.isEqual(pS.theme, this.state.theme)) {
       this.themeChange({theme: this.state.theme});
     }
+  }*/
+  componentWillUnmount() {
+    themeStore.disconnect(this.connections[0]);
+    state.disconnect(this.connections[1]);
   }
   init(p){
     this.captureTabs(p, 'init');
@@ -322,12 +333,12 @@ class Root extends React.Component {
     if (e.theme) {
       let sessionFieldColor = themeStore.balance(e.theme.settingsBg);
       let vendor = p.s.version > 1 ? 'webkit' : 'moz';
-      let inputPlaceholder = p.s.version > 1 ? `${vendor}-input` : vendor;
+      let inputPlaceholder = p.s.chromeVersion > 1 ? `${vendor}-input` : vendor;
       let style = v('style').n;
       if (!style) {
         return;
       }
-      v('style').n.innerHTML += `
+      v('#theme-style-el').n.innerHTML = `
       a, a:focus, a:hover {
         color: ${themeStore.opacify(e.theme.bodyText, 0.9)};
       }
@@ -848,7 +859,7 @@ class Root extends React.Component {
                 offset={{top: 0, left: 6}} /> : null}
               </div>
             </div>}
-            {p.s.prefs.alerts ? <Alert enabled={p.s.prefs.alerts} /> : null}
+            {p.s.prefs.alerts ? <Alert enabled={p.s.prefs.alerts} alert={p.s.alert} /> : null}
         </div>
       );
     } else {
@@ -864,13 +875,12 @@ class App extends React.Component {
     super(props);
 
     this.state = state
-      .setMergeKeys(['prefs'])
+      .setMergeKeys(['prefs', 'alert'])
       .get('*');
     this.connectId = state.connect('*', (newState) => {
       console.log('STATE INPUT: ', newState);
       this.setState(newState, () => console.log('STATE: ', this.state));
     });
-    console.log(this.state);
     autoBind(this);
   }
   componentDidMount(){
@@ -907,14 +917,6 @@ class App extends React.Component {
       width: window.innerWidth + 30,
       height: window.innerHeight + 5,
     });
-  }
-  onViewportChange(viewport) {
-    /*let wrapper = document.body;
-    if (this.state.hasScrollbar && this.state.tileLimit < this.state[this.state.modeKey].length) {
-      if (wrapper.scrollTop + window.innerHeight >= wrapper.scrollHeight + wrapper.offsetTop - 200) {
-        state.set({tileLimit: this.state.tileLimit + 50});
-      }
-    }*/
   }
   render(){
     if (!this.state.init) {

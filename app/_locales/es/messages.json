@@ -476,6 +476,12 @@
   "saveTheme": {
     "message": "Guardar Tema"
   },
+  "copy": {
+    "message": "Dupdo"
+  },
+  "copyTheme": {
+    "message": "Copiar Tema"
+  },
   "update": {
     "message": "Actualizar"
   },

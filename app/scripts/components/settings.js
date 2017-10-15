@@ -11,7 +11,7 @@ import ColorPicker from 'rc-color-picker';
 import ReactTooltip from 'react-tooltip';
 
 import * as utils from './stores/tileUtils';
-import {each, find, map} from './utils';
+import {each, find, map, filter} from './utils';
 import state from './stores/state';
 import {msgStore, faviconStore, utilityStore} from './stores/main';
 import themeStore from './stores/theme';
@@ -53,7 +53,7 @@ class ColorPickerContainer extends React.Component {
     let p = this.props;
     let theme = {};
     theme[p.themeKey] = rgb;
-    themeStore.set(theme);
+    themeStore.set({theme});
     p.onChange();
   }
   convertColor(color){
@@ -107,7 +107,7 @@ const buttonIconStyle = {fontSize: '14px', position: 'relative', top: '0px'};
 
 const themeContainerStyle = {height: '210px', width: '100%', overflowY: 'auto', position: 'relative', top: '25.5px'};
 const tabPanelStyle = {position: 'relative', top: '18px'};
-const themeNameEditInputStyle = {position: 'absolute', display: 'block', height: '27px', width: '66%', top: '0px', left: '17px'};
+const themeNameEditInputStyle = {display: 'inline', height: '27px', width: '66%', top: '0px', left: '17px'};
 const themeNameEditButtonContainerStyle = {width: 'auto', float: 'right', display: 'inline', marginRight: '4px'};
 const noPaddingStyle = {padding: '0px'};
 const tabLinkStyle = {padding: '5px 7.5px'};
@@ -167,7 +167,7 @@ class Theming extends React.Component {
   componentWillReceiveProps(nP){
     let p = this.props;
     let refTheme;
-    if (nP.prefs.theme < 9000) {
+    if (true||nP.prefs.theme < 9000 || (this.state.leftTab === 'custom' && this.state.isNewTheme)) {
       refTheme = find(nP.savedThemes, theme => theme.id === nP.prefs.theme);
       this.setState({showCustomButtons: true});
     } else {
@@ -195,15 +195,27 @@ class Theming extends React.Component {
   }
   handleFooterButtons(p){
     let s = this.state;
+    let newThemeLabel, newThemeIcon = 'floppy-disk';
+    if (s.leftTab === 'tm5k') {
+      newThemeLabel = p.collapse ? utils.t('copy') : utils.t('copyTheme');
+      newThemeIcon = 'copy3';
+    } else if (s.isNewTheme) {
+      newThemeLabel = p.collapse ? utils.t('save') : utils.t('saveTheme');
+    } else {
+      newThemeLabel = p.collapse ? utils.t('update') : utils.t('updateTheme');
+    }
+    const getButtonStyle = (colorGroup) => {
+      return {fontWeight: colorGroup === this.state.colorGroup ? '600' : '400'}
+    };
     p.modal.footer = (
       <div>
-        {s.showCustomButtons || p.savedThemes.length === 0 ?
+        {s.showCustomButtons || s.savedThemes.length === 0 ?
         <Btn
           onClick={s.isNewTheme || !s.selectedTheme ? () => this.handleSaveTheme() : () => this.handleUpdateTheme()}
           style={{fontWeight: s.boldUpdate ? '600' : '400'}}
-          icon="floppy-disk"
+          icon={newThemeIcon}
           className="ntg-setting-btn">
-          {`${s.isNewTheme ? utils.t('save') : utils.t('update')}${p.collapse ? ' '+utils.t('theme') : ''}`}
+          {newThemeLabel}
         </Btn> : null}
         <Btn onClick={this.handleNewTheme} icon="color-sampler" className="ntg-setting-btn" >{`${utils.t('new')} ${p.collapse ? utils.t('theme') : ''}`}</Btn>
         {s.savedThemes.length > 0 ?
@@ -211,9 +223,9 @@ class Theming extends React.Component {
         <Btn onClick={() => this.triggerRefClick('import')} className="ntg-setting-btn" icon="database-insert">{utils.t('import')}</Btn>
         {s.rightTab === 'wallpaper' ?
         <Btn onClick={() => this.triggerRefClick('wallpaper')} className="ntg-setting-btn" icon="file-picture">{utils.t('importWallpaper')}</Btn> : null}
-        {s.rightTab === 'color' ? <Btn onClick={() => this.setState({colorGroup: 'general'})} className="ntg-setting-btn">{utils.t('bodyHeaderAndFields')}</Btn> : null}
-        {s.rightTab === 'color' ? <Btn onClick={() => this.setState({colorGroup: 'buttons'})} className="ntg-setting-btn">{utils.t('buttons')}</Btn> : null}
-        {s.rightTab === 'color' ? <Btn onClick={() => this.setState({colorGroup: 'tiles'})} className="ntg-setting-btn">{utils.t('tiles')}</Btn> : null}
+        {s.rightTab === 'color' ? <Btn onClick={() => this.setState({colorGroup: 'general'})} style={getButtonStyle('general') } className="ntg-setting-btn">{utils.t('bodyHeaderAndFields')}</Btn> : null}
+        {s.rightTab === 'color' ? <Btn onClick={() => this.setState({colorGroup: 'buttons'})} style={getButtonStyle('buttons') } className="ntg-setting-btn">{utils.t('buttons')}</Btn> : null}
+        {s.rightTab === 'color' ? <Btn onClick={() => this.setState({colorGroup: 'tiles'})} style={getButtonStyle('tiles') } className="ntg-setting-btn">{utils.t('tiles')}</Btn> : null}
         {p.wallpaper && p.wallpaper.data !== -1 && p.wallpaper.id < 9000 ? <Btn onClick={() => themeStore.removeWallpaper(p.prefs.wallpaper)} className="ntg-setting-btn pull-right">{utils.t('remove')}</Btn> : null}
       </div>
     );
@@ -224,7 +236,7 @@ class Theming extends React.Component {
       selectedTheme: _.cloneDeep(theme),
       isNewTheme: theme.id < 9000 ? false : true
     });
-    themeStore.selectTheme(theme.id, this.props.prefs);
+    themeStore.selectTheme(theme.id);
   }
   handleNewTheme(){
     this.setState({
@@ -233,11 +245,15 @@ class Theming extends React.Component {
     themeStore.newTheme();
   }
   handleSaveTheme(){
-    this.setState({
+    let stateUpdate = {
       isNewTheme: false,
       rightTab: 'color'
-    });
+    };
     themeStore.save();
+    if (this.state.leftTab === 'tm5k') {
+      stateUpdate.leftTab = 'custom';
+    }
+    this.setState(stateUpdate);
   }
   handleUpdateTheme(){
     themeStore.update(this.state.selectedTheme.id);
@@ -256,14 +272,17 @@ class Theming extends React.Component {
   }
   handleLabel(id){
     ReactTooltip.hide();
-    let s = this.state;
+    let label = this.state.themeLabelValue;
+    if (!label) {
+      label = `Custom Theme ${this.state.themeLabel + 1}`;
+    }
+    themeStore.label(id, label);
     this.setState({themeLabel: -1});
-    themeStore.label(id, s.themeLabelValue);
   }
   render(){
     let p = this.props;
     let s = this.state;
-    let themeFields = _.filter(themeStore.getThemeFields(), {group: s.colorGroup});
+    let themeFields = filter(themeStore.getThemeFields(), field => field.group === s.colorGroup);
     let themeFieldsSlice = Math.ceil(themeFields.length / 3);
     let themeFields1 = themeFields.slice(0, themeFieldsSlice);
     let themeFields2 = themeFields.slice(themeFieldsSlice, _.round(themeFields.length * 0.66));
@@ -328,13 +347,15 @@ class Theming extends React.Component {
                         {s.themeHover === i ?
                           <Btn
                           onClick={() => this.handleRemoveTheme(theme.id)}
+                          onMouseLeave={ReactTooltip.hide}
                           className="ntg-session-btn"
                           faStyle={buttonIconStyle}
                           icon="cross" noIconPadding={true}
                           data-tip="Remove Theme" /> : null}
                         {s.themeHover === i ?
                           <Btn
-                          onClick={() => this.setState({themeLabel: i})}
+                          onClick={() => this.setState({themeLabel: s.themeLabel === i ? -1 : i})}
+                          onMouseLeave={ReactTooltip.hide}
                           className="ntg-session-btn"
                           faStyle={buttonIconStyle}
                           icon="pencil"
@@ -535,7 +556,7 @@ class Sessions extends React.Component {
           if (!tab) {
             return;
           }
-          if (tab.url.indexOf('chrome://newtab/') === -1) {
+          if (tab.url.indexOf('chrome://newtab/') === -1 && tab.url.substr(-11) !== 'newtab.html') {
             if (!find(p.favicons, fv => fv.domain === tab.url.split('/')[2]) && tab.url.indexOf('127.0.0.1') === -1 && tab.url.indexOf('localhost') === -1) {
               faviconStore.set_favicon(tab, session.tabs.length, tKey);
             }
@@ -857,7 +878,7 @@ class Sessions extends React.Component {
                     return null;
                   }
                   let favIconUrl = t.favIconUrl ? utils.filterFavicons(t.favIconUrl, t.url) : '../images/file_paper_blank_document.png';
-                  if (t.url.indexOf('chrome://newtab/') !== -1) {
+                  if (t.url.indexOf('chrome://newtab/') > -1 || t.url.substr(-11) === 'newtab.html') {
                     _.pullAt(_window, i);
                     return;
                   }

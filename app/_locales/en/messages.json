@@ -478,6 +478,12 @@
   "saveTheme": {
     "message": "Save Theme"
   },
+  "copy": {
+    "message": "Copy"
+  },
+  "copyTheme": {
+    "message": "Copy Theme"
+  },
   "update": {
     "message": "Update"
   },
