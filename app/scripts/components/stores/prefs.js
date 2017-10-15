@@ -1,43 +1,43 @@
-import Reflux from 'reflux';
 import _ from 'lodash';
+import initStore from '../store';
 
-let prefsStore = Reflux.createStore({
+let prefsStore = initStore({
+  prefs: {},
+  defaultPrefs: {
+    autoDiscard: false,
+    autoDiscardTime: 3600000,
+    tabSizeHeight: 134,
+    settingsMax: false,
+    drag: true,
+    context: true,
+    animations: true,
+    duplicate: true,
+    screenshot: false,
+    screenshotInit: false,
+    screenshotChrome: true,
+    screenshotBg: false,
+    screenshotBgBlur: 5,
+    screenshotBgOpacity: 5,
+    blacklist: true,
+    sidebar: true,
+    sort: true,
+    showViewMode: true,
+    mode: 'tabs',
+    format: 'tile',
+    installTime: Date.now(),
+    actions: false,
+    sessionsSync: false,
+    singleNewTab: false,
+    keyboardShortcuts: true,
+    resolutionWarning: true,
+    syncedSession: null,
+    theme: 9001,
+    wallpaper: null,
+    tooltip: true,
+    alerts: true,
+    allTabs: true
+  },
   init: function() {
-    this.prefs = {};
-    this.defaultPrefs = {
-      autoDiscard: false,
-      autoDiscardTime: 3600000,
-      tabSizeHeight: 134,
-      settingsMax: false,
-      drag: true,
-      context: true,
-      animations: true,
-      duplicate: true,
-      screenshot: false,
-      screenshotInit: false,
-      screenshotChrome: true,
-      screenshotBg: false,
-      screenshotBgBlur: 5,
-      screenshotBgOpacity: 5,
-      blacklist: true,
-      sidebar: true,
-      sort: true,
-      showViewMode: true,
-      mode: 'tabs',
-      format: 'tile',
-      installTime: Date.now(),
-      actions: false,
-      sessionsSync: false,
-      singleNewTab: false,
-      keyboardShortcuts: true,
-      resolutionWarning: true,
-      syncedSession: null,
-      theme: 9001,
-      wallpaper: null,
-      tooltip: true,
-      alerts: true,
-      allTabs: true
-    };
     let getPrefs = new Promise((resolve, reject)=>{
       chrome.storage.sync.get('preferences', (prefs)=>{
         chrome.storage.sync.get('themePrefs', (themePrefs)=>{
@@ -47,17 +47,16 @@ let prefsStore = Reflux.createStore({
             if (chrome.extension.lastError) {
               reject(chrome.extension.lastError);
             } else {
-              this.prefs = this.defaultPrefs;
-              this.set_prefs(this.prefs, true);
-              console.log('init prefs: ', this.prefs);
-              this.trigger(this.prefs);
+              prefsStore.prefs = prefsStore.defaultPrefs;
+              prefsStore.setPrefs(prefsStore.prefs, true);
+              console.log('init prefs: ', prefsStore.prefs);
             }
           }
         });
       });
     });
     getPrefs.then((prefs)=>{
-      this.prefs = {
+      prefsStore.prefs = {
         autoDiscard: prefs.autoDiscard,
         autoDiscardTime: prefs.autoDiscardTime,
         tabSizeHeight: prefs.tabSizeHeight,
@@ -91,94 +90,94 @@ let prefsStore = Reflux.createStore({
         alerts: prefs.alerts,
         allTabs: prefs.allTabs
       };
-      if (typeof this.prefs.autoDiscard === 'undefined') {
-        this.prefs.autoDiscard = false;
+      if (typeof prefsStore.prefs.autoDiscard === 'undefined') {
+        prefsStore.prefs.autoDiscard = false;
       }
-      if (typeof this.prefs.autoDiscardTime === 'undefined') {
-        this.prefs.autoDiscardTime = 3600000;
+      if (typeof prefsStore.prefs.autoDiscardTime === 'undefined') {
+        prefsStore.prefs.autoDiscardTime = 3600000;
       }
-      if (typeof this.prefs.showViewMode === 'undefined') {
-        this.prefs.showViewMode = true;
+      if (typeof prefsStore.prefs.showViewMode === 'undefined') {
+        prefsStore.prefs.showViewMode = true;
       }
-      if (typeof this.prefs.tabSizeHeight === 'undefined' || this.prefs.tabSizeHeight <= 133) {
-        this.prefs.tabSizeHeight = 134;
+      if (typeof prefsStore.prefs.tabSizeHeight === 'undefined' || prefsStore.prefs.tabSizeHeight <= 133) {
+        prefsStore.prefs.tabSizeHeight = 134;
       }
-      if (typeof this.prefs.installTime === 'undefined') {
-        this.prefs.installTime = Date.now();
+      if (typeof prefsStore.prefs.installTime === 'undefined') {
+        prefsStore.prefs.installTime = Date.now();
       }
-      if (typeof this.prefs.mode === 'undefined') {
-        this.prefs.mode = 'tabs';
+      if (typeof prefsStore.prefs.mode === 'undefined') {
+        prefsStore.prefs.mode = 'tabs';
       }
-      if (typeof this.prefs.format === 'undefined') {
-        this.prefs.format = 'tile';
+      if (typeof prefsStore.prefs.format === 'undefined') {
+        prefsStore.prefs.format = 'tile';
       }
-      if (typeof this.prefs.screenshotInit === 'undefined') {
-        this.prefs.screenshotInit = false;
+      if (typeof prefsStore.prefs.screenshotInit === 'undefined') {
+        prefsStore.prefs.screenshotInit = false;
       }
-      if (typeof this.prefs.screenshotChrome === 'undefined') {
-        this.prefs.screenshotChrome = true;
+      if (typeof prefsStore.prefs.screenshotChrome === 'undefined') {
+        prefsStore.prefs.screenshotChrome = true;
       }
-      if (typeof this.prefs.screenshotBgBlur === 'undefined') {
-        this.prefs.screenshotBgBlur = 5;
+      if (typeof prefsStore.prefs.screenshotBgBlur === 'undefined') {
+        prefsStore.prefs.screenshotBgBlur = 5;
       }
-      if (typeof this.prefs.screenshotBgOpacity === 'undefined') {
-        this.prefs.screenshotBgOpacity = 5;
+      if (typeof prefsStore.prefs.screenshotBgOpacity === 'undefined') {
+        prefsStore.prefs.screenshotBgOpacity = 5;
       }
-      if (typeof this.prefs.keyboardShortcuts === 'undefined') {
-        this.prefs.keyboardShortcuts = true;
+      if (typeof prefsStore.prefs.keyboardShortcuts === 'undefined') {
+        prefsStore.prefs.keyboardShortcuts = true;
       }
-      if (typeof this.prefs.resolutionWarning === 'undefined') {
-        this.prefs.resolutionWarning = true;
+      if (typeof prefsStore.prefs.resolutionWarning === 'undefined') {
+        prefsStore.prefs.resolutionWarning = true;
       }
-      if (typeof this.prefs.syncedSession === 'undefined' || this.prefs.syncedSession === '') {
-        this.prefs.syncedSession = null;
+      if (typeof prefsStore.prefs.syncedSession === 'undefined' || prefsStore.prefs.syncedSession === '') {
+        prefsStore.prefs.syncedSession = null;
       }
-      if (typeof this.prefs.theme === 'undefined') {
-        this.prefs.theme = 9001;
+      if (typeof prefsStore.prefs.theme === 'undefined') {
+        prefsStore.prefs.theme = 9001;
       }
-      if (typeof this.prefs.wallpaper === 'undefined') {
-        this.prefs.wallpaper = null;
+      if (typeof prefsStore.prefs.wallpaper === 'undefined') {
+        prefsStore.prefs.wallpaper = null;
       }
-      if (typeof this.prefs.tooltip === 'undefined') {
-        this.prefs.tooltip = true;
+      if (typeof prefsStore.prefs.tooltip === 'undefined') {
+        prefsStore.prefs.tooltip = true;
       }
-      if (typeof this.prefs.alerts === 'undefined') {
-        this.prefs.alerts = true;
+      if (typeof prefsStore.prefs.alerts === 'undefined') {
+        prefsStore.prefs.alerts = true;
       }
-      if (typeof this.prefs.scrollNav !== 'undefined') {
-        delete this.prefs.scrollNav;
+      if (typeof prefsStore.prefs.scrollNav !== 'undefined') {
+        delete prefsStore.prefs.scrollNav;
       }
-      if (typeof this.prefs.allTabs === 'undefined') {
-        this.prefs.allTabs = false;
+      if (typeof prefsStore.prefs.allTabs === 'undefined') {
+        prefsStore.prefs.allTabs = false;
       }
-      console.log('load prefs: ', prefs, this.prefs);
-      this.trigger(this.prefs);
+      console.log('load prefs: ', prefs, prefsStore.prefs);
+      prefsStore.set({prefs: prefsStore.prefs}, true);
     }).catch((err)=>{
-      console.log('chrome.extension.lastError: ',err);
+      console.log('chrome.extension.lastError: ', err);
     });
   },
-  set_prefs(obj, init) {
-    _.merge(this.prefs, obj);
-    this.trigger(this.prefs);
+  setPrefs(obj, init) {
+    _.merge(prefsStore.prefs, obj);
+    prefsStore.set({prefs: prefsStore.prefs}, true);
     let themePrefs = {
-      wallpaper: this.prefs.wallpaper,
-      theme: this.prefs.theme,
-      alerts: this.prefs.alerts,
-      syncedSession: this.prefs.syncedSession
+      wallpaper: prefsStore.prefs.wallpaper,
+      theme: prefsStore.prefs.theme,
+      alerts: prefsStore.prefs.alerts,
+      syncedSession: prefsStore.prefs.syncedSession
     };
-    let parsedPrefs = _.cloneDeep(this.prefs);
+    let parsedPrefs = _.cloneDeep(prefsStore.prefs);
     delete parsedPrefs.wallpaper;
     delete parsedPrefs.theme;
     delete parsedPrefs.alerts;
     delete parsedPrefs.syncedSession;
     chrome.storage.sync.set({preferences: parsedPrefs}, (result)=> {
       chrome.storage.sync.set({themePrefs: themePrefs}, (result)=> {
-        console.log('Preferences saved: ', this.prefs, themePrefs);
+        console.log('Preferences saved: ', prefsStore.prefs, themePrefs);
       });
     });
   },
-  get_prefs() {
-    return this.prefs;
+  getPrefs() {
+    return prefsStore.prefs;
   },
 });
 

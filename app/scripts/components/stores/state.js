@@ -8,6 +8,7 @@ const state = initStore({
   sessions: [],
   sessionTabs: [],
   actions: [],
+  windowRestored: false,
   // Single item states
   move: null,
   update: null,
@@ -40,6 +41,12 @@ const state = initStore({
     footer: null
   },
   folder: null,
+  alert: {
+    text: '',
+    tag: 'alert-success',
+    class: '',
+    open: false
+  },
   // Themes
   theme: null,
   savedThemes: null,

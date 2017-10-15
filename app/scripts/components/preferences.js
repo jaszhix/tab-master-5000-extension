@@ -11,7 +11,7 @@ import Slider from 'rc-slider';
 import ReactTooltip from 'react-tooltip';
 import state from './stores/state';
 import {map} from './utils'
-import {msgStore, utilityStore, blacklistStore, faviconStore} from './stores/main';
+import {msgStore, utilityStore, getBlackList, setBlackList, isValidDomain, faviconStore} from './stores/main';
 import screenshotStore from './stores/screenshot';
 
 import {Btn, Col, Row} from './bootstrap';
@@ -84,18 +84,20 @@ class Blacklist extends React.Component {
 
     this.state = {
       blacklistValue: '',
-      blacklist: blacklistStore.get_blacklist(),
       blacklistNeedsSave: false,
       formatError: null
     }
     autoBind(this);
   }
   componentDidMount(){
-    let blacklist = blacklistStore.get_blacklist() || '';
-    if (blacklist) {
-      blacklist = blacklist.join(' \n') + ' ';
-    }
-    this.setState({blacklistValue: blacklist});
+    getBlackList((blacklist = '') => {
+      console.log('??', blacklist);
+      if (blacklist && blacklist.length > 0) {
+        blacklist = blacklist.join(' \n') + ' ';
+      }
+
+      this.setState({blacklistValue: blacklist});
+    });
   }
   blacklistFieldChange (e) {
     let blacklistNeedsSave = this.state.blacklistNeedsSave;
@@ -110,7 +112,7 @@ class Blacklist extends React.Component {
   blacklistSubmit(){
     let blacklistStr = this.state.blacklistValue || '';
     if (_.trim(blacklistStr) === '') {
-      blacklistStore.set_blacklist([]);
+      setBlackList([]);
       this.setState({
         formatErrorStr: false,
         blacklistValue: '',
@@ -125,7 +127,7 @@ class Blacklist extends React.Component {
     let domains = blacklistStr.split(/[\s,]/).reduce(function(_d, val, i){
       // pass the 2nd argument of arr.reduce(...) as the argument _d
       let trimmed = _.trim(val);
-      if (blacklistStore.check_is_domain(trimmed)) {
+      if (isValidDomain(trimmed)) {
         _d.valid.push(trimmed);
       } else if (trimmed !== '') {
         _d.invalid.push(quote(trimmed));
@@ -154,7 +156,7 @@ class Blacklist extends React.Component {
       blacklistValue: domains.valid.join(' \n') + ' ',
       blacklistNeedsSave: false,
     });
-    blacklistStore.set_blacklist(domains.valid);
+    setBlackList(domains.valid);
   }
   render() {
     let s = this.state;
@@ -202,7 +204,6 @@ class Preferences extends React.Component {
     autoBind(this);
   }
   componentDidMount(){
-    this.listenTo(screenshotStore, this.getBytesInUse);
     this.getBytesInUse();
     let p = this.props;
     if (!p.options) {

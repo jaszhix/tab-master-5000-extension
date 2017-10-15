@@ -3,10 +3,10 @@ import autoBind from 'react-autobind';
 import _ from 'lodash';
 import v from 'vquery';
 import mouseTrap from 'mousetrap';
-import {findIndex, map} from './utils'
+import tc from 'tinycolor2';
+import {findIndex, map, tryFn} from './utils'
 import state from './stores/state';
-import {alertStore, msgStore} from './stores/main';
-import tabStore from './stores/tab';
+import {setAlert, msgStore} from './stores/main';
 import themeStore from './stores/theme';
 import * as utils from './stores/tileUtils';
 
@@ -34,18 +34,18 @@ class Row extends React.Component {
       onDragStart={p.onDragStart}
       onDragOver={p.onDragOver}
       onClick={p.onClick}
-      onContextMenu={(e)=>p.onContextMenu(e, p.row)}
+      onContextMenu={(e) => p.onContextMenu(e, p.row)}
       >
-        {map(p.columns, (column, z)=>{
+        {map(p.columns, (column, z) => {
           if (p.row.hasOwnProperty(column)) {
             if (column === 'title' || column === 'name') {
               return (
-                <td key={z} style={{maxWidth: p.s.width <= 950 ? '300px' : p.s.width <= 1015 ? '400px' : '700px', userSelect: 'none'}}>
+                <td key={z} id={`column-${column}`} style={{maxWidth: p.s.width <= 950 ? '300px' : p.s.width <= 1015 ? '400px' : '700px', userSelect: 'none'}}>
                   <div className="media-left media-middle">
                     <img src={favIconUrl} style={{width: '16px', height: '16px'}}/>
                   </div>
                   <div className="media-left">
-                    <div style={textOverflow}><a style={{cursor: 'pointer', fontSize: '14px'}} onClick={()=>p.handleTitleClick(p.row)} className="text-default text-semibold">{p.row[column]}</a></div>
+                    <div style={textOverflow}><a style={{cursor: 'pointer', fontSize: '14px'}} onClick={() => p.handleTitleClick(p.row)} className="text-default text-semibold">{p.row[column]}</a></div>
                     {p.s.prefs.mode === 'apps' || p.s.prefs.mode === 'extensions' ?
                     <div className="text-muted text-size-small" style={{whiteSpace: 'nowrap', cursor: 'default'}}>{p.row.description}</div> : null}
                   </div>
@@ -57,19 +57,87 @@ class Row extends React.Component {
               );
 
             } else if (p.s.prefs.mode === 'apps' && column === 'domain') {
-              return <td key={z}><i className={`icon-${_.isString(p.row[column]) ? 'check2' : 'cross'}`} /></td>;
+              return <td key={z} id={`column-${column}`}><i className={`icon-${_.isString(p.row[column]) ? 'check2' : 'cross'}`} /></td>;
             } else if (_.isBoolean(p.row[column]) || column === 'mutedInfo') {
               let bool = column === 'mutedInfo' ? p.row[column].muted : p.row[column];
               let toggleBool = ['pinned', 'enabled', 'mutedInfo'];
-              return <td key={z}><i className={`icon-${bool ? 'check2' : 'cross'}`} style={{cursor: toggleBool.indexOf(column) !== -1 ? 'pointer' : 'initial'}} onClick={toggleBool.indexOf(column) !== -1 ? ()=>p.handleBooleanClick(column) : null} /></td>;
+              return <td key={z} id={`column-${column}`}><i className={`icon-${bool ? 'check2' : 'cross'}`} style={{cursor: toggleBool.indexOf(column) !== -1 ? 'pointer' : 'initial'}} onClick={toggleBool.indexOf(column) !== -1 ? () => p.handleBooleanClick(column) : null} /></td>;
             } else if (column === 'launchType') {
-              return <td key={z}>{p.row[column].indexOf('TAB') !== -1 ? 'Tab' : 'Window'}</td>;
+              return <td key={z} id={`column-${column}`}>{p.row[column].indexOf('TAB') !== -1 ? 'Tab' : 'Window'}</td>;
             } else {
-              return <td key={z} >{column === 'mutedInfo' ? p.row[column].muted : p.row[column]}</td>;
+              return <td key={z} id={`column-${column}`}>{column === 'mutedInfo' ? p.row[column].muted : p.row[column]}</td>;
             }
           }
         })}
       </tr>
+    );
+  }
+}
+
+export class TableHeader extends React.Component {
+  constructor(props) {
+    super(props);
+    autoBind(this)
+  }
+  componentDidMount () {
+    if (!this.props.isFloating || this.willUnmount) {
+      return;
+    }
+    let columns = ['title', 'name', 'domain', 'pinned', 'mutedInfo'];
+    const adjustHeaderWidth = (recursion = 0) => {
+      for (let i = 0; i < columns.length; i++) {
+        let headerNode = v(`#header-${columns[i]}`);
+        let columnNode = v(`#column-${columns[i]}`);
+        if (headerNode.n && columnNode.n) {
+          headerNode.css({width: `${columnNode.n.clientWidth}px`});
+        } else if (recursion <= 10) {
+          recursion++;
+          adjustHeaderWidth(recursion)
+          return;
+        }
+      }
+    };
+    adjustHeaderWidth();
+  }
+  componentWillUnmount() {
+    this.willUnmount = true;
+  }
+  getRef(ref) {
+    if (!this.props.isFloating || !ref) {
+      return;
+    }
+    this.ref = ref;
+    let color = this.props.headerBg;
+    _.defer(() => {
+      this.ref.style.backgroundColor = themeStore.opacify(color, 0.86);
+      if (tc(this.props.headerBg).isDark()) {
+        v('#thead-float > tr > th').css({color: this.props.darkBtnText});
+      }
+    });
+  }
+  render() {
+    return (
+      <thead
+      ref={this.getRef}
+      id={this.props.isFloating ? 'thead-float' : ''}
+      style={{opacity: this.props.isFloating || (!this.props.isFloating && !this.props.showFloatingTableHeader) ? '1' : '0'}}>
+        <tr role="row">
+          {map(this.props.columns, (column, i) => {
+            let columnLabel = this.props.mode === 'apps' && column === 'domain' ? 'webWrapper' : column === 'mutedInfo' ? 'muted' : column;
+            return (
+              <th
+              key={i}
+              id={`header-${column}`}
+              className={`sorting${this.props.order === column ? '_'+this.props.direction : ''}`}
+              rowSpan="1"
+              colSpan="1"
+              onClick={() => this.props.handleColumnClick(column)}>
+                {_.upperFirst(columnLabel.replace(/([A-Z])/g, ' $1'))}
+              </th>
+            );
+          })}
+        </tr>
+      </thead>
     );
   }
 }
@@ -93,7 +161,7 @@ export class Table extends React.Component {
   componentDidMount(){
     let p = this.props;
     this.buildTable(p);
-    mouseTrap.bind('del', ()=>{
+    mouseTrap.bind('del', () => {
       this.removeSelectedItems();
     });
   }
@@ -153,9 +221,9 @@ export class Table extends React.Component {
       if (row.enabled) {
         if (p.s.prefs.mode === 'extensions' || row.launchType === 'OPEN_AS_REGULAR_TAB') {
           if (row.url.length > 0) {
-            tabStore.create(row.url);
+            chrome.tabs.create({url: row.url});
           } else {
-            tabStore.create(row.homepageUrl);
+            chrome.tabs.create({url: row.homepageUrl});
           }
         } else {
           chrome.management.launchApp(row.id);
@@ -178,7 +246,7 @@ export class Table extends React.Component {
         state.set({reQuery: {state: true, type: 'create'}});
       }
     } else if (column === 'mutedInfo') {
-      chrome.tabs.update(row.id, {muted: !row.mutedInfo.muted}, ()=>{
+      chrome.tabs.update(row.id, {muted: !row.mutedInfo.muted}, () => {
         if (s.muteInit) {
           let refRow = findIndex(s.rows, _row => _row.id === row.id);
           s.rows[refRow].mutedInfo.muted = !row.mutedInfo.muted;
@@ -189,7 +257,7 @@ export class Table extends React.Component {
         state.set({reQuery: {state: true, type: 'create'}});
       }
     } else if (column === 'enabled') {
-      chrome.management.setEnabled(row.id, !row.enabled, ()=>{
+      chrome.management.setEnabled(row.id, !row.enabled, () => {
         state.set({reQuery: {state: true, type: 'update'}});
       });
     }
@@ -212,18 +280,16 @@ export class Table extends React.Component {
     let end = this.over.i;
     this.dragged.el.style.display = 'table-row';
     if (start === end) {
-      _.defer(()=>{
-        try {
-          this.dragged.el.parentNode.removeChild(this.placeholder);
-        } catch (e) {}
+      _.defer(() => {
+        tryFn(() => this.dragged.el.parentNode.removeChild(this.placeholder));
       });
       return;
     }
     if (start < end) {
       end--;
     }
-    chrome.tabs.move(s.rows[start].id, {index: s.rows[end].index}, (t)=>{
-      _.defer(()=>{
+    chrome.tabs.move(s.rows[start].id, {index: s.rows[end].index}, (t) => {
+      _.defer(() => {
         msgStore.queryTabs();
         this.dragged.el.parentNode.removeChild(this.placeholder);
       });
@@ -244,14 +310,10 @@ export class Table extends React.Component {
 
     if (relY > height) {
       this.nodePlacement = 'after';
-      try {
-        parent.parentNode.insertBefore(this.placeholder, e.target.nextElementSibling.parentNode);
-      } catch (e) {}
+      tryFn(() => parent.parentNode.insertBefore(this.placeholder, e.target.nextElementSibling.parentNode));
     } else if (relY < height) {
       this.nodePlacement = 'before';
-      try {
-        parent.parentNode.insertBefore(this.placeholder, e.target.parentNode);
-      } catch (e) {}
+      tryFn(() => parent.parentNode.insertBefore(this.placeholder, e.target.parentNode));
     }
   }
   handleSelect(i){
@@ -263,7 +325,7 @@ export class Table extends React.Component {
       } else {
         if (s.selectedItems.length === 0) {
           s.shiftRange = i;
-          alertStore.set({
+          setAlert({
             text: `Press the delete key to remove selected ${p.s.prefs.mode}.`,
             tag: 'alert-success',
             open: true
@@ -333,50 +395,73 @@ export class Table extends React.Component {
     let p = this.props;
     if (s.columns && s.rows) {
       return (
-        <div className="datatable-scroll">
-          <table className="table datatable-responsive dataTable no-footer dtr-inline" id="DataTables_Table_0">
-            <thead>
-              <tr role="row">
-                {map(s.columns, (column, i)=>{
-                  let columnLabel = p.s.prefs.mode === 'apps' && column === 'domain' ? 'webWrapper' : column === 'mutedInfo' ? 'muted' : column;
-                  return (
-                    <th
+        <div className="datatable-scroll-wrap">
+          <table
+          className="table datatable-responsive dataTable no-footer dtr-inline"
+          style={{width: `${window.innerWidth}px`}}>
+            <TableHeader
+            mode={p.s.prefs.mode}
+            columns={s.columns}
+            order={s.order}
+            direction={s.direction}
+            handleColumnClick={this.handleColumnClick}
+            width={p.s.width}
+            isFloating={false}
+            showFloatingTableHeader={this.props.showFloatingTableHeader} />
+            <tbody onMouseLeave={() => this.setState({rowHover: -1})}>
+            {map(s.rows, (row, i) => {
+              let isVisible = i >= p.range.start && i <= p.range.start + p.range.length;
+              if (isVisible) {
+                return (
+                  <Row
+                    s={p.s}
                     key={i}
-                    className={`sorting${s.order === column ? '_'+s.direction : ''}`}
-                    style={{userSelect: 'none'}}
-                    rowSpan="1"
-                    colSpan="1"
-                    onClick={()=>this.handleColumnClick(column)}>
-                      {_.upperFirst(columnLabel.replace(/([A-Z])/g, ' $1'))}
-                    </th>
-                  );
-                })}
-              </tr>
-            </thead>
-            <tbody onMouseLeave={()=>this.setState({rowHover: -1})}>
-            {map(s.rows, (row, i)=>{
-              return (
-                <Row
-                  s={p.s}
-                  key={i}
-                  className={i % 2 === 0 ? 'even' : 'odd'}
-                  style={{fontSize: '14px', backgroundColor: s.rowHover === i || s.selectedItems.indexOf(i) !== -1 ? themeStore.opacify(p.theme.lightBtnBg, 0.5) : 'initial'}}
-                  onMouseEnter={()=>this.setState({rowHover: i})}
-                  draggable={p.s.prefs.mode === 'tabs' && p.s.prefs.drag}
-                  onDragEnd={this.dragEnd}
-                  onDragStart={(e)=>this.dragStart(e, i)}
-                  onDragOver={(e)=>this.dragOver(e, i)}
-                  onClick={()=>this.handleSelect(i)}
-                  onContextMenu={this.handleContext}
-                  handleTitleClick={this.handleTitleClick}
-                  handleBooleanClick={(column)=>this.handleBooleanClick(column, row)}
-                  row={row}
-                  columns={s.columns}
-                />
-              );
+                    className={i % 2 === 0 ? 'even' : 'odd'}
+                    style={{fontSize: '14px', backgroundColor: s.rowHover === i || s.selectedItems.indexOf(i) !== -1 ? themeStore.opacify(p.theme.lightBtnBg, 0.5) : 'initial'}}
+                    onMouseEnter={() => this.setState({rowHover: i})}
+                    draggable={p.s.prefs.mode === 'tabs' && p.s.prefs.drag}
+                    onDragEnd={this.dragEnd}
+                    onDragStart={(e) => this.dragStart(e, i)}
+                    onDragOver={(e) => this.dragOver(e, i)}
+                    onClick={() => this.handleSelect(i)}
+                    onContextMenu={this.handleContext}
+                    handleTitleClick={this.handleTitleClick}
+                    handleBooleanClick={(column) => this.handleBooleanClick(column, row)}
+                    row={row}
+                    columns={s.columns}
+                  />
+                );
+              } else {
+                return (
+                  <tr key={i} style={{height: '46px'}} />
+                );
+              }
             })}
             </tbody>
           </table>
+          {this.props.showFloatingTableHeader ?
+          <table
+          className="table datatable-responsive dataTable no-footer dtr-inline fixedHeader-floating"
+          role="grid"
+          aria-describedby="DataTables_Table_1_info"
+          style={{
+            tableLayout: 'fixed',
+            top: '52px',
+            left: '0px',
+            width: `${window.innerWidth}px`
+          }}>
+            <TableHeader
+            mode={p.s.prefs.mode}
+            columns={s.columns}
+            order={s.order}
+            direction={s.direction}
+            handleColumnClick={this.handleColumnClick}
+            width={p.s.width}
+            lightBtnText={p.theme.lightBtnText}
+            darkBtnText={p.theme.darkBtnText}
+            headerBg={p.theme.headerBg}
+            isFloating={true} />
+          </table> : null}
         </div>
       );
     } else {

@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import kmp from 'kmp';
 import Fuse from 'fuse.js';
-import {each, findIndex, filter} from '../utils';
+import {each, findIndex, filter, tryFn} from '../utils';
 import state from './state';
 import {historyStore, bookmarksStore, chromeAppStore, faviconStore} from './main';
 import sessionsStore from './sessions';
@@ -103,37 +103,36 @@ export var checkDuplicateTabs = (tab, cb) => {
   }
 };
 
-export var app = (t, opt) => {
-  let p = t.props;
-  if (opt === 'toggleEnable') {
-    chrome.management.setEnabled(p.tab.id, !p.tab.enabled);
-  } else if (opt === 'uninstallApp') {
-    chrome.management.uninstall(p.tab.id, () => {
-      chromeAppStore.set(p.prefs.mode === 'apps');
-    });
-  } else if (opt  === 'createAppShortcut') {
-    chrome.management.createAppShortcut(p.tab.id);
-  } else if (opt  === 'launchApp') {
-    handleAppClick(p);
-  } else if (_.first(_.words(opt)) === 'OPEN') {
-    chrome.management.setLaunchType(p.tab.id, opt);
-  }
-  if (opt !== 'launchApp' && opt !== 'uninstallApp') {
-    chromeAppStore.set(p.prefs.mode === 'apps');
+export var handleAppClick = (tab) => {
+  if (tab.enabled) {
+    if (state.prefs.mode === 'extensions' || tab.launchType === 'OPEN_AS_REGULAR_TAB') {
+      if (tab.url.length > 0) {
+        chrome.tabs.create({url: tab.url});
+      } else {
+        chrome.tabs.create({url: tab.homepageUrl});
+      }
+    } else {
+      chrome.management.launchApp(tab.id);
+    }
   }
 };
 
-export var handleAppClick = (p) => {
-  if (p.tab.enabled) {
-    if (p.prefs.mode === 'extensions' || p.tab.launchType === 'OPEN_AS_REGULAR_TAB') {
-      if (p.tab.url.length > 0) {
-        chrome.tabs.create({url: p.tab.url});
-      } else {
-        chrome.tabs.create({url: p.tab.homepageUrl});
-      }
-    } else {
-      chrome.management.launchApp(p.tab.id);
-    }
+export var app = (tab, opt) => {
+  if (opt === 'toggleEnable') {
+    chrome.management.setEnabled(tab.id, !tab.enabled);
+  } else if (opt === 'uninstallApp') {
+    chrome.management.uninstall(tab.id, () => {
+      chromeAppStore.set(state.prefs.mode === 'apps');
+    });
+  } else if (opt  === 'createAppShortcut') {
+    chrome.management.createAppShortcut(tab.id);
+  } else if (opt  === 'launchApp') {
+    handleAppClick(tab);
+  } else if (_.first(_.words(opt)) === 'OPEN') {
+    chrome.management.setLaunchType(tab.id, opt);
+  }
+  if (opt !== 'launchApp' && opt !== 'uninstallApp') {
+    chromeAppStore.set(state.prefs.mode === 'apps');
   }
 };
 
@@ -235,7 +234,7 @@ export var scrollbarVisible = (element) => {
 
 export var searchChange = (p, tabs) => {
   let _tabs;
-  try {
+  tryFn(() => {
     let tabsSearch = new Fuse(tabs, {
       keys: [{
         name: 'title',
@@ -247,9 +246,7 @@ export var searchChange = (p, tabs) => {
       threshold: 0.4
     });
     _tabs = tabsSearch.search(p.s.search.toLowerCase());
-  } catch (e) {
-    return tabs;
-  }
+  }, () => _tabs = tabs);
 
   return _tabs;
 

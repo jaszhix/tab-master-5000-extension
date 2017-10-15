@@ -170,7 +170,7 @@ function init(state = {}, listeners = [], mergeKeys = [], connections = 0) {
   function trigger() {
     const [key, ...args] = Array.from(arguments);
     let matchedListeners = filter(listeners, function(listener) {
-      return listeners.keys.indexOf(key) > -1;
+      return listener.keys.indexOf(key) > -1;
     });
     if (matchedListeners.length === 0) {
       throw storeError('trigger', key, 'Action not found.');

@@ -410,3 +410,11 @@ tr.placeholder {background: rgb(255,240,120);}
 tr.placeholder:before {
   content: "Drop here";
 }
+.table > thead {
+    transition: background-color 0.2s;
+}
+
+.table > thead > th {
+    width: auto;
+    transition: width 2s
+}

@@ -1,27 +1,7 @@
 import React from 'react';
-import autoBind from 'react-autobind';
-import reactMixin from 'react-mixin';
-import Reflux from 'reflux';
-import {alertStore} from './stores/main';
+import state from './stores/state';
 
 class Alert extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      text: '',
-      tag: 'alert-success',
-      open: false,
-      class: ''
-    }
-    autoBind(this);
-  }
-  componentDidMount() {
-    this.listenTo(alertStore, this.alertChange);
-  }
-  alertChange(e){
-    this.setState(e);
-  }
   render() {
     let createPostMarkup = (postContent)=> { return {__html: postContent};};
     return (
@@ -31,20 +11,18 @@ class Alert extends React.Component {
         bottom: '0px',
         right: '2%',
         transition: 'opacity 0.1s',
-        opacity: this.state.open ? '1' : '0',
+        opacity: this.props.alert.open ? '1' : '0',
         cursor: 'pointer'
-      }} onClick={()=>this.setState({open: !this.state.open})}>
-        {this.state.open && this.props.enabled ?
-          <div className={`message-response-box animated ${this.state.class}`} >
-          <div className={`alert message-response ${this.state.tag}`} role="alert">
-            <div dangerouslySetInnerHTML={createPostMarkup(this.state.text)} />
+      }} onClick={()=>state.set({alert: {open: !this.props.alert.open}})}>
+        {this.props.alert.open && this.props.enabled ?
+          <div className={`message-response-box animated ${this.props.alert.class}`} >
+          <div className={`alert message-response ${this.props.alert.tag}`} role="alert">
+            <div dangerouslySetInnerHTML={createPostMarkup(this.props.alert.text)} />
           </div>
         </div> : null}
       </div>
     );
   }
 }
-
-reactMixin(Alert.prototype, Reflux.ListenerMixin);
 
 export default Alert;

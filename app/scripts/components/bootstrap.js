@@ -8,6 +8,7 @@ import _ from 'lodash';
 import onClickOutside from 'react-onclickoutside';
 import ReactTooltip from 'react-tooltip';
 import themeStore from './stores/theme';
+import {tryFn} from './utils';
 
 export class Btn extends React.Component {
   constructor(props) {
@@ -17,10 +18,10 @@ export class Btn extends React.Component {
       theme: null,
       hover: false
     }
+    this.connectId = themeStore.connect('*', (e) => this.themeChange(e));
     autoBind(this);
   }
   componentDidMount(){
-    this.listenTo(themeStore, this.themeChange);
     let selectedTheme = themeStore.getSelectedTheme();
     this.setState({theme: selectedTheme});
     this.themeChange({theme: selectedTheme});
@@ -31,9 +32,8 @@ export class Btn extends React.Component {
     }
   }
   componentWillUnmount(){
-    try {
-      v(ReactDOM.findDOMNode(this)).css({display: 'none'});
-    } catch (e) {}
+    themeStore.disconnect(this.connectId);
+    tryFn(() => v(ReactDOM.findDOMNode(this)).css({display: 'none'}));
   }
   themeChange(e){
     if (e.theme) {

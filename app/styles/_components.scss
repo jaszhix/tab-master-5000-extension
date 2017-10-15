@@ -93,9 +93,9 @@ a.badge,
 .sidebar-user-material-menu > a,
 .navbar-nav > .active > a:after,
 .ranges ul li {
-  -webkit-transition: background-color ease-in-out 0.15s;
-  -o-transition: background-color ease-in-out 0.15s;
-  transition: background-color ease-in-out 0.15s;
+  -webkit-transition: background-color ease-in-out 0.02s;
+  -o-transition: background-color ease-in-out 0.02s;
+  transition: background-color ease-in-out 0.02s;
 }
 .sidebar-user-material-menu > a > .caret {
   -webkit-transition: -webkit-transform ease-in-out 0.15s;
@@ -8879,7 +8879,6 @@ thead .htCollapseButton:after {
 }
 .fixedHeader-floating,
 .fixedHeader-locked {
-  background-color: #fff;
   margin-top: 0;
   margin-bottom: 0;
 }

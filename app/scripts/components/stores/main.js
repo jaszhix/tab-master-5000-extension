@@ -1,4 +1,3 @@
-import Reflux from 'reflux';
 import _ from 'lodash';
 import v from 'vquery';
 import mouseTrap from 'mousetrap';
@@ -6,64 +5,41 @@ import mouseTrap from 'mousetrap';
 import screenshotStore from './screenshot';
 import sessionsStore from './sessions';
 import state from './state';
+import initStore from '../store';
 import * as utils from './tileUtils';
-import {findIndex, find, map} from '../utils';
+import {findIndex, find, map, tryFn, each} from '../utils';
 
 const DOMAIN_REGEX = /^(?!:\/\/)([a-zA-Z0-9]+\.)?[a-zA-Z0-9][a-zA-Z0-9-]+\.[a-zA-Z]{2,6}?$/i;
 
-export var blacklistStore = Reflux.createStore({
-  init: function() {
-    let getBlacklist = new Promise((resolve, reject)=>{
-      chrome.storage.sync.get('blacklist', (bl)=>{
+export const isValidDomain = function (value) {
+  return _.isString(value) && value.match(DOMAIN_REGEX);
+};
+
+export const setBlackList = function(domainsArr) {
+  each(domainsArr, (domain) => {
+    // shouldnt even get here. but just making sure
+    // input is valid
+    if (!isValidDomain(domain)) {
+      throw new Error(`Invalid domain: ${domain}`);
+    }
+  });
+  chrome.storage.sync.set({blacklist: _.uniq(domainsArr)});
+};
+
+export const getBlackList = function(cb) {
+    tryFn(() => {
+      chrome.storage.sync.get('blacklist', (bl) => {
         if (bl && bl.blacklist) {
-          resolve(bl);
+          console.log('blacklist:', bl);
+          cb(bl.blacklist);
         } else {
-          reject();
+          cb([]);
         }
       });
-    });
-    getBlacklist.then((bl)=>{
-      console.log('load blacklist');
-      this.blacklist = bl.blacklist;
-      this.trigger(this.blacklist);
-    }).catch(()=>{
-      console.log('init blacklist');
-      // on init, don't call state.set({reQuery...}) ?
-      this.set_blacklist([], false);
-    });
-  },
-  check_is_domain: function (value) {
-    return _.isString(value) && value.match(DOMAIN_REGEX);
-  },
-  set_blacklist: function(domainsArr, requery=true) {
-    domainsArr.forEach((domain) => {
-      // shouldnt even get here. but just making sure
-      // input is valid
-      if (!this.check_is_domain(domain)) {
-        throw new Error(`Invalid domain: ${domain}`);
-      }
-    });
-    this.blacklist = _.uniq(domainsArr);
-    console.log('blacklist: ', this.blacklist);
-    chrome.storage.sync.set({blacklist: this.blacklist}, (result)=> {
-      this.trigger(this.blacklist);
-      console.log('Blacklist saved: ', result);
-      if (requery) {
-        state.set({
-          reQuery: {
-            state: true,
-            type: 'create'
-          }
-        });
-      }
-    });
-  },
-  get_blacklist: function() {
-    return this.blacklist;
-  },
-});
+    }, () => cb([]));
+  };
 
-let defaults = (iteration)=>{
+let defaults = (iteration) => {
   return {
     mutedInfo: {muted: false},
     audible: false,
@@ -81,8 +57,8 @@ let defaults = (iteration)=>{
 
 export var bookmarksStore = {
   set_bookmarks() {
-    return new Promise((resolve, reject)=>{
-      chrome.bookmarks.getTree((bk)=>{
+    return new Promise((resolve, reject) => {
+      chrome.bookmarks.getTree((bk) => {
         let bookmarks = [];
         let folders = [];
         let s = state.get();
@@ -141,7 +117,7 @@ export var bookmarksStore = {
     });
   },
   getBookmarks() {
-    this.set_bookmarks().then((bk)=>{
+    this.set_bookmarks().then((bk) => {
       let s = state.get();
       bk = utils.sort({s: s}, bk);
       if (s.search.length > 0) {
@@ -167,14 +143,14 @@ export var bookmarksStore = {
 
 export var historyStore = {
   setHistory() {
-    return new Promise((resolve, reject)=>{
+    return new Promise((resolve, reject) => {
       let now = Date.now();
       chrome.history.search({
         text: '',
         maxResults: 1000,
         startTime: now - 6.048e+8,
         endTime: now
-      }, (h)=>{
+      }, (h) => {
         let s = state.get();
         let tabs = _.flatten(s.allTabs);
         let openTab = 0;
@@ -211,7 +187,7 @@ export var historyStore = {
     });
   },
   getHistory() {
-    this.setHistory().then((h)=>{
+    this.setHistory().then((h) => {
       let s = state.get();
       if (s.search.length > 0) {
         h = utils.searchChange({s: s}, h);
@@ -237,7 +213,7 @@ export var historyStore = {
 export var chromeAppStore = {
   set(app){
     let s = state.get()
-    chrome.management.getAll((apps)=>{
+    chrome.management.getAll((apps) => {
       let _apps = _.filter(apps, {isApp: app});
       if (_apps) {
         for (let i = 0, len = _apps.length; i < len; i++) {
@@ -265,14 +241,12 @@ export var chromeAppStore = {
 export var utilityStore = {
   chromeVersion(){
     let version = 1;
-    try { // Firefox check
-      version = parseInt(/Chrome\/([0-9.]+)/.exec(navigator.userAgent)[1].split('.'))
-    } catch (e) {}
+    tryFn(() => version = parseInt(/Chrome\/([0-9.]+)/.exec(navigator.userAgent)[1].split('.')));
     return version;
   },
   get_bytesInUse(item){
-    return new Promise((resolve, reject)=>{
-      chrome.storage.local.getBytesInUse(item, (bytes)=>{
+    return new Promise((resolve, reject) => {
+      chrome.storage.local.getBytesInUse(item, (bytes) => {
         resolve(bytes);
       });
     });
@@ -284,7 +258,7 @@ export var utilityStore = {
     location.reload();
   },
   createTab(href){
-    chrome.tabs.create({url: href}, (t)=>{
+    chrome.tabs.create({url: href}, (t) => {
       console.log('Tab created from utilityStore.createTab: ',t);
     });
   },
@@ -309,7 +283,7 @@ export var utilityStore = {
       bookmarksStore.getBookmarks();
     } else if (mode === 'history') {
       historyStore.getHistory();
-    } else if (mode === 'sessions') {
+    } else {
       stateUpdate.reQuery = {state: true, type: 'create'};
     }
     _.assignIn(stateUpdate, {modeKey: mode === 'sessions' ? 'sessionTabs' : mode});
@@ -337,7 +311,7 @@ export var keyboardStore = {
     }
   },
   focusSearchEntry(){
-    _.defer(()=>{
+    _.defer(() => {
       let node = v('#main > div > div:nth-child(1) > div > div.tm-nav.ntg-form > div > div.col-xs-4 > div > input').n;
       if (node) {
         node.focus();
@@ -345,61 +319,61 @@ export var keyboardStore = {
     });
   },
   set(s){
-    mouseTrap.bind('ctrl+z', ()=>{
+    mouseTrap.bind('ctrl+z', () => {
       if (s.prefs.actions) {
         msgStore.undoAction();
       }
     });
-    mouseTrap.bind('ctrl+f', (e)=>{
+    mouseTrap.bind('ctrl+f', (e) => {
       e.preventDefault();
       state.set({modal: {state: false, type: 'settings'}});
       this.focusSearchEntry();
     });
-    mouseTrap.bind('ctrl+alt+s', (e)=>{
+    mouseTrap.bind('ctrl+alt+s', (e) => {
       e.preventDefault();
       state.set({settings: 'sessions', modal: {state: this.state('ctrl+shift+s'), type: 'settings'}});
     });
-    mouseTrap.bind('ctrl+alt+p', (e)=>{
+    mouseTrap.bind('ctrl+alt+p', (e) => {
       e.preventDefault();
       state.set({settings: 'preferences', modal: {state: this.state('ctrl+shift+p'), type: 'settings'}});
     });
-    mouseTrap.bind('ctrl+alt+t', (e)=>{
+    mouseTrap.bind('ctrl+alt+t', (e) => {
       e.preventDefault();
       state.set({settings: 'theming', modal: {state: this.state('ctrl+shift+tab'), type: 'settings'}});
     });
-    mouseTrap.bind('ctrl+alt+a', (e)=>{
+    mouseTrap.bind('ctrl+alt+a', (e) => {
       e.preventDefault();
       state.set({settings: 'about', modal: {state: this.state('ctrl+shift+a'), type: 'settings'}});
     });
-    mouseTrap.bind('ctrl+shift+s', (e)=>{
+    mouseTrap.bind('ctrl+shift+s', (e) => {
       e.preventDefault();
       sessionsStore.v2Save({tabs: s.allTabs, label: ''});
     });
-    mouseTrap.bind('ctrl+shift+space', (e)=>{
+    mouseTrap.bind('ctrl+shift+space', (e) => {
       e.preventDefault();
       state.set({sidebar: !s.sidebar});
     });
-    mouseTrap.bind('alt+t', (e)=>{
+    mouseTrap.bind('alt+t', (e) => {
       e.preventDefault();
       utilityStore.handleMode('tabs');
     });
-    mouseTrap.bind('alt+b', (e)=>{
+    mouseTrap.bind('alt+b', (e) => {
       e.preventDefault();
       utilityStore.handleMode('bookmarks');
     });
-    mouseTrap.bind('alt+h', (e)=>{
+    mouseTrap.bind('alt+h', (e) => {
       e.preventDefault();
       utilityStore.handleMode('history');
     });
-    mouseTrap.bind('alt+s', (e)=>{
+    mouseTrap.bind('alt+s', (e) => {
       e.preventDefault();
       utilityStore.handleMode('sessions');
     });
-    mouseTrap.bind('alt+a', (e)=>{
+    mouseTrap.bind('alt+a', (e) => {
       e.preventDefault();
       utilityStore.handleMode('apps');
     });
-    mouseTrap.bind('alt+e', (e)=>{
+    mouseTrap.bind('alt+e', (e) => {
       e.preventDefault();
       utilityStore.handleMode('extensions');
     });
@@ -413,10 +387,10 @@ export var keyboardStore = {
 export var msgStore = {
   init() {
     chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+      console.log(msg);
       let s = state.get('*');
-      if (!s.prefs.allTabs
-        && msg.windowId !== s.windowId
-        && s.settings !== 'sessions') {
+      if ((!s.prefs.allTabs && msg.windowId !== s.windowId && s.settings !== 'sessions' && !msg.action)
+        || s.windowRestored) {
         return;
       }
       console.log('msg: ', msg, 'sender: ', sender);
@@ -457,15 +431,15 @@ export var msgStore = {
   },
   setPrefs(obj){
     state.set({prefs: obj});
-    chrome.runtime.sendMessage(chrome.runtime.id, {method: 'setPrefs', obj: obj}, (response)=>{
+    chrome.runtime.sendMessage(chrome.runtime.id, {method: 'setPrefs', obj: obj}, (response) => {
       if (response && response.prefs) {
         console.log('setPrefs: ', obj);
       }
     });
   },
   getPrefs(){
-    return new Promise((resolve, reject)=>{
-      chrome.runtime.sendMessage(chrome.runtime.id, {method: 'prefs'}, (response)=>{
+    return new Promise((resolve, reject) => {
+      chrome.runtime.sendMessage(chrome.runtime.id, {method: 'prefs'}, (response) => {
         if (response && response.prefs) {
           resolve(response.prefs);
         }
@@ -473,8 +447,8 @@ export var msgStore = {
     });
   },
   getTabs(){
-    return new Promise((resolve, reject)=>{
-      chrome.runtime.sendMessage(chrome.runtime.id, {method: 'getTabs'}, (response)=>{
+    return new Promise((resolve, reject) => {
+      chrome.runtime.sendMessage(chrome.runtime.id, {method: 'getTabs'}, (response) => {
         if (response && response.windows) {
           resolve(response);
         } else {
@@ -487,8 +461,8 @@ export var msgStore = {
     chrome.runtime.sendMessage(chrome.runtime.id, {method: 'queryTabs', refresh});
   },
   getSessions(){
-    return new Promise((resolve, reject)=>{
-      chrome.runtime.sendMessage(chrome.runtime.id, {method: 'getSessions'}, (response)=>{
+    return new Promise((resolve, reject) => {
+      chrome.runtime.sendMessage(chrome.runtime.id, {method: 'getSessions'}, (response) => {
         if (response && response.sessions) {
           resolve(response.sessions);
         } else {
@@ -498,8 +472,8 @@ export var msgStore = {
     });
   },
   getScreenshots(){
-    return new Promise((resolve, reject)=>{
-      chrome.runtime.sendMessage(chrome.runtime.id, {method: 'getScreenshots'}, (response)=>{
+    return new Promise((resolve, reject) => {
+      chrome.runtime.sendMessage(chrome.runtime.id, {method: 'getScreenshots'}, (response) => {
         console.log(response);
         if (response && response.screenshots) {
           resolve(response.screenshots);
@@ -516,8 +490,8 @@ export var msgStore = {
     chrome.runtime.sendMessage(chrome.runtime.id, {method: 'undoAction', windowId: state.get().windowId});
   },
   getActions(){
-    return new Promise((resolve, reject)=>{
-      chrome.runtime.sendMessage(chrome.runtime.id, {method: 'getActions'}, (response)=>{
+    return new Promise((resolve, reject) => {
+      chrome.runtime.sendMessage(chrome.runtime.id, {method: 'getActions'}, (response) => {
         console.log(response);
         if (response && response.actions) {
           console.log(response, '#AA');
@@ -540,7 +514,7 @@ export var faviconStore = {
     }
     let domain = tab.url.split('/')[2];
     if (tab && tab.favIconUrl && !find(s.favicons, fv => fv.domain === domain)) {
-      let saveFavicon = (__img)=>{
+      let saveFavicon = (__img) => {
         s.favicons.push({
           favIconUrl: __img,
           domain:  domain
@@ -554,11 +528,11 @@ export var faviconStore = {
         }
       };
       let sourceImage = new Image();
-      sourceImage.onerror = (e)=>{
+      sourceImage.onerror = (e) => {
         console.log(e);
         saveFavicon('../images/file_paper_blank_document.png');
       };
-      sourceImage.onload = ()=>{
+      sourceImage.onload = () => {
         let imgWidth = sourceImage.width;
         let imgHeight = sourceImage.height;
         let canvas = document.createElement('canvas');
@@ -567,12 +541,7 @@ export var faviconStore = {
         canvas.getContext('2d').drawImage(sourceImage, 0, 0, imgWidth, imgHeight);
         let img = '../images/file_paper_blank_document.png';
         // Catch rare 'Tainted canvases may not be exported' error message.
-        try {
-          img = canvas.toDataURL('image/png');
-        } catch (e) {}
-        if (img) {
-          saveFavicon(img);
-        }
+        tryFn(() => img = canvas.toDataURL('image/png'), () => saveFavicon(img));
       };
       sourceImage.src = tab.favIconUrl;
     }
@@ -582,42 +551,18 @@ export var faviconStore = {
   },
 };
 
-export var alertStore = Reflux.createStore({
-  init(){
-    this.alert = {
-      text: '',
-      tag: 'alert-success',
-      open: false
-    };
-    this.alertTimeout = 300;
-  },
-  set(alert){
-    _.assignIn(this.alert, alert);
-    this.trigger(this.alert);
-    let fadeOut = ()=>{
-      _.delay(()=>{
-        _.assign(this.alert, {
-          class: 'fadeOut'
-        });
-        this.trigger(this.alert);
-      }, 3000);
-      _.delay(()=>{
-        _.assign(this.alert, {
-          open: false,
-          class: ''
-        });
-        this.trigger(this.alert);
-      }, 4000);
-    };
-    if (this.alert.tag !== 'alert-success' && typeof alert.tag === 'undefined') {
-      this.alert.tag = 'alert-success';
-    }
-    fadeOut();
-  },
-  get(){
-    return this.alert;
+export const setAlert = function(alert) {
+  if (state.alert.tag !== 'alert-success' && typeof alert.tag === 'undefined') {
+    alert.class = 'alert-success';
   }
-});
+  state.set({alert});
+  _.delay(() => {
+    state.set({alert: {class: 'fadeOut'}});
+  }, 3000);
+  _.delay(() => {
+    state.set({alert: {open: false, class: ''}});
+  }, 4000);
+};
 
 window.cursor = {page: {x: null, y: null}, offset: {x: null, y: null}, keys: {shift: null, ctrl: null}};
 

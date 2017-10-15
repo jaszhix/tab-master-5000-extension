@@ -700,10 +700,6 @@ th {
 .table .table {
   background-color: #fff;
 }
-.table-responsive + .table-responsive > .table:not(.table-bordered):not(.table-framed),
-.table:not(.table-bordered):not(.table-framed) + .table:not(.table-bordered):not(.table-framed) {
-  border-top: 1px solid #ddd;
-}
 .modal-body + .table-responsive > .table,
 .modal-body + .table {
   border-bottom: 1px solid #ddd;
@@ -711,10 +707,7 @@ th {
 .modal-body + .table-responsive {
   border-width: 0;
 }
-.panel[class*=bg-] > .panel-body + .table,
-.panel[class*=bg-] > .panel-body + .table-responsive {
-  border-color: #fff;
-}
+
 .table > thead > tr.border-solid > th,
 .table > thead > tr.border-solid > td {
   border-bottom-width: 2px;

@@ -67,7 +67,7 @@ export const merge = function() {
   return result;
 }
 
-export function whichToShow ({outerHeight, itemHeight, scrollTop, columns}) {
+export const whichToShow = function({outerHeight, itemHeight, scrollTop, columns}) {
   let start = Math.floor(scrollTop / itemHeight);
   let heightOffset = scrollTop % itemHeight;
   let length = Math.ceil((outerHeight + heightOffset) / itemHeight) * columns;
@@ -77,3 +77,13 @@ export function whichToShow ({outerHeight, itemHeight, scrollTop, columns}) {
     length: length,
   }
 }
+
+export const tryFn = function(fn, errCb) {
+  try {
+    return fn();
+  } catch (e) {
+    if (typeof errCb === 'function') {
+      errCb(e);
+    }
+  }
+};

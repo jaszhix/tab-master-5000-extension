@@ -3,9 +3,9 @@ import _ from 'lodash';
 
 import state from './state';
 import {utilityStore} from './main';
-import {findIndex, find} from '../utils';
+import {findIndex, find, tryFn} from '../utils';
 
-let screenshotStore = Reflux.createStore({
+let screenshotStore = {
   capture(id, wid, imageData, type){
     console.log('screenshotStore capture:', id, wid, type);
     let s = state.get();
@@ -39,12 +39,7 @@ let screenshotStore = Reflux.createStore({
             canvas.width = imgWidth;
             canvas.height = imgHeight;
             canvas.getContext('2d').drawImage(sourceImage, 0, 0, imgWidth, imgHeight);
-            try {
-              newDataUri = canvas.toDataURL('image/jpeg', 0.25);
-            } catch (e) {
-              // Likely tainted canvas from alternative method
-              reject();
-            }
+            tryFn(() => newDataUri = canvas.toDataURL('image/jpeg', 0.25), () => reject());
             if (newDataUri) {
               resolve(newDataUri);
             }
@@ -115,6 +110,6 @@ let screenshotStore = Reflux.createStore({
   tabHasScreenshot(url){
     return _.filter(this.index, {url: url});
   }
-});
+};
 window.screenshotStore = screenshotStore;
 export default screenshotStore;

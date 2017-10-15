@@ -42,7 +42,8 @@ class ModalHandler extends React.Component {
     msgStore.queryTabs();
     state.set({
       modal: {state: false},
-      settings: 'preferences'
+      settings: 'preferences',
+      windowRestored: false
     });
   }
   render() {

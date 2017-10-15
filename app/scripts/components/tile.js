@@ -6,16 +6,14 @@ import _ from 'lodash';
 import v from 'vquery';
 import moment from 'moment';
 
-import ReactTooltip from 'react-tooltip';
 import state from './stores/state';
 import {msgStore} from './stores/main';
 import themeStore from './stores/theme';
-import tabStore from './stores/tab';
 
 import {Table} from './table';
-import {Btn, Panel} from './bootstrap';
+import {Panel} from './bootstrap';
 import style from './style';
-import {map, findIndex, whichToShow} from './utils';
+import {map, findIndex, whichToShow, tryFn} from './utils';
 import * as utils from './stores/tileUtils';
 
 const headerContainerStyle = {position: 'relative', minHeight: '18px'};
@@ -129,7 +127,7 @@ class Tile extends React.Component {
               state.set(stateUpdate);
             });
           } else {
-            tabStore.create(p.tab.url);
+            chrome.tabs.create({url: p.tab.url});
           }
         } else if (p.prefs.mode === 'apps' || p.prefs.mode === 'extensions') {
           utils.handleAppClick(p);
@@ -511,8 +509,17 @@ class TileGrid extends React.Component {
 
     this.state = {
       theme: null,
-      hover: false
+      hover: false,
+      showFloatingTableHeader: false
     }
+    this.connectId1 = state.connect(
+      ['modeKey', 'prefs'], () => {
+        document.body.scrollIntoView();
+        document.body.scrollTop = 0;
+        this.setViewableRange(this.ref);
+      }
+    );
+    this.connectId2 = state.connect(['prefs', 'wallpaper'], () => this.prefsInit(this.props));
     autoBind(this);
     this.range = {start: 0, length: 0};
     this.height = 0;
@@ -551,17 +558,6 @@ class TileGrid extends React.Component {
       });
     }
   }
-  componentWillReceiveProps(nP){
-    let p = this.props;
-    if (!_.isEqual(nP.prefs, p.prefs) || !_.isEqual(nP.wallpaper, p.wallpaper)) {
-      this.prefsInit(nP);
-    }
-    if (nP.s.sort !== p.s.sort || nP.s.direction !== p.s.direction && nP.s.modeKey === p.s.modeKey && nP.s.prefs.mode === p.s.prefs.mode) {
-      let sU = {};
-      sU[nP.s.modeKey] = utils.sort(nP, nP.data);
-      state.set(sU);
-    }
-  }
   componentWillUnmount(){
     if (this.ref) {
       window.removeEventListener('scroll', this.handleScroll);
@@ -589,15 +585,22 @@ class TileGrid extends React.Component {
     let config = {
       outerHeight: window.innerHeight - offset,
       scrollTop: document.body.scrollTop - 57,
-      itemHeight: isTableView ? 45 : this.props.s.prefs.tabSizeHeight + 12,
+      itemHeight: isTableView ? 46 : this.props.s.prefs.tabSizeHeight + 12,
       columns: isTableView ? 1 : Math.floor(window.innerWidth / (this.props.s.prefs.tabSizeHeight + 80))
     };
-    console.log(config);
+    if (isTableView) {
+      let showFloatingTableHeader = document.body.scrollTop >= 52;
+      if (!showFloatingTableHeader) {
+        v('#thead-float').css({backgroundColor: themeStore.opacify(this.props.theme.headerBg, 0.3)})
+        _.delay(() => this.setState({showFloatingTableHeader}), 200)
+      } else {
+        this.setState({showFloatingTableHeader})
+      }
+    }
     if (node.clientHeight > 0) {
       this.height = node.clientHeight;
     }
     this.range = whichToShow(config);
-    console.log(this.range);
     this.scrollTimeout = null;
     this.forceUpdate();
   }
@@ -623,9 +626,7 @@ class TileGrid extends React.Component {
     this.dragged.el.style.display = 'block';
     if (start === end) {
       _.defer(() => {
-        try {
-          this.dragged.el.parentNode.removeChild(this.placeholder);
-        } catch (e) {}
+        tryFn(() => this.dragged.el.parentNode.removeChild(this.placeholder))
       });
       return;
     }
@@ -635,9 +636,7 @@ class TileGrid extends React.Component {
     chrome.tabs.move(p.s.tabs[start].id, {index: p.s.tabs[end].index}, () =>{
       msgStore.queryTabs();
       _.defer(() => {
-        try {
-          this.dragged.el.parentNode.removeChild(this.placeholder);
-        } catch (e) {}
+        tryFn(() => this.dragged.el.parentNode.removeChild(this.placeholder));
       });
     });
   }
@@ -654,20 +653,20 @@ class TileGrid extends React.Component {
     let parent = e.target.parentNode;
     if (relY > height) {
       this.nodePlacement = 'after';
-      try {
+      tryFn(() => {
         if (e.target.nextElementSibling.parentNode.classList.value.indexOf('media') === -1
           && e.target.nextElementSibling.parentNode.classList.value.indexOf('metadata-container') === -1) {
           parent.parentNode.insertBefore(this.placeholder, e.target.nextElementSibling.parentNode);
         }
-      } catch (e) {}
+      });
     } else if (relY < height) {
       this.nodePlacement = 'before';
-      try {
+      tryFn(() => {
         if (e.target.parentNode.classList.value.indexOf('media') === -1
           && e.target.parentNode.classList.value.indexOf('metadata-container') === -1) {
           parent.parentNode.insertBefore(this.placeholder, e.target.parentNode);
         }
-      } catch (e) {}
+      });
     }
   }
   getRef(ref){
@@ -675,15 +674,21 @@ class TileGrid extends React.Component {
   }
   render() {
     let p = this.props;
-    let tileLetterTopPos = p.s.prefs.tabSizeHeight >= 175 ? parseInt((p.s.prefs.tabSizeHeight + 80).toString()[0]+(p.s.prefs.tabSizeHeight + 80).toString()[1]) - 10 : p.s.prefs.tabSizeHeight <= 136 ? -5 : p.s.prefs.tabSizeHeight <= 150 ? 0 : p.s.prefs.tabSizeHeight <= 160 ? 5 : 10;
+    let tileLetterTopPos = p.s.prefs.tabSizeHeight >= 175 ?
+      parseInt((p.s.prefs.tabSizeHeight + 80).toString()[0]+(p.s.prefs.tabSizeHeight + 80).toString()[1]) - 10
+      : p.s.prefs.tabSizeHeight <= 136 ? -5
+      : p.s.prefs.tabSizeHeight <= 150 ? 0
+      : p.s.prefs.tabSizeHeight <= 160 ? 5 : 10;
     return (
       <div className="tile-body">
         <div id="grid" ref={this.getRef}>
           {p.s.prefs.format === 'tile' ? map(utils.sort(p, p.data), (tab, i) => {
-            if ((p.s.prefs.mode !== 'tabs' || p.s.prefs.mode === 'tabs') && tab.url && tab.url.indexOf('chrome://newtab/') === -1) {
+            if ((p.s.prefs.mode !== 'tabs' || p.s.prefs.mode === 'tabs')
+              && tab.url && tab.url.indexOf('chrome://newtab/') === -1
+              && tab.url.substr(-11) !== 'newtab.html') {
               let isVisible = i >= this.range.start && i <= this.range.start + this.range.length;
               if (!isVisible) {
-                let style = state.prefs.format === 'table' ? [window.innerWidth, 45] : [p.s.prefs.tabSizeHeight + 80, p.s.prefs.tabSizeHeight + 12]
+                let style = state.prefs.format === 'table' ? [window.innerWidth, 46] : [p.s.prefs.tabSizeHeight + 80, p.s.prefs.tabSizeHeight + 12]
                 return <div key={i} style={{width: style[0], height: style[1]}}/>
               }
               return (
@@ -728,6 +733,8 @@ class TileGrid extends React.Component {
           <Table
           s={p.s}
           theme={p.theme}
+          range={this.range}
+          showFloatingTableHeader={this.state.showFloatingTableHeader}
           /> : null}
         </div>
       </div>

@@ -1,12 +1,11 @@
-import Reflux from 'reflux';
 import _ from 'lodash';
 import uuid from 'node-uuid';
 import ReactTooltip from 'react-tooltip';
 import {each, findIndex} from '../utils';
 import state from './state';
-import {msgStore, utilityStore, alertStore} from './main';
+import {msgStore, utilityStore, setAlert} from './main';
 
-let sessionsStore = Reflux.createStore({
+let sessionsStore = {
   convertV1(_item){
     for (let i = 0, len = _item.sessionData.length; i < len; i++) {
       let session = {
@@ -23,30 +22,20 @@ let sessionsStore = Reflux.createStore({
     // Opens a new chrome window with the selected tabs object.
     console.log('session.tabs: ', session.tabs);
     for (let i = 0, len = session.tabs.length; i < len; i++) {
-      let options = {};
-
-      chrome.windows.create(options, (Window)=>{
-        let tabs = _.orderBy(session.tabs[i], ['pinned', 'index'], ['desc', 'asc']);
-        for (let z = 0, _len = tabs.length; z < _len; z++) {
-          tabs[z].index = z;
-        }
-        chrome.runtime.sendMessage(chrome.runtime.id, {method: 'restoreWindow', windowId: Window.id, tabs: tabs}, (response)=>{
-        });
-      });
+      this.restoreWindow(session, i);
     }
   },
-  restoreWindow(session, windowIndex, chromeVersion){
+  restoreWindow(session, windowIndex, chromeVersion = state.chromeVersion){
     // Opens a new chrome window with the selected tabs object.
     console.log('session.tabs: ', session);
     let options = {};
     // TBD: Alternative to the focused prop in FF?
     if (chromeVersion > 1) {
-      options.push({
-        focused: true
-      });
+      options.focused = true;
     }
+    state.set({windowRestored: true});
     chrome.windows.create(options, (Window)=>{
-      console.log('restored session...',Window);
+      console.log('restored session:', Window);
       let tabs = _.orderBy(session.tabs[windowIndex], ['pinned', 'index'], ['desc', 'asc']);
       for (let z = 0, len = tabs.length; z < len; z++) {
         tabs[z].index = z;
@@ -92,14 +81,14 @@ let sessionsStore = Reflux.createStore({
         }
         let s = state.get();
         state.set({sessions: sessions, sessionTabs: this.flatten(sessions, s.tabs, s.windowId)});
-        alertStore.set({
+        setAlert({
           text: `Successfully imported ${sessions.length} sessions.`,
           tag: 'alert-success',
           open: true
         });
         console.log('sessions imported: ', sessions);
       } else {
-        alertStore.set({
+        setAlert({
           text: 'Please import a valid session file.',
           tag: 'alert-danger',
           open: true
@@ -227,7 +216,7 @@ let sessionsStore = Reflux.createStore({
       state.set({sessions: result});
       chrome.storage.local.set({sessions: result}, (result)=> {
         console.log('session saved...', result);
-        alertStore.set({
+        setAlert({
           text: `Successfully saved new session.`,
           tag: 'alert-success',
           open: true
@@ -235,6 +224,6 @@ let sessionsStore = Reflux.createStore({
       });
     });
   },
-});
+};
 window.sessionsStore = sessionsStore;
 export default sessionsStore;

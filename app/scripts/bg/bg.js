@@ -36,8 +36,6 @@ let trackJs = require('trackjs');
 import React from 'react';
 import ReactDOM from 'react-dom';
 import autoBind from 'react-autobind';
-import reactMixin from 'react-mixin';
-import Reflux from 'reflux';
 import _ from 'lodash';
 import v from 'vquery';
 import uuid from 'node-uuid';
@@ -84,14 +82,6 @@ let sendMsg = (msg, res) => {
   });
 };
 
-let reload = (reason)=>{
-  // console log messages before error triggered location.reload() calls. Preserve console logging in the browser to see them.
-  console.log('Reload background script. Reason: ',reason);
-  setTimeout(()=>{
-    location.reload();
-  },0);
-};
-
 let syncSession = (sessions, prefs, windows=null, cb)=>{
   let allTabs = [];
   if (typeof prefs.syncedSession !== 'undefined' && prefs.syncedSession && prefs.sessionsSync) {
@@ -105,7 +95,8 @@ let syncSession = (sessions, prefs, windows=null, cb)=>{
         if (typeof windows[i].tabs[z] === 'undefined') {
           continue;
         }
-        if (windows[i].tabs[z].url === 'chrome://newtab/') {
+        if (windows[i].tabs[z].url === 'chrome://newtab/'
+          || windows[i].tabs[z].url.substr(-11) === 'newtab.html') {
           _.pullAt(windows[i].tabs, z);
         }
       }
@@ -140,7 +131,8 @@ let createScreenshot = (t, refWindow, refTab, run=0)=>{
   if (t.state.windows[refWindow].tabs[refTab] === undefined) {
     return;
   }
-  if (t.state.windows[refWindow].tabs[refTab].url.indexOf('chrome://newtab/') !== -1) {
+  if (t.state.windows[refWindow].tabs[refTab].url.indexOf('chrome://newtab/') !== -1
+    && t.state.windows[refWindow].tabs[refTab].url.substr(-11) !== 'newtab.html') {
     return;
   }
   if (t.state.screenshots === undefined) {
@@ -200,10 +192,9 @@ let createScreenshot = (t, refWindow, refTab, run=0)=>{
         t.state.screenshots.push(screenshot);
       }
 
-      chrome.storage.local.set({screenshots: t.state.screenshots}, ()=>{
-      });
+      chrome.storage.local.set({screenshots: t.state.screenshots});
       t.setState({screenshots: t.state.screenshots}, ()=>{
-        sendMsg({screenshots: t.state.screenshots});
+        sendMsg({screenshots: t.state.screenshots, windowId: t.state.windows[refWindow].id});
       });
     });
   }).catch((e)=>{
@@ -271,10 +262,11 @@ class Bg extends React.Component {
       actions: [],
       chromeVersion: version
     };
+    this.connectId = prefsStore.connect('prefs', (e) => this.prefsChange(e.prefs));
     autoBind(this);
   }
   componentDidMount(){
-    this.listenTo(prefsStore, this.prefsChange);
+    prefsStore.init();
     this.querySessions();
   }
   prefsChange(e){
@@ -289,7 +281,7 @@ class Bg extends React.Component {
         this.queryScreenshots();
       }
     } else {
-      sendMsg({e: e, type: 'prefs'});
+      sendMsg({e, type: 'prefs'});
     }
   }
   attachListeners(state){
@@ -299,7 +291,7 @@ class Bg extends React.Component {
     */
     if (eventState.onStartup) {
       _.defer(()=>{
-        sendMsg({e: eventState.onStartup, type: 'startup'});
+        sendMsg({e: eventState.onStartup, type: 'startup', action: true});
       });
     }
     if (eventState.onInstalled) {
@@ -328,7 +320,7 @@ class Bg extends React.Component {
                   }, 1000);
                   chrome.tabs.update(tabs[i].id, {active: true});
                 });
-              },500);
+              }, 500);
               break;
             }
           }
@@ -350,7 +342,7 @@ class Bg extends React.Component {
         }
       } else if (changed.hasOwnProperty('screenshots') && areaName === 'local' && this.state.prefs && this.state.prefs.screenshot) {
         this.setState({screenshots: changed.screenshots.newValue});
-        sendMsg({screenshots: changed.screenshots.newValue});
+        sendMsg({screenshots: changed.screenshots.newValue, action: true});
       }
     });
     /*
@@ -374,7 +366,7 @@ class Bg extends React.Component {
       if (refWindow !== -1) {
         _.pullAt(this.state.windows, refWindow);
         this.setState({windows: this.state.windows});
-        sendMsg({windows: this.state.windows});
+        sendMsg({windows: this.state.windows, windowId});
       }
     });
     /*
@@ -431,28 +423,28 @@ class Bg extends React.Component {
     */
     chrome.bookmarks.onCreated.addListener((e, info) => {
       eventState.bookmarksOnCreated = e;
-      sendMsg({e: e, type: 'bookmarks'});
+      sendMsg({e: e, type: 'bookmarks', action: true});
     });
     /*
     Bookmarks removed
     */
     chrome.bookmarks.onRemoved.addListener((e, info) => {
       eventState.bookmarksOnRemoved = e;
-      sendMsg({e: e, type: 'bookmarks'});
+      sendMsg({e: e, type: 'bookmarks', action: true});
     });
     /*
     Bookmarks changed
     */
     chrome.bookmarks.onChanged.addListener((e, info) => {
       eventState.bookmarksOnChanged= e;;
-      sendMsg({e: e, type: 'bookmarks'});
+      sendMsg({e: e, type: 'bookmarks', action: true});
     });
     /*
     Bookmarks moved
     */
     chrome.bookmarks.onMoved.addListener((e, info) => {
       eventState.bookmarksOnMoved= e;
-      sendMsg({e: e, type: 'bookmarks'});
+      sendMsg({e: e, type: 'bookmarks', action: true});
     });
     /*
     History visited
@@ -473,7 +465,7 @@ class Bg extends React.Component {
     */
     chrome.management.onEnabled.addListener((details)=>{
       eventState.onEnabled = details;
-      sendMsg({e: details, type: 'app'});
+      sendMsg({e: details, type: 'app', action: true});
     });
     this.attachMessageListener(s);
     this.setState({init: false});
@@ -530,8 +522,8 @@ class Bg extends React.Component {
       } else if (msg.method === 'prefs') {
         sendResponse({'prefs': s.prefs});
       } else if (msg.method === 'setPrefs') {
-        prefsStore.set_prefs(msg.obj);
-        sendResponse({'prefs': prefsStore.get_prefs()});
+        prefsStore.setPrefs(msg.obj);
+        sendResponse({'prefs': prefsStore.getPrefs()});
       } else if (msg.method === 'getTabs') {
         sendResponse({windows: this.state.windows, windowId: sender.tab.windowId});
       } else if (msg.method === 'queryTabs') {
@@ -719,7 +711,8 @@ class Bg extends React.Component {
     if (refTab === -1) {
       return;
     }
-    if (this.state.windows[refWindow].tabs[refTab].url.indexOf('chrome://newtab/') !== -1) {
+    if (this.state.windows[refWindow].tabs[refTab].url.indexOf('chrome://newtab/') > -1
+      || this.state.windows[refWindow].tabs[refTab].url.substr(-11) === 'newtab.html') {
       return;
     }
     // Update timestamp for auto-discard feature's accuracy.
@@ -758,20 +751,22 @@ class Bg extends React.Component {
     this.state.windows[refWindow].tabs = this.formatTabs(this.state.prefs, this.state.windows[refWindow].tabs);
     this.setState({windows: this.state.windows});
     // Activate the first new tab if it is open, and if this is a second new tab being created.
-    if (e.url.indexOf('chrome://newtab/') !== -1 && this.state.prefs.singleNewTab) {
+    if ((e.url.indexOf('chrome://newtab/') > -1 || e.url.substr(-11) === 'newtab.html')
+      && this.state.prefs.singleNewTab) {
       let refNewTab = findIndex(this.state.newTabs, tab => tab.windowId === e.windowId);
       if (refNewTab !== -1) {
         let refExistingTab = findIndex(this.state.windows[refWindow].tabs, tab => tab.id === this.state.newTabs[refNewTab].id);
         if (refExistingTab === -1
           || (typeof this.state.windows[refWindow].tabs[refExistingTab] !== 'undefined'
-            && this.state.windows[refWindow].tabs[refExistingTab].url.indexOf('chrome://newtab/') === -1)) {
+            && this.state.windows[refWindow].tabs[refExistingTab].url.indexOf('chrome://newtab/') === -1
+            && this.state.windows[refWindow].tabs[refExistingTab].url.substr(-11) !== 'newtab.html')) {
           _.pullAt(this.state.newTabs, refNewTab);
           this.setState({newTabs: this.state.newTabs}, ()=>{
             chrome.tabs.create({active: true});
           });
         } else {
           chrome.tabs.update(this.state.newTabs[refNewTab].id, {active: true}, ()=>{
-            sendMsg({focusSearchEntry: true});
+            sendMsg({focusSearchEntry: true, action: true});
           });
         }
         return;
@@ -810,7 +805,7 @@ class Bg extends React.Component {
     if (refWindow !== -1) {
       _.pullAt(this.state.windows, refWindow);
       this.setState({windows: this.state.windows});
-      sendMsg({windows: this.state.windows});
+      sendMsg({windows: this.state.windows, windowId: id});
     }
   }
   updateSingleItem(id){
@@ -873,7 +868,5 @@ class Bg extends React.Component {
     return null;
   }
 };
-
-reactMixin(Bg.prototype, Reflux.ListenerMixin);
 
 ReactDOM.render(<Bg />, document.body);

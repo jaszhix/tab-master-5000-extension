@@ -5,6 +5,8 @@ import App from './root';
 import v from 'vquery';
 import '../../styles/app.scss';
 
+import {tryFn} from './utils';
+
 const renderApp = (stateUpdate)=>{
   render(<App stateUpdate={stateUpdate} />, document.getElementById('main'));
 };
@@ -41,11 +43,7 @@ const loadPrefs = ()=>{
 };
 
 v(document).ready(()=>{
-  try {
-    loadPrefs();
-  } catch (e) {
-    console.log(e);
-  }
+  tryFn(loadPrefs);
 });
 
 if (module.hot) {

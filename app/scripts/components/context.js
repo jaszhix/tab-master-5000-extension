@@ -4,7 +4,7 @@ import _ from 'lodash';
 
 import {Context} from './bootstrap';
 import state from './stores/state';
-import {msgStore} from './stores/main';
+import {msgStore, cursor} from './stores/main';
 import * as utils from './stores/tileUtils';
 
 class ContextMenu extends React.Component {
@@ -273,15 +273,15 @@ class ContextMenu extends React.Component {
     if (!ref) {
       return;
     }
-    console.log(ref.clientHeight);
+    // Ensure the context menu is fully visible
     _.delay(() => {
       let topChange;
-      if (window.cursor.page.y + ref.clientHeight > window.innerHeight) {
-        ref.style.top = window.innerHeight - ref.clientHeight;
+      if (window.cursor.page.y + ref.clientHeight > window.innerHeight + document.body.scrollTop) {
+        ref.style.top = (window.innerHeight + document.body.scrollTop) - ref.clientHeight;
         topChange = true;
       }
-      if (window.cursor.page.x + ref.clientWidth > window.innerWidth) {
-        ref.style.left = window.innerWidth - ref.clientWidth;
+      if (window.cursor.page.x + ref.clientWidth > window.innerWidth + document.body.scrollTop) {
+        ref.style.left = (window.innerWidth + document.body.scrollTop) - ref.clientWidth;
         if (!topChange) {
           ref.style.top = window.cursor.page.y;
         }
@@ -291,6 +291,7 @@ class ContextMenu extends React.Component {
   }
   render() {
     let p = this.props;
+    console.log(cursor);
     return (
       <div className="ntg-context">
         <div ref={this.getRef} style={{left: window.cursor.page.x, top: window.cursor.page.y, opacity: 0}} className="ntg-context-menu">
