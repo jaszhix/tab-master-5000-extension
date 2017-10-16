@@ -270,6 +270,7 @@ class Root extends React.Component {
         textFieldsBorder: 'rgba(235, 235, 235, 1)',
         textFieldsPlaceholder: 'rgba(126, 126, 135, 1)',
         textFieldsText: 'rgba(34, 36, 38, 1)',
+        tileShadow: 'rgba(0, 0, 0, 0)'
       });
     }
     let p = this.props;

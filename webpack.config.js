@@ -3,13 +3,14 @@ const webpack = require('webpack');
 const autoprefixer = require('autoprefixer');
 const cssnano = require('cssnano');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 const aliases = Object.assign({
   underscore: 'lodash'
 }, require('lodash-loader').createLodashAliases());
 
 const publicPath = 'http://127.0.0.1:8009/app/scripts/';
-const PROD = false;
+const PROD = process.env.NODE_ENV === 'production';
 const postcssPlugins = () => {
   let processors = [
     autoprefixer({
@@ -29,7 +30,7 @@ const postcssPlugins = () => {
   return processors;
 }
 
-module.exports = {
+const config = {
   context: path.resolve(__dirname, 'app/scripts/components'),
   entry: [
     'react-hot-loader/patch',
@@ -43,14 +44,14 @@ module.exports = {
     publicPath
   },
   plugins: [
-    new ExtractTextPlugin({ disable: true }),
-    new webpack.NoEmitOnErrorsPlugin(),
-    new webpack.HotModuleReplacementPlugin(),
+    new ExtractTextPlugin('main.css'),
+    new webpack.DefinePlugin({
+      'process.env': {
+         NODE_ENV: JSON.stringify(process.env.NODE_ENV)
+       }
+    }),
     new webpack.NamedModulesPlugin(),
     new webpack.optimize.ModuleConcatenationPlugin(),
-    new webpack.LoaderOptionsPlugin({
-      debug: true,
-    })
   ],
   module: {
     loaders: [
@@ -107,9 +108,7 @@ module.exports = {
               loader: 'sass-loader',
               options: {
                 sourceMap: true,
-                includePaths: [
-                  path.join(__dirname, 'node_modules')
-                ],
+                includePaths: [],
                 outputStyle: PROD ? 'compressed' : 'expanded'
               }
             }
@@ -118,11 +117,11 @@ module.exports = {
       },
       {
         test: /\.(ttf|eot|svg|woff(2)?)(\S+)?$/,
-        loader: 'file-loader?name=[hash].[ext]'
+        loader: 'file-loader?name=[name].[ext]'
       },
       {
         test: /\.(png|jpg|gif)$/,
-        loader: 'file-loader?name=[hash].[ext]'
+        loader: 'file-loader?name=[name].[ext]'
       },
       {
         test: require.resolve('trackjs'),
@@ -148,7 +147,49 @@ module.exports = {
     inline: false,
     historyApiFallback: true,
     contentBase: path.join(__dirname, 'dist'),
-    headers:    {'Access-Control-Allow-Origin': '*'},
+    headers: {'Access-Control-Allow-Origin': '*'},
     publicPath
   },
 };
+
+if (PROD) {
+  config.devtool = 'hidden-source-map';
+  config.plugins.push(
+    new webpack.optimize.UglifyJsPlugin({
+      mangle: false,
+      sourceMap: true,
+      compress: {
+        warnings: false,
+        drop_console: true,
+        dead_code: true,
+        unused: true,
+        booleans: true,
+        join_vars: true,
+        negate_iife: true,
+        sequences: true,
+        properties: true,
+        evaluate: false,
+        loops: true,
+        if_return: true,
+        cascade: true,
+        unsafe: false
+      },
+      output: {
+        comments: false
+      }
+    }),
+    new BundleAnalyzerPlugin({
+      analyzerMode: 'static',
+      reportFilename: `bundleReport.html`
+    }));
+} else {
+  config.plugins.push(
+    new webpack.NoEmitOnErrorsPlugin(),
+    new webpack.HotModuleReplacementPlugin(),
+    new webpack.LoaderOptionsPlugin({
+      debug: true,
+    })
+  );
+}
+
+module.exports = config;

@@ -597,8 +597,8 @@ class TileGrid extends React.Component {
     }
     let isTableView = state.prefs.format === 'table';
     let config = {
-      outerHeight: window.innerHeight - 52,
-      scrollTop: document.body.scrollTop - 52,
+      outerHeight: window.innerHeight - 57,
+      scrollTop: document.body.scrollTop - 57,
       itemHeight: isTableView ? 46 : this.props.s.prefs.tabSizeHeight + 12,
       columns: isTableView ? 1 : Math.floor(window.innerWidth / (this.props.s.prefs.tabSizeHeight + 80))
     };
