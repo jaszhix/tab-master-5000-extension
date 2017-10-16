@@ -596,13 +596,15 @@ class TileGrid extends React.Component {
       return;
     }
     let isTableView = state.prefs.format === 'table';
-    let offset = isTableView ? 101 : 57;
     let config = {
-      outerHeight: window.innerHeight - offset,
-      scrollTop: document.body.scrollTop - 57,
+      outerHeight: window.innerHeight - 52,
+      scrollTop: document.body.scrollTop - 52,
       itemHeight: isTableView ? 46 : this.props.s.prefs.tabSizeHeight + 12,
       columns: isTableView ? 1 : Math.floor(window.innerWidth / (this.props.s.prefs.tabSizeHeight + 80))
     };
+    if (this.props.s.chromeVersion === 1) {
+      config.outerHeight = Math.round(config.outerHeight * 2.2);
+    }
     if (isTableView) {
       let showFloatingTableHeader = document.body.scrollTop >= 52;
       if (!showFloatingTableHeader) {
@@ -616,6 +618,10 @@ class TileGrid extends React.Component {
       this.height = node.clientHeight;
     }
     this.range = whichToShow(config);
+    if (this.range.start < 0) {
+      this.range.length = this.range.length + Math.abs(this.range.start);
+      this.range.start = 0;
+    }
     this.scrollTimeout = null;
     this.forceUpdate();
   }
@@ -703,8 +709,7 @@ class TileGrid extends React.Component {
             }
             let isVisible = i >= this.range.start && i <= this.range.start + this.range.length;
             if (!isVisible) {
-              let style = state.prefs.format === 'table' ? [window.innerWidth, 46] : [p.s.prefs.tabSizeHeight + 80, p.s.prefs.tabSizeHeight + 12]
-              return <div key={i} style={{width: style[0], height: style[1]}} />
+              return <div key={i} style={{width: `${p.s.prefs.tabSizeHeight + 80}px`, height: `${p.s.prefs.tabSizeHeight + 12}px`}} />
             }
             return (
               <Tile

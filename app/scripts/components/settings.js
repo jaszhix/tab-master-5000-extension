@@ -103,7 +103,6 @@ class ColorPickerContainer extends React.Component {
 const buttonIconStyle = {fontSize: '14px', position: 'relative', top: '0px'};
 const themeContainerStyle = {height: '210px', width: '100%', overflowY: 'auto', position: 'relative', top: '25.5px'};
 const tabPanelStyle = {position: 'relative', top: '18px'};
-const themeNameEditInputStyle = {display: 'inline', height: '27px', width: '66%', top: '0px', left: '17px'};
 const themeNameEditButtonContainerStyle = {width: 'auto', float: 'right', display: 'inline', marginRight: '4px'};
 const noPaddingStyle = {padding: '0px'};
 const tabLinkStyle = {padding: '5px 7.5px'};
@@ -339,7 +338,7 @@ class Theming extends React.Component {
                         type="text"
                         value={s.themeLabelValue}
                         className="form-control"
-                        style={themeNameEditInputStyle}
+                        style={{position: 'absolute', display: 'inline', height: '27px', width: '66%', top: `${i * 27}px`, left: '17px'}}
                         placeholder={theme.label !== 'Custom Theme' ? theme.label : `${utils.t('label')}...`}
                         onChange={(e)=>this.setState({themeLabelValue: e.target.value})}
                         onKeyDown={(e)=>this.handleEnter(e, theme.id)} />

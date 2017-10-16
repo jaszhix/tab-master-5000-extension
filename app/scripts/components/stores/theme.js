@@ -588,7 +588,7 @@ const themeStore = initStore({
       id: newThemeId,
       created: now,
       modified: now,
-      label: `Custom Theme ${newThemeId}`,
+      label: `Custom Theme ${newThemeId + 1}`,
       theme: _.cloneDeep(themeStore.theme),
       wallpaper: currentWallpaper
     };

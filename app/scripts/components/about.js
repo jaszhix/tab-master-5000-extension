@@ -9,8 +9,6 @@ import {utilityStore} from './stores/main';
 import {Btn, Col, Row} from './bootstrap';
 
 import changelog from 'html-loader!markdown-loader!../../../changelog.md';
-/*let supportFile = `html-loader!markdown-loader!../../../support_${chrome.i18n.getUILanguage()}.md`;
-import support from supportFile;*/
 import license from 'html-loader!markdown-loader!../../../COPYING';
 
 class Contribute extends React.Component {
