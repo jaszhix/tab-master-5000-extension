@@ -44,7 +44,7 @@ const config = {
     publicPath
   },
   plugins: [
-    new ExtractTextPlugin('main.css'),
+    new ExtractTextPlugin(PROD ? 'main.css' : { disable: true }),
     new webpack.DefinePlugin({
       'process.env': {
          NODE_ENV: JSON.stringify(process.env.NODE_ENV)
