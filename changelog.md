@@ -1,5 +1,16 @@
 #### Release Notes
 
+##### v2.4.0 / *10-16-17*
+
+*   Fixed the context menu not being visible when opened from the edge of the page.
+*   Fixed the window data in the "Current Session" column not updating in the Session Manager.
+*   Fixed the export data buttons in the Session/Theme managers not working in Firefox.
+*   Rewrote the pagination logic, so only tiles/rows that are visible are rendered.
+*   Added a new theme called Highrise.
+*   Added a sticky column header for the table view.
+*   Added some optimizations for Spidermonkey.
+*   Many more optimizations and bug fixes.
+
 ##### v2.3.0 / *10-11-17*
 
 *   Added compatibility for Firefox.

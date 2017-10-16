@@ -45,6 +45,7 @@ body {
 }
 
 .tile-body {
+    user-select: none;
     padding-left: 0px;
     padding-right: 0px;
     margin-top: 1px;
@@ -60,6 +61,7 @@ body {
     margin-top: 24px;
 }
 .side-div {
+    user-select: none;
     float: left;
     position: relative;
 }
@@ -80,6 +82,7 @@ body {
     padding-left: 8px;
 }
 .preferences {
+    user-select: none;
     margin-top: 8px;
 }
 .prefs-row {
@@ -417,4 +420,8 @@ tr.placeholder:before {
 .table > thead > th {
     width: auto;
     transition: width 2s
+}
+
+.theming, .modal-tm5k, .sessions {
+    user-select: none;
 }

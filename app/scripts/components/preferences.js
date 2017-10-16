@@ -1,14 +1,11 @@
 import React from 'react';
 import autoBind from 'react-autobind';
-import reactMixin from 'react-mixin';
-import Reflux from 'reflux';
 import _ from 'lodash';
 import tc from 'tinycolor2';
-
-import * as utils from './stores/tileUtils';
-
+import v from 'vquery'
 import Slider from 'rc-slider';
 import ReactTooltip from 'react-tooltip';
+import * as utils from './stores/tileUtils';
 import state from './stores/state';
 import {map} from './utils'
 import {msgStore, utilityStore, getBlackList, setBlackList, isValidDomain, faviconStore} from './stores/main';
@@ -57,7 +54,9 @@ class Toggle extends React.Component {
         <Row onMouseEnter={p.onMouseEnter} className={p.child ? "prefs-row-child" : "prefs-row"}>
           <div className="checkbox checkbox-switchery switchery-xs" onClick={p.onClick}>
             <label style={{paddingLeft: '47px', color: p.theme.bodyText}}>
-              <span className="switchery switchery-default" style={{
+              <span
+              className="switchery switchery-default"
+              style={{
                 left: '8px',
                 backgroundColor: p.on ? p.theme.darkBtnBg : 'rgba(255, 255, 255, 0)',
                 borderColor: p.on ? p.theme.textFieldBorder : p.theme.darkBtnBg,
@@ -91,11 +90,9 @@ class Blacklist extends React.Component {
   }
   componentDidMount(){
     getBlackList((blacklist = '') => {
-      console.log('??', blacklist);
       if (blacklist && blacklist.length > 0) {
         blacklist = blacklist.join(' \n') + ' ';
       }
-
       this.setState({blacklistValue: blacklist});
     });
   }
@@ -124,7 +121,7 @@ class Blacklist extends React.Component {
       return JSON.stringify(str);
     }
 
-    let domains = blacklistStr.split(/[\s,]/).reduce(function(_d, val, i){
+    let domains = blacklistStr.split(/[\s,]/).reduce(function(_d, val){
       // pass the 2nd argument of arr.reduce(...) as the argument _d
       let trimmed = _.trim(val);
       if (isValidDomain(trimmed)) {
@@ -164,7 +161,8 @@ class Blacklist extends React.Component {
     let lightTextColorArg = tc(p.theme.settingsBg).isLight() && tc(p.theme.textFieldsPlaceholder).isLight();
     return (
       <Col size="12" style={{marginTop: '3px'}}>
-          <Btn style={{position: 'absolute', top: '-2.5em', right: 0}}
+          <Btn
+          style={{position: 'absolute', top: '-2.5em', right: 0}}
           onClick={this.blacklistSubmit}
           disabled={!s.blacklistNeedsSave}
           className="ntg-setting-btn"
@@ -191,8 +189,6 @@ class Blacklist extends React.Component {
   }
 }
 
-reactMixin(Blacklist.prototype, Reflux.ListenerMixin);
-
 class Preferences extends React.Component {
   constructor(props) {
     super(props);
@@ -215,6 +211,8 @@ class Preferences extends React.Component {
         </div>
       );
       state.set({modal: p.modal}, true);
+    } else {
+      v('#options').remove();
     }
   }
   getBytesInUse(){
@@ -331,14 +329,15 @@ class Preferences extends React.Component {
             hoverBg={p.theme.settingsItemHover}
             data-tip={utils.t('animationsTip')}>
               {p.prefs.animations ?
-                <Toggle
-                theme={p.theme}
-                onMouseEnter={()=>this.handleToggle('duplicate')}
-                onClick={()=>this.handleClick('duplicate')}
-                on={p.prefs.duplicate} child={true} label={utils.t('duplicate')}
-                hoverBg={p.theme.settingsItemHover}
-                data-tip={utils.t('duplicateTip')}>
-              </Toggle> : null}
+              <Toggle
+              theme={p.theme}
+              onMouseEnter={()=>this.handleToggle('duplicate')}
+              onClick={()=>this.handleClick('duplicate')}
+              on={p.prefs.duplicate}
+              child={true}
+              label={utils.t('duplicate')}
+              hoverBg={p.theme.settingsItemHover}
+              data-tip={utils.t('duplicateTip')} /> : null}
             </Toggle>
             <Toggle
             theme={p.theme}
@@ -360,8 +359,7 @@ class Preferences extends React.Component {
                   child={true}
                   label={utils.t('screenshotInit')}
                   hoverBg={p.theme.settingsItemHover}
-                  data-tip={utils.t('screenshotInitTip')}>
-                  </Toggle>
+                  data-tip={utils.t('screenshotInitTip')} />
                   <Toggle
                   theme={p.theme}
                   onMouseEnter={()=>this.handleToggle('screenshotChrome')}
@@ -370,8 +368,7 @@ class Preferences extends React.Component {
                   child={true}
                   label={utils.t('screenshotChrome')}
                   hoverBg={p.theme.settingsItemHover}
-                  data-tip={utils.t('screenshotChromeTip')}>
-                  </Toggle>
+                  data-tip={utils.t('screenshotChromeTip')} />
                   <Toggle
                   theme={p.theme}
                   onMouseEnter={()=>this.handleToggle('screenshotBg')}
@@ -380,8 +377,7 @@ class Preferences extends React.Component {
                   child={true}
                   label={utils.t('screenshotBg')}
                   hoverBg={p.theme.settingsItemHover}
-                  data-tip={utils.t('screenshotBgTip')}>
-                  </Toggle>
+                  data-tip={utils.t('screenshotBgTip')} />
                 </div>
               : null}
             </Toggle>
@@ -424,8 +420,9 @@ class Preferences extends React.Component {
                 onAfterChange={(e)=>this.handleSlideAfterChange(e, 'screenshotBgBlur')}
                 onMouseEnter={()=>this.handleToggle('screenshotBgBlur')}
                 hoverBg={p.theme.settingsItemHover}
-                data-tip={utils.t('screenshotBgBlurTip')}/>
-                <Slide  className="prefs-row-last"
+                data-tip={utils.t('screenshotBgBlurTip')} />
+                <Slide
+                className="prefs-row-last"
                 label={`${utils.t('tabSizeHeight')}: ${p.prefs.tabSizeHeight}x${p.prefs.tabSizeHeight+80}`}
                 min={134} max={300}
                 defaultValue={p.prefs.tabSizeHeight}
@@ -473,7 +470,7 @@ class Preferences extends React.Component {
               <div><strong>ALT+S</strong>: ${_.upperFirst(utils.t('sessions'))}</div>
               <div><strong>ALT+A</strong>: ${_.upperFirst(utils.t('apps'))}</div>
               <div><strong>ALT+E</strong>: ${_.upperFirst(utils.t('extensions'))}</div>
-            `}/>
+            `} />
             <Toggle
             theme={p.theme}
             onMouseEnter={()=>this.handleToggle('blacklist')}
@@ -481,7 +478,7 @@ class Preferences extends React.Component {
             on={p.prefs.blacklist} label={utils.t('blacklist')}
             hoverBg={p.theme.settingsItemHover}
             data-tip={utils.t('blacklistTip')}>
-              {p.prefs.blacklist ? <Blacklist theme={p.theme}/> : null}
+              {p.prefs.blacklist ? <Blacklist theme={p.theme} /> : null}
             </Toggle>
           </Col>
         </Row>
@@ -495,7 +492,5 @@ class Preferences extends React.Component {
     );
   }
 }
-
-reactMixin(Preferences.prototype, Reflux.ListenerMixin);
 
 export default Preferences;

@@ -1,5 +1,4 @@
 import _ from 'lodash';
-import kmp from 'kmp';
 import Fuse from 'fuse.js';
 import {each, findIndex, filter, tryFn} from '../utils';
 import state from './state';
@@ -88,7 +87,9 @@ export var checkDuplicateTabs = (tab, cb) => {
     return state.duplicateTabs.indexOf(_tab.url) > -1;
   });
   if (!first) {
-    if (cb) cb(false);
+    if (cb) {
+      cb(false);
+    }
     return;
   }
   for (let y = 0, len = duplicates.length; y < len; y++) {
@@ -140,7 +141,7 @@ export var checkFavicons = (p, tab, key, tabs) => {
   if (p.s.favicons.length > 0) {
     let match = false;
     for (let i = 0, len = p.s.favicons.length; i < len; i++) {
-      if (p.s.favicons[i] && p.s.favicons[i].domain && kmp(tab.url, p.s.favicons[i].domain) !== -1) {
+      if (p.s.favicons[i] && p.s.favicons[i].domain && tab.url.indexOf(p.s.favicons[i].domain) > -1) {
         match = true;
         tabs[key].favIconUrl = p.s.favicons[i].favIconUrl;
       }
@@ -184,7 +185,7 @@ export var filterFavicons = (faviconUrl, tabUrl, mode=null) => {
   }
 };
 
-export var sort = (p, data, sortChange=null) => {
+export var sort = (p, data) => {
   let result;
 
   if (p.s.prefs && p.s.prefs.mode === 'tabs') {
@@ -223,15 +224,6 @@ export var formatBytes = (bytes, decimals) => {
   return (bytes / Math.pow(k, i)).toPrecision(dm) + ' ' + sizes[i];
 };
 
-export var scrollbarVisible = (element) => {
-  let hasVScroll = document.body.scrollHeight > document.body.clientHeight;
-  let cStyle = document.body.currentStyle || window.getComputedStyle(document.body, '');
-  return (cStyle.overflow === 'visible'
-    || cStyle.overflowY === 'visible'
-    || (hasVScroll && cStyle.overflow === 'auto')
-    || (hasVScroll && cStyle.overflowY === 'auto'));
-};
-
 export var searchChange = (p, tabs) => {
   let _tabs;
   tryFn(() => {
@@ -255,3 +247,9 @@ export var searchChange = (p, tabs) => {
 export var t = (key) => {
   return chrome.i18n.getMessage(key);
 };
+
+export const isNewTab = function(url) {
+  return (url && (url.indexOf('chrome://newtab/') > -1
+    || url.substr(-11) === 'newtab.html'
+    || url.substr(-11) === 'ewtab.html#'))
+}

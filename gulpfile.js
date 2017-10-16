@@ -12,10 +12,14 @@ const config = require('./webpack.config');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 let plugins = [];
-let env = {production: false};
-let uglify = function(){
+let env = {production: process.env.NODE_ENV === 'production'};
+console.log('Configuration in use:', process.env.NODE_ENV);
+const createProductionWebpackConfig = function(){
   if (env.production) { // Needs to check node env
+    config.devtool = 'source-map';
     config.plugins.push(new webpack.optimize.UglifyJsPlugin({
+      mangle: false,
+      sourceMap: true,
       compress: {
         warnings: false,
         drop_console: true,
@@ -30,7 +34,7 @@ let uglify = function(){
         loops: true,
         if_return: true,
         cascade: true,
-        unsafe: true
+        unsafe: false
       },
       output: {
         comments: false
@@ -42,13 +46,13 @@ let uglify = function(){
        }
     }));
     plugins.push(new webpack.optimize.DedupePlugin()),
-    plugins.push(new ExtractTextPlugin({ filename: '[name]---[hash].css' }))
+    plugins.push(new ExtractTextPlugin({filename: '[name]---[hash].css'}))
   }
 };
 
 gulp.task('build', ['build-bg'], function() {
   if (env.production) {
-    uglify();
+    createProductionWebpackConfig();
     config.entry = 'app.js';
     config.output.filename = 'app.js';
     config.output.publicPath = '/';
@@ -58,7 +62,7 @@ gulp.task('build', ['build-bg'], function() {
     .pipe(gulp.dest('./app/scripts/'));
 });
 gulp.task('build-bg', ['build-content'], function() {
-  uglify();
+  createProductionWebpackConfig();
   config.entry = '../bg/bg.js';
   config.output.filename = 'background.js';
   return gulp.src('./app/scripts/background.js')
@@ -66,7 +70,7 @@ gulp.task('build-bg', ['build-content'], function() {
     .pipe(gulp.dest('./app/scripts/'));
 });
 gulp.task('build-content', function() {
-  uglify();
+  createProductionWebpackConfig();
   config.entry = '../content/content.js';
   config.output.filename = 'content.js';
   return gulp.src('./app/scripts/content.js')

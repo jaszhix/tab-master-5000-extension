@@ -40,15 +40,14 @@ let sessionsStore = {
       for (let z = 0, len = tabs.length; z < len; z++) {
         tabs[z].index = z;
       }
-      chrome.runtime.sendMessage(chrome.runtime.id, {method: 'restoreWindow', windowId: Window.id, tabs: tabs}, (response)=>{
-      });
+      chrome.runtime.sendMessage(chrome.runtime.id, {method: 'restoreWindow', windowId: Window.id, tabs: tabs});
     });
   },
   exportSessions(_sessions){
     // Stringify sessionData and export as JSON.
     this.cleanSessions(_sessions, (sessions)=>{
       let json = JSON.stringify(sessions);
-      let filename = 'TM5K-Sessions-'+utilityStore.now();
+      let filename = `TM5K-Sessions-${Date.now()}.json`;
       let blob = new Blob([json], {type: 'application/json;charset=utf-8'});
       chrome.downloads.download({
         url: URL.createObjectURL(blob),
@@ -67,7 +66,6 @@ let sessionsStore = {
       if (typeof json[0].tabs !== 'undefined' && _.isArray(json[0].tabs)) {
         if (typeof json[0].sync !== 'undefined') {
           _sessions.sessionData = json;
-          console.log(_sessions);
           chrome.storage.local.remove('sessionData');
           chrome.storage.local.remove('sessions');
           _sessions = this.convertV1(_sessions);
@@ -95,7 +93,7 @@ let sessionsStore = {
         });
       }
     };
-    reader.readAsText(e.target.files[0], "UTF-8");
+    reader.readAsText(e.target.files[0], 'UTF-8');
   },
   flatten(sessions, tabs, windowId){
     if (sessions) {
@@ -168,9 +166,7 @@ let sessionsStore = {
     let refSession = findIndex(sessions, _session => _session.id === session.id);
     sessions[refSession] = session;
     state.set({sessions: sessions});
-    chrome.storage.local.set({sessions: sessions}, (result)=> {
-      console.log('session updated', sessions);
-    });
+    chrome.storage.local.set({sessions: sessions});
   },
   cleanSessions(sessions, cb){
     each(sessions, (session, sKey)=>{
@@ -182,9 +178,7 @@ let sessionsStore = {
         });
       });
     });
-    chrome.storage.local.set({sessions: sessions}, (result)=> {
-      console.log('sessions cleaned...');
-    });
+    chrome.storage.local.set({sessions: sessions});
     cb(sessions);
   },
   v2Save(opt){
@@ -202,20 +196,18 @@ let sessionsStore = {
       id: uuid.v4()
     };
     let sessions;
-    console.log(session);
     chrome.storage.local.get('sessions', (item)=>{
       if (!item.sessions) {
         sessions = {sessions: []};
         sessions.sessions.push(session);
       } else {
-        console.log('item: ', item);
         sessions = item;
         sessions.sessions.push(session);
       }
       let result = _.orderBy(sessions.sessions, ['timeStamp'], ['desc']);
       state.set({sessions: result});
       chrome.storage.local.set({sessions: result}, (result)=> {
-        console.log('session saved...', result);
+        console.log('session saved:', result);
         setAlert({
           text: `Successfully saved new session.`,
           tag: 'alert-success',

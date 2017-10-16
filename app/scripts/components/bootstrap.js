@@ -1,9 +1,6 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import autoBind from 'react-autobind';
-import reactMixin from 'react-mixin';
-import Reflux from 'reflux';
 import _ from 'lodash';
 import onClickOutside from 'react-onclickoutside';
 import ReactTooltip from 'react-tooltip';
@@ -33,7 +30,7 @@ export class Btn extends React.Component {
   }
   componentWillUnmount(){
     themeStore.disconnect(this.connectId);
-    tryFn(() => v(ReactDOM.findDOMNode(this)).css({display: 'none'}));
+    tryFn(() => this.ref.style.display = 'none');
   }
   themeChange(e){
     if (e.theme) {
@@ -52,6 +49,9 @@ export class Btn extends React.Component {
     if (this.props.onMouseLeave) {
       this.props.onMouseLeave();
     }
+  }
+  getRef(ref) {
+    this.ref = ref;
   }
   render() {
     let p = this.props;
@@ -82,16 +82,23 @@ export class Btn extends React.Component {
       _.assignIn(faStyle, _.cloneDeep(p.faStyle));
       return (
         <button
-          data-tip={p['data-tip'] ? `<div style="max-width: 350px;">${p['data-tip']}</div>` : null}
-          ref="btn"
-          style={style}
-          onMouseEnter={this.handleHoverIn}
-          onMouseLeave={this.handleHoverOut}
-          onClick={p.onClick}
-          id={p.id}
-          className={p.className}>
-            <div className="btn-label">{p.fa || p.icon ? <i style={{paddingRight: '2px'}} className={`${p.fa ? 'fa fa-'+p.fa : ''}${p.icon ? ' icon-'+p.icon : ''}`} style={faStyle}></i> : null}{p.fa ? ' ' : null}{p.children}</div>
-          </button>
+        data-tip={p['data-tip'] ? `<div style="max-width: 350px;">${p['data-tip']}</div>` : null}
+        ref={this.getRef}
+        style={style}
+        onMouseEnter={this.handleHoverIn}
+        onMouseLeave={this.handleHoverOut}
+        onClick={p.onClick}
+        id={p.id}
+        className={p.className}>
+          <div className="btn-label">
+            {p.fa || p.icon ?
+            <i
+            className={`${p.fa ? 'fa fa-'+p.fa : ''}${p.icon ? ' icon-'+p.icon : ''}`}
+            style={faStyle} /> : null}
+            {p.fa ? ' ' : null}
+            {p.children}
+          </div>
+        </button>
       );
     } else {
       return null;
@@ -104,61 +111,88 @@ Btn.defaultProps = {
   faStyle: {},
   noIconPadding: false
 };
-reactMixin(Btn.prototype, Reflux.ListenerMixin);
 
 export class Col extends React.Component {
+  static propTypes = {
+    size: PropTypes.string.isRequired
+  };
   constructor(props){
     super(props);
   }
   render(){
     let p = this.props;
     return (
-      <div data-tip={p['data-tip'] ? `<div style="max-width: 350px;">${p['data-tip']}</div>` : null} onContextMenu={p.onContextMenu} onDragEnter={p.onDragEnter} onMouseEnter={p.onMouseEnter} onMouseLeave={p.onMouseLeave} onClick={p.onClick} style={p.style} id={p.id} className={p.className ? 'col-xs-'+p.size+' '+p.className : 'col-xs-'+p.size}>{p.children}</div>
+      <div
+      data-tip={p['data-tip'] ? `<div style="max-width: 350px;">${p['data-tip']}</div>` : null}
+      onContextMenu={p.onContextMenu}
+      onDragEnter={p.onDragEnter}
+      onMouseEnter={p.onMouseEnter}
+      onMouseLeave={p.onMouseLeave}
+      onClick={p.onClick}
+      style={p.style}
+      id={p.id}
+      className={p.className ? 'col-xs-'+p.size+' '+p.className : 'col-xs-'+p.size}>
+        {p.children}
+      </div>
     )
   }
 }
 
-Col.propTypes = {
-  size: PropTypes.string.isRequired
-};
-
 export class Row extends React.Component {
+  static propTypes = {
+    fluid: PropTypes.bool,
+  };
+  static defaultProps = {
+    fluid: false,
+  };
   constructor(props){
     super(props);
   }
   render(){
     let p = this.props;
     return (
-      <div data-tip={p['data-tip'] ? `<div style="max-width: 350px;">${p['data-tip']}</div>` : null} onContextMenu={p.onContextMenu} onDragEnter={p.onDragEnter} onMouseEnter={p.onMouseEnter} onMouseLeave={p.onMouseLeave} onClick={p.onClick} style={p.style} id={p.id} className={p.fluid ? p.className ? 'row-fluid '+p.className : 'row-fluid' : p.className ? 'row '+p.className : 'row'}>{p.children}</div>
+      <div
+      data-tip={p['data-tip'] ? `<div style="max-width: 350px;">${p['data-tip']}</div>` : null}
+      onContextMenu={p.onContextMenu}
+      onDragEnter={p.onDragEnter}
+      onMouseEnter={p.onMouseEnter}
+      onMouseLeave={p.onMouseLeave}
+      onClick={p.onClick}
+      style={p.style}
+      id={p.id}
+      className={p.fluid ? p.className ? 'row-fluid '+p.className : 'row-fluid' : p.className ? 'row '+p.className : 'row'}>
+        {p.children}
+      </div>
     );
   }
 }
 
-Row.propTypes = {
-  fluid: PropTypes.bool,
-};
-Row.defaultProps = {
-  fluid: false,
-};
-
 export class Container extends React.Component {
+  static propTypes = {
+    fluid: PropTypes.bool
+  };
+  static defaultProps = {
+    fluid: false
+  };
   constructor(props){
     super(props);
   }
   render() {
     let p = this.props;
     return (
-      <div data-tip={p['data-tip'] ? `<div style="max-width: 350px;">${p['data-tip']}</div>` : null} onContextMenu={p.onContextMenu} onDragEnter={p.onDragEnter} onMouseEnter={p.onMouseEnter} onMouseLeave={p.onMouseLeave} onClick={p.onClick} style={p.style} id={p.id} className={p.fluid ? p.className ? 'container-fluid '+p.className : 'container-fluid' : p.className ? 'container '+p.className : 'container'}>{p.children}</div>
+      <div
+      data-tip={p['data-tip'] ? `<div style="max-width: 350px;">${p['data-tip']}</div>` : null}
+      onContextMenu={p.onContextMenu} onDragEnter={p.onDragEnter}
+      onMouseEnter={p.onMouseEnter} onMouseLeave={p.onMouseLeave}
+      onClick={p.onClick}
+      style={p.style}
+      id={p.id}
+      className={p.fluid ? p.className ? 'container-fluid '+p.className : 'container-fluid' : p.className ? 'container '+p.className : 'container'}>
+        {p.children}
+      </div>
     );
   }
 }
-
-Container.propTypes = {
-  fluid: PropTypes.bool
-};
-Container.defaultProps = {
-  fluid: false
-};
 
 export class Panel extends React.Component {
   constructor(props){
@@ -248,7 +282,7 @@ export class ModalOverlay extends React.Component {
     let overlayStyle = {display: 'block', paddingRight: '15px', transition: p.animations ? 'top 0.2s' : 'initial'};
     overlayStyle = _.assignIn(overlayStyle, p.overlayStyle);
     return (
-      <div className={`modal fade${s.fadeIn ? ' in' : ''}`} style={overlayStyle}>
+      <div className={`modal-tm5k modal fade${s.fadeIn ? ' in' : ''}`} style={overlayStyle}>
         <ModalDefault
         onClose={this.handleCloseClick}
         header={p.header}
@@ -259,6 +293,7 @@ export class ModalOverlay extends React.Component {
         footerComponent={p.footerComponent}
         clickOutside={p.clickOutside}
         headerStyle={p.headerStyle}
+        contentStyle={p.contentStyle}
         bodyStyle={p.bodyStyle}
         dialogStyle={p.dialogStyle}
         footerStyle={p.footerStyle}
@@ -299,9 +334,9 @@ export class ModalDefault extends React.Component {
     headerStyle = _.assignIn(headerStyle, _.cloneDeep(p.headerStyle));
     return (
       <div className={`modal-dialog${p.size ? ' modal-'+p.size : ''}`} style={p.dialogStyle}>
-        <div className="modal-content">
+        <div className="modal-content" style={p.contentStyle}>
           <div className="modal-header bg-blue" style={headerStyle}>
-            <button type="button" className="close icon-cross2" onClick={p.onClose} style={p.closeBtnStyle}/>
+            <button type="button" className="close icon-cross2" onClick={p.onClose} style={p.closeBtnStyle} />
             <div className="col-xs-10">
               <div className="media-left media-middle" style={{position: 'relative', top: '8px', fontSize: '16px'}}>
                 {p.header}
@@ -392,7 +427,10 @@ export class Context extends React.Component {
   render(){
     let p = this.props;
     return (
-      <ul className="dropdown-menu dropdown-menu-xs" style={{
+      <ul
+      className="dropdown-menu dropdown-menu-xs"
+      style={{
+        userSelect: 'none',
         display: 'block',
         position: 'relative',
         width: '100%',
@@ -404,14 +442,16 @@ export class Context extends React.Component {
       }}>
         {p.options ? p.options.map((option, i)=>{
           if (option.divider) {
-            return <li key={i} className="divider"></li>;
+            return <li key={i} className="divider" />;
           }
           if (option.argument) {
             if (option.hasOwnProperty('switch')) {
               return (
                 <li key={i} className="checkbox checkbox-switchery switchery-xs">
                   <label style={{paddingLeft: '47px', paddingTop: '6px', paddingBottom: '6px', color: p.theme.bodyText}} onClick={option.onClick}>
-                    <span className="switchery switchery-default" style={{
+                    <span
+                    className="switchery switchery-default"
+                    style={{
                       left: '8px',
                       backgroundColor: option.switch ? p.theme.darkBtnBg : 'rgba(255, 255, 255, 0)',
                       borderColor: option.switch ? p.theme.textFieldBorder : p.theme.darkBtnBg,
@@ -425,7 +465,16 @@ export class Context extends React.Component {
                 </li>
               );
             } else {
-              return <li key={i}><a style={{cursor: 'pointer', color: p.theme.bodyText}} onClick={option.onClick}><i style={{color: p.theme.bodyText}} className={option.icon} /> {option.label}</a></li>;
+              return (
+                <li key={i}>
+                  <a
+                  style={{cursor: 'pointer', color: p.theme.bodyText}}
+                  onClick={option.onClick}>
+                    <i style={{color: p.theme.bodyText}} className={option.icon} />
+                    {option.label}
+                  </a>
+                </li>
+              );
             }
           } else {
             return null;

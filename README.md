@@ -34,6 +34,7 @@ Tab Master 5K replaces your New Tab page with a full-featured tabs, history, boo
 ### Contributing
 - Install the project dependencies with ```yarn``` or ```npm install```.
 - Start the development environment with ```npm run dev```.
+  - If using Firefox, back up manifest.json and copy manifest_firefox.json over it.
 - Load the ```app``` directory as an unpackaged extension.
 - To build for production, run ```gulp dist``` for Chrome, or ```gulp dist-firefox``` for Firefox.
 

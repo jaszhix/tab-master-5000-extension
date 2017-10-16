@@ -1,8 +1,5 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import autoBind from 'react-autobind';
-import reactMixin from 'react-mixin';
-import Reflux from 'reflux';
 import _ from 'lodash';
 import tc from 'tinycolor2';
 
@@ -19,6 +16,9 @@ import {ModalOverlay, Tabs} from './bootstrap';
 let mount = false;
 
 class ModalHandler extends React.Component {
+  static defaultProps = {
+    collapse: true
+  };
   constructor(props) {
     super(props);
 
@@ -83,6 +83,7 @@ class ModalHandler extends React.Component {
           backgroundColor: p.theme.headerBg,
           color: headerBgIsLight ? p.theme.lightBtnText : p.theme.darkBtnText
         }}
+        contentStyle={{backgroundColor: p.theme.settingsBg}}
         bodyStyle={{
           backgroundColor: p.theme.settingsBg,
           maxHeight: p.settings === 'theming' ? '300px' : `${window.innerHeight - 200}px`,
@@ -122,7 +123,7 @@ class ModalHandler extends React.Component {
           effect="solid"
           place="top"
           multiline={true}
-          html={true}/> : null}
+          html={true} /> : null}
         </ModalOverlay>
       );
     } else {
@@ -130,13 +131,5 @@ class ModalHandler extends React.Component {
     }
   }
 }
-
-ModalHandler.propTypes = {
-  collapse: PropTypes.bool
-};
-ModalHandler.defaultProps = {
-  collapse: true
-};
-reactMixin(ModalHandler.prototype, Reflux.ListenerMixin);
 
 export default ModalHandler;

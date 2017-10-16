@@ -1,4 +1,3 @@
-import Reflux from 'reflux';
 import _ from 'lodash';
 
 import state from './state';
@@ -28,7 +27,7 @@ let screenshotStore = {
       }
     });
     if (s.prefs.screenshot && refTab !== undefined && refTab.url.indexOf('newtab') === -1) {
-      getScreenshot.then((img, err)=>{
+      getScreenshot.then((img)=>{
         let resize = new Promise((resolve, reject)=>{
           let sourceImage = new Image();
           sourceImage.onload = function() {
@@ -86,7 +85,7 @@ let screenshotStore = {
       state.set({screenshots: []});
     });
   },
-  purge(index, windowId){
+  purge(index){ // TBD - dead code, but may be needed still
     utilityStore.get_bytesInUse('screenshots').then((bytes)=>{
       let timeStamp = null;
       let timeStampIndex = null;

@@ -95,7 +95,7 @@ function init(state = {}, listeners = [], mergeKeys = [], connections = 0) {
     let keys = Object.keys(object);
     let changed = false;
     for (let i = 0; i < keys.length; i++) {
-      if (typeof state[keys[i]] === 'undefined') {
+      if (!state.hasOwnProperty(keys[i])) {
         throw storeError('set', keys[i], 'Property not found.');
       }
       if (!isEqual(state[keys[i]], object[keys[i]])) {
@@ -227,7 +227,7 @@ function init(state = {}, listeners = [], mergeKeys = [], connections = 0) {
 
   function disconnectByKey(key) {
     let listenerIndex = findIndex(listeners, function(listener) {
-      return listeners.keys.indexOf(key) > -1;
+      return listener.keys.indexOf(key) > -1;
     });
     if (listenerIndex === -1) {
       throw storeError('disconnect', key, 'Invalid disconnect key.');

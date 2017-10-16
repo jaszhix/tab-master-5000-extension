@@ -43,10 +43,10 @@ class ContextMenu extends React.Component {
       this.handleOptions(nextProps);
     }
   }
-  handleClickOutside(e){
+  handleClickOutside(){
     let p = this.props;
     p.context.value = false;
-    p.context.id = null;
+    p.context.id = {id: p.context.id.id};
     state.set({
       context: p.context,
       disableSidebarClickOutside: false
@@ -291,7 +291,6 @@ class ContextMenu extends React.Component {
   }
   render() {
     let p = this.props;
-    console.log(cursor);
     return (
       <div className="ntg-context">
         <div ref={this.getRef} style={{left: window.cursor.page.x, top: window.cursor.page.y, opacity: 0}} className="ntg-context-menu">

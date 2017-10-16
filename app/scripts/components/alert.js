@@ -3,9 +3,10 @@ import state from './stores/state';
 
 class Alert extends React.Component {
   render() {
-    let createPostMarkup = (postContent)=> { return {__html: postContent};};
+    let createPostMarkup = (postContent)=> {return {__html: postContent};};
     return (
-      <div style={{
+      <div
+      style={{
         zIndex: '9999',
         position: 'fixed',
         bottom: '0px',
@@ -15,7 +16,7 @@ class Alert extends React.Component {
         cursor: 'pointer'
       }} onClick={()=>state.set({alert: {open: !this.props.alert.open}})}>
         {this.props.alert.open && this.props.enabled ?
-          <div className={`message-response-box animated ${this.props.alert.class}`} >
+        <div className={`message-response-box animated ${this.props.alert.class}`} >
           <div className={`alert message-response ${this.props.alert.tag}`} role="alert">
             <div dangerouslySetInnerHTML={createPostMarkup(this.props.alert.text)} />
           </div>

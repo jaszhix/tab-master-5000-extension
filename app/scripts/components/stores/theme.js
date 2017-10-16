@@ -27,7 +27,7 @@ const defaultTheme = {
   tileBgHover: 'rgba(247, 247, 247, 0.97)',
   tileText: 'rgba(51, 51, 51, 1)',
   tileTextShadow: 'rgba(255, 255, 255, 1)',
-  tileShadow: 'rgba(133, 132, 132, 0)',
+  tileShadow: 'rgba(163, 162, 162, 1)',
   tileX: 'rgba(51, 51, 51, 1)',
   tileXHover: 'rgba(0, 0, 0, 1)',
   tilePin: 'rgba(51, 51, 51, 1)',
@@ -63,7 +63,7 @@ const chromesque = {
   tileBgHover: 'rgba(237, 240, 242, 1)',
   tileText: 'rgba(103, 112, 115, 1)',
   tileTextShadow: 'rgba(255, 255, 255, 1)',
-  tileShadow: 'rgba(185, 187, 189, 0)',
+  tileShadow: 'rgba(52, 73, 94, 0.62)',
   tileX: 'rgba(150, 150, 150, 1)',
   tileXHover: 'rgba(150, 150, 150, 1)',
   tilePin: 'rgba(150, 150, 150, 1)',
@@ -107,7 +107,7 @@ const mellowDark = {
   tilePin: 'rgba(239, 245, 223, 0.88)',
   tilePinHover: 'rgba(224, 230, 209, 1)',
   tilePinned: 'rgba(173, 186, 136, 1)',
-  tileShadow: 'rgba(147, 150, 137, 0.71)',
+  tileShadow: 'rgba(147, 150, 137, 0.16)',
   tileText: 'rgba(239, 245, 223, 0.89)',
   tileTextShadow: 'rgba(30, 31, 27, 0.41)',
   tileX: 'rgba(239, 245, 223, 0.86)',
@@ -143,7 +143,7 @@ const pastelSummer = {
   tilePin: 'rgba(56, 32, 32, 1)',
   tilePinHover: 'rgba(56, 32, 32, 1)',
   tilePinned: 'rgba(182, 119, 119, 1)',
-  tileShadow: 'rgba(140, 81, 80, 0)',
+  tileShadow: 'rgba(140, 81, 80, 0.35)',
   tileText: 'rgba(51, 51, 51, 1)',
   tileTextShadow: 'rgba(181, 154, 101, 0)',
   tileX: 'rgba(56, 32, 32, 1)',
@@ -171,7 +171,7 @@ const leafy = {
   tileBgHover: 'rgba(155, 189, 123, 0.97)',
   tileText: 'rgba(32, 61, 4, 1)',
   tileTextShadow: 'rgba(167, 189, 108, 0.16)',
-  tileShadow: 'rgba(167, 189, 108, 0)',
+  tileShadow: 'rgba(121, 148, 101, 1)',
   tileX: 'rgba(51, 66, 37, 1)',
   tileXHover: 'rgba(51, 66, 37, 1)',
   tilePin: 'rgba(51, 66, 37, 1)',
@@ -215,9 +215,9 @@ const midnightPurple = {
   tilePin: 'rgba(235, 235, 242, 1)',
   tilePinHover: 'rgba(235, 235, 242, 1)',
   tilePinned: 'rgba(235, 235, 242, 1)',
-  tileShadow: 'rgba(123, 112, 161, 0)',
+  tileShadow: 'rgba(198, 188, 232, 0.07)',
   tileText: 'rgba(235, 235, 242, 1)',
-  tileTextShadow: 'rgba(60, 68, 107, 0.72)',
+  tileTextShadow: 'rgba(255, 255, 255, 0.04)',
   tileX: 'rgba(235, 235, 242, 1)',
   tileXHover: 'rgba(235, 235, 242, 1)'
 };
@@ -251,7 +251,7 @@ const mintYDark = {
   tilePin: "rgba(124, 128, 110, 1)",
   tilePinHover: "rgba(124, 128, 110, 1)",
   tilePinned: "rgba(124, 128, 110, 1)",
-  tileShadow: "rgba(46, 46, 46, 0)",
+  tileShadow: "rgba(46, 46, 46, 0.5)",
   tileText: "rgba(202, 207, 207, 1)",
   tileTextShadow: "rgba(255, 255, 255, 0)",
   tileX: "rgba(124, 128, 110, 1)",
@@ -294,6 +294,43 @@ const redmondFlat = {
   tileXHover: 'rgba(75, 74, 69, 0.99)'
 };
 
+const highRise = {
+  bodyBg: 'rgba(67, 125, 161, 0.75)',
+  bodyText: 'rgba(255, 255, 255, 1)',
+  darkBtnBg: 'rgba(67, 125, 161, 0.38)',
+  darkBtnBgHover: 'rgba(95, 137, 173, 0.7)',
+  darkBtnText: 'rgba(225, 230, 232, 1)',
+  darkBtnTextShadow: 'rgba(51, 39, 39, 0)',
+  headerBg: 'rgba(95, 151, 186, 0)',
+  lightBtnBg: 'rgba(95, 151, 186, 0)',
+  lightBtnBgHover: 'rgba(82, 110, 130, 0.52)',
+  lightBtnText: 'rgba(225, 230, 232, 1)',
+  lightBtnTextShadow: 'rgba(0, 5, 8, 0.47)',
+  settingsBg: 'rgba(62, 94, 115, 1)',
+  settingsItemHover: 'rgba(155, 183, 194, 0.48)',
+  textFieldsBg: 'rgba(62, 94, 115, 0.93)',
+  textFieldsBorder: 'rgba(255, 255, 255, 0.76)',
+  textFieldsPlaceholder: 'rgba(255, 255, 255, 0.76)',
+  textFieldsText: 'rgba(225, 230, 232, 1)',
+  tileBg: 'rgba(67, 125, 161, 0.61)',
+  tileBgHover: 'rgba(58, 121, 161, 0.77)',
+  tileButtonBg: 'rgba(255, 255, 255, 1)',
+  tileMove: 'rgba(150, 150, 150, 1)',
+  tileMoveHover: 'rgba(150, 150, 150, 1)',
+  tileMute: 'rgba(155, 183, 194, 1)',
+  tileMuteAudible: 'rgba(155, 183, 194, 1)',
+  tileMuteAudibleHover: 'rgba(225, 230, 232, 1)',
+  tileMuteHover: 'rgba(225, 230, 232, 1)',
+  tilePin: 'rgba(155, 183, 194, 1)',
+  tilePinHover: 'rgba(225, 230, 232, 1)',
+  tilePinned: 'rgba(225, 230, 232, 1)',
+  tileShadow: 'rgba(255, 255, 255, 0.19)',
+  tileText: 'rgba(255, 255, 255, 1)',
+  tileTextShadow: 'rgba(255, 255, 255, 0)',
+  tileX: 'rgba(155, 183, 194, 1)',
+  tileXHover: 'rgba(225, 230, 232, 1)'
+};
+
 const themeStore = initStore({
   standardWallpapers: [
     {
@@ -315,6 +352,10 @@ const themeStore = initStore({
     {
       data: '../../../images/wallpaper4.jpg',
       id: 9004
+    },
+    {
+      data: '../../../images/wallpaper6.jpg',
+      id: 9005
     }
   ],
   standardThemes: [
@@ -389,6 +430,15 @@ const themeStore = initStore({
       label: 'Redmond Flat',
       theme: redmondFlat,
       wallpaper: -1
+    },
+    {
+      id: 9008,
+      created: -1,
+      modified: now,
+      camel: 'highRise',
+      label: 'Highrise',
+      theme: highRise,
+      wallpaper: 9005
     }
   ],
   theme: {},
@@ -404,8 +454,8 @@ const themeStore = initStore({
   },
   load: (prefs) => {
     console.log('init.prefs.theme', prefs.theme);
-    themeStore.getSavedThemes().then((themes)=>{
-      themeStore.getWallpapers().then((wallpapers)=>{
+    themeStore.getSavedThemes().then((themes) => {
+      themeStore.getWallpapers().then((wallpapers) => {
         let refTheme;
         let selectThemeIsCustom = false;
         if (themes.themes !== 'undefined') {
@@ -465,8 +515,8 @@ const themeStore = initStore({
     return _.orderBy(themeStore.standardThemes, 'label');
   },
   getSavedThemes: () => {
-    return new Promise((resolve, reject)=>{
-      chrome.storage.local.get('themes', (themes)=>{
+    return new Promise((resolve) => {
+      chrome.storage.local.get('themes', (themes) => {
         if (themes) {
           resolve(themes);
         } else {
@@ -476,8 +526,8 @@ const themeStore = initStore({
     });
   },
   getWallpapers: ()=> {
-    return new Promise((resolve, reject)=>{
-      chrome.storage.local.get('wallpapers', (wp)=>{
+    return new Promise((resolve) => {
+      chrome.storage.local.get('wallpapers', (wp) => {
         if (wp) {
           resolve(wp);
         } else {
@@ -545,7 +595,7 @@ const themeStore = initStore({
     themeStore.savedThemes.push(newTheme);
     console.log('newTheme: ', newTheme);
     console.log('themeStore savedThemes: ', themeStore.savedThemes);
-    chrome.storage.local.set({themes: themeStore.savedThemes}, (t)=>{
+    chrome.storage.local.set({themes: themeStore.savedThemes}, (t) => {
       console.log('themeStore theme saved: ', t);
       setAlert({
         text: `Successfully saved new theme.`,
@@ -569,7 +619,6 @@ const themeStore = initStore({
     let standard = id >= 9000;
     let findFn = theme => theme.id === id;
     let refTheme = standard ? find(state.standardThemes, findFn) : find(state.savedThemes, findFn);
-    console.log(refTheme, state.standardThemes);
     let theme = refTheme.theme;
     let currentWallpaper = state.currentWallpaper;
     if (refTheme.id !== 9000 || refTheme.id !== 9001) {
@@ -631,7 +680,7 @@ const themeStore = initStore({
         theme: themeStore.theme,
         modified: utilityStore.now(),
       });
-      chrome.storage.local.set({themes: themeStore.savedThemes}, (t)=>{
+      chrome.storage.local.set({themes: themeStore.savedThemes}, () => {
         console.log('themeStore theme updated: ', id);
         setAlert({
           text: `Updated ${themeStore.savedThemes[refTheme].label}.`,
@@ -650,7 +699,7 @@ const themeStore = initStore({
       msgStore.setPrefs({theme: 9000});
     }
     themeStore.savedThemes = _.without(themeStore.savedThemes, refTheme);
-    chrome.storage.local.set({themes: themeStore.savedThemes}, (t)=>{
+    chrome.storage.local.set({themes: themeStore.savedThemes}, () => {
       console.log('themeStore theme removed: ', id);
     });
 
@@ -660,7 +709,7 @@ const themeStore = initStore({
     let refWallpaper = find(themeStore.wallpapers, wallpaper => wallpaper.id === wpId);
     themeStore.wallpapers = _.without(themeStore.wallpapers, _.remove(themeStore.wallpapers, refWallpaper));
     themeStore.currentWallpaper = {data: -1};
-    chrome.storage.local.set({wallpapers: themeStore.wallpapers}, (wp)=>{
+    chrome.storage.local.set({wallpapers: themeStore.wallpapers}, () => {
       console.log('themeStore wallpaper removed');
     });
     msgStore.setPrefs({wallpaper: null});
@@ -674,7 +723,7 @@ const themeStore = initStore({
   export: () => {
     tryFn(() => {
       let json = JSON.stringify(themeStore.savedThemes);
-      let filename = 'TM5K-Themes-'+utilityStore.now();
+      let filename = `TM5K-Themes-${Date.now()}.json`;
       let blob = new Blob([json], {type: "application/json;charset=utf-8"});
       chrome.downloads.download({
         url: URL.createObjectURL(blob),
@@ -687,12 +736,11 @@ const themeStore = initStore({
   import: (e) => {
     if (e.target.files[0].name.split('-')[1] === 'Themes') {
       let reader = new FileReader();
-        reader.onload = (e)=> {
+        reader.onload = () => {
           let themeImport = _.cloneDeep(JSON.parse(reader.result));
           if (typeof themeImport[0].theme !== 'undefined') {
             themeStore.savedThemes = themeImport;
-            chrome.storage.local.set({themes: themeStore.savedThemes}, (t)=>{
-              console.log('themeStore themes imported');
+            chrome.storage.local.set({themes: themeStore.savedThemes}, () => {
               setAlert({
                 text: `Successfully imported ${themeStore.savedThemes.length} themes.`,
                 tag: 'alert-success',
@@ -713,7 +761,7 @@ const themeStore = initStore({
   },
   importWallpaper: (e, id) => {
     let reader = new FileReader();
-    reader.onload = (e)=> {
+    reader.onload = ()=> {
       let sourceImage = new Image();
       sourceImage.onload = ()=> {
         let imgWidth = sourceImage.width / 2;
@@ -729,14 +777,12 @@ const themeStore = initStore({
             id: ++themeStore.wallpaperId
           };
           themeStore.wallpapers = [newWallpaper].concat(themeStore.wallpapers);
-          let savedWallpapers = _.filter(themeStore.wallpapers, (wp)=>{
+          let savedWallpapers = _.filter(themeStore.wallpapers, (wp) => {
             if (wp.id < 9000) {
               return wp;
             }
           });
-          chrome.storage.local.set({wallpapers: _.orderBy(savedWallpapers, 'created')}, (t)=>{
-            console.log('themeStore wallpaper imported', newWallpaper.id);
-          });
+          chrome.storage.local.set({wallpapers: _.orderBy(savedWallpapers, 'created')});
           themeStore.setTriggers();
           themeStore.selectWallpaper(id, newWallpaper.id);
         }

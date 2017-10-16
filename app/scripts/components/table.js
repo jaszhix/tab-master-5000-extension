@@ -34,15 +34,14 @@ class Row extends React.Component {
       onDragStart={p.onDragStart}
       onDragOver={p.onDragOver}
       onClick={p.onClick}
-      onContextMenu={(e) => p.onContextMenu(e, p.row)}
-      >
+      onContextMenu={(e) => p.onContextMenu(e, p.row)}>
         {map(p.columns, (column, z) => {
           if (p.row.hasOwnProperty(column)) {
             if (column === 'title' || column === 'name') {
               return (
                 <td key={z} id={`column-${column}`} style={{maxWidth: p.s.width <= 950 ? '300px' : p.s.width <= 1015 ? '400px' : '700px', userSelect: 'none'}}>
                   <div className="media-left media-middle">
-                    <img src={favIconUrl} style={{width: '16px', height: '16px'}}/>
+                    <img src={favIconUrl} style={{width: '16px', height: '16px'}} />
                   </div>
                   <div className="media-left">
                     <div style={textOverflow}><a style={{cursor: 'pointer', fontSize: '14px'}} onClick={() => p.handleTitleClick(p.row)} className="text-default text-semibold">{p.row[column]}</a></div>
@@ -51,7 +50,7 @@ class Row extends React.Component {
                   </div>
                   {p.row.audible ?
                   <div className="media-right media-middle" style={{right: '20px'}}>
-                    <i className="icon-volume-medium"/>
+                    <i className="icon-volume-medium" />
                   </div> : null}
                 </td>
               );
@@ -107,9 +106,8 @@ export class TableHeader extends React.Component {
       return;
     }
     this.ref = ref;
-    let color = this.props.headerBg;
     _.defer(() => {
-      this.ref.style.backgroundColor = themeStore.opacify(color, 0.86);
+      this.ref.style.backgroundColor = themeStore.opacify(this.props.headerBg, 0.86);
       if (tc(this.props.headerBg).isDark()) {
         v('#thead-float > tr > th').css({color: this.props.darkBtnText});
       }
@@ -156,6 +154,10 @@ export class Table extends React.Component {
       selectedItems: [],
       shiftRange: null
     }
+    this.connectId = state.connect(
+      ['tabs', 'history', 'sessionTabs', 'bookmarks', 'apps', 'extensions'],
+      () => this.buildTable(this.props)
+    );
     autoBind(this);
   }
   componentDidMount(){
@@ -165,17 +167,14 @@ export class Table extends React.Component {
       this.removeSelectedItems();
     });
   }
-  componentWillReceiveProps(nP){
-    let p = this.props;
-    if (!_.isEqual(nP.s[p.s.modeKey], p.s[p.s.modeKey])) {
-      this.buildTable(nP);
-    }
-    if (nP.s.sort !== this.props.s.sort) {
-      this.setState({order: nP.s.sort, direction:  nP.s.direction});
-    }
+  componentWillUnmount() {
+    this.willUnmount = true;
+    state.disconnect(this.disconnectId);
   }
   buildTable(p){
-    let s = this.state;
+    if (this.willUnmount) {
+      return;
+    }
     let rows = [];
 
     for (let i = 0, len = p.s[p.s.modeKey].length; i < len; i++) {
@@ -199,17 +198,13 @@ export class Table extends React.Component {
       }
       columns = columns.concat(['enabled', 'offlineEnabled', 'version']);
     }
-    _.assignIn(s, {columns: columns, rows: _.orderBy(rows, [s.order], [s.direction])});
-    console.log('buildTable: ', s);
+    this.setState({columns, rows});
+    console.log('buildTable: ', this.state);
   }
   handleColumnClick(column){
-    let s = this.state;
-    let order = column;
-    let direction = s.order === column && s.direction === 'asc' ? 'desc' : 'asc';
-    this.setState({
-      order: order,
-      direction: direction,
-      rows: _.orderBy(s.rows, [order], [direction])
+    state.set({
+      sort: column,
+      direction: this.props.s.sort === column && this.props.s.direction === 'asc' ? 'desc' : 'asc'
     });
   }
   handleTitleClick(row){
@@ -271,7 +266,7 @@ export class Table extends React.Component {
     this.placeholder.removeAttribute('id');
     this.placeholder.classList.add('tileClone');
   }
-  dragEnd(e) {
+  dragEnd() {
     let s = this.state;
     let start = this.dragged.i;
     if (this.over === undefined) {
@@ -288,7 +283,7 @@ export class Table extends React.Component {
     if (start < end) {
       end--;
     }
-    chrome.tabs.move(s.rows[start].id, {index: s.rows[end].index}, (t) => {
+    chrome.tabs.move(s.rows[start].id, {index: s.rows[end].index}, () => {
       _.defer(() => {
         msgStore.queryTabs();
         this.dragged.el.parentNode.removeChild(this.placeholder);
@@ -303,7 +298,6 @@ export class Table extends React.Component {
     }
     this.dragged.el.style.display = 'none';
     this.over = {el: e.target, i: i};
-    console.log(s.rows[i].title);
     let relY = e.clientY - this.over.el.offsetTop;
     let height = this.over.el.offsetHeight / 2;
     let parent = e.target.parentNode;
@@ -402,34 +396,40 @@ export class Table extends React.Component {
             <TableHeader
             mode={p.s.prefs.mode}
             columns={s.columns}
-            order={s.order}
-            direction={s.direction}
+            order={p.s.sort}
+            direction={p.s.direction}
             handleColumnClick={this.handleColumnClick}
             width={p.s.width}
             isFloating={false}
             showFloatingTableHeader={this.props.showFloatingTableHeader} />
             <tbody onMouseLeave={() => this.setState({rowHover: -1})}>
             {map(s.rows, (row, i) => {
+              if (utils.isNewTab(row.url)) {
+                return null;
+              }
               let isVisible = i >= p.range.start && i <= p.range.start + p.range.length;
               if (isVisible) {
+                let isEven = i % 2 === 0;
                 return (
                   <Row
-                    s={p.s}
-                    key={i}
-                    className={i % 2 === 0 ? 'even' : 'odd'}
-                    style={{fontSize: '14px', backgroundColor: s.rowHover === i || s.selectedItems.indexOf(i) !== -1 ? themeStore.opacify(p.theme.lightBtnBg, 0.5) : 'initial'}}
-                    onMouseEnter={() => this.setState({rowHover: i})}
-                    draggable={p.s.prefs.mode === 'tabs' && p.s.prefs.drag}
-                    onDragEnd={this.dragEnd}
-                    onDragStart={(e) => this.dragStart(e, i)}
-                    onDragOver={(e) => this.dragOver(e, i)}
-                    onClick={() => this.handleSelect(i)}
-                    onContextMenu={this.handleContext}
-                    handleTitleClick={this.handleTitleClick}
-                    handleBooleanClick={(column) => this.handleBooleanClick(column, row)}
-                    row={row}
-                    columns={s.columns}
-                  />
+                  s={p.s}
+                  key={i}
+                  className={isEven ? 'even' : 'odd'}
+                  style={{
+                    fontSize: '14px',
+                    color: p.theme.tileText,
+                    backgroundColor: s.rowHover === i || s.selectedItems.indexOf(i) !== -1 ? themeStore.opacify(p.theme.settingsItemHover, 0.5) : isEven ? themeStore.opacify(p.theme.tileBg, 0.34) : themeStore.opacify(p.theme.tileBgHover, 0.25)}}
+                  onMouseEnter={() => this.setState({rowHover: i})}
+                  draggable={p.s.prefs.mode === 'tabs' && p.s.prefs.drag}
+                  onDragEnd={this.dragEnd}
+                  onDragStart={(e) => this.dragStart(e, i)}
+                  onDragOver={(e) => this.dragOver(e, i)}
+                  onClick={() => this.handleSelect(i)}
+                  onContextMenu={this.handleContext}
+                  handleTitleClick={this.handleTitleClick}
+                  handleBooleanClick={(column) => this.handleBooleanClick(column, row)}
+                  row={row}
+                  columns={s.columns} />
                 );
               } else {
                 return (

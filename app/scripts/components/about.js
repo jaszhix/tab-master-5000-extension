@@ -30,7 +30,7 @@ class Contribute extends React.Component {
         .replace(/Chrome Web Store/g, 'Add-ons website')
         .replace(/Chrome/g, 'Firefox');
     }
-    function createMarkup() { return {__html: contributeFile};}
+    function createMarkup() {return {__html: contributeFile};}
     return (
       <div style={{marginTop: '49px'}}>
         <h4>{utils.t('contributeHeader')}</h4>
@@ -60,7 +60,7 @@ class License extends React.Component {
     super(props);
   }
   render(){
-    function createMarkup() { return {__html: license};}
+    function createMarkup() {return {__html: license};}
     return (
       <div style={{marginTop: '49px'}}>
         <Col size="2" />
@@ -70,7 +70,7 @@ class License extends React.Component {
           <p>{`Copyright © ${moment(Date.now()).format('YYYY')} Jason Hicks and Contributors`}</p>
           <div dangerouslySetInnerHTML={createMarkup()} />
         </Col>
-        <Col size="2"/>
+        <Col size="2" />
       </div>
     );
   }
@@ -88,14 +88,14 @@ class Support extends React.Component {
     } else {
       supportFile = require('html-loader!markdown-loader!../../../support.md');
     }
-    function createMarkup() { return {__html: supportFile};}
+    function createMarkup() {return {__html: supportFile};}
     return (
       <div style={{marginTop: '49px'}}>
         <Col size="2" />
         <Col size="8" className="ntg-release">
           <div dangerouslySetInnerHTML={createMarkup()} />
         </Col>
-        <Col size="2"/>
+        <Col size="2" />
       </div>
     );
   }
@@ -171,22 +171,32 @@ class ReleaseNotes extends React.Component {
     super(props);
   }
   render(){
-    function createMarkup() { return {__html: changelog};}
+    function createMarkup() {return {__html: changelog};}
     let p = this.props;
     return (
       <div>
-        <img className="ntg-about" src={p.tm5kLogo}/>
-        <a href="https://trackjs.com" target="_blank"><img style={{borderRadius: '2px', position: 'absolute', top: '0px', right:'5%', opacity: '0.7'}} src="../../images/trackjs.gif" height="40px" alt="Protected by TrackJS JavaScript Error Monitoring" /></a>
+        <img className="ntg-about" src={p.tm5kLogo} />
+        <a href="https://trackjs.com" target="_blank">
+          <img
+          style={{borderRadius: '2px', position: 'absolute', top: '0px', right:'5%', opacity: '0.7'}}
+          src="../../images/trackjs.gif"
+          height="40px"
+          alt="Protected by TrackJS JavaScript Error Monitoring" />
+        </a>
         <img style={{position: 'absolute', top: '50px', right:'8%', height: '120px', opacity: '0.7'}} src="../../images/eff.png" />
         <Col size="2" />
         <Col size="8" className="ntg-release">
           <div dangerouslySetInnerHTML={createMarkup()} />
         </Col>
-        <Col size="2" className="ntg-cc"/>
+        <Col size="2" className="ntg-cc" />
       </div>
     );
   }
 }
+
+const tabUlStyle = {borderBottom: 'initial', position: 'absolute', zIndex: '9999', userSelect: 'none'};
+const tabLiStyle = {padding: '0px'};
+const tabLinkStyle = {padding: '5px 7.5px'};
 
 class About extends React.Component {
   constructor(props) {
@@ -231,28 +241,26 @@ class About extends React.Component {
     return (
       <div>
         <Row className="ntg-tabs">
-          <div role="tabpanel">
-            <ul className="nav nav-tabs" style={{borderBottom: 'initial', position: 'absolute', zIndex: '9999'}} >
-              <li style={{padding: '0px'}} className={`${s.tab === 'release' ? 'active' : ''}`}>
-                <a style={{padding: '5px 7.5px'}} href="#" onClick={() => this.setState({tab: 'release'})}>{utils.t('releaseNotes')}</a>
-              </li>
-              <li style={{padding: '0px'}} className={`${s.tab === 'support' ? 'active' : ''}`}>
-                <a style={{padding: '5px 7.5px'}} href="#" onClick={() => this.setState({tab: 'support'})}>{utils.t('support')}</a>
-              </li>
-              <li style={{padding: '0px'}} className={`${s.tab === 'attribution' ? 'active' : ''}`}>
-                <a style={{padding: '5px 7.5px'}} href="#" onClick={() => this.setState({tab: 'attribution'})}>{utils.t('attribution')}</a>
-              </li>
-              <li style={{padding: '0px'}} className={`${s.tab === 'contribute' ? 'active' : ''}`}>
-                <a style={{padding: '5px 7.5px'}} href="#" onClick={() => this.setState({tab: 'contribute'})}>{utils.t('contribute')}</a>
-              </li>
-              <li style={{padding: '0px'}} className={`${s.tab === 'license' ? 'active' : ''}`}>
-                <a style={{padding: '5px 7.5px'}} href="#" onClick={() => this.setState({tab: 'license'})}>{utils.t('license')}</a>
-              </li>
-            </ul>
-          </div>
+          <ul className="nav nav-tabs" style={tabUlStyle} >
+            <li style={tabLiStyle} className={`${s.tab === 'release' ? 'active' : ''}`}>
+              <a style={tabLinkStyle} onClick={() => this.setState({tab: 'release'})}>{utils.t('releaseNotes')}</a>
+            </li>
+            <li style={tabLiStyle} className={`${s.tab === 'support' ? 'active' : ''}`}>
+              <a style={tabLinkStyle} onClick={() => this.setState({tab: 'support'})}>{utils.t('support')}</a>
+            </li>
+            <li style={tabLiStyle} className={`${s.tab === 'attribution' ? 'active' : ''}`}>
+              <a style={tabLinkStyle} onClick={() => this.setState({tab: 'attribution'})}>{utils.t('attribution')}</a>
+            </li>
+            <li style={tabLiStyle} className={`${s.tab === 'contribute' ? 'active' : ''}`}>
+              <a style={tabLinkStyle} onClick={() => this.setState({tab: 'contribute'})}>{utils.t('contribute')}</a>
+            </li>
+            <li style={tabLiStyle} className={`${s.tab === 'license' ? 'active' : ''}`}>
+              <a style={tabLinkStyle} onClick={() => this.setState({tab: 'license'})}>{utils.t('license')}</a>
+            </li>
+          </ul>
         </Row>
         <Col size="12" className="about">
-          {s.tab === 'release' ? <ReleaseNotes tm5kLogo={tm5kLogo}/> : null}
+          {s.tab === 'release' ? <ReleaseNotes tm5kLogo={tm5kLogo} /> : null}
           {s.tab === 'support' ? <Support /> : null}
           {s.tab === 'attribution' ? <Attribution /> : null}
           {s.tab === 'contribute' ? <Contribute chromeVersion={p.chromeVersion} /> : null}

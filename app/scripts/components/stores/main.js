@@ -5,7 +5,6 @@ import mouseTrap from 'mousetrap';
 import screenshotStore from './screenshot';
 import sessionsStore from './sessions';
 import state from './state';
-import initStore from '../store';
 import * as utils from './tileUtils';
 import {findIndex, find, map, tryFn, each} from '../utils';
 
@@ -30,7 +29,6 @@ export const getBlackList = function(cb) {
     tryFn(() => {
       chrome.storage.sync.get('blacklist', (bl) => {
         if (bl && bl.blacklist) {
-          console.log('blacklist:', bl);
           cb(bl.blacklist);
         } else {
           cb([]);
@@ -57,7 +55,7 @@ let defaults = (iteration) => {
 
 export var bookmarksStore = {
   set_bookmarks() {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       chrome.bookmarks.getTree((bk) => {
         let bookmarks = [];
         let folders = [];
@@ -89,8 +87,9 @@ export var bookmarksStore = {
           }
         };
         addBookmarkChildren(bk[0]);
+        const findOpenTab = url => tab => tab.url === url;
         for (let i = 0, len = bookmarks.length; i < len; i++) {
-          let refOpenTab = findIndex(tabs, tab => tab.url === bookmarks[i].url);
+          let refOpenTab = findIndex(tabs, findOpenTab(bookmarks[i].url));
           if (refOpenTab !== -1) {
             console.log('refOpenTab', refOpenTab);
             bookmarks[i] = _.assignIn(bookmarks[i], _.cloneDeep(tabs[refOpenTab]));
@@ -124,7 +123,6 @@ export var bookmarksStore = {
         bk = utils.searchChange({s: s}, bk);
       }
       state.set({bookmarks: bk});
-      _.defer(()=>state.set({hasScrollbar: utils.scrollbarVisible(document.body)}));
     });
   },
   remove(bookmarks, bookmarkId){
@@ -143,7 +141,7 @@ export var bookmarksStore = {
 
 export var historyStore = {
   setHistory() {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       let now = Date.now();
       chrome.history.search({
         text: '',
@@ -173,7 +171,6 @@ export var historyStore = {
           });
           for (let y = 0, _len = tabs.length; y < _len; y++) {
             if (h[i].url === tabs[y].url) {
-              console.log(h[i].url);
               h[i] = _.assignIn(h[i], _.cloneDeep(tabs[y]));
               h[i].openTab = ++openTab;
             }
@@ -193,7 +190,6 @@ export var historyStore = {
         h = utils.searchChange({s: s}, h);
       }
       state.set({history: h});
-      _.defer(()=>state.set({hasScrollbar: utils.scrollbarVisible(document.body)}));
     });
   },
   remove(history, url){
@@ -245,7 +241,7 @@ export var utilityStore = {
     return version;
   },
   get_bytesInUse(item){
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       chrome.storage.local.getBytesInUse(item, (bytes) => {
         resolve(bytes);
       });
@@ -259,7 +255,7 @@ export var utilityStore = {
   },
   createTab(href){
     chrome.tabs.create({url: href}, (t) => {
-      console.log('Tab created from utilityStore.createTab: ',t);
+      console.log('Tab created from utilityStore.createTab: ', t);
     });
   },
   handleMode(mode){
@@ -387,7 +383,6 @@ export var keyboardStore = {
 export var msgStore = {
   init() {
     chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-      console.log(msg);
       let s = state.get('*');
       if ((!s.prefs.allTabs && msg.windowId !== s.windowId && s.settings !== 'sessions' && !msg.action)
         || s.windowRestored) {
@@ -430,7 +425,7 @@ export var msgStore = {
     });
   },
   setPrefs(obj){
-    state.set({prefs: obj});
+    state.set({prefs: obj}, true);
     chrome.runtime.sendMessage(chrome.runtime.id, {method: 'setPrefs', obj: obj}, (response) => {
       if (response && response.prefs) {
         console.log('setPrefs: ', obj);
@@ -438,7 +433,7 @@ export var msgStore = {
     });
   },
   getPrefs(){
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       chrome.runtime.sendMessage(chrome.runtime.id, {method: 'prefs'}, (response) => {
         if (response && response.prefs) {
           resolve(response.prefs);

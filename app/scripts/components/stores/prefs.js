@@ -48,7 +48,7 @@ let prefsStore = initStore({
               reject(chrome.extension.lastError);
             } else {
               prefsStore.prefs = prefsStore.defaultPrefs;
-              prefsStore.setPrefs(prefsStore.prefs, true);
+              prefsStore.setPrefs(prefsStore.prefs);
               console.log('init prefs: ', prefsStore.prefs);
             }
           }
@@ -156,7 +156,7 @@ let prefsStore = initStore({
       console.log('chrome.extension.lastError: ', err);
     });
   },
-  setPrefs(obj, init) {
+  setPrefs(obj) {
     _.merge(prefsStore.prefs, obj);
     prefsStore.set({prefs: prefsStore.prefs}, true);
     let themePrefs = {
@@ -170,8 +170,8 @@ let prefsStore = initStore({
     delete parsedPrefs.theme;
     delete parsedPrefs.alerts;
     delete parsedPrefs.syncedSession;
-    chrome.storage.sync.set({preferences: parsedPrefs}, (result)=> {
-      chrome.storage.sync.set({themePrefs: themePrefs}, (result)=> {
+    chrome.storage.sync.set({preferences: parsedPrefs}, ()=> {
+      chrome.storage.sync.set({themePrefs: themePrefs}, ()=> {
         console.log('Preferences saved: ', prefsStore.prefs, themePrefs);
       });
     });

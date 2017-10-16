@@ -1,14 +1,14 @@
 window._trackJs = {
   token: 'bd495185bd7643e3bc43fa62a30cec92',
-  enabled: false,
-  onError: function (payload) { return true; },
+  enabled: true,
+  onError: function () {return true;},
   version: "",
   callback: {
     enabled: true,
     bindStack: true
   },
   console: {
-    enabled: false,
+    enabled: true,
     display: true,
     error: true,
     warn: false,
@@ -26,20 +26,19 @@ window._trackJs = {
     promise: true
   }
 };
-let trackJs = require('trackjs');
-import v from 'vquery';
+const trackJs = require('trackjs');
 import moment from 'moment';
+import state from './stores/state';
+if (!state.isOptions) {
+  document.querySelector('.startup-text-wrapper > .startup-p').innerText = moment().format('h:mm A');
+}
+import v from 'vquery';
+window.v = v;
 import tc from 'tinycolor2';
-document.querySelector('.startup-text-wrapper > .startup-p').innerText = moment().format('h:mm A');
 import React from 'react';
 import autoBind from 'react-autobind';
-import reactMixin from 'react-mixin';
-import Reflux from 'reflux';
 import _ from 'lodash';
-import ReactUtils from 'react-utils';
 import ReactTooltip from 'react-tooltip';
-window.v = v;
-import state from './stores/state';
 import {keyboardStore, utilityStore, msgStore} from './stores/main';
 import themeStore from './stores/theme';
 import sessionsStore from './stores/sessions';
@@ -52,71 +51,10 @@ import ModalHandler from './modal';
 import ContextMenu from './context';
 import Preferences from './preferences';
 import Alert from './alert';
+import Loading from './loading';
+
 if (module.hot) {
   module.hot.accept();
-}
-
-class Loading extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      failSafe: false,
-      error: ''
-    }
-    autoBind(this);
-  }
-  componentDidMount(){
-    this.error = null;
-    window.onerror = (err)=>{
-      console.log('Loading: ', err);
-      this.error = {
-        failSafe: true,
-        error: `${err}
-          ${chrome.runtime.lastError ? 'chrome.runtime: '+chrome.runtime.lastError : ''}
-          ${chrome.extension.lastError ? 'chrome.extension: '+chrome.extension.lastError : ''}`
-      };
-    };
-  }
-  handleReset(){
-    let c = confirm(utils.t('resetData'));
-    if (c) {
-      chrome.storage.local.clear();
-      chrome.runtime.reload();
-    }
-  }
-  render() {
-    let p = this.props;
-    let topStyle = {width: '20px', height: '20px', margin: '0px', float: 'right', marginRight: '4px', marginTop: '7px'};
-    let fullStyle = {marginTop: `${window.innerHeight / 2.4}px`};
-    let errorLink = {color: 'rgba(34, 82, 144, 0.9)'};
-    return (
-      <div>
-        <div style={p.top ? topStyle : fullStyle} className="sk-cube-grid">
-          <div className="sk-cube sk-cube1"></div>
-          <div className="sk-cube sk-cube2"></div>
-          <div className="sk-cube sk-cube3"></div>
-          <div className="sk-cube sk-cube4"></div>
-          <div className="sk-cube sk-cube5"></div>
-          <div className="sk-cube sk-cube6"></div>
-          <div className="sk-cube sk-cube7"></div>
-          <div className="sk-cube sk-cube8"></div>
-          <div className="sk-cube sk-cube9"></div>
-        </div>
-        {this.error && !p.top ?
-          <div className="container">
-            <div className="row">{utils.t('encounteredError')} <a style={errorLink} href="https://chrome.google.com/webstore/detail/tab-master-5000-tab-swiss/mippmhcfjhliihkkdobllhpdnmmciaim/support">{utils.t('chromeWebStore')}</a>, {utils.t('orAsAnIssueOn')} <a style={errorLink} href="https://github.com/jaszhix/tab-master-5000-chrome-extension/issues">{utils.t('github')}</a>, {utils.t('soThisIssueCanBeInvestigated')} </div>
-
-            <div className="row" style={{margin: '0px auto', position: 'fixed', right: '0px', bottom: '0px'}}>
-              <button className="ntg-btn" onClick={()=>sessionsStore.exportSessions(p.sessions)}>Backup Sessions</button>
-              <button className="ntg-btn" onClick={()=>themeStore.export()}>Backup Themes</button>
-              <button className="ntg-btn" onClick={this.handleReset}>Reset Data</button>
-            </div>
-          </div>
-          : null}
-      </div>
-    );
-  }
 }
 
 class Search extends React.Component {
@@ -196,12 +134,12 @@ class Search extends React.Component {
               icon="menu7"
               noIconPadding={true} />
               <input
-                type="text"
-                value={p.s.search}
-                className="form-control search-tabs"
-                placeholder={`${utils.t('search')} ${utils.t(p.s.prefs.mode)}...`}
-                onChange={this.handleSearch}
-                onKeyDown={(e)=>this.handleEnter(e)}/>
+              type="text"
+              value={p.s.search}
+              className="form-control search-tabs"
+              placeholder={`${utils.t('search')} ${utils.t(p.s.prefs.mode)}...`}
+              onChange={this.handleSearch}
+              onKeyDown={(e)=>this.handleEnter(e)} />
             </div>
           </Col>
           <Col size={p.s.width <= 825 ? p.s.width <= 630 ? p.s.width <= 514 ? '2' : '4' : '6' : '8'} style={{float: 'right'}}>
@@ -230,7 +168,7 @@ class Root extends React.Component {
       load: true,
       topLoad: false,
       screenshots: [],
-      theme: null,
+      theme: null, // TODO: remove this from component state
       savedThemes: [],
       standardThemes: [],
       wallpaper: null,
@@ -241,7 +179,7 @@ class Root extends React.Component {
       state.connect(['sort', 'direction'], () => {
         let sU = {};
         sU[this.props.s.modeKey] = utils.sort(this.props, this.props.s[this.props.s.modeKey]);
-        state.set(sU);
+        state.set(sU, true);
       })
     ];
     autoBind(this);
@@ -280,22 +218,15 @@ class Root extends React.Component {
       || nP.s.search.length < p.s.search.length) {
       nP.s.reQuery.state = true;
       this.reQuery(nP, stateUpdate, (sU)=>{
-        state.set(sU);
+        state.set(sU, true);
       });
     } else if (sUChange) {
       state.set(stateUpdate);
     }
-    if (nP.s.applyTabOrder !== p.s.applyTabOrder) {
-      if (nP.s.applyTabOrder) {
-        _.defer(()=>state.set({applyTabOrder: false}));
-      }
+    if (nP.s.applyTabOrder !== p.s.applyTabOrder && nP.s.applyTabOrder) {
+      _.defer(()=>state.set({applyTabOrder: false}));
     }
   }
-/*  componentDidUpdate(pP, pS){
-    if (!_.isEqual(pS.theme, this.state.theme)) {
-      this.themeChange({theme: this.state.theme});
-    }
-  }*/
   componentWillUnmount() {
     themeStore.disconnect(this.connections[0]);
     state.disconnect(this.connections[1]);
@@ -316,7 +247,7 @@ class Root extends React.Component {
       }
     });
   }
-  faviconsChange(e){
+  faviconsChange(){
     this.setState({topLoad: true});
     _.defer(()=>this.setState({topLoad: false}));
   }
@@ -324,6 +255,23 @@ class Root extends React.Component {
     this.setState({apps: e});
   }
   themeChange(e){
+    if (state.isOptions && state.chromeVersion === 1) {
+      Object.assign(e.theme, {
+        bodyBg: 'rgba(250, 250, 250, 1)',
+        bodyText: 'rgba(34, 36, 38, 1)',
+        settingsBg: 'rgba(250, 250, 250, 1)',
+        settingsItemHover: 'rgba(250, 250, 250, 0)',
+        lightBtnText: 'rgba(34, 36, 38, 1)',
+        lightBtnBg: 'rgba(235, 235, 235, 1)',
+        lightBtnBgHover: 'rgba(215, 215, 219, 1)',
+        darkBtnText: 'rgba(34, 36, 38, 1)',
+        darkBtnBg: 'rgba(235, 235, 235, 1)',
+        textFieldsBg: 'rgba(255, 255, 255, 1)',
+        textFieldsBorder: 'rgba(235, 235, 235, 1)',
+        textFieldsPlaceholder: 'rgba(126, 126, 135, 1)',
+        textFieldsText: 'rgba(34, 36, 38, 1)',
+      });
+    }
     let p = this.props;
     let stateUpdate = {};
     stateUpdate.standardThemes = themeStore.getStandardThemes();
@@ -332,7 +280,7 @@ class Root extends React.Component {
     }
     if (e.theme) {
       let sessionFieldColor = themeStore.balance(e.theme.settingsBg);
-      let vendor = p.s.version > 1 ? 'webkit' : 'moz';
+      let vendor = p.s.chromeVersion > 1 ? 'webkit' : 'moz';
       let inputPlaceholder = p.s.chromeVersion > 1 ? `${vendor}-input` : vendor;
       let style = v('style').n;
       if (!style) {
@@ -423,6 +371,9 @@ class Root extends React.Component {
       .ntg-folder {
         text-shadow: 2px 2px ${e.theme.tileTextShadow};
       }
+      .panel, .modal-content {
+        box-shadow: 0 1px 3px ${e.theme.tileShadow}, 0 1px 2px ${e.theme.tileTextShadow};
+      }
       .sk-cube-grid .sk-cube {
         background-color: ${e.theme.darkBtnBg};
       }
@@ -497,14 +448,14 @@ class Root extends React.Component {
         -${vendor}-transition: ${p.s.prefs.animations ? `-${vendor}-filter 0.2s ease-in` : 'initial'};
       }
       .alert-success {
-        color: ${e.theme.lightBtnText};
-        background-color: ${e.theme.lightBtnBg};
-        border-color: ${e.theme.lightBtnBg};
+        color: ${e.theme.tileText};
+        background-color: ${e.theme.tileBgHover};
+        border-color: ${e.theme.tileShadow};
       }
       .alert-danger {
-        color: ${e.theme.darkBtnText};
-        background-color: ${e.theme.darkBtnBg};
-        border-color: ${e.theme.darkBtnBg};
+        color: ${e.theme.tileText};
+        background-color: ${e.theme.tileBg};
+        border-color: ${e.theme.tileShadow};
       }
       `;
       v(document.body).css({
@@ -512,6 +463,36 @@ class Root extends React.Component {
         backgroundColor: e.theme.bodyBg,
       });
       v('#bgImg').css({backgroundColor: e.theme.bodyBg});
+
+      // Firefox options integration
+      if (state.isOptions && state.chromeVersion === 1) {
+        v('#theme-style-el').n.innerHTML += `
+          small {
+            background-color: rgba(235, 235, 235, 1) !important;
+          }
+          .icon-floppy-disk {
+            padding-right: 0px !important;
+          }
+          textarea {
+            color: #222426 !important;
+            background-color: #FFF !important;
+            border: 1px solid #DCDCD7 !important;
+          }
+          textarea:focus {
+            border: 1px solid #0A84FF !important;
+            box-shadow: 0 0px 0 rgba(0, 0, 0, 0) !important;
+          }
+          button {
+            cursor: default !important;
+            background-color: #FBFBFB !important;
+            border: 1px solid #DCDCD7 !important;
+          }
+          button:hover {
+            background-color: #EBEBEB !important;
+            border: 1px solid #DCDCD7 !important;
+          }
+        `;
+      }
       stateUpdate.theme = e.theme;
     }
     if (e.currentWallpaper && typeof e.currentWallpaper.data !== 'undefined') {
@@ -535,7 +516,7 @@ class Root extends React.Component {
   }
   updateTabState(e, opt, sU=null){
     let p = this.props;
-    console.log('updateTabState: ',e);
+    console.log('updateTabState: ', e);
     let stateUpdate = {};
     if (opt === 'folder') {
       if (e) {
@@ -616,7 +597,6 @@ class Root extends React.Component {
           stateUpdate.tabs = utils.searchChange(p, Window.tabs);
         }
       }
-
       _.assignIn(stateUpdate, {
         reQuery: {state: false},
       });
@@ -625,9 +605,7 @@ class Root extends React.Component {
         _.assignIn(sU, stateUpdate);
         cb(sU);
       } else {
-        state.set(stateUpdate, ()=>{
-          state.set({hasScrollbar: utils.scrollbarVisible(document.body)});
-        });
+        state.set(stateUpdate, true);
       }
     };
 
@@ -747,7 +725,7 @@ class Root extends React.Component {
           index: utils.t('originalOrder')
         };
       } else {
-        keys = ['url', 'title', 'timeStamp', 'index',];
+        keys = ['url', 'title', 'timeStamp', 'index'];
         labels = {
           index: utils.t('tabOrder'),
           url: utils.t('website'),
@@ -763,10 +741,9 @@ class Root extends React.Component {
           });
         }
       }
-      let options = v('#options').n;
       return (
         <div className="container-main">
-          {options ? <Preferences options={true} settingsMax={true} prefs={p.s.prefs} tabs={p.s.tabs} theme={s.theme} />
+        {p.s.isOptions ? <Preferences options={true} settingsMax={true} prefs={p.s.prefs} tabs={p.s.tabs} theme={s.theme} />
           :
           <div>
             {p.s.context.value ?
@@ -782,84 +759,79 @@ class Root extends React.Component {
             duplicateTabs={p.s.duplicateTabs}
             theme={s.theme} /> : null}
             {p.s.modal ?
-              <ModalHandler
-              modal={p.s.modal}
-              tabs={p.s.tabs}
-              allTabs={p.s.allTabs}
-              sessions={p.s.sessions}
-              prefs={p.s.prefs}
-              favicons={p.s.favicons}
-              collapse={p.s.collapse}
-              theme={s.theme}
-              colorPickerOpen={p.s.colorPickerOpen}
-              savedThemes={s.savedThemes}
-              standardThemes={s.standardThemes}
-              wallpaper={s.wallpaper}
-              wallpapers={s.wallpapers}
-              settings={p.s.settings}
-              width={p.s.width}
-              height={p.s.height}
-              chromeVersion={p.s.chromeVersion} /> : null}
-              <Sidebar
-              sessionsExist={p.s.sessions.length > 0}
-              enabled={p.s.sidebar}
-              prefs={p.s.prefs}
-              allTabs={p.s.allTabs}
-              labels={labels}
-              keys={keys}
-              sort={p.s.sort}
-              direction={p.s.direction}
-              width={p.s.width}
-              collapse={p.s.collapse}
-              search={p.s.search}
-              theme={s.theme}
-              disableSidebarClickOutside={p.s.disableSidebarClickOutside}
-              chromeVersion={p.s.chromeVersion} />
-              <div className="tile-container" style={{
-                filter: p.s.modal && p.s.modal.state && p.s.settings !== 'theming' ? `blur(5px)` : 'initial',
-                transition: 'filter 0.2s'
+            <ModalHandler
+            modal={p.s.modal}
+            tabs={p.s.tabs}
+            allTabs={p.s.allTabs}
+            sessions={p.s.sessions}
+            prefs={p.s.prefs}
+            favicons={p.s.favicons}
+            collapse={p.s.collapse}
+            theme={s.theme}
+            colorPickerOpen={p.s.colorPickerOpen}
+            savedThemes={s.savedThemes}
+            standardThemes={s.standardThemes}
+            wallpaper={s.wallpaper}
+            wallpapers={s.wallpapers}
+            settings={p.s.settings}
+            width={p.s.width}
+            height={p.s.height}
+            chromeVersion={p.s.chromeVersion} /> : null}
+            <Sidebar
+            sessionsExist={p.s.sessions.length > 0}
+            enabled={p.s.sidebar}
+            prefs={p.s.prefs}
+            allTabs={p.s.allTabs}
+            labels={labels}
+            keys={keys}
+            sort={p.s.sort}
+            direction={p.s.direction}
+            width={p.s.width}
+            collapse={p.s.collapse}
+            search={p.s.search}
+            theme={s.theme}
+            disableSidebarClickOutside={p.s.disableSidebarClickOutside}
+            chromeVersion={p.s.chromeVersion} />
+            <div
+            className="tile-container"
+            style={{
+              filter: p.s.modal && p.s.modal.state && p.s.settings !== 'theming' ? `blur(5px)` : 'initial',
+              transition: 'filter 0.2s'
+            }}>
+              <Search
+              s={p.s}
+              event={s.event}
+              topLoad={s.topLoad}
+              theme={s.theme}  />
+              <div style={{
+                position: 'absolute',
+                left: p.s.prefs.format === 'tile' ? '5px' : '0px',
+                right: p.s.prefs.format === 'tile' ? '5px' : '0px',
+                margin: '0px auto',
+                width: `${p.s.width}px`,
+                top: p.s.prefs.format === 'tile' ? '57px' : '51px'
               }}>
-                <Search
+                {s.grid && p.s[p.s.modeKey] ?
+                <TileGrid
                 s={p.s}
-                event={s.event}
-                topLoad={s.topLoad}
-                theme={s.theme}  />
-                <div style={{
-                  position: 'absolute',
-                  left: p.s.prefs.format === 'tile' ? '5px' : '0px',
-                  right: p.s.prefs.format === 'tile' ? '5px' : '0px',
-                  margin: '0px auto',
-                  width: `${p.s.width}px`,
-                  top: p.s.prefs.format === 'tile' ? '57px' : '51px'
-                }}>
-                  {s.grid && p.s[p.s.modeKey] ?
-                    <TileGrid
-                    s={p.s}
-                    data={p.s[p.s.modeKey]}
-                    keys={keys}
-                    labels={labels}
-                    render={s.render}
-                    collapse={p.s.collapse}
-                    width={p.s.width}
-                    sidebar={p.s.sidebar}
-                    sessions={p.s.sessions}
-                    init={s.init}
-                    theme={s.theme}
-                    wallpaper={s.wallpaper}
-                    disableSidebarClickOutside={p.s.disableSidebarClickOutside}
-                    />
-                  : <Loading sessions={p.s.sessions}  />}
-                </div>
-                {p.s.modal && !p.s.modal.state && p.s.prefs.tooltip ?
-                <ReactTooltip
-                effect="solid"
-                place="bottom"
-                multiline={true}
-                html={true}
-                offset={{top: 0, left: 6}} /> : null}
+                keys={keys}
+                labels={labels}
+                render={s.render}
+                init={s.init}
+                theme={s.theme}
+                wallpaper={s.wallpaper} />
+                : <Loading sessions={p.s.sessions}  />}
               </div>
-            </div>}
-            {p.s.prefs.alerts ? <Alert enabled={p.s.prefs.alerts} alert={p.s.alert} /> : null}
+              {p.s.modal && !p.s.modal.state && p.s.prefs.tooltip ?
+              <ReactTooltip
+              effect="solid"
+              place="bottom"
+              multiline={true}
+              html={true}
+              offset={{top: 0, left: 6}} /> : null}
+            </div>
+          </div>}
+          {p.s.prefs.alerts ? <Alert enabled={p.s.prefs.alerts} alert={p.s.alert} /> : null}
         </div>
       );
     } else {
@@ -868,12 +840,9 @@ class Root extends React.Component {
   }
 }
 
-reactMixin(Root.prototype, Reflux.ListenerMixin);
-
 class App extends React.Component {
   constructor(props) {
     super(props);
-
     this.state = state
       .setMergeKeys(['prefs', 'alert'])
       .get('*');
@@ -884,9 +853,11 @@ class App extends React.Component {
     autoBind(this);
   }
   componentDidMount(){
-    this.onWindowResize({width: window.innerWidth, height: window.innerHeight}, this.props.stateUpdate);
+    window.addEventListener('resize', this.onWindowResize);
+    this.onWindowResize(null, this.props.stateUpdate);
   }
   componentWillUnmount() {
+    window.removeEventListener('resize', this.onWindowResize);
     state.disconnect(this.connectId);
   }
   setKeyboardShortcuts(e){
@@ -899,12 +870,11 @@ class App extends React.Component {
   onWindowResize(e, _stateUpdate) {
     let s = this.state;
     let stateUpdate = {
-      collapse: e.width >= 1565,
-      width: e.width,
-      height: e.height,
-      hasScrollbar: true
+      collapse: window.innerWidth >= 1565,
+      width: window.innerWidth,
+      height: window.innerHeight
     };
-    if (s.init) {
+    if (s.init && _stateUpdate) {
       _.assignIn(stateUpdate, _stateUpdate);
       this.setKeyboardShortcuts(stateUpdate);
     }
@@ -926,8 +896,5 @@ class App extends React.Component {
     }
   }
 }
-
-reactMixin(App.prototype, ReactUtils.Mixins.WindowSizeWatch);
-reactMixin(App.prototype, ReactUtils.Mixins.ViewportWatch);
 
 export default App;

@@ -1,7 +1,7 @@
 {
   "name": "__MSG_appName__",
   "short_name": "TM5K",
-  "version": "2.3.1",
+  "version": "2.4.0",
   "manifest_version": 2,
   "description": "__MSG_appDesc__",
   "icons": {
@@ -12,8 +12,8 @@
     "newtab": "newtab.html"
   },
   "options_ui": {
-    "browser_style": false,
-    "open_in_tab": true,
+    "browser_style": true,
+    "open_in_tab": false,
     "page": "options.html"
   },
   "default_locale": "en",
@@ -23,7 +23,7 @@
     ]
   },
   "page_action": {
-    "browser_style": false,
+    "browser_style": true,
     "default_icon": {
       "19": "images/icon-19.png",
       "38": "images/icon-38.png"
@@ -61,6 +61,5 @@
     "gecko": {
       "id": "tm5k@tabmaster.org"
     }
-  },
-  "content_security_policy": "script-src http://127.0.0.1:8009 https://cdn.trackjs.com 'unsafe-eval'; connect-src http://127.0.0.1:8009 http://127.0.0.1:8009 ws://127.0.0.1:8009/ https://capture.trackjs.com; object-src 'self'; style-src * 'unsafe-inline' 'self' blob:;"
+  }
 }

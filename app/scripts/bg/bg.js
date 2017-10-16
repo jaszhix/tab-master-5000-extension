@@ -41,6 +41,7 @@ import v from 'vquery';
 import uuid from 'node-uuid';
 import prefsStore from '../components/stores/prefs';
 import {findIndex} from '../components/utils';
+import {isNewTab} from '../components/stores/tileUtils';
 
 const eventState = {
   onStartup: null,
@@ -82,7 +83,7 @@ let sendMsg = (msg, res) => {
   });
 };
 
-let syncSession = (sessions, prefs, windows=null, cb)=>{
+let syncSession = (sessions, prefs, windows=null)=>{
   let allTabs = [];
   if (typeof prefs.syncedSession !== 'undefined' && prefs.syncedSession && prefs.sessionsSync) {
     let refSession = findIndex(sessions, session => session.id === prefs.syncedSession);
@@ -95,8 +96,7 @@ let syncSession = (sessions, prefs, windows=null, cb)=>{
         if (typeof windows[i].tabs[z] === 'undefined') {
           continue;
         }
-        if (windows[i].tabs[z].url === 'chrome://newtab/'
-          || windows[i].tabs[z].url.substr(-11) === 'newtab.html') {
+        if (isNewTab(windows[i].tabs[z].url)) {
           _.pullAt(windows[i].tabs, z);
         }
       }
@@ -131,8 +131,7 @@ let createScreenshot = (t, refWindow, refTab, run=0)=>{
   if (t.state.windows[refWindow].tabs[refTab] === undefined) {
     return;
   }
-  if (t.state.windows[refWindow].tabs[refTab].url.indexOf('chrome://newtab/') !== -1
-    && t.state.windows[refWindow].tabs[refTab].url.substr(-11) !== 'newtab.html') {
+  if (isNewTab(t.state.windows[refWindow].tabs[refTab].url)) {
     return;
   }
   if (t.state.screenshots === undefined) {
@@ -159,7 +158,7 @@ let createScreenshot = (t, refWindow, refTab, run=0)=>{
     }
   });
   capture.then((image)=>{
-    let resize = new Promise((resolve, reject)=>{
+    let resize = new Promise((resolve)=>{
       let sourceImage = new Image();
       sourceImage.onload = function() {
         let imgWidth = sourceImage.width / 2;
@@ -197,7 +196,7 @@ let createScreenshot = (t, refWindow, refTab, run=0)=>{
         sendMsg({screenshots: t.state.screenshots, windowId: t.state.windows[refWindow].id});
       });
     });
-  }).catch((e)=>{
+  }).catch(()=>{
     return;
   });
 };
@@ -216,7 +215,7 @@ let setAction = (t, type, oldTabInstance, newTabInstance=null)=>{
       _.pullAt(t.state.actions, firstAction);
     }
   }
-  if (newTabInstance && newTabInstance.title !== 'New Tab' || oldTabInstance && oldTabInstance.title !== 'New Tab') {
+  if (!isNewTab(oldTabInstance.url) && newTabInstance && !isNewTab(newTabInstance.url)) {
     let action = {
       type: type,
       item: _.cloneDeep(type === 'update' ? newTabInstance : oldTabInstance),
@@ -297,20 +296,20 @@ class Bg extends React.Component {
     if (eventState.onInstalled) {
       if (eventState.onInstalled.reason === 'update' || eventState.onInstalled.reason === 'install') {
         let newTabIsOpen = false;
-        chrome.tabs.query({title: 'New Tab'},(tabs)=>{
+        chrome.tabs.query({title: 'New Tab'}, (tabs)=>{
           for (let i = 0, len = tabs.length; i < len; i++) {
             newTabIsOpen = true;
             chrome.tabs.remove(tabs[i].id);
           }
         });
-        chrome.tabs.query({active: true},(tabs)=>{
+        chrome.tabs.query({active: true}, (tabs)=>{
           for (let i = 0, len = tabs.length; i < len; i++) {
             if (tabs[i].active) {
               setTimeout(()=>{
                 if (!newTabIsOpen) {
                   return;
                 }
-                chrome.tabs.create({active: false}, (tab)=>{
+                chrome.tabs.create({active: false}, ()=>{
                   setTimeout(()=>{
                     if (eventState.onInstalled.reason === 'install') {
                       sendMsg({e: eventState.onInstalled, type:'appState', action: 'installed'});
@@ -492,7 +491,7 @@ class Bg extends React.Component {
         });
         capture.then((image)=>{
           sendResponse({'image': image});
-        }).catch((e)=>{
+        }).catch(()=>{
           if (s.prefs.mode !== 'tabs') {
             chrome.tabs.update(msg.id, {active: true});
           } else {
@@ -551,8 +550,7 @@ class Bg extends React.Component {
         timeStamp: new Date(Date.now()).getTime(),
         domain: urlMatch ? urlMatch[1] : tabs[i].url.split('/')[2]
       });
-      let isNewTab = tabs[i].url.indexOf('chrome://newtab/') > -1 || tabs[i].url.substr(-11) === 'newtab.html';
-      if (isNewTab) {
+      if (isNewTab(tabs[i].url)) {
         blacklisted.push({id: tabs[i].id, windowId: tabs[i].windowId});
       }
     }
@@ -593,16 +591,16 @@ class Bg extends React.Component {
     return _item;
   }
   querySessions(){
-    chrome.storage.local.get('sessions',(item)=>{
+    chrome.storage.local.get('sessions', (item)=>{
       let sessions = [];
-      console.log('item retrieved: ',item);
+      console.log('item retrieved: ', item);
       if (item && item.sessions) {
         // Sort sessionData array to show the newest sessions at the top of the list.
         //let reverse = _.orderBy(item.sessions, ['timeStamp'], ['desc']);
         sessions = item.sessions;
       } else {
-        chrome.storage.local.get('sessionData',(_item)=>{
-          console.log('sessions v1 fall back: ',_item);
+        chrome.storage.local.get('sessionData', (_item)=>{
+          console.log('sessions v1 fall back: ', _item);
           if (_item && _item.sessionData) {
             // Backwards compatibility for sessions v1
             _item = this.convertV1Sessions();
@@ -618,17 +616,12 @@ class Bg extends React.Component {
     });
   }
   queryScreenshots(){
-    let save = (index)=>{
-      chrome.storage.local.set({screenshots: index}, (result)=> {
-
-      });
-    };
     chrome.storage.local.get('screenshots', (shots)=>{
       let index = [];
       if (shots && shots.screenshots) {
         index = shots.screenshots;
       } else {
-        save([]);
+        chrome.storage.local.set({screenshots: []});
       }
       this.setState({screenshots: index});
     });
@@ -658,6 +651,11 @@ class Bg extends React.Component {
     let undo = ()=>{
       let lastAction = _.last(this.state.actions);
       if (lastAction) {
+        if (isNewTab(lastAction.url)) {
+          removeLastAction(lastAction);
+          undo();
+          return;
+        }
         if (lastAction.type === 'remove') {
           this.keepNewTabOpen();
 
@@ -711,8 +709,7 @@ class Bg extends React.Component {
     if (refTab === -1) {
       return;
     }
-    if (this.state.windows[refWindow].tabs[refTab].url.indexOf('chrome://newtab/') > -1
-      || this.state.windows[refWindow].tabs[refTab].url.substr(-11) === 'newtab.html') {
+    if (isNewTab(this.state.windows[refWindow].tabs[refTab].url)) {
       return;
     }
     // Update timestamp for auto-discard feature's accuracy.
@@ -751,15 +748,14 @@ class Bg extends React.Component {
     this.state.windows[refWindow].tabs = this.formatTabs(this.state.prefs, this.state.windows[refWindow].tabs);
     this.setState({windows: this.state.windows});
     // Activate the first new tab if it is open, and if this is a second new tab being created.
-    if ((e.url.indexOf('chrome://newtab/') > -1 || e.url.substr(-11) === 'newtab.html')
+    if (isNewTab(e.url)
       && this.state.prefs.singleNewTab) {
       let refNewTab = findIndex(this.state.newTabs, tab => tab.windowId === e.windowId);
       if (refNewTab !== -1) {
         let refExistingTab = findIndex(this.state.windows[refWindow].tabs, tab => tab.id === this.state.newTabs[refNewTab].id);
         if (refExistingTab === -1
           || (typeof this.state.windows[refWindow].tabs[refExistingTab] !== 'undefined'
-            && this.state.windows[refWindow].tabs[refExistingTab].url.indexOf('chrome://newtab/') === -1
-            && this.state.windows[refWindow].tabs[refExistingTab].url.substr(-11) !== 'newtab.html')) {
+            && !isNewTab(this.state.windows[refWindow].tabs[refExistingTab].url))) {
           _.pullAt(this.state.newTabs, refNewTab);
           this.setState({newTabs: this.state.newTabs}, ()=>{
             chrome.tabs.create({active: true});
@@ -864,7 +860,7 @@ class Bg extends React.Component {
     });
   }
   render(){
-    console.log('BG STATE: ',this.state);
+    console.log('BG STATE: ', this.state);
     return null;
   }
 };

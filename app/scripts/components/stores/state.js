@@ -9,6 +9,7 @@ const state = initStore({
   sessionTabs: [],
   actions: [],
   windowRestored: false,
+  isOptions: document.querySelector('#options'),
   // Single item states
   move: null,
   update: null,
@@ -23,7 +24,6 @@ const state = initStore({
   height: window.innerHeight,
   collapse: window.innerWidth >= 1565,
   tileLimit: 50,
-  hasScrollbar: true,
   topNavButton: null,
   context: {
     value: null,

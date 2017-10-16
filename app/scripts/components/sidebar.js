@@ -51,6 +51,12 @@ export class SidebarMenu extends React.Component {
     _.defer(() => msgStore.setPrefs(prefsUpdate));
     ReactTooltip.hide();
   }
+  handleSortOption(key) {
+    state.set({sort: key, direction: this.props.direction === 'desc' ? 'asc' : 'desc'});
+    if (key === 'index') {
+      msgStore.queryTabs(true);
+    }
+  }
   render(){
     let p = this.props;
     let s = this.state;
@@ -95,9 +101,9 @@ export class SidebarMenu extends React.Component {
     let textColor = tc(p.theme.bodyBg).isDark() && tc(p.theme.bodyText).isLight() ? p.theme.bodyText : tc(p.theme.headerBg).isDark() ? p.theme.darkBtnText : p.theme.lightBtnText;
     let lightBtnIsDark = tc(p.theme.lightBtnBg).isDark();
     return (
-      <div className="sidebar sidebar-secondary sidebar-default" style={{
-        color: textColor
-      }}>
+      <div
+      className="sidebar sidebar-secondary sidebar-default"
+      style={{color: textColor}}>
         <div className="sidebar-content">
           <div className="tabbable sortable ui-sortable">
             <ul className="nav nav-lg nav-tabs nav-justified">
@@ -111,7 +117,7 @@ export class SidebarMenu extends React.Component {
                 return (
                   <li key={i}>
                     <a style={tabStyle} className="legitRipple" onClick={tab.onClick} data-tip={tab.label}>
-                      <i className={tab.icon}/>
+                      <i className={tab.icon} />
                     </a>
                   </li>
                 );
@@ -121,17 +127,19 @@ export class SidebarMenu extends React.Component {
             <div className="tab-content">
               <div className="tab-pane no-padding active" id="components-tab">
                 <div className="sidebar-category">
-                  <div className={`category-title ${p.prefs.showViewMode ? '' : 'category-collapsed'}`} style={{
+                  <div
+                  className={`category-title ${p.prefs.showViewMode ? '' : 'category-collapsed'}`}
+                  style={{
                     borderTopColor: borderColor,
                     borderTop: `1px solid ${borderColor}`,
                     borderBottomColor: borderColor,
                     cursor: 'pointer'
                   }}
-                    onClick={() => msgStore.setPrefs({showViewMode: !p.prefs.showViewMode})}>
+                  onClick={() => msgStore.setPrefs({showViewMode: !p.prefs.showViewMode})}>
                     <span>{utils.t('viewMode')}</span>
                     <ul className="icons-list">
                       <li>
-                        <a data-action="collapse" className={p.prefs.showViewMode ? '' : 'rotate-180'}></a>
+                        <a data-action="collapse" className={p.prefs.showViewMode ? '' : 'rotate-180'} />
                       </li>
                     </ul>
                   </div>
@@ -159,8 +167,7 @@ export class SidebarMenu extends React.Component {
                                         icon={option.icon}
                                         label={option.label}
                                         onClick={() => utilityStore.handleMode(option.key)}
-                                        onMouseEnter={() => this.setState({lgBtnHover: option.label})}
-                                         />
+                                        onMouseEnter={() => this.setState({lgBtnHover: option.label})} />
                                       );
                                     } else {
                                       return null;
@@ -183,7 +190,7 @@ export class SidebarMenu extends React.Component {
                     <span>{utils.t('sortBy')}</span>
                     <ul className="icons-list">
                       <li>
-                        <a data-action="collapse" className={p.prefs.sort ? '' : 'rotate-180'}></a>
+                        <a data-action="collapse" className={p.prefs.sort ? '' : 'rotate-180'} />
                       </li>
                     </ul>
                   </div>
@@ -202,8 +209,7 @@ export class SidebarMenu extends React.Component {
                                       type="radio"
                                       name="radio-group"
                                       className="styled"
-                                      onClick={() => state.set({sort: key, direction: p.direction === 'desc' ? 'asc' : 'desc'})}
-                                       />
+                                      onClick={() => this.handleSortOption(key)} />
                                     </span>
                                   </div>
                                   {p.labels[key]}

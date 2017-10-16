@@ -1,10 +1,9 @@
+import '../../styles/app.scss';
 import React from 'react';
 import {render} from 'react-dom';
 import {AppContainer} from 'react-hot-loader';
 import App from './root';
 import v from 'vquery';
-import '../../styles/app.scss';
-
 import {tryFn} from './utils';
 
 const renderApp = (stateUpdate)=>{

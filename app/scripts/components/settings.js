@@ -1,10 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import PropTypes from 'prop-types';
 import autoBind from 'react-autobind';
 import moment from 'moment';
 import _ from 'lodash';
-import kmp from 'kmp';
 import tc from 'tinycolor2';
 
 import ColorPicker from 'rc-color-picker';
@@ -32,9 +30,11 @@ ColorPicker.prototype.onVisibleChange = function onVisibleChange(open) {
 }
 
 class ColorPickerContainer extends React.Component {
+  static defaultProps = {
+    color: '#FFFFFF'
+  };
   constructor(props) {
     super(props);
-
     this.state = {
       alpha: 1,
       color: null,
@@ -42,21 +42,23 @@ class ColorPickerContainer extends React.Component {
     }
     autoBind(this);
   }
-  componentDidMount(){
+  componentDidMount() {
     this.convertColor(this.props.color);
   }
-  componentWillReceiveProps(nP){
+  componentWillReceiveProps(nP) {
     this.convertColor(nP.color);
   }
-  handleColorChange(color){
+  handleColorChange(color) {
     let rgb = tc(color.color).setAlpha(color.alpha / 100).toRgbString();
-    let p = this.props;
+    if (color.alpha === 100) {
+      rgb = rgb.replace(/rgb/g, 'rgba').replace(/\)/g, ', 1)');
+    }
     let theme = {};
-    theme[p.themeKey] = rgb;
+    theme[this.props.themeKey] = rgb;
     themeStore.set({theme});
-    p.onChange();
+    this.props.onChange();
   }
-  convertColor(color){
+  convertColor(color) {
     if (color.indexOf('#') !== -1) {
       this.setState({color: color});
     } else if (color.indexOf('a') !== -1) {
@@ -71,7 +73,7 @@ class ColorPickerContainer extends React.Component {
       });
     }
   }
-  render(){
+  render() {
     let s = this.state;
     let p = this.props;
     return (
@@ -79,16 +81,15 @@ class ColorPickerContainer extends React.Component {
         <Row onMouseEnter={p.onMouseEnter}>
           <span>
             <ColorPicker
-              animation="slide-up"
-              color={s.color ? s.color : '#FFFFFF'}
-              mode="RGB"
-              onOpen={() => state.set({colorPickerOpen: true})}
-              onClose={() => state.set({colorPickerOpen: false})}
-              defaultColor="#FFFFFF"
-              defaultAlpha={100}
-              alpha={s.alpha}
-              onChange={this.handleColorChange}
-            />
+            animation="slide-up"
+            color={s.color ? s.color : '#FFFFFF'}
+            mode="RGB"
+            onOpen={() => state.set({colorPickerOpen: true})}
+            onClose={() => state.set({colorPickerOpen: false})}
+            defaultColor="#FFFFFF"
+            defaultAlpha={100}
+            alpha={s.alpha}
+            onChange={this.handleColorChange} />
           </span>
           <div style={{display: 'inline-block', position: 'relative', top: '-5px', left: '6px'}}>
             {p.label}
@@ -99,12 +100,7 @@ class ColorPickerContainer extends React.Component {
   }
 }
 
-ColorPickerContainer.defaultProps = {
-  color: '#FFFFFF'
-};
-
 const buttonIconStyle = {fontSize: '14px', position: 'relative', top: '0px'};
-
 const themeContainerStyle = {height: '210px', width: '100%', overflowY: 'auto', position: 'relative', top: '25.5px'};
 const tabPanelStyle = {position: 'relative', top: '18px'};
 const themeNameEditInputStyle = {display: 'inline', height: '27px', width: '66%', top: '0px', left: '17px'};
@@ -117,6 +113,7 @@ const colorPickerColumnStyle = {marginTop: '28px'};
 const wallpaperRowStyle = {marginTop: '28px', minHeight: '184px'};
 const wallpaperColumnStyle = {maxHeight: '211px', overflowY: 'auto'};
 const wallpaperTileColumnStyle = {paddingLeft: '24px'};
+const cursorPointerStyle = {cursor: 'pointer'};
 
 class Theming extends React.Component {
   constructor(props) {
@@ -138,7 +135,7 @@ class Theming extends React.Component {
     }
     autoBind(this);
   }
-  componentDidMount(){
+  componentDidMount() {
     let p = this.props;
     let refTheme;
     let isNewTheme = true;
@@ -158,13 +155,13 @@ class Theming extends React.Component {
     });
     this.handleFooterButtons(this.props);
   }
-  componentDidUpdate(pP, pS){
+  componentDidUpdate(pP, pS) {
     ReactTooltip.rebuild();
     if (!_.isEqual(this.state, pS)) {
       this.handleFooterButtons(this.props);
     }
   }
-  componentWillReceiveProps(nP){
+  componentWillReceiveProps(nP) {
     let p = this.props;
     let refTheme;
     if (true||nP.prefs.theme < 9000 || (this.state.leftTab === 'custom' && this.state.isNewTheme)) {
@@ -190,10 +187,10 @@ class Theming extends React.Component {
       this.handleFooterButtons(nP);
     }
   }
-  triggerRefClick(ref){
-    this.refs[ref].click();
+  triggerRefClick(ref) {
+    this[ref].click();
   }
-  handleFooterButtons(p){
+  handleFooterButtons(p) {
     let s = this.state;
     let newThemeLabel, newThemeIcon = 'floppy-disk';
     if (s.leftTab === 'tm5k') {
@@ -211,40 +208,40 @@ class Theming extends React.Component {
       <div>
         {s.showCustomButtons || s.savedThemes.length === 0 ?
         <Btn
-          onClick={s.isNewTheme || !s.selectedTheme ? () => this.handleSaveTheme() : () => this.handleUpdateTheme()}
-          style={{fontWeight: s.boldUpdate ? '600' : '400'}}
-          icon={newThemeIcon}
-          className="ntg-setting-btn">
+        onClick={s.isNewTheme || !s.selectedTheme ? () => this.handleSaveTheme() : () => this.handleUpdateTheme()}
+        style={{fontWeight: s.boldUpdate ? '600' : '400'}}
+        icon={newThemeIcon}
+        className="ntg-setting-btn">
           {newThemeLabel}
         </Btn> : null}
         <Btn onClick={this.handleNewTheme} icon="color-sampler" className="ntg-setting-btn" >{`${utils.t('new')} ${p.collapse ? utils.t('theme') : ''}`}</Btn>
         {s.savedThemes.length > 0 ?
         <Btn onClick={() => themeStore.export()} className="ntg-setting-btn" icon="database-export">{utils.t('export')}</Btn> : null}
-        <Btn onClick={() => this.triggerRefClick('import')} className="ntg-setting-btn" icon="database-insert">{utils.t('import')}</Btn>
+        <Btn onClick={() => this.triggerRefClick('importRef')} className="ntg-setting-btn" icon="database-insert">{utils.t('import')}</Btn>
         {s.rightTab === 'wallpaper' ?
-        <Btn onClick={() => this.triggerRefClick('wallpaper')} className="ntg-setting-btn" icon="file-picture">{utils.t('importWallpaper')}</Btn> : null}
-        {s.rightTab === 'color' ? <Btn onClick={() => this.setState({colorGroup: 'general'})} style={getButtonStyle('general') } className="ntg-setting-btn">{utils.t('bodyHeaderAndFields')}</Btn> : null}
-        {s.rightTab === 'color' ? <Btn onClick={() => this.setState({colorGroup: 'buttons'})} style={getButtonStyle('buttons') } className="ntg-setting-btn">{utils.t('buttons')}</Btn> : null}
-        {s.rightTab === 'color' ? <Btn onClick={() => this.setState({colorGroup: 'tiles'})} style={getButtonStyle('tiles') } className="ntg-setting-btn">{utils.t('tiles')}</Btn> : null}
+        <Btn onClick={() => this.triggerRefClick('wallpaperRef')} className="ntg-setting-btn" icon="file-picture">{utils.t('importWallpaper')}</Btn> : null}
+        {s.rightTab === 'color' ? <Btn onClick={() => this.setState({colorGroup: 'general'})} style={getButtonStyle('general')} className="ntg-setting-btn">{utils.t('bodyHeaderAndFields')}</Btn> : null}
+        {s.rightTab === 'color' ? <Btn onClick={() => this.setState({colorGroup: 'buttons'})} style={getButtonStyle('buttons')} className="ntg-setting-btn">{utils.t('buttons')}</Btn> : null}
+        {s.rightTab === 'color' ? <Btn onClick={() => this.setState({colorGroup: 'tiles'})} style={getButtonStyle('tiles')} className="ntg-setting-btn">{utils.t('tiles')}</Btn> : null}
         {p.wallpaper && p.wallpaper.data !== -1 && p.wallpaper.id < 9000 ? <Btn onClick={() => themeStore.removeWallpaper(p.prefs.wallpaper)} className="ntg-setting-btn pull-right">{utils.t('remove')}</Btn> : null}
       </div>
     );
     state.set({modal: p.modal}, true);
   }
-  handleSelectTheme(theme){
+  handleSelectTheme(theme) {
     this.setState({
       selectedTheme: _.cloneDeep(theme),
-      isNewTheme: theme.id < 9000 ? false : true
+      isNewTheme: theme.id > 9000
     });
     themeStore.selectTheme(theme.id);
   }
-  handleNewTheme(){
+  handleNewTheme() {
     this.setState({
       isNewTheme: true
     });
     themeStore.newTheme();
   }
-  handleSaveTheme(){
+  handleSaveTheme() {
     let stateUpdate = {
       isNewTheme: false,
       rightTab: 'color'
@@ -255,22 +252,22 @@ class Theming extends React.Component {
     }
     this.setState(stateUpdate);
   }
-  handleUpdateTheme(){
+  handleUpdateTheme() {
     themeStore.update(this.state.selectedTheme.id);
     this.setState({
       boldUpdate: false
     });
   }
-  handleRemoveTheme(id){
+  handleRemoveTheme(id) {
     ReactTooltip.hide();
     themeStore.remove(id);
   }
-  handleEnter(e, id){
+  handleEnter(e, id) {
     if (e.keyCode === 13) {
       this.handleLabel(id);
     }
   }
-  handleLabel(id){
+  handleLabel(id) {
     ReactTooltip.hide();
     let label = this.state.themeLabelValue;
     if (!label) {
@@ -279,7 +276,13 @@ class Theming extends React.Component {
     themeStore.label(id, label);
     this.setState({themeLabel: -1});
   }
-  render(){
+  getImportRef(ref) {
+    this.importRef = ref;
+  }
+  getWallpaperRef(ref) {
+    this.wallpaperRef = ref;
+  }
+  render() {
     let p = this.props;
     let s = this.state;
     let themeFields = filter(themeStore.getThemeFields(), field => field.group === s.colorGroup);
@@ -290,8 +293,8 @@ class Theming extends React.Component {
     themeFields = [themeFields1, themeFields2, themeFields3];
     return (
       <div className="theming">
-        <input children={undefined} type="file" onChange={(e)=>themeStore.import(e)} accept=".json" ref="import" style={style.hiddenInput} />
-        <input children={undefined} type="file" onChange={(e)=>themeStore.importWallpaper(e, s.selectedTheme.id)} accept=".jpg,.jpeg,.png" ref="wallpaper" style={style.hiddenInput} />
+        <input type="file" onChange={(e)=>themeStore.import(e)} accept=".json" ref={this.getImportRef} style={style.hiddenInput} />
+        <input type="file" onChange={(e)=>themeStore.importWallpaper(e, s.selectedTheme.id)} accept=".jpg,.jpeg,.png" ref={this.getWallpaperRef} style={style.hiddenInput} />
         <Col size="3" className="ntg-tabs" style={{borderBottom: 'initial', position: 'fixed', zIndex: '9999', marginTop: '-20px', height: '50px', backgroundColor: p.theme.settingsBg}}>
           <div role="tabpanel" style={tabPanelStyle}>
             <ul className="nav nav-tabs">
@@ -333,7 +336,6 @@ class Theming extends React.Component {
                       onClick={s.themeLabel !== i && theme.id !== p.prefs.theme ? () => this.handleSelectTheme(theme) : null}>
                         {s.themeLabel === i ?
                         <input
-                        children={undefined}
                         type="text"
                         value={s.themeLabelValue}
                         className="form-control"
@@ -426,7 +428,7 @@ class Theming extends React.Component {
                   size="4"
                   style={colorPickerColumnStyle}>
                     <Row>
-                      {map(fields, (field, i) => {
+                      {map(fields, (field) => {
                         return (
                           <ColorPickerContainer
                           key={field.themeKey}
@@ -434,7 +436,7 @@ class Theming extends React.Component {
                           hoverBg={p.theme.settingsItemHover}
                           color={p.theme[field.themeKey]}
                           themeKey={field.themeKey}
-                          label={utils.t(field.themeKey)}/>
+                          label={utils.t(field.themeKey)} />
                         );
                       })}
                     </Row>
@@ -465,16 +467,19 @@ class Theming extends React.Component {
                       margin: '8px',
                       border: selectedWallpaper ? `4px solid ${p.theme.darkBtnBg}` : 'initial',
                       cursor: selectedWallpaper ? null : 'pointer'}}>
-                        {selectedWallpaper ? <i className="icon-checkmark3" style={{
-                          position: 'relative',
-                          top: '8px',
-                          left: '37.5px',
-                          display: 'table',
-                          color: '#FFF',
-                          textShadow: '1px 2px #000',
-                          fontSize: '36px'
-                        }}/> : null}
-                      </div>
+                        {selectedWallpaper ?
+                          <i
+                          className="icon-checkmark3"
+                          style={{
+                            position: 'relative',
+                            top: '8px',
+                            left: '37.5px',
+                            display: 'table',
+                            color: '#FFF',
+                            textShadow: '1px 2px #000',
+                            fontSize: '36px'
+                          }} /> : null}
+                    </div>
                   );
                 }) : null}
               </Col>
@@ -512,11 +517,14 @@ const sessionItemContainerStyle = {width: 'auto', float: 'right', display: 'inli
 const sessionWindowTitleSpanStyle = {position: 'relative', top: '1px', cursor: 'pointer'};
 const sessionTitleContainerStyle = {width: 'auto', float: 'left', display: 'inline', position: 'relative', top: '1px'};
 const sessionHoverButtonIconStyle = {fontSize: '13px', position: 'relative', top: '0px'};
+const sessionHoverButtonContainerStyle = {width: 'auto', float: 'right', display: 'inline', position: 'relative', right: '5px'};
 
 class Sessions extends React.Component {
+  static defaultProps = {
+    collapse: true
+  };
   constructor(props) {
     super(props);
-
     this.state = {
       sessionHover: null,
       selectedSessionTabHover: null,
@@ -533,7 +541,7 @@ class Sessions extends React.Component {
     }
     autoBind(this);
   }
-  componentDidMount(){
+  componentDidMount() {
     let p = this.props;
     let s = this.state;
     p.modal.footer = (
@@ -546,17 +554,17 @@ class Sessions extends React.Component {
     state.set({modal: p.modal}, true);
     this.handleSessionsState(p);
   }
-  componentDidUpdate(){
+  componentDidUpdate() {
     ReactTooltip.rebuild();
   }
-  handleSessionsState(p){
+  handleSessionsState(p) {
     each(p.sessions, (session, sKey) => {
       each(session.tabs, (Window, wKey) => {
         each(Window, (tab, tKey) => {
           if (!tab) {
             return;
           }
-          if (tab.url.indexOf('chrome://newtab/') === -1 && tab.url.substr(-11) !== 'newtab.html') {
+          if (!utils.isNewTab(tab.url)) {
             if (!find(p.favicons, fv => fv.domain === tab.url.split('/')[2]) && tab.url.indexOf('127.0.0.1') === -1 && tab.url.indexOf('localhost') === -1) {
               faviconStore.set_favicon(tab, session.tabs.length, tKey);
             }
@@ -570,12 +578,12 @@ class Sessions extends React.Component {
     });
     state.set({sessions: p.sessions});
   }
-  componentWillReceiveProps(nP){
+  componentWillReceiveProps(nP) {
     if (!_.isEqual(nP.favicons, this.props.favicons)) {
       this.handleSessionsState(nP);
     }
   }
-  labelSession(session){
+  labelSession(session) {
     session.label = this.state.sessionLabelValue;
     sessionsStore.v2Update(this.props.sessions, session);
 
@@ -584,28 +592,27 @@ class Sessions extends React.Component {
       sessionLabelValue: ''
     });
   }
-  setLabel(e){
+  setLabel(e) {
     this.setState({sessionLabelValue: e.target.value});
   }
-  triggerInput(){
-    // Remotely trigger file input button with our own prettier button.
-    ReactDOM.findDOMNode(this.refs.fileInput).click();
+  triggerInput() {
+    this.fileInputRef.click();
   }
-  handleSessionHoverIn(i){
+  handleSessionHoverIn(i) {
     this.setState({sessionHover: i});
   }
-  handleSessionHoverOut(i){
+  handleSessionHoverOut(i) {
     ReactTooltip.hide();
     this.setState({sessionHover: i});
   }
-  handleSelectedSessionTabHoverIn(i){
+  handleSelectedSessionTabHoverIn(i) {
     this.setState({selectedSessionTabHover: i});
   }
-  handleSelectedSessionTabHoverOut(i){
+  handleSelectedSessionTabHoverOut(i) {
     ReactTooltip.hide();
     this.setState({selectedSessionTabHover: i});
   }
-  expandSelectedSession(i, e){
+  expandSelectedSession(i, e) {
     let s = this.state;
     if (s.labelSession) {
       e.preventDefault();
@@ -617,18 +624,21 @@ class Sessions extends React.Component {
       }
     }
   }
-  handleCurrentSessionCloseTab(id, refWindow, refTab){
+  handleCurrentSessionCloseTab(id, refWindow, refTab) {
     chrome.tabs.remove(id);
     _.pullAt(this.props.allTabs[refWindow], refTab);
     state.set({allTabs: this.props.allTabs});
     ReactTooltip.hide();
   }
-  handleCurrentSessionCloseWindow(id, refWindow){
+  handleCurrentSessionCloseWindow(id, refWindow) {
     chrome.windows.remove(id);
     msgStore.removeSingleWindow(id);
     _.pullAt(this.props.allTabs, refWindow);
     state.set({allTabs: this.props.allTabs});
     ReactTooltip.hide();
+  }
+  getFileInputRef(ref) {
+    this.fileInputRef = ref;
   }
   render() {
     let p = this.props;
@@ -661,14 +671,30 @@ class Sessions extends React.Component {
               onMouseEnter={() => this.handleSessionHoverIn(i)}
               onMouseLeave={() => this.handleSessionHoverOut(i)}
               key={i} className="ntg-session-row"
-              style={{backgroundColor: s.sessionHover === i ? p.theme.settingsItemHover : 'initial', minHeight: '30px'}}>
+              style={{
+                backgroundColor: s.sessionHover === i || s.expandedSession === i ? p.theme.settingsItemHover : 'initial',
+                minHeight: '30px',
+                userSelect: 'none'
+              }}>
                 <Row style={{marginBottom: s.expandedSession === i ? '1px' : 'initial'}}>
                   <div style={sessionTitleContainerStyle}>
                     <div
                     onClick={(e)=>this.expandSelectedSession(i, e)}
                     className={"ntg-session-text session-text-"+i}
-                    style={{paddingBottom: s.expandedSession === i ? '4px' : 'initial', cursor: 'pointer'}}>
-                      {p.prefs.syncedSession === session.id ? <span title={utils.t('synchronized')} style={{paddingRight: '5px', color: p.theme.bodyText}}><i className="icon-sync"/></span> : null}
+                    style={{
+                      paddingBottom: s.expandedSession === i ? '4px' : 'initial',
+                      cursor: 'pointer',
+                      fontWeight: s.expandedSession === i ? '600' : '400'
+                    }}>
+                      {p.prefs.syncedSession === session.id ?
+                      <span
+                      title={utils.t('synchronized')}
+                      style={{
+                        paddingRight: '5px',
+                        color: p.theme.bodyText
+                      }}>
+                        <i className="icon-sync" />
+                      </span> : null}
                       {sessionTitle}
                     </div>
                   </div>
@@ -688,7 +714,7 @@ class Sessions extends React.Component {
                     icon="folder-open2"
                     faStyle={buttonIconStyle}
                     noIconPadding={true}
-                    data-tip={utils.t('restoreSession')}/> : null}
+                    data-tip={utils.t('restoreSession')} /> : null}
                     {s.sessionHover === i && p.prefs.sessionsSync ?
                     <Btn
                     onClick={() => msgStore.setPrefs({syncedSession: p.prefs.syncedSession === session.id ? null : session.id})}
@@ -696,7 +722,7 @@ class Sessions extends React.Component {
                     icon="sync"
                     faStyle={{fontWeight: p.prefs.syncedSession === session.id ? '600' : 'initial', position: 'relative', top: '0px'}}
                     noIconPadding={true}
-                    data-tip={p.prefs.syncedSession === session.id ? utils.t('desynchronizeSession') : utils.t('synchronizeSession')}/> : null}
+                    data-tip={p.prefs.syncedSession === session.id ? utils.t('desynchronizeSession') : utils.t('synchronizeSession')} /> : null}
                     {s.sessionHover === i ?
                     <Btn
                     onClick={() => this.setState({searchField: i, expandedSession: i})}
@@ -704,7 +730,7 @@ class Sessions extends React.Component {
                     icon="search4"
                     faStyle={sessionHoverButtonIconStyle}
                     noIconPadding={true}
-                    data-tip={utils.t('searchSession')}/> : null}
+                    data-tip={utils.t('searchSession')} /> : null}
                     {!s.labelSession ? s.sessionHover === i && s.labelSession !== i ?
                     <Btn
                     onClick={() => this.setState({labelSession: i, expandedSession: i})}
@@ -716,127 +742,131 @@ class Sessions extends React.Component {
                   </div>
                 </Row>
                 {s.expandedSession === i ?
-                  <Row fluid={true} onMouseLeave={() => this.setState({windowHover: -1})}>
-                    <Row>
-                      {s.labelSession === i ?
-                        <div>
-                          <Col size="6">
-                            <form onSubmit={(e) => {
-                              e.preventDefault();
-                              this.labelSession(session);
-                            }}>
-                              <input
-                              children={undefined}
-                              type="text"
-                              value={s.sessionLabelValue}
-                              className="form-control label-session-input"
-                              style={sessionInputStyle}
-                              placeholder={session.label ? session.label : `${utils.t('label')}...`}
-                              onChange={this.setLabel} />
-                            </form>
-                          </Col>
-                          <Col size="6">
-                            <Btn
-                            style={sessionLabelEditButtonStyle}
-                            faStyle={buttonIconStyle}
-                            onClick={() => this.labelSession(session)}
-                            className="ntg-session-btn"
-                            icon="checkmark3"
-                            noIconPadding={true}
-                            data-tip="Update Label" />
-                            <Btn
-                            style={sessionLabelEditButtonStyle}
-                            faStyle={buttonIconStyle}
-                            onClick={() => this.setState({labelSession: null})}
-                            className="ntg-session-btn" icon="cross"
-                            noIconPadding={true}
-                            data-tip="Cancel" />
-                          </Col>
-                        </div> : null}
-                        {s.searchField === i ?
-                        <Col size="12">
-                          <input
-                          type="text"
-                          value={s.search}
-                          className="form-control session-field"
-                          style={sessionInputStyle}
-                          placeholder={`${utils.t('searchSession')}...`}
-                          onChange={(e)=>this.setState({search: e.target.value})} />
-                        </Col> : null}
-                    </Row>
-                  {map(session.tabs, (_window, w) => {
-                    let windowTitle = `${utils.t('window')} ${w + 1}: ${_window.length} ${_.upperFirst(utils.t('tabs'))}`;
-                    return (
+                <Row fluid={true} onMouseLeave={() => this.setState({windowHover: -1})}>
+                  <Row>
+                    {s.labelSession === i ?
+                      <div>
+                        <Col size="6">
+                          <form onSubmit={(e) => {
+                            e.preventDefault();
+                            this.labelSession(session);
+                          }}>
+                            <input
+                            type="text"
+                            value={s.sessionLabelValue}
+                            className="form-control label-session-input"
+                            style={sessionInputStyle}
+                            placeholder={session.label ? session.label : `${utils.t('label')}...`}
+                            onChange={this.setLabel} />
+                          </form>
+                        </Col>
+                        <Col size="6">
+                          <Btn
+                          style={sessionLabelEditButtonStyle}
+                          faStyle={buttonIconStyle}
+                          onClick={() => this.labelSession(session)}
+                          className="ntg-session-btn"
+                          icon="checkmark3"
+                          noIconPadding={true}
+                          data-tip="Update Label" />
+                          <Btn
+                          style={sessionLabelEditButtonStyle}
+                          faStyle={buttonIconStyle}
+                          onClick={() => this.setState({labelSession: null})}
+                          className="ntg-session-btn" icon="cross"
+                          noIconPadding={true}
+                          data-tip="Cancel" />
+                        </Col>
+                      </div> : null}
+                      {s.searchField === i ?
+                      <Col size="12">
+                        <input
+                        type="text"
+                        value={s.search}
+                        className="form-control session-field"
+                        style={sessionInputStyle}
+                        placeholder={`${utils.t('searchSession')}...`}
+                        onChange={(e)=>this.setState({search: e.target.value})} />
+                      </Col> : null}
+                  </Row>
+                {map(session.tabs, (_window, w) => {
+                  let windowTitle = `${utils.t('window')} ${w + 1}: ${_window.length} ${_.upperFirst(utils.t('tabs'))}`;
+                  return (
+                    <Row
+                    key={w}
+                    className="ntg-session-row"
+                    style={{backgroundColor: s.windowHover === w ? p.theme.settingsItemHover : p.theme.settingsBg}}
+                    onMouseEnter={() => this.setState({windowHover: w})}>
                       <Row
-                      key={w}
-                      className="ntg-session-row"
-                      style={{backgroundColor: s.windowHover === w ? p.theme.settingsItemHover : p.theme.settingsBg}}
-                      onMouseEnter={() => this.setState({windowHover: w})}>
-                        <Row
+                      className="ntg-session-text"
+                      style={{marginBottom: s.selectedSavedSessionWindow === w || s.search.length > 0 ? '1px' : 'initial', minHeight: '22px'}}>
+                        <span
+                        title={windowTitle}
+                        style={sessionWindowTitleSpanStyle}
                         className="ntg-session-text"
-                        style={{marginBottom: s.selectedSavedSessionWindow === w || s.search.length > 0 ? '1px' : 'initial', minHeight: '22px'}}>
-                          <span
-                          title={windowTitle}
-                          style={sessionWindowTitleSpanStyle}
-                          className="ntg-session-text"
-                          onClick={() => this.setState({selectedSavedSessionWindow: s.selectedSavedSessionWindow === w ? -1 : w})}>
-                            {windowTitle}
-                          </span>
-                          <div style={sessionItemContainerStyle}>
-                            {s.windowHover === w ?
-                            <Btn
-                            onClick={() => sessionsStore.restoreWindow(session, w, p.chromeVersion)}
-                            className="ntg-session-btn"
-                            icon="folder-open2"
-                            faStyle={buttonIconStyle}
-                            noIconPadding={true}
-                            data-tip={utils.t('restoreWindow')}/> : null}
-                          </div>
-                        </Row>
-                        {s.selectedSavedSessionWindow === w || s.search.length > 0 ?
-                        <Row className="ntg-session-expanded" style={sessionExpandedRowStyle} onMouseLeave={() => this.handleSelectedSessionTabHoverOut(-1)}>
-                        {map(_window, (t, x) => {
-                          if (s.search.length === 0 || kmp(t.title.toLowerCase(), s.search) !== -1) {
-                            if (!find(p.favicons, fv => fv.domain === t.url.split('/')[2]) && t.url.indexOf('127.0.0.1') === -1) {
-                              faviconStore.set_favicon(t, session.tabs.length, x);
-                            }
-                            let favIconUrl = t.favIconUrl ? utils.filterFavicons(t.favIconUrl, t.url) : '../images/file_paper_blank_document.png';
-                            return (
-                              <Row
-                              onMouseEnter={() => this.handleSelectedSessionTabHoverIn(x)}
-                              onMouseLeave={() => this.handleSelectedSessionTabHoverOut(x)}
-                              key={x}
-                              style={{backgroundColor: s.selectedSessionTabHover === x ? p.theme.settingsItemHover : 'initial'}}>
-                                <Col size="8">
-                                  <span title={t.title} onClick={() => utilityStore.createTab(t.url)} style={{cursor: 'pointer'}}>
-                                    <img className="ntg-small-favicon" src={favIconUrl} />
-                                    {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {_.truncate(t.title, {length: 40})}
-                                  </span>
-                                </Col>
-                                <Col size="4">
-                                  {s.selectedSessionTabHover === x ?
-                                  <Btn
-                                  onClick={() => sessionsStore.v2RemoveTab(p.sessions, i, w, x)}
-                                  className="ntg-session-btn"
-                                  icon="cross"
-                                  faStyle={sessionButtonIconStyle}
-                                  noIconPadding={true}
-                                  data-tip={utils.t('removeTab')} />: null}
-                                </Col>
-                              </Row>
-                            );
-                          }
-                        })}
-                        </Row> : null}
+                        onClick={() => this.setState({selectedSavedSessionWindow: s.selectedSavedSessionWindow === w ? -1 : w})}>
+                          {windowTitle}
+                        </span>
+                        <div style={sessionItemContainerStyle}>
+                          {s.windowHover === w ?
+                          <Btn
+                          onClick={() => sessionsStore.restoreWindow(session, w, p.chromeVersion)}
+                          className="ntg-session-btn"
+                          icon="folder-open2"
+                          faStyle={buttonIconStyle}
+                          noIconPadding={true}
+                          data-tip={utils.t('restoreWindow')} /> : null}
+                        </div>
                       </Row>
-                    );
-                  })} </Row> : null}
+                      {s.selectedSavedSessionWindow === w || s.search.length > 0 ?
+                      <Row className="ntg-session-expanded" style={sessionExpandedRowStyle} onMouseLeave={() => this.handleSelectedSessionTabHoverOut(-1)}>
+                      {map(_window, (t, x) => {
+                        if (s.search.length === 0 || t.title.toLowerCase().indexOf(s.search) > -1) {
+                          if (!find(p.favicons, fv => fv.domain === t.url.split('/')[2]) && t.url.indexOf('127.0.0.1') === -1) {
+                            faviconStore.set_favicon(t, session.tabs.length, x);
+                          }
+                          let favIconUrl = t.favIconUrl ? utils.filterFavicons(t.favIconUrl, t.url) : '../images/file_paper_blank_document.png';
+                          return (
+                            <Row
+                            onMouseEnter={() => this.handleSelectedSessionTabHoverIn(x)}
+                            onMouseLeave={() => this.handleSelectedSessionTabHoverOut(x)}
+                            key={x}
+                            style={{backgroundColor: s.selectedSessionTabHover === x ? p.theme.settingsItemHover : 'initial'}}>
+                              <Col size="8">
+                                <span title={t.title} onClick={() => utilityStore.createTab(t.url)} style={cursorPointerStyle}>
+                                  <img className="ntg-small-favicon" src={favIconUrl} />
+                                  {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {_.truncate(t.title, {length: 40})}
+                                </span>
+                              </Col>
+                              <Col size="4">
+                                {s.selectedSessionTabHover === x ?
+                                <Btn
+                                onClick={() => sessionsStore.v2RemoveTab(p.sessions, i, w, x)}
+                                className="ntg-session-btn"
+                                icon="cross"
+                                faStyle={sessionButtonIconStyle}
+                                noIconPadding={true}
+                                data-tip={utils.t('removeTab')} />: null}
+                              </Col>
+                            </Row>
+                          );
+                        }
+                      })}
+                      </Row> : null}
+                    </Row>
+                  );
+                })}
+                </Row> : null}
               </Row>
             );
           })}
 
-          <input children={undefined} type="file" onChange={(e)=>sessionsStore.importSessions(p.sessions, e)} accept=".json" ref="fileInput" style={style.hiddenInput} />
-
+          <input
+          type="file"
+          onChange={(e)=>sessionsStore.importSessions(p.sessions, e)}
+          accept=".json"
+          ref={this.getFileInputRef}
+          style={style.hiddenInput} />
         </Col>
         <Col
         size="6"
@@ -849,18 +879,22 @@ class Sessions extends React.Component {
               <Row
               key={w}
               className="ntg-session-row"
-              style={{backgroundColor: s.currentSessionHover === w ? p.theme.settingsItemHover : 'initial'}}
+              style={{
+                backgroundColor: s.currentSessionHover === w || s.selectedCurrentSessionWindow === w ? p.theme.settingsItemHover : 'initial'
+              }}
               onMouseEnter={() => this.setState({currentSessionHover: w})}
               onMouseLeave={() => this.setState({currentSessionTabHover: -1})}>
-                <Row className="ntg-session-text">
+                <Row
+                className="ntg-session-text"
+                style={{fontWeight: s.selectedCurrentSessionWindow === w ? '600' : '400'}}>
                   <span
                   title={windowTitle}
                   className="ntg-session-text"
                   onClick={() => this.setState({selectedCurrentSessionWindow: s.selectedCurrentSessionWindow === w ? -1 : w})}
-                  style={{cursor: 'pointer'}}>
+                  style={cursorPointerStyle}>
                     {windowTitle}
                   </span>
-                  <div style={{width: 'auto', float: 'right', display: 'inline', position: 'relative', right: '5px'}}>
+                  <div style={sessionHoverButtonContainerStyle}>
                     {s.currentSessionHover === w && _window.length > 0 ?
                     <Btn
                     onClick={() => this.handleCurrentSessionCloseWindow(_window[0].windowId, w)}
@@ -878,7 +912,7 @@ class Sessions extends React.Component {
                     return null;
                   }
                   let favIconUrl = t.favIconUrl ? utils.filterFavicons(t.favIconUrl, t.url) : '../images/file_paper_blank_document.png';
-                  if (t.url.indexOf('chrome://newtab/') > -1 || t.url.substr(-11) === 'newtab.html') {
+                  if (utils.isNewTab(t.url)) {
                     _.pullAt(_window, i);
                     return;
                   }
@@ -890,11 +924,11 @@ class Sessions extends React.Component {
                     onMouseEnter={() => this.setState({currentSessionTabHover: i})}>
                       <span
                       title={t.title}
-                      onClick={() => chrome.tabs.update(t.id, {active: true})} style={{cursor: 'pointer'}}>
+                      onClick={() => chrome.tabs.update(t.id, {active: true})} style={cursorPointerStyle}>
                         <img className="ntg-small-favicon" src={favIconUrl} />
                         {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {t.title}
                       </span>
-                      <div style={{width: 'auto', float: 'right', display: 'inline', position: 'relative', right: '5px'}}>
+                      <div style={sessionHoverButtonContainerStyle}>
                         {s.currentSessionTabHover === i ?
                         <Btn
                         onClick={() => this.handleCurrentSessionCloseTab(t.id, w, i)}
@@ -912,29 +946,25 @@ class Sessions extends React.Component {
               </Row>
             );
           }) : null}
-          <p/>
+          <p />
         </Col>
       </div>
     );
   }
 }
 
-Sessions.propTypes = {
-  collapse: PropTypes.bool
-};
-Sessions.defaultProps = {
-  collapse: true
-};
-
 export class Settings extends React.Component {
+  static defaultProps = {
+    collapse: true
+  };
   constructor(props) {
     super(props);
     autoBind(this);
   }
-  componentDidMount(){
+  componentDidMount() {
     state.set({sidebar: false});
   }
-  handleTabClick(opt){
+  handleTabClick(opt) {
     state.set({settings: opt});
   }
   render() {
@@ -969,7 +999,7 @@ export class Settings extends React.Component {
           wallpaper={p.wallpaper}
           wallpapers={p.wallpapers}
           collapse={p.collapse}
-          height={p.height}/> : null}
+          height={p.height} /> : null}
           {p.settings === 'about' ?
           <About
           modal={p.modal}
@@ -980,12 +1010,5 @@ export class Settings extends React.Component {
     );
   }
 }
-
-Settings.propTypes = {
-  collapse: PropTypes.bool
-};
-Settings.defaultProps = {
-  collapse: true
-};
 
 export default Settings;
