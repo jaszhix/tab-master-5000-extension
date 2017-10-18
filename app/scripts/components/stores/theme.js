@@ -458,7 +458,7 @@ const themeStore = initStore({
       themeStore.getWallpapers().then((wallpapers) => {
         let refTheme;
         let selectThemeIsCustom = false;
-        if (themes.themes !== 'undefined') {
+        if (themes && themes.themes !== 'undefined') {
           if (prefs.theme >= 9000) {
             refTheme = find(themeStore.standardThemes, theme => theme.id === prefs.theme);
           } else {
