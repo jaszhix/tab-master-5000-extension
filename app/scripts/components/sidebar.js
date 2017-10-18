@@ -9,8 +9,18 @@ import tc from 'tinycolor2';
 import {map} from './utils';
 import {utilityStore, msgStore} from './stores/main';
 import * as utils from './stores/tileUtils';
-
 import {Btn} from './bootstrap';
+
+onClickOutside.prototype.getInstance = function getInstance() {
+  if (!WrappedComponent.prototype.isReactComponent) {
+    return this;
+  }
+  let ref = this.instanceRef;
+  if (!ref) {
+    return null;
+  }
+  return ref.getInstance ? ref.getInstance() : ref;
+};
 
 class LargeBtn extends React.Component {
   constructor(props) {
