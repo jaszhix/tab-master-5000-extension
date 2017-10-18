@@ -418,7 +418,7 @@ export class Table extends React.Component {
                   style={{
                     fontSize: '14px',
                     color: p.theme.tileText,
-                    backgroundColor: s.rowHover === i || s.selectedItems.indexOf(i) !== -1 ? themeStore.opacify(p.theme.settingsItemHover, 0.5) : isEven ? themeStore.opacify(p.theme.tileBg, 0.34) : themeStore.opacify(p.theme.tileBgHover, 0.25)}}
+                    backgroundColor: s.rowHover === i || s.selectedItems.indexOf(i) !== -1 ? p.theme.settingsItemHover : isEven ? themeStore.opacify(p.theme.tileBg, 0.34) : themeStore.opacify(p.theme.tileBgHover, 0.25)}}
                   onMouseEnter={() => this.setState({rowHover: i})}
                   draggable={p.s.prefs.mode === 'tabs' && p.s.prefs.drag}
                   onDragEnd={this.dragEnd}
