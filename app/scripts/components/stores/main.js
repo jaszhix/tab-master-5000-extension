@@ -508,7 +508,7 @@ export var faviconStore = {
       return;
     }
     let domain = tab.url.split('/')[2];
-    if (tab && tab.favIconUrl && !find(s.favicons, fv => fv.domain === domain)) {
+    if (tab && tab.favIconUrl && !find(s.favicons, fv => fv && fv.domain === domain)) {
       let saveFavicon = (__img) => {
         s.favicons.push({
           favIconUrl: __img,

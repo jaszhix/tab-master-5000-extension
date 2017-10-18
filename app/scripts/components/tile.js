@@ -229,8 +229,8 @@ class Tile extends React.Component {
       color: p.theme.tilePinned,
       backgroundColor: p.theme.tileButtonBg
     }));
-    let titleFontSize = p.tab.title.length >= 115 ? 13 : 14;
 
+    let titleFontSize = p.tab.title.length >= 115 ? 13 : 14;
     let hasDiscarded = p.chromeVersion >= 54; // should be in parent
     let openTab = p.tab.hasOwnProperty('openTab') && p.tab.openTab;
     let isTab = p.prefs.mode === 'tabs' || openTab;
@@ -525,7 +525,8 @@ class TileGrid extends React.Component {
     this.state = {
       theme: null,
       hover: false,
-      showFloatingTableHeader: false
+      showFloatingTableHeader: false,
+      range: {start: 0, length: 0}
     }
     this.connectId1 = state.connect(
       ['modeKey', 'prefs'], () => {
@@ -536,7 +537,6 @@ class TileGrid extends React.Component {
     );
     this.connectId2 = state.connect(['prefs', 'wallpaper'], () => this.prefsInit(this.props));
     autoBind(this);
-    this.range = {start: 0, length: 0};
     this.height = 0;
     this._setViewableRange = _.throttle(this.setViewableRange, 2000, {leading: true});
   }
@@ -617,13 +617,13 @@ class TileGrid extends React.Component {
     if (node.clientHeight > 0) {
       this.height = node.clientHeight;
     }
-    this.range = whichToShow(config);
-    if (this.range.start < 0) {
-      this.range.length = this.range.length + Math.abs(this.range.start);
-      this.range.start = 0;
+    let range = whichToShow(config);
+    if (range.start < 0) {
+      range.length = range.length + Math.abs(range.start);
+      range.start = 0;
     }
     this.scrollTimeout = null;
-    this.forceUpdate();
+    this.setState({range});
   }
   dragStart(e, i) {
     e.dataTransfer.setData(1, 2); // FF fix
@@ -707,7 +707,7 @@ class TileGrid extends React.Component {
             if (utils.isNewTab(tab.url)) {
               return null;
             }
-            let isVisible = i >= this.range.start && i <= this.range.start + this.range.length;
+            let isVisible = i >= this.state.range.start && i <= this.state.range.start + this.state.range.length;
             if (!isVisible) {
               return <div key={i} style={{width: `${p.s.prefs.tabSizeHeight + 80}px`, height: `${p.s.prefs.tabSizeHeight + 12}px`}} />
             }
@@ -752,7 +752,7 @@ class TileGrid extends React.Component {
           <Table
           s={p.s}
           theme={p.theme}
-          range={this.range}
+          range={this.state.range}
           showFloatingTableHeader={this.state.showFloatingTableHeader} /> : null}
         </div>
       </div>
