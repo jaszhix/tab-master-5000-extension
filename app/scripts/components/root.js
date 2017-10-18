@@ -1,6 +1,7 @@
+const PROD = process.env.NODE_ENV === 'production';
 window._trackJs = {
   token: 'bd495185bd7643e3bc43fa62a30cec92',
-  enabled: true,
+  enabled: PROD,
   onError: function () {return true;},
   version: "",
   callback: {
@@ -8,7 +9,7 @@ window._trackJs = {
     bindStack: true
   },
   console: {
-    enabled: true,
+    enabled: PROD,
     display: true,
     error: true,
     warn: false,

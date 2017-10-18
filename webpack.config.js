@@ -153,6 +153,7 @@ const config = {
 };
 
 if (PROD) {
+  config.entry = ['babel-polyfill', config.entry];
   config.devtool = 'hidden-source-map';
   config.plugins.push(
     new webpack.optimize.UglifyJsPlugin({
