@@ -926,7 +926,7 @@ class Sessions extends React.Component {
                       <Col size="11" style={noPaddingStyle}>
                       <span
                       title={t.title}
-                      onClick={() => chrome.tabs.update(t.id, {active: true})} style={cursorPointerStyle}>
+                      onClick={() => utils.activateTab(t)} style={cursorPointerStyle}>
                         <img className="ntg-small-favicon" style={{position: 'relative', top: '-1px'}} src={favIconUrl} />
                         {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {t.title}
                       </span>

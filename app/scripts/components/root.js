@@ -44,7 +44,7 @@ import {keyboardStore, utilityStore, msgStore} from './stores/main';
 import themeStore from './stores/theme';
 import sessionsStore from './stores/sessions';
 import * as utils from './stores/tileUtils';
-import {each} from './utils';
+import {each, filter} from './utils';
 import {Btn, Col, Row} from './bootstrap';
 import Sidebar from './sidebar';
 import TileGrid from './tile';
@@ -163,10 +163,8 @@ class Root extends React.Component {
 
     this.state = {
       init: true,
-      render: false,
       grid: true,
       window: true,
-      load: true,
       topLoad: false,
       screenshots: []
     };
@@ -174,8 +172,32 @@ class Root extends React.Component {
       themeStore.connect('*', (e) => this.themeChange(e)),
       state.connect(['sort', 'direction'], () => {
         let sU = {};
-        sU[this.props.s.modeKey] = utils.sort(this.props, this.props.s[this.props.s.modeKey]);
+        sU[this.props.s.modeKey] = utils.sort(this.props.s[this.props.s.modeKey]);
         state.set(sU, true);
+      }),
+      state.connect({
+        search: (partial) => {
+          if (!partial.search) {
+            utilityStore.handleMode(this.props.s.prefs.mode);
+            return;
+          }
+          let stateUpdate = {};
+          stateUpdate[this.props.s.modeKey] = utils.searchChange(partial.search, this.props.s[this.props.s.modeKey]);
+          state.set(stateUpdate);
+        },
+        modeKey: () => state.set({search: ''}),
+        folder: (partial) => {
+          state.set(this.updateTabState(partial.folder, 'folder', partial));
+        },
+        favicons: (partial) => {
+          // TODO - Move loading indicators inside callbacks so they're useful
+          this.faviconsChange();
+        },
+        applyTabOrder: (partial) => {
+          if (partial.applyTabOrder) {
+            _.defer(()=>state.set({applyTabOrder: false}, () => msgStore.queryTabs()));
+          }
+        }
       })
     ];
     autoBind(this);
@@ -187,65 +209,33 @@ class Root extends React.Component {
     this.init(this.props);
 
   }
-  componentWillReceiveProps(nP){
-    let p = this.props;
-    let stateUpdate = {};
-    let sUChange = false;
-    if (nP.s.modeKey !== p.s.modeKey && nP.s.prefs.mode === p.s.prefs.mode) {
-      if (nP.s.search.length > 0) {
-        stateUpdate[nP.s.modeKey] = utils.searchChange(nP, nP.s[nP.s.modeKey]);
-        sUChange = true;
-      }
-    }
-    if (!_.isEqual(nP.s.search, p.s.search)) {
-      stateUpdate[nP.s.modeKey] = utils.searchChange(nP, nP.s[nP.s.modeKey]);
-      sUChange = true;
-    }
-    if (nP.s.folder !== p.s.folder) {
-      stateUpdate = this.updateTabState(nP.s.folder, 'folder', stateUpdate);
-      sUChange = true;
-    }
-    if (!_.isEqual(nP.s.favicons, p.s.favicons)) {
-      this.faviconsChange(nP.s.favicons);
-      stateUpdate.topNavButton = 'dlFavicons';
-      sUChange = true;
-    }
-    if ((!_.isEqual(nP.s.reQuery, p.s.reQuery) && nP.s.reQuery.state)
-      || nP.s.search.length < p.s.search.length) {
-      nP.s.reQuery.state = true;
-      this.reQuery(nP, stateUpdate, (sU)=>{
-        state.set(sU, true);
-      });
-    } else if (sUChange) {
-      state.set(stateUpdate);
-    }
-    if (nP.s.applyTabOrder !== p.s.applyTabOrder && nP.s.applyTabOrder) {
-      _.defer(()=>state.set({applyTabOrder: false}));
-    }
-  }
   componentWillUnmount() {
-    themeStore.disconnect(this.connections[0]);
-    state.disconnect(this.connections[1]);
+    const [themeStoreConnection, ...connections] = this.connections;
+    themeStore.disconnect(themeStoreConnection);
+    each(connections, connection => state.disconnect(connection));
   }
   init(p){
-    this.captureTabs(p, 'init');
-    msgStore.getSessions().then((sessions)=>{
-      state.set({sessions: sessions});
-      if (p.s.prefs.screenshot) {
-        msgStore.getScreenshots().then((screenshots)=>{
-          state.set({screenshots: screenshots});
-        });
-      }
-      if (p.s.prefs.actions) {
-        msgStore.getActions().then((actions)=>{
-          state.set({actions: actions});
-        });
-      }
+    msgStore.getTabs(true);
+    msgStore.getSessions();
+    if (p.s.prefs.screenshot) {
+      msgStore.getScreenshots().then((screenshots)=>{
+        state.set({screenshots: screenshots});
+      });
+    }
+    if (p.s.prefs.actions) {
+      msgStore.getActions().then((actions)=>{
+        state.set({actions: actions});
+      });
+    }
+    this.setState({
+      topLoad: false,
+      init: false
     });
   }
   faviconsChange(){
     this.setState({topLoad: true});
     _.defer(()=>this.setState({topLoad: false}));
+    state.set({topNavButton: 'dlFavicons'});
   }
   chromeAppChange(e){
     this.setState({apps: e});
@@ -516,9 +506,12 @@ class Root extends React.Component {
     let stateUpdate = {};
     if (opt === 'folder') {
       if (e) {
-        let filter = p.s.prefs.mode === 'bookmarks' ? {folder: e} : {originSession: e};
-        console.log('filter', filter);
-        stateUpdate[p.s.modeKey] = _.filter(p.s[p.s.modeKey], filter);
+        stateUpdate[p.s.modeKey] = filter(p.s[p.s.modeKey], function(item) {
+          if (p.s.prefs.mode === 'bookmarks') {
+            return item.folder === e;
+          }
+          return item.originSession === e;
+        });
         stateUpdate.tileCache = p.s[p.s.modeKey];
       } else {
         stateUpdate[p.s.modeKey] = p.s.tileCache;
@@ -542,139 +535,6 @@ class Root extends React.Component {
     }
     if (p.s.prefs.mode !== 'tabs' && p.s.prefs.mode !== 'sessions') {
       utilityStore.handleMode(p.s.prefs.mode);
-    }
-  }
-  captureTabs(p = this.props, opt, bg, sU, cb) {
-    let s = this.state;
-    // Query current Chrome window for tabs.
-    let stateUpdate = {};
-    let allTabs = [];
-    this.setState({
-      topLoad: true,
-      init: false
-    });
-
-    let handleSessionTabs = (stateUpdate)=>{
-      let sessionTabs = sessionsStore.flatten(p.s.sessions, _.flatten(allTabs), opt === 'init' ? stateUpdate.windowId : p.s.windowId);
-      for (let i = 0, len = sessionTabs.length; i < len; i++) {
-        sessionTabs = utils.checkFavicons(p, sessionTabs[i], i, sessionTabs);
-      }
-      _.assignIn(stateUpdate, {
-        modeKey: 'sessionTabs',
-        sessionTabs: sessionTabs
-      });
-      return stateUpdate;
-    };
-
-    let handleWindow = (res, Window)=>{
-      each(Window.tabs, (tVal, tKey)=>{
-        Window.tabs = utils.checkFavicons(p, tVal, tKey, Window.tabs);
-      });
-
-      if (opt === 'init') {
-        stateUpdate.windowId = res.windowId;
-      }
-
-      if (p.s.prefs.mode === 'sessions' && p.s.sessions.length > 0) {
-        stateUpdate = handleSessionTabs(stateUpdate);
-        if (p.s.search.length > 0) {
-          stateUpdate.sessionTabs = utils.searchChange(p, stateUpdate.sessionTabs);
-        }
-      } else if (p.s.prefs.mode !== 'tabs') {
-        stateUpdate.direction = 'asc';
-        utilityStore.handleMode(p.s.prefs.mode);
-      }
-
-      if (p.s.prefs.mode === 'tabs') {
-        stateUpdate = this.checkDuplicateTabs(stateUpdate, Window.tabs);
-        if (p.s.search.length === 0) {
-          stateUpdate.tabs = Window.tabs;
-        } else {
-          stateUpdate.tabs = utils.searchChange(p, Window.tabs);
-        }
-      }
-      _.assignIn(stateUpdate, {
-        reQuery: {state: false},
-      });
-      stateUpdate.allTabs = allTabs;
-      if (sU) {
-        _.assignIn(sU, stateUpdate);
-        cb(sU);
-      } else {
-        state.set(stateUpdate, true);
-      }
-    };
-
-    let handleWindows = (res)=>{
-      for (let i = 0, len = res.windows.length; i < len; i++) {
-        allTabs.push(res.windows[i].tabs);
-        let wId = opt === 'bg' ? p.s.windowId : res.windowId;
-        if (p.s.prefs.allTabs && i === res.windows.length - 1) {
-          let allTabsFlattened = _.flatten(allTabs);
-          handleWindow(res, {tabs: allTabsFlattened});
-        } else if (!p.s.prefs.allTabs && p.s.tabs.length > 0 && res.windows[i].id === p.s.tabs[0].windowId || res.windows[i].id === wId) {
-          handleWindow(res, res.windows[i]);
-        }
-      }
-      this.setState({topLoad: false});
-      // Querying is complete, allow the component to render.
-      if (opt === 'init' || opt === 'tile') {
-        v('section').remove();
-        this.setState({render: true});
-        if (opt === 'init') {
-          utilityStore.initTrackJs(p.s.prefs, p.s.savedThemes);
-          this.setState({load: false});
-        }
-      }
-    };
-
-    if (opt === 'bg' && bg) {
-      handleWindows(bg);
-    } else {
-      msgStore.getTabs().then((res)=>{
-        handleWindows(res);
-      });
-    }
-  }
-  checkDuplicateTabs(stateUpdate, tabs){
-    let tabUrls = [];
-    for (let i = 0, len = tabs.length; i < len; i++) {
-      tabUrls.push(tabs[i].url);
-    }
-    console.log('Duplicates: ', utils.getDuplicates(tabUrls));
-    if (utils.hasDuplicates(tabUrls)) {
-      stateUpdate.duplicateTabs = utils.getDuplicates(tabUrls);
-    }
-    return stateUpdate;
-  }
-  reQuery(p=null, stateUpdate, cb) {
-    if (!p) {
-      p = this.props;
-    }
-    console.log('reQuery', p.s.reQuery);
-    if (p.s.modal.state && p.s.settings === 'sessions') {
-      msgStore.queryTabs(true);
-      return;
-    }
-    if (p.s.reQuery.state && !p.s.modal.state) {
-      // Treat attaching/detaching and created tabs with a full re-render.
-      if (p.s.reQuery.hasOwnProperty('bg')) {
-        if (stateUpdate) {
-          this.captureTabs(p, 'bg', p.s.reQuery.bg, stateUpdate, (sU)=>{
-            cb(sU);
-          });
-        } else {
-          this.captureTabs(p, 'bg', p.s.reQuery.bg);
-        }
-      } else {
-        if (stateUpdate) {
-          this.captureTabs(p, 'bg', null, stateUpdate, (sU)=>{
-            cb(sU);
-          });
-        } else {
-          this.captureTabs(p, p.s.reQuery.type);
-        }
-      }
     }
   }
   render() {
@@ -811,7 +671,6 @@ class Root extends React.Component {
                 s={p.s}
                 keys={keys}
                 labels={labels}
-                render={s.render}
                 init={s.init}
                 theme={p.s.theme}
                 wallpaper={p.s.currentWallpaper} />

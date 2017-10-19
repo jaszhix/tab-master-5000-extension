@@ -218,7 +218,7 @@ class Preferences extends React.Component {
     if (!this.props.chromeVersion || this.props.chromeVersion !== 1) {
       return;
     }
-    this.connectId = state.connect('reQuery', (partial) => this.checkAddonTab(partial));
+    this.connectId = state.connect('allTabs', (partial) => this.checkAddonTab(partial));
     this.checkAddonTab();
   }
   componentWillUnmount() {
@@ -226,8 +226,8 @@ class Preferences extends React.Component {
   }
   checkAddonTab(partial) {
     let aboutAddonsOpen = false
-    each(partial ? partial.reQuery.bg.windows : state.allTabs, (win) => {
-      each(partial ? win.tabs : win, (tab) => {
+    each(partial ? partial.allTabs : state.allTabs, (win) => {
+      each(win, (tab) => {
         if (tab.url === 'about:addons') {
           aboutAddonsOpen = true;
           return false;

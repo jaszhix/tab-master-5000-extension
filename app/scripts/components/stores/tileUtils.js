@@ -5,15 +5,35 @@ import state from './state';
 import {historyStore, bookmarksStore, chromeAppStore, faviconStore} from './main';
 import sessionsStore from './sessions';
 
+export const activateTab = function(tab) {
+  if (tab.hasOwnProperty('openTab') && !tab.openTab) {
+    chrome.tabs.create({url: tab.url}, (t) =>{
+      let stateUpdate = {};
+      let index = findIndex(state[state.modeKey], item => item.id === tab.id);
+      _.assignIn(state[state.modeKey][index], t);
+      state[state.modeKey][index].openTab = true;
+      stateUpdate[p.modeKey] = state[state.modeKey];
+      state.set(stateUpdate);
+    });
+  } else if (state.prefs.mode === 'apps' || state.prefs.mode === 'extensions') {
+    handleAppClick(tab);
+  } else {
+    chrome.tabs.update(tab.id, {active: true});
+    if (tab.windowId !== state.windowId) {
+      chrome.windows.update(tab.windowId, {focused: true});
+    }
+  }
+};
+
 export var closeTab = (tab) => {
   let stateUpdate = {};
 
   if (state.prefs.mode === 'tabs' || tab.openTab) {
     chrome.tabs.remove(tab.id);
   } else if (state.prefs.mode === 'bookmarks') {
-    chrome.bookmarks.remove(tab.bookmarkId, (b) => {
+    chrome.bookmarks.remove(tab.id, (b) => {
       console.log('Bookmark deleted: ', b);
-      bookmarksStore.remove(state.bookmarks, bookmarkId);
+      bookmarksStore.remove(state.bookmarks, id);
       item.removed = true;
     });
   } else if (state.prefs.mode === 'history') {

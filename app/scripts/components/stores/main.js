@@ -111,16 +111,16 @@ export var bookmarksStore = {
   getBookmarks() {
     this.set_bookmarks().then((bk) => {
       let s = state.get();
-      bk = utils.sort({s: s}, bk);
+      bk = utils.sort(bk);
       if (s.search.length > 0) {
-        bk = utils.searchChange({s: s}, bk);
+        bk = utils.searchChange(s.search, bk);
       }
       state.set({bookmarks: bk});
     });
   },
   remove(bookmarks, bookmarkId){
     let stateUpdate = {};
-    let refBookmark = findIndex(bookmarks, bk => bk.bookmarkId === bookmarkId);
+    let refBookmark = findIndex(bookmarks, bk => bk.id === bookmarkId);
     if (refBookmark !== -1) {
       _.pullAt(bookmarks, refBookmark);
       stateUpdate.bookmarks = bookmarks;
@@ -177,7 +177,7 @@ export var historyStore = {
     this.setHistory().then((h) => {
       let s = state.get();
       if (s.search.length > 0) {
-        h = utils.searchChange({s: s}, h);
+        h = utils.searchChange(s.search, h);
       }
       state.set({history: h});
     });
@@ -248,9 +248,14 @@ export var utilityStore = {
       console.log('Tab created from utilityStore.createTab: ', t);
     });
   },
-  handleMode(mode){
+  handleMode(mode, stateUpdate = null){
+    let shouldReturnStateUpdate = false;
+    if (!stateUpdate) {
+      stateUpdate = {};
+    } else {
+      shouldReturnStateUpdate = true;
+    }
     let currentMode = state.get().prefs.mode;
-    let stateUpdate = {};
     if (currentMode !== mode) {
       stateUpdate.direction = 'desc';
       if (mode === 'bookmarks') {
@@ -269,10 +274,15 @@ export var utilityStore = {
       bookmarksStore.getBookmarks();
     } else if (mode === 'history') {
       historyStore.getHistory();
+    } else if (mode === 'sessions') {
+      msgStore.getSessions();
     } else {
-      stateUpdate.reQuery = {state: true, type: 'create'};
+      msgStore.getTabs();
     }
     _.assignIn(stateUpdate, {modeKey: mode === 'sessions' ? 'sessionTabs' : mode});
+    if (shouldReturnStateUpdate) {
+      return stateUpdate;
+    }
     state.set(stateUpdate);
     msgStore.setPrefs({mode: mode});
   },
@@ -369,27 +379,63 @@ export var keyboardStore = {
   }
 };
 
+const checkDuplicateTabs = function(stateUpdate){
+  let tabUrls = map(stateUpdate.tabs, function(tab) {
+    return tab.url;
+  })
+  console.log('Duplicates: ', utils.getDuplicates(tabUrls));
+  if (utils.hasDuplicates(tabUrls)) {
+    stateUpdate.duplicateTabs = utils.getDuplicates(tabUrls);
+  }
+  return stateUpdate;
+}
+
 // Chrome event listeners set to trigger re-renders.
 export var msgStore = {
   init() {
     chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+      let stateUpdate = {};
       let s = state.get('*');
-      if ((!s.prefs.allTabs && msg.windowId !== s.windowId && s.settings !== 'sessions' && !msg.action)
+      if ((!s.prefs.allTabs
+        && msg.windowId !== s.windowId
+        && !msg.init
+        && s.settings !== 'sessions'
+        && !msg.action)
         || s.windowRestored) {
         return;
       }
       console.log('msg: ', msg, 'sender: ', sender);
       if (msg.hasOwnProperty('windows')) {
-        if (msg.refresh) {
-          let allTabs = map(msg.windows, function(win) {
+        stateUpdate = {
+          allTabs: map(msg.windows, function(win) {
             return win.tabs;
-          });
-          state.set({allTabs});
-          return;
+          })
+        };
+        if (msg.init) {
+          v('section').remove();
+          stateUpdate.windowId = msg.windowId;
+          utilityStore.initTrackJs(s.prefs, s.savedThemes);
         }
-        state.set({reQuery: {state: true, bg: msg}});
+        let windowId = msg.init ? stateUpdate.windowId : s.windowId;
+        if (s.prefs.mode === 'tabs') {
+          stateUpdate.tabs = find(msg.windows, function(win) {
+            return win.id === windowId;
+          }).tabs;
+          stateUpdate.tabs = utils.checkFavicons(stateUpdate.tabs, windowId);
+          stateUpdate = checkDuplicateTabs(stateUpdate);
+        } else if (s.prefs.mode === 'sessions') {
+          stateUpdate.modeKey = 'sessionTabs';
+          stateUpdate.sessionTabs = utils.checkFavicons(sessionsStore.flatten(s.sessions, _.flatten(stateUpdate.allTabs), windowId))
+        } else {
+          stateUpdate = utilityStore.handleMode(s.prefs.mode, stateUpdate)
+        }
+        state.set(stateUpdate);
       } else if (msg.hasOwnProperty('sessions')) {
-        state.set({sessions: msg.sessions});
+        stateUpdate = {sessions: msg.sessions};
+        if (s.prefs.mode === 'sessions') {
+          stateUpdate.sessionTabs = utils.checkFavicons(sessionsStore.flatten(msg.sessions, _.flatten(s.allTabs), s.windowId))
+        }
+        state.set(stateUpdate);
       } else if (msg.hasOwnProperty('screenshots')) {
         state.set({screenshots: msg.screenshots});
       } else if (msg.hasOwnProperty('actions')) {
@@ -431,30 +477,14 @@ export var msgStore = {
       });
     });
   },
-  getTabs(){
-    return new Promise((resolve, reject) => {
-      chrome.runtime.sendMessage(chrome.runtime.id, {method: 'getTabs'}, (response) => {
-        if (response && response.windows) {
-          resolve(response);
-        } else {
-          reject([]);
-        }
-      });
-    });
+  getTabs(init = false) {
+    chrome.runtime.sendMessage(chrome.runtime.id, {method: 'getTabs', init});
   },
-  queryTabs(refresh = false){
-    chrome.runtime.sendMessage(chrome.runtime.id, {method: 'queryTabs', refresh});
+  queryTabs(){
+    chrome.runtime.sendMessage(chrome.runtime.id, {method: 'queryTabs'});
   },
   getSessions(){
-    return new Promise((resolve, reject) => {
-      chrome.runtime.sendMessage(chrome.runtime.id, {method: 'getSessions'}, (response) => {
-        if (response && response.sessions) {
-          resolve(response.sessions);
-        } else {
-          reject([]);
-        }
-      });
-    });
+    chrome.runtime.sendMessage(chrome.runtime.id, {method: 'getSessions'});
   },
   getScreenshots(){
     return new Promise((resolve, reject) => {

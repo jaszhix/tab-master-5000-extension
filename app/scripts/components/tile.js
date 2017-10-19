@@ -73,9 +73,6 @@ class Tile extends React.Component {
   initMethods() {
     let p = this.props;
     this.updateScreenshot('init', p);
-    /*if (p.prefs.mode === 'tabs') {
-      utils.checkDuplicateTabs(() => this.setState({duplicate: true}));
-    }*/
   }
   updateScreenshot(opt, p) {
     let setScreeenshot = () => {
@@ -98,44 +95,14 @@ class Tile extends React.Component {
     let p = this.props;
     state.set({folder: p.folder ? false : folderName});
   }
-  handleClick(id) {
+  handleClick() {
     let s = this.state;
     let p = this.props;
-    let stateUpdate = {};
-    this.setState({render: false});
-    let active = (cb) =>{
-      chrome.tabs.update(id, {active: true});
-      if (cb !== undefined) {
-        cb();
-      }
-    };
-    // Navigate to a tab when its clicked from the grid.
-    if (!s.xHover || !s.pHover) {
-      if (!s.close) {
-        if (p.prefs.mode === 'bookmarks' || p.prefs.mode === 'history' || p.prefs.mode === 'sessions'
-          || (p.prefs.allTabs && p.prefs.mode === 'tabs')) {
-          if (p.tab.hasOwnProperty('openTab') && p.tab.openTab || (p.prefs.allTabs && p.prefs.mode === 'tabs')) {
-            if (p.tab.windowId !== p.windowId && chrome.windows.update) {
-              chrome.windows.update(p.tab.windowId, {focused: true});
-            }
-            active();
-          } else if (p.tab.hasOwnProperty('openTab') && !p.tab.openTab) {
-            chrome.tabs.create({url: p.tab.url}, (t) =>{
-              _.assignIn(p[p.modeKey][p.i], t);
-              p[p.modeKey][p.i].openTab = true;
-              stateUpdate[p.modeKey] = p[p.modeKey];
-              state.set(stateUpdate);
-            });
-          } else {
-            chrome.tabs.create({url: p.tab.url});
-          }
-        } else if (p.prefs.mode === 'apps' || p.prefs.mode === 'extensions') {
-          utils.handleAppClick(p);
-        } else {
-          active();
-        }
-      }
+    if (this.state.close) {
+      return;
     }
+    this.setState({render: false});
+    utils.activateTab(this.props.tab);
     this.setState({render: true});
   }
   // Trigger hovers states that will update the inline CSS in style.js.
@@ -498,8 +465,8 @@ class Tile extends React.Component {
       }}
       onMouseEnter={this.handleHoverIn}
       onMouseLeave={this.handleHoverOut}
-      onBodyClick={() => this.handleClick(p.tab.id)}
-      onFooterClick={!s.stHover ? () => this.handleClick(p.tab.id) : null}
+      onBodyClick={this.handleClick}
+      onFooterClick={!s.stHover ? () => this.handleClick(p.tab) : null}
       onContextMenu={this.handleContextClick}>
         {!favIconUrl || (p.tab.domain && p.tab.domain === 'chrome') ?
         <div style={{

@@ -79,9 +79,6 @@ let screenshotStore = {
   clear(){
     chrome.storage.local.remove('screenshots', (result)=>{
       console.log('Screenshot cache cleared: ', result);
-      _.defer(()=>{
-        state.set({reQuery: {state: true, type: 'create'}});
-      });
       state.set({screenshots: []});
     });
   },

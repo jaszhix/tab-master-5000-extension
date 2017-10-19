@@ -525,11 +525,11 @@ class Bg extends React.Component {
         prefsStore.setPrefs(msg.obj);
         sendResponse({'prefs': prefsStore.getPrefs()});
       } else if (msg.method === 'getTabs') {
-        sendResponse({windows: this.state.windows, windowId: sender.tab.windowId});
+        sendMsg({windows: this.state.windows, windowId: sender.tab.windowId, init: msg.init});
       } else if (msg.method === 'queryTabs') {
-        this.queryTabs(true, this.state.prefs, msg.refresh);
+        this.queryTabs(true, this.state.prefs, sender.tab.windowId);
       } else if (msg.method === 'getSessions') {
-        sendResponse({sessions: this.state.sessions});
+        sendMsg({sessions: this.state.sessions, windowId: sender.tab.windowId});
       } else if (msg.method === 'getScreenshots') {
         sendResponse({screenshots: this.state.screenshots});
       } else if (msg.method === 'removeSingleWindow') {
@@ -568,15 +568,16 @@ class Bg extends React.Component {
     this.setState({newTabs: _.uniqBy(this.state.newTabs, 'id')});
     return tabs;
   }
-  queryTabs(send=null, prefs, refresh) {
+  queryTabs(send=null, prefs, windowId, init) {
     chrome.windows.getAll({populate: true}, (w)=>{
       for (let i = 0, len = w.length; i < len; i++) {
         w[i].tabs = this.formatTabs(prefs, w[i].tabs);
       }
-      this.setState({windows: w});
-      if (send) {
-        sendMsg({windows: this.state.windows, refresh});
-      }
+      this.setState({windows: w}, () => {
+        if (send) {
+          sendMsg({windows: this.state.windows, windowId, init});
+        }
+      });
     });
   }
   convertV1Sessions(_item) {
@@ -726,8 +727,8 @@ class Bg extends React.Component {
   createSingleItem(e, recursion = 0) {
     // Firefox fix: In Chrome, the tab url is always resolved by the time onCreated is fired,
     // but in FF some tabs will show "about:blank" initially.
-    if (e.url === 'about:blank'
-      && this.state.chromeVersion === 1
+    if (this.state.chromeVersion === 1
+      && e.url === 'about:blank'
       && recursion === 0) {
       _.defer(() => {
         this.getSingleTab(e.id).then((tab) => {

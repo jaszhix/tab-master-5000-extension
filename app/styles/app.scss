@@ -423,3 +423,10 @@ tr.placeholder:before {
 .theming, .modal-tm5k, .sessions {
     user-select: none;
 }
+
+.tile-placeholder {
+    position: relative;
+    display: block;
+    float: left;
+    margin: 6px;
+}

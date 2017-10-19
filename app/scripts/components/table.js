@@ -44,7 +44,7 @@ class Row extends React.Component {
                     <img src={favIconUrl} style={{width: '16px', height: '16px'}} />
                   </div>
                   <div className="media-left">
-                    <div style={textOverflow}><a style={{cursor: 'pointer', fontSize: '14px'}} onClick={() => p.handleTitleClick(p.row)} className="text-default text-semibold">{p.row[column]}</a></div>
+                    <div style={textOverflow}><a style={{cursor: 'pointer', fontSize: '14px'}} onClick={() => utils.activateTab(p.row)} className="text-default text-semibold">{p.row[column]}</a></div>
                     {p.s.prefs.mode === 'apps' || p.s.prefs.mode === 'extensions' ?
                     <div className="text-muted text-size-small" style={{whiteSpace: 'nowrap', cursor: 'default'}}>{p.row.description}</div> : null}
                   </div>
@@ -56,8 +56,8 @@ class Row extends React.Component {
               );
 
             } else if (p.s.prefs.mode === 'apps' && column === 'domain') {
-              return <td key={z} id={`column-${column}`}><i className={`icon-${_.isString(p.row[column]) ? 'check2' : 'cross'}`} /></td>;
-            } else if (_.isBoolean(p.row[column]) || column === 'mutedInfo') {
+              return <td key={z} id={`column-${column}`}><i className={`icon-${typeof p.row[column] === 'string' ? 'check2' : 'cross'}`} /></td>;
+            } else if (typeof p.row[column] === 'boolean' || column === 'mutedInfo') {
               let bool = column === 'mutedInfo' ? p.row[column].muted : p.row[column];
               let toggleBool = ['pinned', 'enabled', 'mutedInfo'];
               return <td key={z} id={`column-${column}`}><i className={`icon-${bool ? 'check2' : 'cross'}`} style={{cursor: toggleBool.indexOf(column) !== -1 ? 'pointer' : 'initial'}} onClick={toggleBool.indexOf(column) !== -1 ? () => p.handleBooleanClick(column) : null} /></td>;
@@ -205,39 +205,11 @@ export class Table extends React.Component {
       direction: this.props.s.sort === column && this.props.s.direction === 'asc' ? 'desc' : 'asc'
     });
   }
-  handleTitleClick(row){
-    let p = this.props;
-
-    if (p.s.prefs.mode === 'tabs') {
-      chrome.tabs.update(row.id, {active: true});
-    } else if (p.s.prefs.mode === 'apps' || p.s.prefs.mode === 'extensions') {
-      if (row.enabled) {
-        if (p.s.prefs.mode === 'extensions' || row.launchType === 'OPEN_AS_REGULAR_TAB') {
-          if (row.url.length > 0) {
-            chrome.tabs.create({url: row.url});
-          } else {
-            chrome.tabs.create({url: row.homepageUrl});
-          }
-        } else {
-          chrome.management.launchApp(row.id);
-        }
-      }
-    } else {
-      if (typeof row.openTab !== 'undefined' && row.openTab) {
-        chrome.tabs.update(row.id, {active: true});
-      } else {
-        chrome.tabs.create({url: row.url});
-      }
-    }
-  }
   handleBooleanClick(column, row){
     let p = this.props;
     let s = this.state;
     if (column === 'pinned') {
       chrome.tabs.update(row.id, {pinned: !row.pinned});
-      if (p.s.prefs.mode !== 'tabs') {
-        state.set({reQuery: {state: true, type: 'create'}});
-      }
     } else if (column === 'mutedInfo') {
       chrome.tabs.update(row.id, {muted: !row.mutedInfo.muted}, () => {
         if (s.muteInit) {
@@ -246,13 +218,8 @@ export class Table extends React.Component {
           this.setState({rows: s.rows, muteInit: false});
         }
       });
-      if (p.s.prefs.mode !== 'tabs') {
-        state.set({reQuery: {state: true, type: 'create'}});
-      }
     } else if (column === 'enabled') {
-      chrome.management.setEnabled(row.id, !row.enabled, () => {
-        state.set({reQuery: {state: true, type: 'update'}});
-      });
+      chrome.management.setEnabled(row.id, !row.enabled);
     }
   }
   dragStart(e, i) {
@@ -424,7 +391,6 @@ export class Table extends React.Component {
                   onDragOver={(e) => this.dragOver(e, i)}
                   onClick={() => this.handleSelect(i)}
                   onContextMenu={this.handleContext}
-                  handleTitleClick={this.handleTitleClick}
                   handleBooleanClick={(column) => this.handleBooleanClick(column, row)}
                   row={row}
                   columns={s.columns} />
