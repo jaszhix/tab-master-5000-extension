@@ -2,7 +2,7 @@ import _ from 'lodash';
 import state from './state';
 import {utilityStore, setAlert, msgStore} from './main';
 import initStore from '../store';
-import {findIndex, find, tryFn} from '../utils';
+import {findIndex, find, tryFn, filter} from '../utils';
 
 const now = Date.now();
 
@@ -773,7 +773,7 @@ const themeStore = initStore({
             id: ++themeStore.wallpaperId
           };
           themeStore.wallpapers = [newWallpaper].concat(themeStore.wallpapers);
-          let savedWallpapers = _.filter(themeStore.wallpapers, (wp) => {
+          let savedWallpapers = filter(themeStore.wallpapers, (wp) => {
             if (wp.id < 9000) {
               return wp;
             }

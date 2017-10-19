@@ -2,7 +2,7 @@ import _ from 'lodash';
 
 import state from './state';
 import {utilityStore} from './main';
-import {findIndex, find, tryFn} from '../utils';
+import {findIndex, find, tryFn, filter} from '../utils';
 
 let screenshotStore = {
   capture(id, wid, imageData, type){
@@ -107,7 +107,7 @@ let screenshotStore = {
     });
   },
   tabHasScreenshot(url){
-    return _.filter(this.index, {url: url});
+    return filter(this.index, ss => ss.url === url);
   }
 };
 window.screenshotStore = screenshotStore;

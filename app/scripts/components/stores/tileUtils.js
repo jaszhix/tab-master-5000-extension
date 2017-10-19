@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import Fuse from 'fuse.js';
-import {each, findIndex, filter, tryFn} from '../utils';
+import {each, findIndex, filter, tryFn, includes, orderBy} from '../utils';
 import state from './state';
 import {historyStore, bookmarksStore, chromeAppStore, faviconStore} from './main';
 import sessionsStore from './sessions';
@@ -185,16 +185,16 @@ export var filterFavicons = (faviconUrl, tabUrl, mode=null) => {
   }
 };
 
-export var sort = (p, data) => {
+export var sort = (data) => {
   let result;
 
-  if (p.s.prefs && p.s.prefs.mode === 'tabs') {
-    let pinned = _.orderBy(_.filter(data, {pinned: true}), p.s.sort, p.s.direction);
-    let unpinned = _.orderBy(_.filter(data, {pinned: false}), p.s.sort, p.s.direction);
+  if (state.prefs.mode === 'tabs') {
+    let pinned = _.orderBy(filter(data, tab => tab.pinned === true), state.sort, state.direction);
+    let unpinned = _.orderBy(filter(data, tab => tab.pinned === false), state.sort, state.direction);
     let concat = _.concat(pinned, unpinned);
-    result = _.orderBy(concat, ['pinned', p.s.sort], p.s.direction);
+    result = _.orderBy(concat, ['pinned', state.sort], state.direction);
   } else {
-    result = _.orderBy(data, [p.s.sort], [p.s.direction]);
+    result = _.orderBy(data, [state.sort], [state.direction]);
   }
 
   return result;
@@ -204,8 +204,8 @@ export var hasDuplicates = (array) => {
   return (new Set(array)).size !== array.length;
 };
 export var getDuplicates = (array) => {
-  return _.filter(array, (x, i, array) => {
-    return _.includes(array, x, i + 1);
+  return filter(array, (x, i, array) => {
+    return includes(array, x, i + 1);
   });
 };
 export var arrayMove = (arr, fromIndex, toIndex) => {
@@ -224,7 +224,7 @@ export var formatBytes = (bytes, decimals) => {
   return (bytes / Math.pow(k, i)).toPrecision(dm) + ' ' + sizes[i];
 };
 
-export var searchChange = (p, tabs) => {
+export var searchChange = (query, tabs) => {
   let _tabs;
   tryFn(() => {
     let tabsSearch = new Fuse(tabs, {
@@ -237,7 +237,7 @@ export var searchChange = (p, tabs) => {
       }],
       threshold: 0.4
     });
-    _tabs = tabsSearch.search(p.s.search.toLowerCase());
+    _tabs = tabsSearch.search(query.toLowerCase());
   }, () => _tabs = tabs);
 
   return _tabs;

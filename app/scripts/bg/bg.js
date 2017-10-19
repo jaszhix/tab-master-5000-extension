@@ -685,7 +685,7 @@ class Bg extends React.Component {
     undo();
   }
   getSingleTab(id) {
-    if (_.isObject(id)) {
+    if (id && typeof id === 'object' && !Array.isArray(id)) {
       id = id.tabId;
     }
     return new Promise((resolve, reject)=>{

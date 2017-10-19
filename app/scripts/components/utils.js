@@ -56,6 +56,15 @@ export const map = function (arr, fn) {
   return out;
 }
 
+export const includes = function (arr, val, index) {
+  for (let i = 0 | index; i < arr.length; i++) {
+    if (arr[i] === val) {
+      return true;
+    }
+  }
+  return false;
+}
+
 export const merge = function() {
   let [result, ...extenders] = Array.from(arguments);
   for (let i = 0, len = extenders.length; i < len; i++) {

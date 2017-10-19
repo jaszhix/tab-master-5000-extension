@@ -4,6 +4,7 @@ const autoprefixer = require('autoprefixer');
 const cssnano = require('cssnano');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+const LodashModuleReplacementPlugin = require('lodash-webpack-plugin');
 
 const aliases = Object.assign({
   underscore: 'lodash'
@@ -44,6 +45,11 @@ const config = {
     publicPath
   },
   plugins: [
+    new LodashModuleReplacementPlugin({
+      cloning: true,
+      flattening: true,
+      shorthands: true
+    }),
     new ExtractTextPlugin(PROD ? 'main.css' : { disable: true }),
     new webpack.DefinePlugin({
       'process.env': {
@@ -180,8 +186,9 @@ if (PROD) {
       }
     }),
     new BundleAnalyzerPlugin({
+      openAnalyzer: false,
       analyzerMode: 'static',
-      reportFilename: `bundleReport.html`
+      reportFilename: 'bundleReport.html'
     }));
 } else {
   config.plugins.push(

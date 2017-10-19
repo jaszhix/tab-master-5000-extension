@@ -6,6 +6,7 @@ import {Context} from './bootstrap';
 import state from './stores/state';
 import {msgStore, cursor} from './stores/main';
 import * as utils from './stores/tileUtils';
+import {filter} from './utils';
 
 class ContextMenu extends React.Component {
   constructor(props) {
@@ -58,7 +59,7 @@ class ContextMenu extends React.Component {
   handleOptions(p){
     let s = this.state;
 
-    let isSelectedItems = _.isArray(p.context.id);
+    let isSelectedItems = Array.isArray(p.context.id);
     let addContextMenuItems = (hasBookmark, bk)=>{
       let hasMute = p.chromeVersion >= 46 || p.chromeVersion === 1;
       let close = p.prefs.mode !== 'apps' && p.prefs.mode !== 'tabs' && !s.openTab ? utils.t('remove') : utils.t('close');
@@ -144,7 +145,7 @@ class ContextMenu extends React.Component {
         _.pullAt(contextOptions, 5);
       }
       if (!isSelectedItems && p.prefs.mode === 'apps' && p.context.id.enabled) {
-        _.filter(p.context.id.availableLaunchTypes, (launchType)=>{
+        filter(p.context.id.availableLaunchTypes, (launchType)=>{
           if (launchType !== p.context.id.launchType) {
             let launchOption = {
               argument: true,
@@ -234,14 +235,14 @@ class ContextMenu extends React.Component {
   }
   getStatus(opt){
     let p = this.props;
-    let isSelectedItems = _.isArray(p.context.id);
+    let isSelectedItems = Array.isArray(p.context.id);
     if (isSelectedItems) {
       return true;
     }
     if (opt === 'muted') {
       return p.context.id.mutedInfo.muted;
     } else if (opt === 'duplicate') {
-      let duplicateTabs = _.filter(p.tabs, {url: p.context.id.url});
+      let duplicateTabs = filter(p.tabs, tab => tab.url === p.context.id.url);
       return _.includes(p.duplicateTabs, p.context.id.url) && p.context.id.id !== _.first(duplicateTabs).id;
     } else if (opt === 'actions') {
       let lastAction = _.last(p.actions);

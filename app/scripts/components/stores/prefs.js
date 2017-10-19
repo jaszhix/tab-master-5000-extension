@@ -35,7 +35,7 @@ let prefsStore = initStore({
     wallpaper: null,
     tooltip: true,
     alerts: true,
-    allTabs: true
+    allTabs: false
   },
   init: function() {
     let getPrefs = new Promise((resolve, reject)=>{

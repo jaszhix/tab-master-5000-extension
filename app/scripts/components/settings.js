@@ -866,6 +866,12 @@ class Sessions extends React.Component {
         onMouseLeave={() => this.setState({currentSessionHover: -1})}>
           <h4>{utils.t('currentSession')}</h4>
           {p.allTabs ? map(state.allTabs, (_window, w) => {
+            if (_window.length === 0) {
+              return null;
+            }
+            _window = filter(_window, function(tab) {
+              return !utils.isNewTab(tab.url);
+            });
             let windowTitle = `${utils.t('window')} ${w + 1}: ${_window.length} ${_.upperFirst(utils.t('tabs'))}`;
             return (
               <Row

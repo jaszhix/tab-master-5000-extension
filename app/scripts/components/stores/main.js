@@ -6,12 +6,12 @@ import screenshotStore from './screenshot';
 import sessionsStore from './sessions';
 import state from './state';
 import * as utils from './tileUtils';
-import {findIndex, find, map, tryFn, each} from '../utils';
+import {findIndex, find, map, tryFn, each, filter} from '../utils';
 
 const DOMAIN_REGEX = /^(?!:\/\/)([a-zA-Z0-9]+\.)?[a-zA-Z0-9][a-zA-Z0-9-]+\.[a-zA-Z]{2,6}?$/i;
 
 export const isValidDomain = function (value) {
-  return _.isString(value) && value.match(DOMAIN_REGEX);
+  return typeof value === 'string' && value.match(DOMAIN_REGEX);
 };
 
 export const setBlackList = function(domainsArr) {
@@ -67,10 +67,6 @@ export var bookmarksStore = {
           bookmarkLevel.folder = title;
           iter = ++iter;
           if (!bookmarkLevel.children) {
-            _.assign(bookmarkLevel, {
-              bookmarkId: bookmarkLevel.id,
-              id: parseInt(bookmarkLevel.id)
-            });
             bookmarks.push(bookmarkLevel);
           } else {
             folders.push(bookmarkLevel);
@@ -87,29 +83,26 @@ export var bookmarksStore = {
           }
         };
         addBookmarkChildren(bk[0]);
+        bookmarks = _.uniqBy(bookmarks, 'id')
         const findOpenTab = url => tab => tab.url === url;
         for (let i = 0, len = bookmarks.length; i < len; i++) {
           let refOpenTab = findIndex(tabs, findOpenTab(bookmarks[i].url));
           if (refOpenTab !== -1) {
             console.log('refOpenTab', refOpenTab);
-            bookmarks[i] = _.assignIn(bookmarks[i], _.cloneDeep(tabs[refOpenTab]));
+            bookmarks[i] = _.merge(_.cloneDeep(tabs[refOpenTab]), bookmarks[i]);
             bookmarks[i].openTab = ++openTab;
           } else {
             bookmarks[i] = _.assignIn(bookmarks[i], _.cloneDeep(defaults(iter)));
           }
         }
-        bookmarks = _.chain(bookmarks)
-          .orderBy(['openTab'], ['asc'])
-          .uniqBy('id')
-          .filter((bookmark) => {
+        bookmarks = _.orderBy(
+          filter(bookmarks, (bookmark) => {
             return bookmark.url.substr(0, 10) !== 'javascript';
-          })
-          .value();
+          }),
+          ['dateAdded', 'openTab'], ['desc', 'asc']
+        );
         if (bookmarks) {
-          for (let i = 0, len = bookmarks.length; i < len; i++) {
-            bookmarks = utils.checkFavicons({s: s}, bookmarks[i], i, bookmarks);
-          }
-          bookmarks = _.orderBy(bookmarks, ['dateAdded', 'asc'])
+          bookmarks = utils.checkFavicons(bookmarks);
           resolve(bookmarks);
         }
       });
@@ -156,7 +149,6 @@ export var historyStore = {
           let urlMatch = h[i].url.match(s.domainRegEx);
           _.assign(h[i], {
             openTab: null,
-            id: parseInt(h[i].id),
             mutedInfo: {muted: false},
             audible: false,
             active: false,
@@ -171,14 +163,12 @@ export var historyStore = {
           });
           for (let y = 0, _len = tabs.length; y < _len; y++) {
             if (h[i].url === tabs[y].url) {
-              h[i] = _.assignIn(h[i], _.cloneDeep(tabs[y]));
+              h[i] = _.assignIn(_.cloneDeep(tabs[y]), h[i]);
               h[i].openTab = ++openTab;
             }
           }
         }
-        for (let i = 0, len = h.length; i < len; i++) {
-          h = utils.checkFavicons({s: s}, h[i], i, h);
-        }
+        h = utils.checkFavicons(h);
         resolve(_.uniqBy(h, 'url'));
       });
     });
@@ -207,24 +197,24 @@ export var historyStore = {
 };
 
 export var chromeAppStore = {
-  set(app){
+  set(isApp){
     let s = state.get()
     chrome.management.getAll((apps) => {
-      let _apps = _.filter(apps, {isApp: app});
+      let _apps = filter(apps, app => app.isApp === isApp);
       if (_apps) {
         for (let i = 0, len = _apps.length; i < len; i++) {
           _.assign(_apps[i], {
             favIconUrl: _apps[i].icons ? utils.filterFavicons(_.last(_apps[i].icons).url, _.last(_apps[i].icons).url) : '../images/IDR_EXTENSIONS_FAVICON@2x.png',
             id: _apps[i].id,
-            url: app ? _apps[i].appLaunchUrl : _apps[i].optionsUrl,
+            url: isApp ? _apps[i].appLaunchUrl : _apps[i].optionsUrl,
             title: _apps[i].name
           });
           _apps[i] = _.assignIn(defaults(i), _apps[i]);
         }
         if (s.search.length > 0) {
-          _apps = utils.searchChange({s: s}, _apps);
+          _apps = utils.searchChange(s.search, _apps);
         }
-        let stateKey = app ? {apps: _apps} : {extensions: _apps};
+        let stateKey = isApp ? {apps: _apps} : {extensions: _apps};
         stateKey.direction = 'asc';
         state.set(stateKey);
 
@@ -524,7 +514,6 @@ export var faviconStore = {
       };
       let sourceImage = new Image();
       sourceImage.onerror = (e) => {
-        console.log(e);
         saveFavicon('../images/file_paper_blank_document.png');
       };
       sourceImage.onload = () => {
