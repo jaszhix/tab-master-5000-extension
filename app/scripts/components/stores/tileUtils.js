@@ -157,20 +157,37 @@ export var app = (tab, opt) => {
   }
 };
 
-export var checkFavicons = (p, tab, key, tabs) => {
-  if (p.s.favicons.length > 0) {
-    let match = false;
-    for (let i = 0, len = p.s.favicons.length; i < len; i++) {
-      if (p.s.favicons[i] && p.s.favicons[i].domain && tab.url.indexOf(p.s.favicons[i].domain) > -1) {
-        match = true;
-        tabs[key].favIconUrl = p.s.favicons[i].favIconUrl;
+export var checkFavicons = (tabs) => {
+  let ignoredCount = filter(tabs, function(tab) {
+    return tab.url.indexOf('chrome://') > -1
+    || tab.url.indexOf('moz-extension') > -1
+    || tab.url.indexOf('about:') > -1
+    || tab.favIconUrl === '../images/file_paper_blank_document.png'
+  }).length;
+  let unmatchedCount = 1;
+  if (state.favicons.length === 0) {
+    each(tabs, function(tab, i) {
+      faviconStore.set_favicon(tab, tabs.length - ignoredCount, unmatchedCount++);
+    });
+    return tabs;
+  }
+  let matched = [];
+  each(tabs, function(tab, i) {
+    each(state.favicons, function(favicon) {
+      if (favicon && favicon.domain && tab.url.indexOf(favicon.domain) > -1) {
+        matched.push(tab.id);
+        tabs[i].favIconUrl = favicon.favIconUrl;
       }
-    }
-    if (!match && p.s.prefs.mode === 'tabs') {
-      faviconStore.set_favicon(tab, 0, 0);
-    }
-  } else {
-    faviconStore.set_favicon(tab, 0, 0);
+    });
+  });
+
+  if (state.prefs.mode === 'tabs' || state.prefs.mode === 'sessions') {
+    each(tabs, function(tab, i) {
+      if (matched.indexOf(tab.id) > -1) {
+        return;
+      }
+      faviconStore.set_favicon(tab, tabs.length - ignoredCount, unmatchedCount++);
+    });
   }
   return tabs;
 };

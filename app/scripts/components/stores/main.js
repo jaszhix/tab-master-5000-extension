@@ -527,7 +527,8 @@ export var faviconStore = {
     if (tab.url.indexOf('chrome://') !== -1) {
       return;
     }
-    let domain = tab.url.split('/')[2];
+    let urlParts = tab.url.split('/')
+    let domain = `${urlParts[2]}/${urlParts[3]}`;
     if (tab && tab.favIconUrl && !find(s.favicons, fv => fv && fv.domain === domain)) {
       let saveFavicon = (__img) => {
         s.favicons.push({
@@ -535,12 +536,10 @@ export var faviconStore = {
           domain:  domain
         });
         s.favicons = _.uniqBy(s.favicons, 'domain');
-        if (queryLength - 1 === i) {
-          chrome.storage.local.set({favicons: s.favicons}, (result)=> {
-            console.log('favicons saved: ', result);
-            state.set({favicons: s.favicons});
-          });
-        }
+        chrome.storage.local.set({favicons: s.favicons}, ()=> {
+          console.log('favicons saved');
+          state.set({favicons: s.favicons});
+        });
       };
       let sourceImage = new Image();
       sourceImage.onerror = (e) => {
@@ -555,7 +554,12 @@ export var faviconStore = {
         canvas.getContext('2d').drawImage(sourceImage, 0, 0, imgWidth, imgHeight);
         let img = '../images/file_paper_blank_document.png';
         // Catch rare 'Tainted canvases may not be exported' error message.
-        tryFn(() => img = canvas.toDataURL('image/png'), () => saveFavicon(img));
+        tryFn(() => {
+          img = canvas.toDataURL('image/png');
+          saveFavicon(img);
+        }, () => {
+          saveFavicon(img)
+        });
       };
       sourceImage.src = tab.favIconUrl;
     }
