@@ -607,11 +607,18 @@ class TileGrid extends React.Component {
     }
     if (isTableView) {
       let showFloatingTableHeader = document.body.scrollTop >= 52;
+      let headerBgOpacityIsZero = themeStore.getOpacity(this.props.theme.headerBg) === 0;
       if (!showFloatingTableHeader) {
-        v('#thead-float').css({backgroundColor: themeStore.opacify(this.props.theme.headerBg, 0.3)})
-        _.delay(() => this.setState({showFloatingTableHeader}), 200)
+        v('#thead-float').css({backgroundColor: themeStore.opacify(this.props.theme.headerBg, 0.3)});
+        if (headerBgOpacityIsZero) {
+          v('.tm-nav.ntg-form').css({backgroundColor: this.props.theme.headerBg});
+        }
+        _.delay(() => this.setState({showFloatingTableHeader}), 200);
       } else {
         this.setState({showFloatingTableHeader})
+        if (headerBgOpacityIsZero) {
+          v('.tm-nav.ntg-form').css({backgroundColor: themeStore.opacify(this.props.s.theme.headerBg, 0.86)});
+        }
       }
     }
     if (node.clientHeight > 0) {

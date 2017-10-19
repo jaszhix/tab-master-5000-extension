@@ -125,7 +125,7 @@ export class TableHeader extends React.Component {
             return (
               <th
               key={i}
-              id={`header-${column}`}
+              id={this.props.isFloating ? `header-${column}` : ''}
               className={`sorting${this.props.order === column ? '_'+this.props.direction : ''}`}
               rowSpan="1"
               colSpan="1"
@@ -147,8 +147,6 @@ export class Table extends React.Component {
     this.state = {
       columns: null,
       rows: null,
-      order: 'index',
-      direction: 'asc',
       rowHover: -1,
       muteInit: true,
       selectedItems: [],
@@ -453,8 +451,8 @@ export class Table extends React.Component {
             <TableHeader
             mode={p.s.prefs.mode}
             columns={s.columns}
-            order={s.order}
-            direction={s.direction}
+            order={p.s.sort}
+            direction={p.s.direction}
             handleColumnClick={this.handleColumnClick}
             width={p.s.width}
             lightBtnText={p.theme.lightBtnText}

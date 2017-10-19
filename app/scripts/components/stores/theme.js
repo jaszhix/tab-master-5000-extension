@@ -792,6 +792,9 @@ const themeStore = initStore({
     _rgba[3] = `${opacity})`;
     return _rgba.join(', ');
   },
+  getOpacity: (color) => {
+    return parseFloat(color.split(',')[3].split(')')[0].trim());
+  },
   balance: (color) => {
     let rgb = color;
     let colors = rgb.match(/^rgba\((\d+),\s*(\d+),\s*(\d+),\s*(\d+(\.\d*)?)|(\.\d+)\)$/);
