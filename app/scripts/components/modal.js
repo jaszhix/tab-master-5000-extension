@@ -75,7 +75,7 @@ class ModalHandler extends React.Component {
           zIndex: '50',
           opacity: p.settings === 'theming' ? '0.95' : '1',
           transition: p.prefs.animations ? 'opacity 0.2s' : 'initial',
-          width: `${p.width > 3100 ? 55 : p.width > 2700 ? 60 : p.width > 2450 ? 65 : p.width > 2200 ? 70 : p.width > 1880 ? 75 : 85}%`,
+          width: p.width > 949 ? '949px' : '85%',
           margin: '0px auto',
           top: '3.5%'
         }}
@@ -112,7 +112,6 @@ class ModalHandler extends React.Component {
           collapse={p.collapse}
           theme={p.theme}
           savedThemes={p.savedThemes}
-          standardThemes={p.standardThemes}
           wallpaper={p.wallpaper}
           wallpapers={p.wallpapers}
           settings={p.settings}

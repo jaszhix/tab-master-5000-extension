@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import state from './state';
 import {utilityStore, setAlert, msgStore} from './main';
 import initStore from '../store';
 import {findIndex, find, tryFn} from '../utils';
@@ -693,25 +694,20 @@ const themeStore = initStore({
   },
   remove: (id) => {
     let refTheme = find(themeStore.savedThemes, theme => theme.id === id);
-    if (_.isEqual(refTheme.theme, themeStore.theme)) {
+    if (_.isEqual(refTheme.theme, state.theme)) {
       themeStore.theme = themeStore.standardThemes[0].theme;
       themeStore.currentWallpaper = {data: -1};
       msgStore.setPrefs({theme: 9000});
     }
     themeStore.savedThemes = _.without(themeStore.savedThemes, refTheme);
-    chrome.storage.local.set({themes: themeStore.savedThemes}, () => {
-      console.log('themeStore theme removed: ', id);
-    });
-
+    chrome.storage.local.set({themes: themeStore.savedThemes});
     themeStore.setTriggers();
   },
   removeWallpaper: (wpId) => {
     let refWallpaper = find(themeStore.wallpapers, wallpaper => wallpaper.id === wpId);
     themeStore.wallpapers = _.without(themeStore.wallpapers, _.remove(themeStore.wallpapers, refWallpaper));
     themeStore.currentWallpaper = {data: -1};
-    chrome.storage.local.set({wallpapers: themeStore.wallpapers}, () => {
-      console.log('themeStore wallpaper removed');
-    });
+    chrome.storage.local.set({wallpapers: themeStore.wallpapers});
     msgStore.setPrefs({wallpaper: null});
     themeStore.setTriggers();
   },

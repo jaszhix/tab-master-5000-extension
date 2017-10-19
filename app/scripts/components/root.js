@@ -168,12 +168,7 @@ class Root extends React.Component {
       window: true,
       load: true,
       topLoad: false,
-      screenshots: [],
-      theme: null, // TODO: remove this from component state
-      savedThemes: [],
-      standardThemes: [],
-      wallpaper: null,
-      wallpapers: []
+      screenshots: []
     };
     this.connections = [
       themeStore.connect('*', (e) => this.themeChange(e)),
@@ -276,7 +271,6 @@ class Root extends React.Component {
     }
     let p = this.props;
     let stateUpdate = {};
-    stateUpdate.standardThemes = themeStore.getStandardThemes();
     if (e.savedThemes) {
       stateUpdate.savedThemes = e.savedThemes;
     }
@@ -503,18 +497,18 @@ class Root extends React.Component {
           backgroundImage: `url('${e.currentWallpaper.data}')`,
           backgroundSize: 'cover'
         });
-        stateUpdate.wallpaper = e.currentWallpaper;
+        stateUpdate.currentWallpaper = e.currentWallpaper;
       } else {
         v('#bgImg').css({
           backgroundImage: 'none'
         });
-        stateUpdate.wallpaper = null;
+        stateUpdate.currentWallpaper = null;
       }
     }
     if (e.wallpapers) {
       stateUpdate.wallpapers = e.wallpapers;
     }
-    this.setState(stateUpdate);
+    state.set(stateUpdate, true);
   }
   updateTabState(e, opt, sU=null){
     let p = this.props;
@@ -628,7 +622,7 @@ class Root extends React.Component {
         v('section').remove();
         this.setState({render: true});
         if (opt === 'init') {
-          utilityStore.initTrackJs(p.s.prefs, s.savedThemes);
+          utilityStore.initTrackJs(p.s.prefs, p.s.savedThemes);
           this.setState({load: false});
         }
       }
@@ -686,7 +680,7 @@ class Root extends React.Component {
   render() {
     let s = this.state;
     let p = this.props;
-    if (s.theme && p.s.prefs) {
+    if (p.s.theme && p.s.prefs) {
       let keys = [];
       let labels = {};
       if (p.s.prefs.mode === 'bookmarks') {
@@ -745,7 +739,7 @@ class Root extends React.Component {
       }
       return (
         <div className="container-main">
-        {p.s.isOptions ? <Preferences options={true} settingsMax={true} prefs={p.s.prefs} tabs={p.s.tabs} theme={s.theme} />
+        {p.s.isOptions ? <Preferences options={true} settingsMax={true} prefs={p.s.prefs} tabs={p.s.tabs} theme={p.s.theme} />
           :
           <div>
             {p.s.context.value ?
@@ -759,7 +753,7 @@ class Root extends React.Component {
             context={p.s.context}
             chromeVersion={p.s.chromeVersion}
             duplicateTabs={p.s.duplicateTabs}
-            theme={s.theme} /> : null}
+            theme={p.s.theme} /> : null}
             {p.s.modal ?
             <ModalHandler
             modal={p.s.modal}
@@ -769,12 +763,11 @@ class Root extends React.Component {
             prefs={p.s.prefs}
             favicons={p.s.favicons}
             collapse={p.s.collapse}
-            theme={s.theme}
+            theme={p.s.theme}
             colorPickerOpen={p.s.colorPickerOpen}
-            savedThemes={s.savedThemes}
-            standardThemes={s.standardThemes}
-            wallpaper={s.wallpaper}
-            wallpapers={s.wallpapers}
+            savedThemes={p.s.savedThemes}
+            wallpaper={p.s.currentWallpaper}
+            wallpapers={p.s.wallpapers}
             settings={p.s.settings}
             width={p.s.width}
             height={p.s.height}
@@ -791,7 +784,7 @@ class Root extends React.Component {
             width={p.s.width}
             collapse={p.s.collapse}
             search={p.s.search}
-            theme={s.theme}
+            theme={p.s.theme}
             disableSidebarClickOutside={p.s.disableSidebarClickOutside}
             chromeVersion={p.s.chromeVersion} />
             <div
@@ -804,7 +797,7 @@ class Root extends React.Component {
               s={p.s}
               event={s.event}
               topLoad={s.topLoad}
-              theme={s.theme}  />
+              theme={p.s.theme}  />
               <div style={{
                 position: 'absolute',
                 left: p.s.prefs.format === 'tile' ? '5px' : '0px',
@@ -820,8 +813,8 @@ class Root extends React.Component {
                 labels={labels}
                 render={s.render}
                 init={s.init}
-                theme={s.theme}
-                wallpaper={s.wallpaper} />
+                theme={p.s.theme}
+                wallpaper={p.s.currentWallpaper} />
                 : <Loading sessions={p.s.sessions}  />}
               </div>
               {p.s.modal && !p.s.modal.state && p.s.prefs.tooltip ?

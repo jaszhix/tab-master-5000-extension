@@ -49,8 +49,8 @@ const state = initStore({
   },
   // Themes
   theme: null,
-  savedThemes: null,
-  wallpapers: null,
+  savedThemes: [],
+  wallpapers: [],
   currentWallpaper: null,
   colorPickerOpen: false,
   // Chrome data
