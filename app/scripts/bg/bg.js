@@ -265,11 +265,11 @@ class Bg extends React.Component {
     this.connectId = prefsStore.connect('prefs', (e) => this.prefsChange(e.prefs));
     autoBind(this);
   }
-  componentDidMount(){
+  componentDidMount() {
     prefsStore.init();
     this.querySessions();
   }
-  prefsChange(e){
+  prefsChange(e) {
     let s = this.state;
     console.log('prefsChange');
     s.prefs = e;
@@ -284,7 +284,7 @@ class Bg extends React.Component {
       sendMsg({e, type: 'prefs'});
     }
   }
-  attachListeners(state){
+  attachListeners(state) {
     let s = this.state.init ? state : this.state;
     /*
     App state
@@ -470,7 +470,7 @@ class Bg extends React.Component {
     this.attachMessageListener(s);
     this.setState({init: false});
   }
-  attachMessageListener(s){
+  attachMessageListener(s) {
     chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       console.log('Message from front-end: ', msg, sender);
       // requests from front-end javascripts
@@ -543,7 +543,7 @@ class Bg extends React.Component {
       return true;
     });
   }
-  formatTabs(prefs, tabs){
+  formatTabs(prefs, tabs) {
     let blacklisted = [];
     for (let i = 0, len = tabs.length; i < len; i++) {
       let urlMatch = tabs[i].url.match(/^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:/\n]+)/im);
@@ -568,7 +568,7 @@ class Bg extends React.Component {
     this.setState({newTabs: _.uniqBy(this.state.newTabs, 'id')});
     return tabs;
   }
-  queryTabs(send=null, prefs, refresh){
+  queryTabs(send=null, prefs, refresh) {
     chrome.windows.getAll({populate: true}, (w)=>{
       for (let i = 0, len = w.length; i < len; i++) {
         w[i].tabs = this.formatTabs(prefs, w[i].tabs);
@@ -579,7 +579,7 @@ class Bg extends React.Component {
       }
     });
   }
-  convertV1Sessions(_item){
+  convertV1Sessions(_item) {
     for (let i = 0, len = _item.sessionData.length; i < len; i++) {
       let session = {
         timeStamp: _item.sessionData[i].timeStamp,
@@ -591,7 +591,7 @@ class Bg extends React.Component {
     }
     return _item;
   }
-  querySessions(){
+  querySessions() {
     chrome.storage.local.get('sessions', (item)=>{
       let sessions = [];
       console.log('item retrieved: ', item);
@@ -616,7 +616,7 @@ class Bg extends React.Component {
       sendMsg({sessions: sessions});
     });
   }
-  queryScreenshots(){
+  queryScreenshots() {
     chrome.storage.local.get('screenshots', (shots)=>{
       let index = [];
       if (shots && shots.screenshots) {
@@ -640,7 +640,7 @@ class Bg extends React.Component {
       }
     });
   }
-  undoAction(tabs, chromeVersion){
+  undoAction(tabs, chromeVersion) {
     let removeLastAction = (lastAction)=>{
       if (lastAction !== undefined) {
         let refAction = findIndex(this.state.actions, action => action.id === lastAction.id);
@@ -684,7 +684,7 @@ class Bg extends React.Component {
     };
     undo();
   }
-  getSingleTab(id){
+  getSingleTab(id) {
     if (_.isObject(id)) {
       id = id.tabId;
     }
@@ -701,7 +701,7 @@ class Bg extends React.Component {
       });
     });
   }
-  handleActivation(e){
+  handleActivation(e) {
     let refWindow = findIndex(this.state.windows, win => win.id === e.windowId);
     if (refWindow === -1) {
       return;
@@ -723,7 +723,19 @@ class Bg extends React.Component {
       createScreenshotThrottled(this, refWindow, refTab);
     }
   }
-  createSingleItem(e){
+  createSingleItem(e, recursion = 0) {
+    // Firefox fix: In Chrome, the tab url is always resolved by the time onCreated is fired,
+    // but in FF some tabs will show "about:blank" initially.
+    if (e.url === 'about:blank'
+      && this.state.chromeVersion === 1
+      && recursion === 0) {
+      _.defer(() => {
+        this.getSingleTab(e.id).then((tab) => {
+          this.createSingleItem(tab, 1);
+        });
+      });
+      return;
+    }
     let refWindow = findIndex(this.state.windows, win => win.id === e.windowId);
     if (refWindow === -1) {
       return;
@@ -773,7 +785,7 @@ class Bg extends React.Component {
     synchronizeSession(this.state.sessions, this.state.prefs, this.state.windows);
     sendMsg({windows: this.state.windows, windowId: e.windowId});
   }
-  removeSingleItem(e, windowId){
+  removeSingleItem(e, windowId) {
     let refWindow = findIndex(this.state.windows, win => win.id === windowId);
     if (refWindow === -1) {
       return;
@@ -796,7 +808,7 @@ class Bg extends React.Component {
       sendMsg({windows: this.state.windows, windowId: windowId});
     }
   }
-  removeSingleWindow(id){
+  removeSingleWindow(id) {
     console.log('removeSingleWindow', id);
     let refWindow = findIndex(this.state.windows, win => win.id === id);
     if (refWindow !== -1) {
@@ -805,7 +817,7 @@ class Bg extends React.Component {
       sendMsg({windows: this.state.windows, windowId: id});
     }
   }
-  updateSingleItem(id){
+  updateSingleItem(id) {
     this.getSingleTab(id).then((e)=>{
       let refWindow = findIndex(this.state.windows, win => win.id === e.windowId);
       if (refWindow === -1) {
@@ -838,7 +850,7 @@ class Bg extends React.Component {
       }
     });
   }
-  moveSingleItem(id){
+  moveSingleItem(id) {
     this.getSingleTab(id).then((e)=>{
       let refWindow = findIndex(this.state.windows, win => win.id === e.windowId);
       if (refWindow === -1) {
@@ -860,7 +872,7 @@ class Bg extends React.Component {
       }
     });
   }
-  render(){
+  render() {
     console.log('BG STATE: ', this.state);
     return null;
   }
