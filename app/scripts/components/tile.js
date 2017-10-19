@@ -563,11 +563,12 @@ class TileGrid extends React.Component {
       return;
     }
     let isTableView = state.prefs.format === 'table';
+    let columns = isTableView ? 1 : Math.floor(window.innerWidth / (this.props.s.prefs.tabSizeHeight + 80));
     let config = {
-      outerHeight: window.innerHeight - 57,
-      scrollTop: document.body.scrollTop - 57,
-      itemHeight: isTableView ? 46 : this.props.s.prefs.tabSizeHeight + 12,
-      columns: isTableView ? 1 : Math.floor(window.innerWidth / (this.props.s.prefs.tabSizeHeight + 80))
+      outerHeight: window.innerHeight,
+      scrollTop: (document.body.scrollTop) * columns - 1,
+      itemHeight: isTableView ? 46 : this.props.s.prefs.tabSizeHeight + 14,
+      columns
     };
     if (this.props.s.chromeVersion === 1) {
       config.outerHeight = Math.round(config.outerHeight * 2.2);
@@ -591,13 +592,8 @@ class TileGrid extends React.Component {
     if (node.clientHeight > 0) {
       this.height = node.clientHeight;
     }
-    let range = whichToShow(config);
-    if (range.start < 0) {
-      range.length = range.length + Math.abs(range.start);
-      range.start = 0;
-    }
     this.scrollTimeout = null;
-    this.setState({range});
+    this.setState({range: whichToShow(config)});
   }
   dragStart(e, i) {
     e.dataTransfer.setData(1, 2); // FF fix
@@ -683,11 +679,17 @@ class TileGrid extends React.Component {
             }
             let isVisible = i >= this.state.range.start && i <= this.state.range.start + this.state.range.length;
             if (!isVisible) {
-              return <div key={i} style={{width: `${p.s.prefs.tabSizeHeight + 80}px`, height: `${p.s.prefs.tabSizeHeight + 12}px`}} />
+              return <div
+              className="tile-placeholder"
+              key={tab.id}
+              style={{
+                width: `${p.s.prefs.tabSizeHeight + 80}px`,
+                height: `${p.s.prefs.tabSizeHeight}px`
+              }} />
             }
             return (
               <Tile
-              key={i}
+              key={tab.id}
               onDragEnd={this.dragEnd}
               onDragStart={(e) => this.dragStart(e, i)}
               onDragOver={(e) => this.dragOver(e, i)}
@@ -701,7 +703,6 @@ class TileGrid extends React.Component {
               apps={p.s.apps}
               extensions={p.s.extensions}
               modeKey={p.s.modeKey}
-              render={p.render}
               i={i}
               tab={tab}
               tileLimit={p.s.tileLimit}
