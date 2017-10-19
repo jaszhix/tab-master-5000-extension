@@ -245,6 +245,9 @@
   "about": {
     "message": "Sobre"
   },
+  "addonsManagerHint": {
+    "message": "Cierre el Administrador de complementos antes de cambiar la configuración de una pestaña nueva."
+  },
   "enableContextMenu": {
     "message": "Habilitar menú contextual"
   },

@@ -7,7 +7,7 @@ import Slider from 'rc-slider';
 import ReactTooltip from 'react-tooltip';
 import * as utils from './stores/tileUtils';
 import state from './stores/state';
-import {map} from './utils'
+import {map, each} from './utils'
 import {msgStore, utilityStore, getBlackList, setBlackList, isValidDomain, faviconStore} from './stores/main';
 import screenshotStore from './stores/screenshot';
 
@@ -195,7 +195,8 @@ class Preferences extends React.Component {
 
     this.state = {
       hover: null,
-      bytesInUse: null
+      bytesInUse: null,
+      aboutAddonsOpen: false
     }
     autoBind(this);
   }
@@ -214,6 +215,29 @@ class Preferences extends React.Component {
     } else {
       v('#options').remove();
     }
+    if (!this.props.chromeVersion || this.props.chromeVersion !== 1) {
+      return;
+    }
+    this.connectId = state.connect('reQuery', (partial) => this.checkAddonTab(partial));
+    this.checkAddonTab();
+  }
+  componentWillUnmount() {
+    state.disconnect(this.connectId);
+  }
+  checkAddonTab(partial) {
+    let aboutAddonsOpen = false
+    each(partial ? partial.reQuery.bg.windows : state.allTabs, (win) => {
+      each(partial ? win.tabs : win, (tab) => {
+        if (tab.url === 'about:addons') {
+          aboutAddonsOpen = true;
+          return false;
+        }
+      });
+      if (aboutAddonsOpen) {
+        return false;
+      }
+    });
+    this.setState({aboutAddonsOpen});
   }
   getBytesInUse(){
     if (this.props.prefs.screenshot) {
@@ -269,6 +293,8 @@ class Preferences extends React.Component {
     return (
       <div className="preferences">
         <Row>
+          {s.aboutAddonsOpen ?
+          <p className="content-divider">{utils.t('addonsManagerHint')}</p> : null}
           <Col size="6">
             <Toggle
             theme={p.theme}

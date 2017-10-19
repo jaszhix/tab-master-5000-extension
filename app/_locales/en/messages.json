@@ -247,6 +247,9 @@
   "about": {
     "message": "About"
   },
+  "addonsManagerHint": {
+    "message": "Please close the Add-ons Manager before changing any settings from a New Tab."
+  },
   "enableContextMenu": {
     "message": "Enable context menu"
   },
