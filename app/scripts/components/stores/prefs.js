@@ -30,12 +30,13 @@ let prefsStore = initStore({
     singleNewTab: false,
     keyboardShortcuts: true,
     resolutionWarning: true,
-    syncedSession: null,
+    syncedSession: true,
     theme: 9001,
     wallpaper: null,
     tooltip: true,
     alerts: true,
-    allTabs: false
+    allTabs: false,
+    resetSearchOnClick: true
   },
   init: function() {
     let getPrefs = new Promise((resolve, reject)=>{
@@ -88,8 +89,10 @@ let prefsStore = initStore({
         wallpaper: prefs.wallpaper,
         tooltip: prefs.tooltip,
         alerts: prefs.alerts,
-        allTabs: prefs.allTabs
+        allTabs: prefs.allTabs,
+        resetSearchOnClick: prefs.resetSearchOnClick
       };
+      // Migration
       if (typeof prefsStore.prefs.autoDiscard === 'undefined') {
         prefsStore.prefs.autoDiscard = false;
       }
@@ -130,7 +133,7 @@ let prefsStore = initStore({
         prefsStore.prefs.resolutionWarning = true;
       }
       if (typeof prefsStore.prefs.syncedSession === 'undefined' || prefsStore.prefs.syncedSession === '') {
-        prefsStore.prefs.syncedSession = null;
+        prefsStore.prefs.syncedSession = true;
       }
       if (typeof prefsStore.prefs.theme === 'undefined') {
         prefsStore.prefs.theme = 9001;
@@ -149,6 +152,9 @@ let prefsStore = initStore({
       }
       if (typeof prefsStore.prefs.allTabs === 'undefined') {
         prefsStore.prefs.allTabs = false;
+      }
+      if (typeof prefsStore.prefs.resetSearchOnClick === 'undefined') {
+        prefsStore.prefs.resetSearchOnClick = true;
       }
       console.log('load prefs: ', prefs, prefsStore.prefs);
       prefsStore.set({prefs: prefsStore.prefs}, true);

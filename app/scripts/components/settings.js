@@ -121,6 +121,7 @@ const styles = StyleSheet.create({
   sessionTitleContainerStyle: {width: 'auto', float: 'left', display: 'inline', position: 'relative', top: '1px'},
   sessionHoverButtonContainerStyle: {width: 'auto', float: 'right', display: 'inline', position: 'relative'},
   sessionCloseButtonStyle: {position: 'absolute', right: '0px'},
+  sessionSearchContainer: {paddingBottom: '14px'}
 });
 
 class Theming extends React.Component {
@@ -717,7 +718,7 @@ class Sessions extends React.Component {
                     noIconPadding={true}
                     data-tip={p.prefs.syncedSession === session.id ? utils.t('desynchronizeSession') : utils.t('synchronizeSession')} /> : null}
                     <Btn
-                    onClick={() => this.setState({searchField: i, expandedSession: i})}
+                    onClick={() => this.setState({searchField: s.searchField === i ? -1 : i, expandedSession: i})}
                     className="ntg-session-btn"
                     icon="search4"
                     faStyle={sessionHoverButtonIconStyle}
@@ -770,11 +771,11 @@ class Sessions extends React.Component {
                         </Col>
                       </div> : null}
                       {s.searchField === i ?
-                      <Col size="12">
+                      <Col size="12" className={css(styles.sessionSearchContainer)}>
                         <input
                         type="text"
                         value={s.search}
-                        className="form-control session-field"
+                        className="form-control label-session-input"
                         style={sessionInputStyle}
                         placeholder={`${utils.t('searchSession')}...`}
                         onChange={(e)=>this.setState({search: e.target.value})} />

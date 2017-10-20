@@ -508,6 +508,12 @@ class Preferences extends React.Component {
               </div>  : null}
             <Toggle
             theme={p.theme}
+            onMouseEnter={()=>this.handleToggle('resetSearchOnClick')}
+            onClick={()=>this.handleClick('resetSearchOnClick')}
+            on={p.prefs.resetSearchOnClick} label={utils.t('resetSearchOnClick')}
+            data-tip={utils.t('resetSearchOnClickTip')} />
+            <Toggle
+            theme={p.theme}
             onMouseEnter={()=>this.handleToggle('sessionsSync')}
             onClick={()=>this.handleClick('sessionsSync')}
             on={p.prefs.sessionsSync} label={utils.t('sessionsSync')}

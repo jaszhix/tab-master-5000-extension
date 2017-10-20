@@ -226,17 +226,17 @@ class Tile extends React.Component {
       opacity: s.stHover ? '0.2' : '1',
       transition: p.prefs.animations ? 'opacity 0.2s, white-space 0.1s' : 'initial'
     };
-    let ST1 = _.assignIn({
-      top: `${p.prefs.tabSizeHeight - 40}px`,
-      cursor: p.prefs.mode === 'sessions' || p.prefs.mode === 'bookmarks' ? 'default' : 'initial'
-    }, subTitleStyle);
-    let ST2 = _.assignIn({
-      top: `${p.prefs.tabSizeHeight - 55}px`,
-      cursor: p.prefs.mode === 'sessions' || p.prefs.mode === 'bookmarks' ? 'pointer' : 'default'
-    }, subTitleStyle);
     let favIconUrl = p.tab.favIconUrl ? utils.filterFavicons(p.tab.favIconUrl, p.tab.url) : '../images/file_paper_blank_document.png';
 
     const dynamicStyles = StyleSheet.create({
+      ST1: Object.assign({
+        top: `${p.prefs.tabSizeHeight - 40}px`,
+        cursor: p.prefs.mode === 'sessions' || p.prefs.mode === 'bookmarks' ? 'default' : 'initial'
+      }, subTitleStyle),
+      ST2 : Object.assign({
+        top: `${p.prefs.tabSizeHeight - 55}px`,
+        cursor: p.prefs.mode === 'sessions' || p.prefs.mode === 'bookmarks' ? 'pointer' : 'default'
+      }, subTitleStyle),
       panelContainer: {
         position: 'relative',
         display: s.render ? 'block' : 'none',
@@ -394,20 +394,38 @@ class Tile extends React.Component {
               {p.tab.description}
             </div> : null}
             {p.prefs.mode === 'tabs' || p.prefs.mode === 'history' || p.prefs.mode === 'bookmarks' || p.prefs.mode === 'sessions' ?
-            <div onMouseEnter={() => this.setState({stHover: true})} onMouseLeave={() => this.setState({stHover: false})}>
-              <div className="text-muted text-size-small" style={ST1}>{p.tab.domain ? p.tab.domain : p.tab.url.split('/')[2]}</div>
+            <div
+            onMouseEnter={() => this.setState({stHover: true})}
+            onMouseLeave={() => this.setState({stHover: false})}>
+              <div className={css(dynamicStyles.ST) + ' text-muted text-size-small'}>
+                {p.tab.domain ? p.tab.domain : p.tab.url.split('/')[2]}
+              </div>
               {isTab && hasDiscarded && p.tab.discarded ?
-              <div className="text-muted text-size-small" style={ST2}>Discarded</div> : null}
+              <div className={css(dynamicStyles.ST2) + ' text-muted text-size-small'}>
+                Discarded
+              </div> : null}
               {p.prefs.mode === 'history' ?
-              <div className="text-muted text-size-small" style={ST2}>{_.capitalize(moment(p.tab.lastVisitTime).fromNow())}</div> : null}
+              <div className={css(dynamicStyles.ST2) + ' text-muted text-size-small'}>
+                {_.capitalize(moment(p.tab.lastVisitTime).fromNow())}
+              </div> : null}
               {p.prefs.mode === 'bookmarks' ?
-              <div onClick={() => this.filterFolders(p.tab.folder)} className="text-muted text-size-small" style={ST2}>{p.tab.folder}</div> : null}
+              <div onClick={() => this.filterFolders(p.tab.folder)} className={css(dynamicStyles.ST2) + ' text-muted text-size-small'}>
+                {p.tab.folder}
+              </div> : null}
               {p.prefs.mode === 'sessions' ?
-              <div onClick={() => this.filterFolders(p.tab.originSession)} className="text-muted text-size-small" style={p.tab.hasOwnProperty('domain') && p.tab.domain ? ST2 : ST1}>{p.tab.label ? p.tab.label : _.capitalize(moment(p.tab.sTimeStamp).fromNow())}</div> : null}
+              <div
+              onClick={() => this.filterFolders(p.tab.originSession)}
+              className={css(p.tab.hasOwnProperty('domain') && p.tab.domain ? dynamicStyles.ST2 : dynamicStyles.ST1) + ' text-muted text-size-small'}>
+                {p.tab.label ? p.tab.label : _.capitalize(moment(p.tab.sTimeStamp).fromNow())}
+              </div> : null}
             </div> : null}
             {p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ?
             <div onMouseEnter={() => this.setState({stHover: true})} onMouseLeave={() => this.setState({stHover: false})}>
-              <div onClick={() => this.filterFolders(p.tab.originSession)} className="text-muted text-size-small" style={ST1}>{`v${p.tab.version}`}</div>
+              <div
+              onClick={() => this.filterFolders(p.tab.originSession)}
+              className={css(dynamicStyles.ST1) + ' text-muted text-size-small'}>
+                {`v${p.tab.version}`}
+              </div>
             </div> : null}
           </div>
         </div>
@@ -465,7 +483,7 @@ class Tile extends React.Component {
           </ul>
         </div>
       }
-      className={css(dynamicStyles.panelContainer) + (s.duplicate && !s.hover ? 'animated flash ' : '')}
+      className={css(dynamicStyles.panelContainer) + (s.duplicate && !s.hover ? ' animated flash ' : '')}
       bodyStyle={css(dynamicStyles.panelBody)}
       footerStyle={css(dynamicStyles.panelFooter)}
       headingStyle={css(dynamicStyles.panelHeading)}

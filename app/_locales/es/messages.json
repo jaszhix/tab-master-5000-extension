@@ -371,6 +371,12 @@
   "tabSizeHeightTip": {
     "message": "Controla el tamaño de las baldosas."
   },
+  "resetSearchOnClick": {
+    "message": "Restablecer búsqueda en el resultado de búsqueda clic"
+  },
+  "resetSearchOnClickTip": {
+    "message": "Restablece la búsqueda para que todos los elementos se muestren después de hacer clic en un resultado de búsqueda."
+  },
   "sessionsSync": {
     "message": "Habilitar la sincronización de sesión"
   },

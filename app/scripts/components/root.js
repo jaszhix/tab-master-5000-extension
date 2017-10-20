@@ -81,11 +81,18 @@ class Root extends React.Component {
             utilityStore.handleMode(this.props.s.prefs.mode);
             return;
           }
-          let stateUpdate = {};
-          stateUpdate[this.props.s.modeKey] = utils.searchChange(partial.search, this.props.s[this.props.s.modeKey]);
-          state.set(stateUpdate);
+          let modeKey = this.props.s.prefs.mode === 'sessions' ? 'sessionTabs' : this.props.s.prefs.mode;
+          state.set({
+            modeKey: 'searchCache',
+            searchCache: utils.searchChange(partial.search, this.props.s[modeKey])
+          });
         },
-        modeKey: () => state.set({search: ''}),
+        modeKey: (partial) => {
+          if (partial.modeKey === 'searchCache') {
+            return;
+          }
+          state.set({search: ''});
+        },
         folder: (partial) => {
           state.set(this.updateTabState(partial.folder, 'folder', partial));
         },
@@ -602,6 +609,12 @@ class App extends React.Component {
       .get('*');
     this.connectId = state.connect('*', (newState) => {
       console.log('STATE INPUT: ', newState);
+      try {
+        throw new Error('STATE STACK')
+      } catch (e) {
+        let stackParts = e.stack.split('\n');
+        console.log('STATE CALLEE: ', stackParts[4].trim());
+      }
       this.setState(newState, () => console.log('STATE: ', this.state));
     });
     autoBind(this);

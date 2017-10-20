@@ -226,6 +226,10 @@ export var chromeAppStore = {
 
 export const getBytesInUse = function(item) {
   return new Promise((resolve) => {
+    if (state.chromeVersion === 1) {
+      resolve(0);
+      return;
+    }
     chrome.storage.local.getBytesInUse(item, (bytes) => {
       resolve(bytes);
     });

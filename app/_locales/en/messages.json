@@ -373,6 +373,12 @@
   "tabSizeHeightTip": {
     "message": "Controls the size of the tiles."
   },
+  "resetSearchOnClick": {
+    "message": "Reset search on search result click"
+  },
+  "resetSearchOnClickTip": {
+    "message": "Resets the search so all items are shown after a search result is clicked."
+  },
   "sessionsSync": {
     "message": "Enable session synchronization"
   },

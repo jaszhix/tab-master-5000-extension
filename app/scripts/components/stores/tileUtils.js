@@ -1,8 +1,8 @@
 import _ from 'lodash';
 import Fuse from 'fuse.js';
-import {each, findIndex, filter, tryFn, includes, orderBy} from '../utils';
+import {each, findIndex, filter, tryFn, includes, map} from '../utils';
 import state from './state';
-import {historyStore, bookmarksStore, chromeAppStore, faviconStore} from './main';
+import {historyStore, bookmarksStore, chromeAppStore, faviconStore, utilityStore} from './main';
 import sessionsStore from './sessions';
 
 export const activateTab = function(tab) {
@@ -22,6 +22,9 @@ export const activateTab = function(tab) {
     if (tab.windowId !== state.windowId) {
       chrome.windows.update(tab.windowId, {focused: true});
     }
+  }
+  if (state.prefs.resetSearchOnClick) {
+    utilityStore.handleMode(state.prefs.mode);
   }
 };
 
@@ -272,13 +275,13 @@ export var searchChange = (query, tabs) => {
         name: 'url',
         weight: 0.7
       }],
+      includeScore: true,
       threshold: 0.4
     });
-    _tabs = tabsSearch.search(query.toLowerCase());
+    _tabs = map(_.orderBy(tabsSearch.search(query.toLowerCase()), 'score'), item => item.item);
   }, () => _tabs = tabs);
 
   return _tabs;
-
 };
 
 export var t = (key) => {
