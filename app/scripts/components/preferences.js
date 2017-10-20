@@ -1,5 +1,6 @@
 import React from 'react';
 import autoBind from 'react-autobind';
+import {StyleSheet, css} from 'aphrodite';
 import _ from 'lodash';
 import tc from 'tinycolor2';
 import v from 'vquery'
@@ -8,10 +9,19 @@ import ReactTooltip from 'react-tooltip';
 import * as utils from './stores/tileUtils';
 import state from './stores/state';
 import {map, each} from './utils'
-import {msgStore, utilityStore, getBlackList, setBlackList, isValidDomain, faviconStore} from './stores/main';
+import {msgStore, getBlackList, setBlackList, isValidDomain, faviconStore, getBytesInUse} from './stores/main';
 import screenshotStore from './stores/screenshot';
 
 import {Btn, Col, Row} from './bootstrap';
+
+const styles = StyleSheet.create({
+  sliderLabel: {marginBottom: '4px'},
+  sliderContainer: {minHeight: '36px', padding: '12px'},
+  blacklistColumn: {marginTop: '3px'},
+  blacklistSaveButton: {position: 'absolute', top: '-2.5em', right: 0},
+  blacklistFormatErrors: {width: '350px', color: 'A94442'},
+  cursorPointer: {cursor: 'pointer'}
+});
 
 class Slide extends React.Component {
   constructor(props) {
@@ -25,9 +35,15 @@ class Slide extends React.Component {
     let p = this.props;
     let s = this.state;
     return (
-      <div onMouseEnter={()=>this.setState({hover: true})} onMouseLeave={()=>this.setState({hover: false})} style={{backgroundColor: s.hover ? p.hoverBg : null, minHeight: '36px', padding: '12px'}} data-place="bottom" data-tip={`<div style="max-width: 350px;">${p['data-tip']}</div>`}>
+      <div
+      className={css(styles.sliderContainer)}
+      style={{backgroundColor: s.hover ? p.hoverBg : null}}
+      onMouseEnter={()=>this.setState({hover: true})}
+      onMouseLeave={()=>this.setState({hover: false})}
+      data-place="bottom"
+      data-tip={`<div style="max-width: 350px;">${p['data-tip']}</div>`}>
         <Row className={p.className} onMouseEnter={p.onMouseEnter}>
-          <div style={{marginBottom: '4px'}}>{p.label}</div>
+          <div className={css(styles.sliderLabel)}>{p.label}</div>
           <Slider min={p.min} max={p.max} defaultValue={p.defaultValue} value={p.value} onChange={p.onChange} onAfterChange={p.onAfterChange} />
         </Row>
       </div>
@@ -43,14 +59,20 @@ class Toggle extends React.Component {
       hover: false
     }
   }
-  componentDidMount(){
+  componentDidMount() {
     ReactTooltip.rebuild();
   }
   render() {
     let p = this.props;
     let s = this.state;
     return (
-      <Row onMouseEnter={()=>this.setState({hover: true})} onMouseLeave={()=>this.setState({hover: false})} style={s.hover ? {cursor: 'pointer', backgroundColor: p.hoverBg} : {cursor: 'pointer'}} data-place="bottom" data-tip={p['data-tip']}>
+      <Row
+      onMouseEnter={()=>this.setState({hover: true})}
+      onMouseLeave={()=>this.setState({hover: false})}
+      className={css(styles.cursorPointer)}
+      style={s.hover ? {backgroundColor: p.theme.settingsItemHover} : null}
+      data-place="bottom"
+      data-tip={p['data-tip']}>
         <Row onMouseEnter={p.onMouseEnter} className={p.child ? "prefs-row-child" : "prefs-row"}>
           <div className="checkbox checkbox-switchery switchery-xs" onClick={p.onClick}>
             <label style={{paddingLeft: '47px', color: p.theme.bodyText}}>
@@ -88,7 +110,7 @@ class Blacklist extends React.Component {
     }
     autoBind(this);
   }
-  componentDidMount(){
+  componentDidMount() {
     getBlackList((blacklist = '') => {
       if (blacklist && blacklist.length > 0) {
         blacklist = blacklist.join(' \n') + ' ';
@@ -106,7 +128,7 @@ class Blacklist extends React.Component {
       blacklistValue: e.target.value,
     });
   }
-  blacklistSubmit(){
+  blacklistSubmit() {
     let blacklistStr = this.state.blacklistValue || '';
     if (_.trim(blacklistStr) === '') {
       setBlackList([]);
@@ -121,7 +143,7 @@ class Blacklist extends React.Component {
       return JSON.stringify(str);
     }
 
-    let domains = blacklistStr.split(/[\s,]/).reduce(function(_d, val){
+    let domains = blacklistStr.split(/[\s,]/).reduce(function(_d, val) {
       // pass the 2nd argument of arr.reduce(...) as the argument _d
       let trimmed = _.trim(val);
       if (isValidDomain(trimmed)) {
@@ -158,32 +180,23 @@ class Blacklist extends React.Component {
   render() {
     let s = this.state;
     let p = this.props;
-    let lightTextColorArg = tc(p.theme.settingsBg).isLight() && tc(p.theme.textFieldsPlaceholder).isLight();
     return (
-      <Col size="12" style={{marginTop: '3px'}}>
-          <Btn
-          style={{position: 'absolute', top: '-2.5em', right: 0}}
-          onClick={this.blacklistSubmit}
-          disabled={!s.blacklistNeedsSave}
-          className="ntg-setting-btn"
-          icon="floppy-disk">
-            {utils.t('save')}
-          </Btn>
-          {s.formatErrorStr ? <span style={{width: '350px', color: 'A94442'}}>{s.formatErrorStr}</span> : null}
-          <textarea
-          value={s.blacklistValue}
-          onChange={this.blacklistFieldChange}
-          style={{
-            backgroundColor: lightTextColorArg ? p.theme.darkBtnBg : p.theme.lightBtnBg,
-            color: lightTextColorArg ? p.theme.darkBtnText : p.theme.lightBtnText,
-            paddingLeft: '14px',
-            paddingRight: '14px',
-            width: '100%'
-          }}
-          placeholder={utils.t('blacklistPlaceholder')}
-          id="input"
-          className="form-control blacklist session-field"
-          rows="3" />
+      <Col size="12" className={css(styles.blacklistColumn)}>
+        <Btn
+        onClick={this.blacklistSubmit}
+        disabled={!s.blacklistNeedsSave}
+        className={css(styles.blacklistSaveButton) + ' ntg-setting-btn'}
+        icon="floppy-disk">
+          {utils.t('save')}
+        </Btn>
+        {s.formatErrorStr ? <span className={css(styles.blacklistFormatErrors)}>{s.formatErrorStr}</span> : null}
+        <textarea
+        value={s.blacklistValue}
+        onChange={this.blacklistFieldChange}
+        placeholder={utils.t('blacklistPlaceholder')}
+        id="input"
+        className={css(p.dynamicStyles.blacklistTextarea) + ' form-control blacklist session-field'}
+        rows="3" />
       </Col>
     );
   }
@@ -195,26 +208,14 @@ class Preferences extends React.Component {
 
     this.state = {
       hover: null,
-      bytesInUse: null,
+      faviconsBytesInUse: 0,
+      screenshotsBytesInUse: 0,
       aboutAddonsOpen: false
     }
     autoBind(this);
   }
-  componentDidMount(){
-    this.getBytesInUse();
-    let p = this.props;
-    if (!p.options) {
-      p.modal.footer = (
-        <div>
-          <Btn onClick={()=>this.handleSlide(134, 'tabSizeHeight')} className="ntg-setting-btn" icon="reset" faStyle={{position: 'relative', top: '-2px'}}>{utils.t('resetTileSize')}</Btn>
-          <Btn onClick={()=>faviconStore.clear()} className="ntg-setting-btn" icon="trash" faStyle={{paddingRight: '8px'}}>{utils.t('clearFaviconCache')}</Btn>
-          {p.prefs.screenshot ? <Btn onClick={this.handleScreenshotClear} className="ntg-setting-btn" icon="trash" faStyle={{paddingRight: '8px'}}>{utils.t('clearScreenshotCache')}</Btn> : null}
-        </div>
-      );
-      state.set({modal: p.modal}, true);
-    } else {
-      v('#options').remove();
-    }
+  componentDidMount() {
+    this.buildFooter();
     if (!this.props.chromeVersion || this.props.chromeVersion !== 1) {
       return;
     }
@@ -223,6 +224,46 @@ class Preferences extends React.Component {
   }
   componentWillUnmount() {
     state.disconnect(this.connectId);
+  }
+  buildFooter() {
+    this.getBytesInUse().then(() => {
+      let p = this.props;
+      if (!p.options) {
+        p.modal.footer = (
+          <div>
+            <Btn
+            onClick={()=>this.handleSlide(134, 'tabSizeHeight')}
+            className="ntg-setting-btn"
+            icon="reset"
+            faStyle={{position: 'relative', top: '-2px'}}>
+              {utils.t('resetTileSize')}
+            </Btn>
+            {p.prefs.screenshot ?
+            <Btn
+            onClick={this.handleScreenshotClear}
+            className="ntg-setting-btn"
+            icon="trash"
+            faStyle={{paddingRight: '8px'}}>
+              {utils.t('clearScreenshotCache')}
+            </Btn> : null}
+            <Btn
+            onClick={this.handleFaviconClear}
+            className="ntg-setting-btn"
+            icon="trash"
+            faStyle={{paddingRight: '8px'}}>
+              {utils.t('clearFaviconCache')}
+            </Btn>
+            <div className="disk-usage-container">
+              <div>{this.state.faviconsBytesInUse ? `${utils.t('faviconsDiskUsage')}: ${utils.formatBytes(this.state.faviconsBytesInUse, 2)}` : null}</div>
+              <div>{this.state.screenshotsBytesInUse ? `${utils.t('screenshotDiskUsage')}: ${utils.formatBytes(this.state.screenshotsBytesInUse, 2)}` : null}</div>
+            </div>
+          </div>
+        );
+        state.set({modal: p.modal}, true);
+      } else {
+        v('#options').remove();
+      }
+    });
   }
   checkAddonTab(partial) {
     let aboutAddonsOpen = false
@@ -239,17 +280,20 @@ class Preferences extends React.Component {
     });
     this.setState({aboutAddonsOpen});
   }
-  getBytesInUse(){
-    if (this.props.prefs.screenshot) {
-      utilityStore.get_bytesInUse('screenshots').then((bytes)=>{
-        this.setState({bytesInUse: bytes});
-      });
-    }
+  getBytesInUse() {
+    return getBytesInUse('favicons').then((bytes) => {
+      this.setState({faviconsBytesInUse: bytes});
+      if (this.props.prefs.screenshot) {
+        return getBytesInUse('screenshots');
+      }
+    }).then((bytes)=>{
+      this.setState({screenshotsBytesInUse: bytes});
+    });
   }
-  handleToggle(opt){
+  handleToggle(opt) {
     this.setState({hover: opt});
   }
-  handleClick(opt){
+  handleClick(opt) {
     let p = this.props;
     let obj = {};
     obj[opt] = !p.prefs[opt];
@@ -262,34 +306,52 @@ class Preferences extends React.Component {
       _.delay(()=>chrome.runtime.reload(), 500);
     }
   }
-  handleSlide(e, opt){
+  handleSlide(e, opt) {
     let obj = {};
     obj[opt] = e;
     state.set({prefs: obj});
   }
-  handleSlideAfterChange(e, opt){
+  handleSlideAfterChange(e, opt) {
     let obj = {};
     obj[opt] = e;
     msgStore.setPrefs(obj);
   }
-  handleAutoDiscardTime(e){
+  handleAutoDiscardTime(e) {
     let discardTime = parseInt(e.target.value.split(' ')[0]);
     let isMinute = e.target.value.indexOf('Minute') !== -1;
     let output = isMinute && discardTime === 30 ? 0.5 : isMinute && discardTime === 15 ? 0.25 : discardTime;
     msgStore.setPrefs({autoDiscardTime: output * 3600000});
   }
-  handleScreenshotClear(){
+  handleScreenshotClear() {
     screenshotStore.clear();
-    this.setState({bytesInUse: 0}, ()=>{
-      state.set({screenshotClear: true});
-      _.delay(()=>state.set({screenshotClear: null}), 500);
-    });
+    this.buildFooter();
+  }
+  handleFaviconClear() {
+    faviconStore.clear();
+    this.buildFooter();
   }
   render() {
     let s = this.state;
     let p = this.props;
     let autoDiscardTimeOptions = [15, 30, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24];
     let autoDiscardTimeHourDivided = p.prefs.autoDiscardTime / 3600000;
+    let lightTextColorArg = tc(p.theme.settingsBg).isLight() && tc(p.theme.textFieldsPlaceholder).isLight();
+    const dynamicStyles = StyleSheet.create({
+      blacklistTextarea: {
+        backgroundColor: lightTextColorArg ? p.theme.darkBtnBg : p.theme.lightBtnBg,
+        color: lightTextColorArg ? p.theme.darkBtnText : p.theme.lightBtnText,
+        paddingLeft: '14px',
+        paddingRight: '14px',
+        width: '100%'
+      },
+      autoDiscardSelect: {
+        backgroundColor: p.theme.settingsBg,
+        color: p.theme.bodyText,
+        width: '100px',
+        marginTop: '6px',
+        paddingLeft: '6px'
+      }
+    });
     return (
       <div className="preferences">
         <Row>
@@ -301,28 +363,24 @@ class Preferences extends React.Component {
             onMouseEnter={()=>this.handleToggle('context')}
             onClick={()=>this.handleClick('context')}
             on={p.prefs.context} label={utils.t('enableContextMenu')}
-            hoverBg={p.theme.settingsItemHover}
             data-tip={utils.t('enableContextMenuTip')} />
             <Toggle
             theme={p.theme}
             onMouseEnter={()=>this.handleToggle('drag')}
             onClick={()=>this.handleClick('drag')}
             on={p.prefs.drag} label={utils.t('enableDraggableTabReordering')}
-            hoverBg={p.theme.settingsItemHover}
             data-tip={utils.t('enableDraggableTabReorderingTip')} />
             <Toggle
             theme={p.theme}
             onMouseEnter={()=>this.handleToggle('singleNewTab')}
             onClick={()=>this.handleClick('singleNewTab')}
             on={p.prefs.singleNewTab} label={utils.t('singleNewTab')}
-            hoverBg={p.theme.settingsItemHover}
             data-tip={utils.t('singleNewTabTip')} />
             <Toggle
             theme={p.theme}
             onMouseEnter={()=>this.handleToggle('allTabs')}
             onClick={()=>this.handleClick('allTabs')}
             on={p.prefs.allTabs} label={utils.t('allTabs')}
-            hoverBg={p.theme.settingsItemHover}
             data-tip={utils.t('allTabsTip')} />
             {p.chromeVersion >= 54?
             <Toggle
@@ -330,14 +388,12 @@ class Preferences extends React.Component {
             onMouseEnter={()=>this.handleToggle('autoDiscard')}
             onClick={()=>this.handleClick('autoDiscard')}
             on={p.prefs.autoDiscard} label={utils.t('autoDiscard')}
-            hoverBg={p.theme.settingsItemHover}
             data-tip={utils.t('autoDiscardTip')}>
               {p.prefs.autoDiscard ?
               <div>
                 {`${utils.t('autoDiscardClearTime')}:`}
                 <select
-                className="form-control"
-                style={{backgroundColor: p.theme.settingsBg, color: p.theme.bodyText, width: '100px', marginTop: '6px', paddingLeft: '6px'}}
+                className={css(styles.autoDiscardSelect) + ' form-control'}
                 placeholder={utils.t('time')}
                 value={`${p.prefs.autoDiscardTime < 1800000 ? '15' : p.prefs.autoDiscardTime < 3600000 ? '30' : autoDiscardTimeHourDivided} ${p.prefs.autoDiscardTime < 3600000 ? utils.t('minutes') : utils.t('hour')}${autoDiscardTimeHourDivided > 1 && p.prefs.autoDiscardTime >= 3600000 ? utils.t('s') : ''}`}
                 onChange={this.handleAutoDiscardTime}>
@@ -352,7 +408,6 @@ class Preferences extends React.Component {
             onMouseEnter={()=>this.handleToggle('animations')}
             onClick={()=>this.handleClick('animations')}
             on={p.prefs.animations} label={utils.t('animations')}
-            hoverBg={p.theme.settingsItemHover}
             data-tip={utils.t('animationsTip')}>
               {p.prefs.animations ?
               <Toggle
@@ -362,7 +417,6 @@ class Preferences extends React.Component {
               on={p.prefs.duplicate}
               child={true}
               label={utils.t('duplicate')}
-              hoverBg={p.theme.settingsItemHover}
               data-tip={utils.t('duplicateTip')} /> : null}
             </Toggle>
             <Toggle
@@ -370,13 +424,9 @@ class Preferences extends React.Component {
             onMouseEnter={()=>this.handleToggle('screenshot')}
             onClick={()=>this.handleClick('screenshot')}
             on={p.prefs.screenshot} label={utils.t('screenshot')}
-            hoverBg={p.theme.settingsItemHover}
             data-tip={utils.t('screenshotTip')}>
               {p.prefs.screenshot ?
                 <div>
-                  <Row className="prefs-row-first" data-place="bottom" data-tip={`<div style="max-width: 350px;">${utils.t('screenshotDiskUsageTip')}</div>`}>
-                    {s.bytesInUse ? `${utils.t('screenshotDiskUsage')}: ${utils.formatBytes(s.bytesInUse, 2)}` : null}
-                  </Row>
                   <Toggle
                   theme={p.theme}
                   onMouseEnter={()=>this.handleToggle('screenshotInit')}
@@ -384,7 +434,6 @@ class Preferences extends React.Component {
                   on={p.prefs.screenshotInit}
                   child={true}
                   label={utils.t('screenshotInit')}
-                  hoverBg={p.theme.settingsItemHover}
                   data-tip={utils.t('screenshotInitTip')} />
                   <Toggle
                   theme={p.theme}
@@ -393,7 +442,6 @@ class Preferences extends React.Component {
                   on={p.prefs.screenshotChrome}
                   child={true}
                   label={utils.t('screenshotChrome')}
-                  hoverBg={p.theme.settingsItemHover}
                   data-tip={utils.t('screenshotChromeTip')} />
                   <Toggle
                   theme={p.theme}
@@ -402,7 +450,6 @@ class Preferences extends React.Component {
                   on={p.prefs.screenshotBg}
                   child={true}
                   label={utils.t('screenshotBg')}
-                  hoverBg={p.theme.settingsItemHover}
                   data-tip={utils.t('screenshotBgTip')} />
                 </div>
               : null}
@@ -412,14 +459,12 @@ class Preferences extends React.Component {
             onMouseEnter={()=>this.handleToggle('tooltip')}
             onClick={()=>this.handleClick('tooltip')}
             on={p.prefs.tooltip} label={utils.t('tooltip')}
-            hoverBg={p.theme.settingsItemHover}
             data-tip={utils.t('tooltipTip')} />
             <Toggle
             theme={p.theme}
             onMouseEnter={()=>this.handleToggle('alerts')}
             onClick={()=>this.handleClick('alerts')}
             on={p.prefs.alerts} label={utils.t('alerts')}
-            hoverBg={p.theme.settingsItemHover}
             data-tip={utils.t('alertsTip')} />
           </Col>
           <Col size="6">
@@ -466,21 +511,18 @@ class Preferences extends React.Component {
             onMouseEnter={()=>this.handleToggle('sessionsSync')}
             onClick={()=>this.handleClick('sessionsSync')}
             on={p.prefs.sessionsSync} label={utils.t('sessionsSync')}
-            hoverBg={p.theme.settingsItemHover}
             data-tip={utils.t('sessionsSyncTip')} />
             <Toggle
             theme={p.theme}
             onMouseEnter={()=>this.handleToggle('actions')}
             onClick={()=>this.handleClick('actions')}
             on={p.prefs.actions} label={utils.t('actions')}
-            hoverBg={p.theme.settingsItemHover}
             data-tip={utils.t('actionsTip')} />
             <Toggle
             theme={p.theme}
             onMouseEnter={()=>this.handleToggle('keyboardShortcuts')}
             onClick={()=>this.handleClick('keyboardShortcuts')}
             on={p.prefs.keyboardShortcuts} label={utils.t('keyboardShortcuts')}
-            hoverBg={p.theme.settingsItemHover}
             data-tip={`
               <div><strong>CTRL+Z</strong>: ${utils.t('ctrlZ')}</div>
               <div><strong>CTRL+F</strong>: ${utils.t('search')}</div>
@@ -502,9 +544,8 @@ class Preferences extends React.Component {
             onMouseEnter={()=>this.handleToggle('blacklist')}
             onClick={()=>this.handleClick('blacklist')}
             on={p.prefs.blacklist} label={utils.t('blacklist')}
-            hoverBg={p.theme.settingsItemHover}
             data-tip={utils.t('blacklistTip')}>
-              {p.prefs.blacklist ? <Blacklist theme={p.theme} /> : null}
+              {p.prefs.blacklist ? <Blacklist theme={p.theme} dynamicStyles={dynamicStyles} /> : null}
             </Toggle>
           </Col>
         </Row>

@@ -317,6 +317,9 @@
   "screenshotDiskUsage": {
     "message": "Uso del disco de captura de pantalla"
   },
+  "faviconsDiskUsage": {
+    "message": "Uso del disco Favicon"
+  },
   "screenshotDiskUsageTip": {
     "message": "Si observa problemas de rendimiento, puede borrar el caché de captura de pantalla de forma ocasional. Las capturas de pantalla de más de tres días comenzarán a purgarse una vez que la caché alcance los 50 MB."
   },

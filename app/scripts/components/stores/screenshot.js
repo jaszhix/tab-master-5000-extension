@@ -1,7 +1,7 @@
 import _ from 'lodash';
 
 import state from './state';
-import {utilityStore} from './main';
+import {getBytesInUse} from './main';
 import {findIndex, find, tryFn, filter} from '../utils';
 
 let screenshotStore = {
@@ -83,7 +83,7 @@ let screenshotStore = {
     });
   },
   purge(index){ // TBD - dead code, but may be needed still
-    utilityStore.get_bytesInUse('screenshots').then((bytes)=>{
+    getBytesInUse('screenshots').then((bytes)=>{
       let timeStamp = null;
       let timeStampIndex = null;
       console.log('bytes: ', bytes);

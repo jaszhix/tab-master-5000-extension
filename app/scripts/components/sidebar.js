@@ -1,5 +1,6 @@
 import React from 'react';
 import autoBind from 'react-autobind';
+import {StyleSheet, css} from 'aphrodite';
 import _ from 'lodash';
 import onClickOutside from 'react-onclickoutside';
 import ReactTooltip from 'react-tooltip';
@@ -110,23 +111,42 @@ export class SidebarMenu extends React.Component {
     let borderColor = tc(p.theme.darkBtnBg).isDark() ? p.theme.darkBtnText : p.theme.darkBtnBg;
     let textColor = tc(p.theme.bodyBg).isDark() && tc(p.theme.bodyText).isLight() ? p.theme.bodyText : tc(p.theme.headerBg).isDark() ? p.theme.darkBtnText : p.theme.lightBtnText;
     let lightBtnIsDark = tc(p.theme.lightBtnBg).isDark();
+    const dynamicStyles = StyleSheet.create({
+      container: {color: textColor},
+      tab: {
+        color: lightBtnIsDark ? p.theme.lightBtnText : p.theme.darkBtnText,
+        backgroundColor: lightBtnIsDark ? p.theme.lightBtnBg : p.theme.darkBtnBg,
+        borderBottom: '0px',
+        cursor: 'pointer'
+      },
+      categoryContainer: {
+        borderTopColor: borderColor,
+        borderTop: `1px solid ${borderColor}`,
+        borderBottomColor: borderColor,
+        cursor: 'pointer'
+      },
+      categoryContentContainer: {
+        height: p.prefs.showViewMode ? 'initial' : '0px',
+        transition: 'height 0.2s'
+      },
+      categoryTitleContainer: {
+        borderBottomColor: borderColor,
+        cursor: 'pointer'
+      },
+      categorySortContainer: {display: 'block'},
+      categorySortSpan: {border: `2px solid ${textColor}`},
+      applyTabOrderContainer: {textAlign: 'center'},
+    });
     return (
       <div
-      className="sidebar sidebar-secondary sidebar-default"
-      style={{color: textColor}}>
+      className={css(dynamicStyles.container) + ' sidebar sidebar-secondary sidebar-default'}>
         <div className="sidebar-content">
           <div className="tabbable sortable ui-sortable">
             <ul className="nav nav-lg nav-tabs nav-justified">
               {map(sidebarTabs, (tab, i) => {
-                let tabStyle = {
-                  color: lightBtnIsDark ? p.theme.lightBtnText : p.theme.darkBtnText,
-                  backgroundColor: lightBtnIsDark ? p.theme.lightBtnBg : p.theme.darkBtnBg,
-                  borderBottom: '0px',
-                  cursor: 'pointer'
-                };
                 return (
                   <li key={i}>
-                    <a style={tabStyle} className="legitRipple" onClick={tab.onClick} data-tip={tab.label}>
+                    <a className={css(dynamicStyles.tab) + ' legitRipple'} onClick={tab.onClick} data-tip={tab.label}>
                       <i className={tab.icon} />
                     </a>
                   </li>
@@ -138,13 +158,7 @@ export class SidebarMenu extends React.Component {
               <div className="tab-pane no-padding active" id="components-tab">
                 <div className="sidebar-category">
                   <div
-                  className={`category-title ${p.prefs.showViewMode ? '' : 'category-collapsed'}`}
-                  style={{
-                    borderTopColor: borderColor,
-                    borderTop: `1px solid ${borderColor}`,
-                    borderBottomColor: borderColor,
-                    cursor: 'pointer'
-                  }}
+                  className={css(dynamicStyles.categoryContainer) + ` category-title ${p.prefs.showViewMode ? '' : 'category-collapsed'}`}
                   onClick={() => msgStore.setPrefs({showViewMode: !p.prefs.showViewMode})}>
                     <span>{utils.t('viewMode')}</span>
                     <ul className="icons-list">
@@ -155,7 +169,7 @@ export class SidebarMenu extends React.Component {
                   </div>
 
                   {p.prefs.showViewMode ?
-                  <div className="category-content" style={{height: p.prefs.showViewMode ? 'initial' : '0px', transition: 'height 0.2s'}}>
+                  <div className={css(dynamicStyles.categoryContentContainer) + ' category-content'}>
                     <div className="row" onMouseLeave={() => this.setState({lgBtnHover: ''})}>
                       {map(lgBtnOptions, (row, i) => {
                         return (
@@ -194,8 +208,7 @@ export class SidebarMenu extends React.Component {
                 </div>
                 <div className="sidebar-category">
                   <div
-                  className={`category-title ${p.prefs.sort ? '' : 'category-collapsed'}`}
-                  style={{borderBottomColor: borderColor, cursor: 'pointer'}}
+                  className={css(dynamicStyles.categoryTitleContainer) + ` category-title ${p.prefs.sort ? '' : 'category-collapsed'}`}
                   onClick={() => msgStore.setPrefs({sort: !p.prefs.sort})}>
                     <span>{utils.t('sortBy')}</span>
                     <ul className="icons-list">
@@ -206,7 +219,7 @@ export class SidebarMenu extends React.Component {
                   </div>
 
                   {p.prefs.sort ?
-                  <div className="category-content" style={{display: 'block'}}>
+                  <div className={css(dynamicStyles.categorySortContainer) + " category-content"}>
                     <form action="#">
                         <div className="form-group">
                           {map(p.keys, (key, i) => {
@@ -214,7 +227,7 @@ export class SidebarMenu extends React.Component {
                               <div key={i} className="radio">
                                 <label>
                                   <div className="choice">
-                                    <span className={p.sort === key ? 'checked' : ''} style={{border: `2px solid ${textColor}`}}>
+                                    <span className={css(dynamicStyles.categorySortSpan) + (p.sort === key ? ' checked' : '')}>
                                       <input
                                       type="radio"
                                       name="radio-group"
@@ -231,7 +244,7 @@ export class SidebarMenu extends React.Component {
                     </form>
                   </div> : null}
                   {p.sort !== 'index' && p.prefs.mode === 'tabs' ?
-                  <div style={{textAlign: 'center'}}>
+                  <div className={css(dynamicStyles.applyTabOrderContainer)}>
                     <Btn className="ntg-top-btn"  onClick={() => state.set({applyTabOrder: true})}>{utils.t('apply')}</Btn>
                   </div> : null}
                 </div>
@@ -278,20 +291,22 @@ class Sidebar extends React.Component {
   render() {
     let p = this.props;
     let s = this.state;
-    const sideStyle = {
-      width: '280px',
-      maxWidth: '280px',
-      height: '100%',
-      position: 'fixed',
-      top: '52px',
-      opacity: p.enabled ? '1' : '0',
-      left: p.enabled ? '0px' : '-168px',
-      zIndex: s.enabled ? '6000' : '-999',
-      backgroundColor: themeStore.opacify(p.theme.headerBg, 0.9),
-      transition: p.prefs.animations ? 'left 0.2s, opacity 0.2s' : 'initial'
-    };
+    const dynamicStyles = StyleSheet.create({
+      container: {
+        width: '280px',
+        maxWidth: '280px',
+        height: '100%',
+        position: 'fixed',
+        top: '52px',
+        opacity: p.enabled ? '1' : '0',
+        left: p.enabled ? '0px' : '-168px',
+        zIndex: s.enabled ? '6000' : '-999',
+        backgroundColor: themeStore.opacify(p.theme.headerBg, 0.9),
+        transition: p.prefs.animations ? 'left 0.2s, opacity 0.2s' : 'initial'
+      }
+    });
     return (
-      <div className="side-div" style={sideStyle}>
+      <div className={css(dynamicStyles.container) + ' side-div'}>
         {s.enabled ?
         <SidebarMenu
         allTabs={p.allTabs}

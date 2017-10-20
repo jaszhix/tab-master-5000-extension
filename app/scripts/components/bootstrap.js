@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import autoBind from 'react-autobind';
+import {StyleSheet, css} from 'aphrodite';
 import _ from 'lodash';
 import onClickOutside from 'react-onclickoutside';
 import ReactTooltip from 'react-tooltip';
@@ -80,21 +81,22 @@ export class Btn extends React.Component {
         paddingRight: !p.noIconPadding ? '6px' : null
       };
       _.assignIn(faStyle, _.cloneDeep(p.faStyle));
+      const dynamicStyles = StyleSheet.create({
+        style,
+        faStyle
+      });
       return (
         <button
         data-tip={p['data-tip'] ? `<div style="max-width: 350px;">${p['data-tip']}</div>` : null}
         ref={this.getRef}
-        style={style}
         onMouseEnter={this.handleHoverIn}
         onMouseLeave={this.handleHoverOut}
         onClick={p.onClick}
         id={p.id}
-        className={p.className}>
+        className={css(dynamicStyles.style) + ' ' + p.className}>
           <div className="btn-label">
             {p.fa || p.icon ?
-            <i
-            className={`${p.fa ? 'fa fa-'+p.fa : ''}${p.icon ? ' icon-'+p.icon : ''}`}
-            style={faStyle} /> : null}
+            <i className={css(dynamicStyles.faStyle) + ` ${p.fa ? 'fa fa-'+p.fa : ''}${p.icon ? ' icon-'+p.icon : ''}`} /> : null}
             {p.fa ? ' ' : null}
             {p.children}
           </div>
@@ -219,17 +221,17 @@ export class Panel extends React.Component {
       onMouseLeave={p.onMouseLeave}
       onContextMenu={p.onContextMenu}>
         {p.header ?
-        <div className="panel-heading" style={p.headingStyle}>
+        <div className={p.headingStyle + ' panel-heading'}>
           {p.header}
         </div> : null}
 
         {!p.noBody ?
-        <div className="panel-body" style={p.bodyStyle} onClick={p.onBodyClick}>
+        <div className={p.bodyStyle + ' panel-body'} onClick={p.onBodyClick}>
           {p.children}
         </div> : null}
         {p.noBody ? p.children : null}
         {p.footerLeft || p.footerRight ?
-        <div className="panel-footer panel-footer-transparent" style={p.footerStyle} onClick={p.onFooterClick}>
+        <div className={p.footerStyle + ' panel-footer panel-footer-transparent'} onClick={p.onFooterClick}>
           <div className="heading-elements">
             {p.footerLeft}
             {p.footerRight ?
@@ -329,14 +331,22 @@ export class ModalDefault extends React.Component {
     let p = this.props;
     let heightOffset = p.heightOffset ? p.heightOffset : p.footerComponent ? 200 : 140;
     let bodyStyle = {maxHeight: `${window.innerHeight - heightOffset}px`, overflowY: 'auto', transition: p.animations ? 'max-height 0.2s' : 'initial'};
-    bodyStyle = _.assignIn(bodyStyle, _.cloneDeep(p.bodyStyle));
+    bodyStyle = Object.assign(bodyStyle, p.bodyStyle);
     let headerStyle = {paddingTop: '0px'};
-    headerStyle = _.assignIn(headerStyle, _.cloneDeep(p.headerStyle));
+    headerStyle = Object.assign(headerStyle, p.headerStyle);
+    const dynamicStyles = StyleSheet.create({
+      dialogStyle: p.dialogStyle,
+      contentStyle: p.contentStyle,
+      headerStyle,
+      bodyStyle,
+      closeBtnStyle: p.closeBtnStyle,
+      footerStyle: p.footerStyle
+    });
     return (
-      <div className={`modal-dialog${p.size ? ' modal-'+p.size : ''}`} style={p.dialogStyle}>
-        <div className="modal-content" style={p.contentStyle}>
-          <div className="modal-header bg-blue" style={headerStyle}>
-            <button type="button" className="close icon-cross2" onClick={p.onClose} style={p.closeBtnStyle} />
+      <div className={css(dynamicStyles.dialogStyle) + ` modal-dialog${p.size ? ' modal-'+p.size : ''}`}>
+        <div className={css(dynamicStyles.contentStyle) + ' modal-content'}>
+          <div className={css(dynamicStyles.headerStyle) + ' modal-header bg-blue'}>
+            <button type="button" className={p.closeBtnStyle + ' close icon-cross2'} onClick={p.onClose} />
             <div className="col-xs-10">
               <div className="media-left media-middle" style={{position: 'relative', top: '8px', fontSize: '16px'}}>
                 {p.header}
@@ -347,12 +357,12 @@ export class ModalDefault extends React.Component {
             </div>
           </div>
 
-          <div className="modal-body" style={bodyStyle}>
+          <div className={css(dynamicStyles.bodyStyle) + ' modal-body'}>
             {p.children}
           </div>
 
           {p.footerComponent ?
-          <div className="modal-footer" style={p.footerStyle}>
+          <div className={css(dynamicStyles.footerStyle) + ' modal-footer'}>
             {p.footerComponent}
           </div> : null}
         </div>

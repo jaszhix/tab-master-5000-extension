@@ -224,18 +224,19 @@ export var chromeAppStore = {
   }
 };
 
+export const getBytesInUse = function(item) {
+  return new Promise((resolve) => {
+    chrome.storage.local.getBytesInUse(item, (bytes) => {
+      resolve(bytes);
+    });
+  });
+};
+
 export var utilityStore = {
   chromeVersion(){
     let version = 1;
     tryFn(() => version = parseInt(/Chrome\/([0-9.]+)/.exec(navigator.userAgent)[1].split('.')));
     return version;
-  },
-  get_bytesInUse(item){
-    return new Promise((resolve) => {
-      chrome.storage.local.getBytesInUse(item, (bytes) => {
-        resolve(bytes);
-      });
-    });
   },
   get_manifest(){
     return chrome.runtime.getManifest();

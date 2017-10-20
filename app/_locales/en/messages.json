@@ -319,6 +319,9 @@
   "screenshotDiskUsage": {
     "message": "Screenshot disk usage"
   },
+  "faviconsDiskUsage": {
+    "message": "Favicon disk usage"
+  },
   "screenshotDiskUsageTip": {
     "message": "If you notice performance issues, clearing the screenshot cache occassionally can help. Screenshots older than three days will start being purged once the cache reaches 50MB."
   },

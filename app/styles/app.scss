@@ -430,3 +430,10 @@ tr.placeholder:before {
     float: left;
     margin: 6px;
 }
+
+.disk-usage-container {
+    display: inline-block;
+    position: absolute;
+    right: 62px;
+    bottom: 17px;
+}

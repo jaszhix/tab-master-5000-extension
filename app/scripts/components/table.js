@@ -1,5 +1,6 @@
 import React from 'react';
 import autoBind from 'react-autobind';
+import {StyleSheet, css} from 'aphrodite';
 import _ from 'lodash';
 import v from 'vquery';
 import mouseTrap from 'mousetrap';
@@ -9,6 +10,16 @@ import state from './stores/state';
 import {setAlert, msgStore} from './stores/main';
 import themeStore from './stores/theme';
 import * as utils from './stores/tileUtils';
+
+const styles = StyleSheet.create({
+  favicon: {width: '16px', height: '16px'},
+  mediaLeftLink: {cursor: 'pointer', fontSize: '14px'},
+  mediaLeftDescription: {whiteSpace: 'nowrap', cursor: 'default'},
+  mediaRight: {right: '20px'},
+  placeholder: {height: '46px'}
+});
+
+const toggleBool = ['pinned', 'enabled', 'mutedInfo'];
 
 class Row extends React.Component {
   constructor(props) {
@@ -24,6 +35,7 @@ class Row extends React.Component {
       display: 'inline-block'
     };
     let favIconUrl = p.row.favIconUrl ? utils.filterFavicons(p.row.favIconUrl, p.row.url) : '../images/file_paper_blank_document.png';
+
     return (
       <tr
       className={p.className}
@@ -39,17 +51,25 @@ class Row extends React.Component {
           if (p.row.hasOwnProperty(column)) {
             if (column === 'title' || column === 'name') {
               return (
-                <td key={z} id={`column-${column}`} style={{maxWidth: p.s.width <= 950 ? '300px' : p.s.width <= 1015 ? '400px' : '700px', userSelect: 'none'}}>
+                <td key={z} id={`column-${column}`} className={css(p.dynamicStyles.titleColumn)}>
                   <div className="media-left media-middle">
-                    <img src={favIconUrl} style={{width: '16px', height: '16px'}} />
+                    <img src={favIconUrl} className={css(styles.favicon)} />
                   </div>
                   <div className="media-left">
-                    <div style={textOverflow}><a style={{cursor: 'pointer', fontSize: '14px'}} onClick={() => utils.activateTab(p.row)} className="text-default text-semibold">{p.row[column]}</a></div>
+                    <div style={textOverflow}>
+                      <a
+                      className={css(styles.mediaLeftLink) + ' text-default text-semibold'}
+                      onClick={() => utils.activateTab(p.row)}>
+                        {p.row[column]}
+                      </a>
+                    </div>
                     {p.s.prefs.mode === 'apps' || p.s.prefs.mode === 'extensions' ?
-                    <div className="text-muted text-size-small" style={{whiteSpace: 'nowrap', cursor: 'default'}}>{p.row.description}</div> : null}
+                    <div className={css(styles.mediaLeftDescription) + ' text-muted text-size-small'}>
+                      {p.row.description}
+                    </div> : null}
                   </div>
                   {p.row.audible ?
-                  <div className="media-right media-middle" style={{right: '20px'}}>
+                  <div className={css(styles.mediaRight) + ' media-right media-middle'}>
                     <i className="icon-volume-medium" />
                   </div> : null}
                 </td>
@@ -59,8 +79,14 @@ class Row extends React.Component {
               return <td key={z} id={`column-${column}`}><i className={`icon-${typeof p.row[column] === 'string' ? 'check2' : 'cross'}`} /></td>;
             } else if (typeof p.row[column] === 'boolean' || column === 'mutedInfo') {
               let bool = column === 'mutedInfo' ? p.row[column].muted : p.row[column];
-              let toggleBool = ['pinned', 'enabled', 'mutedInfo'];
-              return <td key={z} id={`column-${column}`}><i className={`icon-${bool ? 'check2' : 'cross'}`} style={{cursor: toggleBool.indexOf(column) !== -1 ? 'pointer' : 'initial'}} onClick={toggleBool.indexOf(column) !== -1 ? () => p.handleBooleanClick(column) : null} /></td>;
+              const columnStyles = StyleSheet.create({icon: {cursor: toggleBool.indexOf(column) !== -1 ? 'pointer' : 'initial'}});
+              return (
+                <td key={z} id={`column-${column}`}>
+                  <i
+                  className={css(columnStyles.icon) + ` icon-${bool ? 'check2' : 'cross'}`}
+                  onClick={toggleBool.indexOf(column) !== -1 ? () => p.handleBooleanClick(column) : null} />
+                </td>
+              )
             } else if (column === 'launchType') {
               return <td key={z} id={`column-${column}`}>{p.row[column].indexOf('TAB') !== -1 ? 'Tab' : 'Window'}</td>;
             } else {
@@ -206,7 +232,6 @@ export class Table extends React.Component {
     });
   }
   handleBooleanClick(column, row){
-    let p = this.props;
     let s = this.state;
     if (column === 'pinned') {
       chrome.tabs.update(row.id, {pinned: !row.pinned});
@@ -257,7 +282,6 @@ export class Table extends React.Component {
   }
   dragOver(e, i) {
     e.preventDefault();
-    let s = this.state;
     if (this.dragged === undefined || e.target === this.placeholder) {
       return;
     }
@@ -353,11 +377,19 @@ export class Table extends React.Component {
     let s = this.state;
     let p = this.props;
     if (s.columns && s.rows) {
+      const dynamicStyles = StyleSheet.create({
+        titleColumn: {maxWidth: p.s.width <= 950 ? '300px' : p.s.width <= 1015 ? '400px' : '700px', userSelect: 'none'},
+        tableCommon: {width: `${p.s.width}px`},
+        fixedTableHeader: {
+          tableLayout: 'fixed',
+          top: '52px',
+          left: '0px'
+        }
+      });
       return (
         <div className="datatable-scroll-wrap">
           <table
-          className="table datatable-responsive dataTable no-footer dtr-inline"
-          style={{width: `${window.innerWidth}px`}}>
+          className={css(dynamicStyles.tableCommon) + ' table datatable-responsive dataTable no-footer dtr-inline'}>
             <TableHeader
             mode={p.s.prefs.mode}
             columns={s.columns}
@@ -375,15 +407,19 @@ export class Table extends React.Component {
               let isVisible = i >= p.range.start && i <= p.range.start + p.range.length;
               if (isVisible) {
                 let isEven = i % 2 === 0;
+                const rowStyles = StyleSheet.create({
+                  row: {
+                    fontSize: '14px',
+                    color: p.theme.tileText,
+                    backgroundColor: s.rowHover === i || s.selectedItems.indexOf(i) !== -1 ? p.theme.settingsItemHover : isEven ? themeStore.opacify(p.theme.tileBg, 0.34) : themeStore.opacify(p.theme.tileBgHover, 0.25)
+                  }
+                });
                 return (
                   <Row
                   s={p.s}
                   key={i}
-                  className={isEven ? 'even' : 'odd'}
-                  style={{
-                    fontSize: '14px',
-                    color: p.theme.tileText,
-                    backgroundColor: s.rowHover === i || s.selectedItems.indexOf(i) !== -1 ? p.theme.settingsItemHover : isEven ? themeStore.opacify(p.theme.tileBg, 0.34) : themeStore.opacify(p.theme.tileBgHover, 0.25)}}
+                  className={css(rowStyles.row) + (isEven ? ' even' : ' odd')}
+                  dynamicStyles={dynamicStyles}
                   onMouseEnter={() => this.setState({rowHover: i})}
                   draggable={p.s.prefs.mode === 'tabs' && p.s.prefs.drag}
                   onDragEnd={this.dragEnd}
@@ -397,7 +433,7 @@ export class Table extends React.Component {
                 );
               } else {
                 return (
-                  <tr key={i} style={{height: '46px'}} />
+                  <tr key={i} className={css(styles.placeholder)} />
                 );
               }
             })}
@@ -405,15 +441,9 @@ export class Table extends React.Component {
           </table>
           {this.props.showFloatingTableHeader ?
           <table
-          className="table datatable-responsive dataTable no-footer dtr-inline fixedHeader-floating"
+          className={css(dynamicStyles.fixedTableHeader, dynamicStyles.tableCommon) + ' table datatable-responsive dataTable no-footer dtr-inline fixedHeader-floating'}
           role="grid"
-          aria-describedby="DataTables_Table_1_info"
-          style={{
-            tableLayout: 'fixed',
-            top: '52px',
-            left: '0px',
-            width: `${window.innerWidth}px`
-          }}>
+          aria-describedby="DataTables_Table_1_info">
             <TableHeader
             mode={p.s.prefs.mode}
             columns={s.columns}

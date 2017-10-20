@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import autoBind from 'react-autobind';
+import {StyleSheet, css} from 'aphrodite';
 import moment from 'moment';
 import _ from 'lodash';
 import tc from 'tinycolor2';
@@ -101,18 +102,26 @@ class ColorPickerContainer extends React.Component {
 }
 
 const buttonIconStyle = {fontSize: '14px', position: 'relative', top: '0px'};
-const themeContainerStyle = {height: '210px', width: '100%', overflowY: 'auto', position: 'relative', top: '25.5px'};
-const tabPanelStyle = {position: 'relative', top: '18px'};
-const themeNameEditButtonContainerStyle = {width: 'auto', float: 'right', display: 'inline', marginRight: '4px'};
-const noPaddingStyle = {padding: '0px'};
-const tabLinkStyle = {padding: '5px 7.5px'};
-const colorPickerTabContainerStyle = {marginTop: '8px', maxHeight: '218px', minHeight: '218px'};
-const colorPickerRowStyle = {marginBottom: '28px', minHeight: '184px'};
-const colorPickerColumnStyle = {marginTop: '28px'};
-const wallpaperRowStyle = {marginTop: '28px', minHeight: '184px'};
-const wallpaperColumnStyle = {maxHeight: '211px', overflowY: 'auto'};
-const wallpaperTileColumnStyle = {paddingLeft: '24px'};
-const cursorPointerStyle = {cursor: 'pointer'};
+
+const styles = StyleSheet.create({
+  themeContainerStyle: {height: '210px', width: '100%', overflowY: 'auto', position: 'relative', top: '25.5px'},
+  tabPanelStyle: {position: 'relative', top: '18px'},
+  themeNameEditButtonContainerStyle: {width: 'auto', float: 'right', display: 'inline', marginRight: '4px'},
+  noPaddingStyle: {padding: '0px'},
+  tabLinkStyle: {padding: '5px 7.5px'},
+  colorPickerTabContainerStyle: {marginTop: '8px', maxHeight: '218px', minHeight: '218px'},
+  colorPickerRowStyle: {marginBottom: '28px', minHeight: '184px'},
+  colorPickerColumnStyle: {marginTop: '28px'},
+  wallpaperRowStyle: {marginTop: '28px', minHeight: '184px'},
+  wallpaperColumnStyle: {maxHeight: '211px', overflowY: 'auto'},
+  cursorPointerStyle: {cursor: 'pointer'},
+  sessionLabelEditButtonStyle: {float: 'left', marginTop: '2px'},
+  sessionItemContainerStyle: {width: 'auto', float: 'right', display: 'inline', position: 'relative', right: '5px', top: '1px'},
+  sessionWindowTitleSpanStyle: {position: 'relative', top: '1px', cursor: 'pointer'},
+  sessionTitleContainerStyle: {width: 'auto', float: 'left', display: 'inline', position: 'relative', top: '1px'},
+  sessionHoverButtonContainerStyle: {width: 'auto', float: 'right', display: 'inline', position: 'relative'},
+  sessionCloseButtonStyle: {position: 'absolute', right: '0px'},
+});
 
 class Theming extends React.Component {
   constructor(props) {
@@ -303,18 +312,18 @@ class Theming extends React.Component {
         <input type="file" onChange={(e)=>themeStore.import(e)} accept=".json" ref={this.getImportRef} style={style.hiddenInput} />
         <input type="file" onChange={(e)=>themeStore.importWallpaper(e, s.selectedTheme.id)} accept=".jpg,.jpeg,.png" ref={this.getWallpaperRef} style={style.hiddenInput} />
         <Col size="3" className="ntg-tabs" style={{borderBottom: 'initial', position: 'fixed', zIndex: '9999', marginTop: '-20px', height: '50px', backgroundColor: p.theme.settingsBg}}>
-          <div role="tabpanel" style={tabPanelStyle}>
+          <div role="tabpanel" className={css(styles.tabPanelStyle)}>
             <ul className="nav nav-tabs">
-              <li style={noPaddingStyle} className={`${s.leftTab === 'custom' ? 'active' : ''}`}>
-                <a style={tabLinkStyle} href="#" onClick={this.handleCustomTabClick}>{utils.t('custom')}</a>
+              <li className={css(styles.noPaddingStyle) + ` ${s.leftTab === 'custom' ? 'active' : ''}`}>
+                <a className={css(styles.tabLinkStyle)} onClick={this.handleCustomTabClick}>{utils.t('custom')}</a>
               </li>
-              <li style={noPaddingStyle} className={`${s.leftTab === 'tm5k' ? 'active' : ''}`}>
-                <a style={tabLinkStyle} href="#" onClick={() => this.setState({leftTab: 'tm5k'})}>{utils.t('tm5k')}</a>
+              <li className={css(styles.noPaddingStyle) + ` ${s.leftTab === 'tm5k' ? 'active' : ''}`}>
+                <a className={css(styles.tabLinkStyle)} onClick={() => this.setState({leftTab: 'tm5k'})}>{utils.t('tm5k')}</a>
               </li>
             </ul>
           </div>
           <Row>
-            <Col size="12" style={themeContainerStyle} onMouseLeave={() => this.setState({themeHover: -1})}>
+            <Col size="12" className={css(styles.themeContainerStyle)} onMouseLeave={() => this.setState({themeHover: -1})}>
               {s.leftTab === 'custom' ?
               <Row>
                 {s.savedThemes.length > 0 ? map(s.savedThemes, (theme, i) => {
@@ -352,7 +361,7 @@ class Theming extends React.Component {
                         onKeyDown={(e)=>this.handleEnter(e, theme.id)} />
                         : theme.label}
                       </div>
-                      <div style={themeNameEditButtonContainerStyle}>
+                      <div className={css(styles.themeNameEditButtonContainerStyle)}>
                         {s.themeHover === i ?
                           <Btn
                           onClick={() => this.handleRemoveTheme(theme.id)}
@@ -412,28 +421,28 @@ class Theming extends React.Component {
         </Col>
         <Row>
           <Col size="3" />
-          <Col className="pickerCont" size="9" style={colorPickerTabContainerStyle}>
+          <Col className={css(styles.colorPickerTabContainerStyle) + ' pickerCont'} size="9">
             <Col size="8" className="ntg-tabs" style={{borderBottom: 'initial', position: 'fixed', zIndex: '9999', marginTop: '-28px', height: '50px', backgroundColor: p.theme.settingsBg}}>
-              <div role="tabpanel" style={tabPanelStyle}>
+              <div role="tabpanel" className={css(styles.tabPanelStyle)}>
                 <ul className="nav nav-tabs">
-                  <li style={noPaddingStyle} className={`${s.rightTab === 'color' ? 'active' : ''}`}>
-                    <a style={tabLinkStyle} href="#" onClick={() => this.setState({rightTab: 'color'})}>{utils.t('colorScheme')}</a>
+                  <li className={css(styles.noPaddingStyle) + ` ${s.rightTab === 'color' ? 'active' : ''}`}>
+                    <a className={css(styles.tabLinkStyle)} onClick={() => this.setState({rightTab: 'color'})}>{utils.t('colorScheme')}</a>
                   </li>
                   {!s.isNewTheme && s.leftTab === 'custom' || s.leftTab === 'tm5k' && s.selectedTheme && s.selectedTheme !== undefined && s.selectedTheme.id !== 9000 ?
-                  <li style={noPaddingStyle} className={`${s.rightTab === 'wallpaper' ? 'active' : ''}`}>
-                    <a style={tabLinkStyle} href="#" onClick={() => this.setState({rightTab: 'wallpaper'})}>{utils.t('wallpaper')}</a>
+                  <li className={css(styles.noPaddingStyle) + ` ${s.rightTab === 'wallpaper' ? 'active' : ''}`}>
+                    <a className={css(styles.tabLinkStyle)} onClick={() => this.setState({rightTab: 'wallpaper'})}>{utils.t('wallpaper')}</a>
                   </li> : null}
                 </ul>
               </div>
             </Col>
             {s.rightTab === 'color' ?
-            <Row style={colorPickerRowStyle}>
+            <Row className={css(styles.colorPickerRowStyle)}>
               {map(themeFields, (fields, q) => {
                 return (
                   <Col
                   key={q}
                   size="4"
-                  style={colorPickerColumnStyle}>
+                  className={css(styles.colorPickerColumnStyle)}>
                     <Row>
                       {map(fields, (field) => {
                         return (
@@ -452,10 +461,10 @@ class Theming extends React.Component {
               })}
             </Row> : null}
             {s.rightTab === 'wallpaper' ?
-            <Row fluid={true} style={wallpaperRowStyle}>
+            <Row fluid={true} className={css(styles.wallpaperRowStyle)}>
               <Col
               size="12"
-              style={wallpaperColumnStyle}>
+              className={css(styles.wallpaperColumnStyle)}>
                 {p.wallpapers.length > 0 ? map(_.uniqBy(_.orderBy(p.wallpapers, ['desc'], ['created']), 'id'), (wp, i) => {
                   let selectedWallpaper = p.wallpaper && wp.id === p.wallpaper.id;
                   return (
@@ -499,13 +508,7 @@ class Theming extends React.Component {
 }
 
 const sessionButtonIconStyle = {fontSize: '18px', position: 'relative', top: '0px'};
-const sessionLabelEditButtonStyle = {float: 'left', marginTop: '2px'};
-const sessionItemContainerStyle = {width: 'auto', float: 'right', display: 'inline', position: 'relative', right: '5px', top: '1px'};
-const sessionWindowTitleSpanStyle = {position: 'relative', top: '1px', cursor: 'pointer'};
-const sessionTitleContainerStyle = {width: 'auto', float: 'left', display: 'inline', position: 'relative', top: '1px'};
 const sessionHoverButtonIconStyle = {fontSize: '13px', position: 'relative', top: '0px'};
-const sessionHoverButtonContainerStyle = {width: 'auto', float: 'right', display: 'inline', position: 'relative'};
-const sessionCloseButtonStyle = {position: 'absolute', right: '0px'};
 
 class Sessions extends React.Component {
   static defaultProps = {
@@ -668,7 +671,7 @@ class Sessions extends React.Component {
                 userSelect: 'none'
               }}>
                 <Row>
-                  <div style={sessionTitleContainerStyle}>
+                  <div className={css(styles.sessionTitleContainerStyle)}>
                     <div
                     onClick={(e)=>this.expandSelectedSession(i, e)}
                     className="ntg-session-text"
@@ -690,7 +693,7 @@ class Sessions extends React.Component {
                     </div>
                   </div>
                   {s.sessionHover === i ?
-                  <div style={sessionItemContainerStyle}>
+                  <div className={css(styles.sessionItemContainerStyle)}>
                     <Btn
                     onClick={() => sessionsStore.v2Remove(p.sessions, session)}
                     className="ntg-session-btn"
@@ -751,18 +754,17 @@ class Sessions extends React.Component {
                         </Col>
                         <Col size="6">
                           <Btn
-                          style={sessionLabelEditButtonStyle}
                           faStyle={buttonIconStyle}
                           onClick={() => this.labelSession(session)}
-                          className="ntg-session-btn"
+                          className={css(styles.sessionLabelEditButtonStyle) + ' ntg-session-btn'}
                           icon="checkmark3"
                           noIconPadding={true}
                           data-tip="Update Label" />
                           <Btn
-                          style={sessionLabelEditButtonStyle}
                           faStyle={buttonIconStyle}
                           onClick={() => this.setState({labelSession: null})}
-                          className="ntg-session-btn" icon="cross"
+                          className={css(styles.sessionLabelEditButtonStyle) + ' ntg-session-btn'}
+                          icon="cross"
                           noIconPadding={true}
                           data-tip="Cancel" />
                         </Col>
@@ -791,12 +793,11 @@ class Sessions extends React.Component {
                       style={{marginBottom: s.selectedSavedSessionWindow === w || s.search.length > 0 ? '1px' : 'initial', minHeight: '22px'}}>
                         <span
                         title={windowTitle}
-                        style={sessionWindowTitleSpanStyle}
-                        className="ntg-session-text"
+                        className={css(styles.sessionWindowTitleSpanStyle) + ' ntg-session-text'}
                         onClick={() => this.setState({selectedSavedSessionWindow: s.selectedSavedSessionWindow === w ? -1 : w})}>
                           {windowTitle}
                         </span>
-                        <div style={sessionItemContainerStyle}>
+                        <div className={css(styles.sessionItemContainerStyle)}>
                           {s.windowHover === w ?
                           <Btn
                           onClick={() => sessionsStore.restoreWindow(session, w, p.chromeVersion)}
@@ -822,18 +823,17 @@ class Sessions extends React.Component {
                             onMouseLeave={() => this.handleSelectedSessionTabHoverOut(x)}
                             key={x}
                             style={{backgroundColor: s.selectedSessionTabHover === x ? p.theme.settingsItemHover : 'initial', maxHeight: '20px'}}>
-                              <Col size="11" style={noPaddingStyle}>
-                                <span title={t.title} onClick={() => utilityStore.createTab(t.url)} style={cursorPointerStyle}>
+                              <Col size="11" className={css(styles.noPaddingStyle)}>
+                                <span title={t.title} onClick={() => utilityStore.createTab(t.url)} className={css(styles.cursorPointerStyle)}>
                                   <img className="ntg-small-favicon" style={{position: 'relative', top: '-1px'}} src={favIconUrl} />
                                   {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {t.title}
                                 </span>
                               </Col>
-                              <Col size="1" style={noPaddingStyle}>
+                              <Col size="1" className={css(styles.noPaddingStyle)}>
                                 {s.selectedSessionTabHover === x ?
                                 <Btn
                                 onClick={() => sessionsStore.v2RemoveTab(p.sessions, i, w, x)}
-                                className="ntg-session-btn"
-                                style={sessionCloseButtonStyle}
+                                className={css(styles.sessionCloseButtonStyle) + ' ntg-session-btn'}
                                 icon="cross"
                                 faStyle={sessionButtonIconStyle}
                                 noIconPadding={true}
@@ -890,12 +890,11 @@ class Sessions extends React.Component {
                 }}>
                   <span
                   title={windowTitle}
-                  className="ntg-session-text"
-                  onClick={() => this.setState({selectedCurrentSessionWindow: s.selectedCurrentSessionWindow === w ? -1 : w})}
-                  style={sessionWindowTitleSpanStyle}>
+                  className={css(styles.sessionWindowTitleSpanStyle) + ' ntg-session-text'}
+                  onClick={() => this.setState({selectedCurrentSessionWindow: s.selectedCurrentSessionWindow === w ? -1 : w})}>
                     {windowTitle}
                   </span>
-                  <div style={sessionItemContainerStyle}>
+                  <div className={css(styles.sessionItemContainerStyle)}>
                     {s.currentSessionHover === w && _window.length > 0 ?
                     <Btn
                     onClick={() => this.handleCurrentSessionCloseWindow(_window[0].windowId, w)}
@@ -923,21 +922,21 @@ class Sessions extends React.Component {
                     key={i}
                     style={{backgroundColor: s.currentSessionTabHover === i ? p.theme.settingsItemHover : 'initial', maxHeight: '20px'}}
                     onMouseEnter={() => this.setState({currentSessionTabHover: i})}>
-                      <Col size="11" style={noPaddingStyle}>
+                      <Col size="11" className={css(styles.noPaddingStyle)}>
                       <span
                       title={t.title}
-                      onClick={() => utils.activateTab(t)} style={cursorPointerStyle}>
+                      onClick={() => utils.activateTab(t)}
+                      className={css(styles.cursorPointerStyle)}>
                         <img className="ntg-small-favicon" style={{position: 'relative', top: '-1px'}} src={favIconUrl} />
                         {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {t.title}
                       </span>
                       </Col>
-                      <Col size="1" style={noPaddingStyle}>
-                        <div style={sessionHoverButtonContainerStyle}>
+                      <Col size="1" className={css(styles.noPaddingStyle)}>
+                        <div className={css(styles.sessionHoverButtonContainerStyle)}>
                           {s.currentSessionTabHover === i ?
                           <Btn
                           onClick={() => this.handleCurrentSessionCloseTab(t.id, w, i)}
-                          className="ntg-session-btn"
-                          style={sessionCloseButtonStyle}
+                          className={css(styles.sessionCloseButtonStyle) + ' ntg-session-btn'}
                           icon="cross"
                           faStyle={sessionButtonIconStyle}
                           noIconPadding={true}
