@@ -459,7 +459,7 @@ const themeStore = initStore({
       themeStore.getWallpapers().then((wallpapers) => {
         let refTheme;
         let selectThemeIsCustom = false;
-        if (themes && themes.themes !== 'undefined') {
+        if (themes && themes.themes !== undefined) {
           if (prefs.theme >= 9000) {
             refTheme = find(themeStore.standardThemes, theme => theme.id === prefs.theme);
           } else {
@@ -473,6 +473,11 @@ const themeStore = initStore({
           themeStore.savedThemes = typeof themes.themes !== 'undefined' ? themes.themes : [];
         } else {
           refTheme = find(themeStore.standardThemes, theme => theme.id === prefs.theme);
+          if (!refTheme) {
+            // Occurs when the theme cache is empty, but prefs is pointing to a theme id < 9000 (non-default)
+            refTheme = themeStore.standardThemes[1];
+            msgStore.setPrefs({theme: 9001, wallpaper: null});
+          }
           themeStore.theme = _.cloneDeep(refTheme.theme);
           themeStore.savedThemes = [];
         }
@@ -615,7 +620,6 @@ const themeStore = initStore({
   },
   selectTheme: (id) => {
     let state = themeStore.get();
-    //debugger;
     console.log('themeStore selectTheme: ', id);
     let standard = id >= 9000;
     let findFn = theme => theme.id === id;

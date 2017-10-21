@@ -768,9 +768,7 @@ class Bg extends React.Component {
           && this.state.newTabs.length > 1)
           || refExistingTab === -1) {
           _.pullAt(this.state.newTabs, refNewTab);
-          this.setState({newTabs: this.state.newTabs}, ()=>{
-            chrome.tabs.create({active: true});
-          });
+          this.setState({newTabs: this.state.newTabs});
         } else {
           chrome.tabs.update(this.state.newTabs[refNewTab].id, {active: true}, ()=>{
             sendMsg({focusSearchEntry: true, action: true});
