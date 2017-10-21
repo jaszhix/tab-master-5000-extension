@@ -10,7 +10,7 @@ import themeStore from './stores/theme';
 
 import Tile from './tile';
 import {Table} from './table';
-import {map, whichToShow, tryFn, filter} from './utils';
+import {map, whichToShow, tryFn, filter, each} from './utils';
 import * as utils from './stores/tileUtils';
 
 class ItemsContainer extends React.Component {

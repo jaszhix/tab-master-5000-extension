@@ -243,7 +243,7 @@ class Theming extends React.Component {
       selectedTheme: _.cloneDeep(theme),
       isNewTheme: theme.id > 9000
     });
-    themeStore.selectTheme(theme.id);
+    _.defer(() => themeStore.selectTheme(theme.id));
   }
   handleNewTheme() {
     this.setState({

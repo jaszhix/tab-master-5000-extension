@@ -749,7 +749,7 @@ class Bg extends React.Component {
       }
       this.state.windows[refWindow].tabs.push(e);
       this.state.windows[refWindow].tabs = v(this.state.windows[refWindow].tabs).move(
-        findIndex(this.state.windows[refWindow].tabs, tab => _.isEqual(_.last(this.state.windows[refWindow].tabs)), tab),
+        findIndex(this.state.windows[refWindow].tabs, tab => _.isEqual(_.last(this.state.windows[refWindow].tabs), tab)),
         e.index
       ).ns;
     } else {

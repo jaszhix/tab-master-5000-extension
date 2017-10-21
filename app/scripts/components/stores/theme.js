@@ -626,8 +626,10 @@ const themeStore = initStore({
     let refTheme = standard ? find(state.standardThemes, findFn) : find(state.savedThemes, findFn);
     let theme = refTheme.theme;
     let currentWallpaper = state.currentWallpaper;
-    if (refTheme.id !== 9000 || refTheme.id !== 9001) {
+    if (refTheme.id !== 9000 && refTheme.id !== 9001) {
       currentWallpaper = find(state.wallpapers, wallpaper => wallpaper.id === refTheme.wallpaper);
+    } else {
+      currentWallpaper = {data: null};
     }
 
     themeStore.set({

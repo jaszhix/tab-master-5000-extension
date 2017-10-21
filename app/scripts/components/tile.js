@@ -40,6 +40,9 @@ class Tile extends React.Component {
       tab: this.props.tab,
       i: this.props.i
     }
+    this.connectId = state.connect({
+      duplicateTabs: () => utils.checkDuplicateTabs(this.props.tab, () => this.setState({duplicate: true}))
+    });
     autoBind(this);
   }
   componentDidMount() {
@@ -49,9 +52,6 @@ class Tile extends React.Component {
     let p = this.props;
     if (nP.prefs.mode === 'tabs') {
       utils.checkDuplicateTabs(nP.tab, () => this.setState({duplicate: true}));
-    }
-    if (!_.isEqual(nP.screenshots, p.screenshots) && nP.prefs.screenshot) {
-      this.updateScreenshot('init', nP);
     }
     if (nP.i !== p.i && this.panelRef) {
       this.setState({i: nP.i, duplicate: false});
@@ -75,6 +75,7 @@ class Tile extends React.Component {
     return (!_.isEqual(this.props, nP) || !_.isEqual(this.state, nS)) && state.settings !== 'sessions';
   }
   componentWillUnmount() {
+    state.disconnect(this.connectId);
     unref(this);
   }
   updateScreenshot(opt, p) {
