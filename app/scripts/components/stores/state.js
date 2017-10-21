@@ -48,6 +48,7 @@ const state = initStore({
     open: false
   },
   dragging: false,
+  topLoad: false,
   // Themes
   theme: null,
   savedThemes: [],

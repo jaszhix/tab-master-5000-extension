@@ -2,8 +2,14 @@ import _ from 'lodash';
 import Fuse from 'fuse.js';
 import {each, findIndex, filter, tryFn, includes, map} from '../utils';
 import state from './state';
-import {historyStore, bookmarksStore, chromeAppStore, faviconStore, utilityStore} from './main';
+import {historyStore, chromeAppStore, faviconStore, utilityStore} from './main';
 import sessionsStore from './sessions';
+
+export const isNewTab = function(url) {
+  return (url && (url.indexOf('chrome://newtab/') > -1
+    || url.substr(-11) === 'newtab.html'
+    || url.substr(-11) === 'ewtab.html#'))
+}
 
 export const activateTab = function(tab) {
   if (tab.hasOwnProperty('openTab') && !tab.openTab) {
@@ -31,30 +37,38 @@ export const activateTab = function(tab) {
 export var closeTab = (tab) => {
   let stateUpdate = {};
 
-  if (state.prefs.mode === 'tabs' || tab.openTab) {
+  if (state.prefs.mode === 'sessions') {
+    // The sessionTabs array is unique, so we're re-mapping the tabs from the session data.
+    let tabs = [];
+    let completeSessionTabs = map(state.sessions, session => session.tabs);
+    each(completeSessionTabs, function(win) {
+      tabs = tabs.concat(_.flatten(win));
+    });
+    tabs = filter(tabs, _tab => _tab.url === tab.url);
+    each(tabs, function(tab) {
+      if (isNewTab(tab.url)) {
+        return;
+      }
+      let refSession = findIndex(state.sessions, session => session.id === tab.originSession);
+      each(state.sessions[refSession], function(w) {
+        if (!w || !w[tab.originWindow]) {
+          return;
+        }
+        let index = findIndex(w[tab.originWindow], w => w.id === tab.id);
+        if (index > -1) {
+          sessionsStore.v2RemoveTab(state.sessions, refSession, tab.originWindow, index, state.sessionTabs, state.sort);
+          return;
+        }
+      });
+    });
+  } else if ((state.prefs.mode === 'tabs' || tab.openTab)
+    && typeof tab.id === 'number') {
     chrome.tabs.remove(tab.id);
   } else if (state.prefs.mode === 'bookmarks') {
-    chrome.bookmarks.remove(tab.id, (b) => {
-      console.log('Bookmark deleted: ', b);
-      bookmarksStore.remove(state.bookmarks, id);
-      item.removed = true;
-    });
+    chrome.bookmarks.remove(tab.id);
   } else if (state.prefs.mode === 'history') {
     chrome.history.deleteUrl({url: tab.url}, (h) => {
-      console.log('History url deleted: ', h);
       historyStore.remove(state.history, tab.url);
-    });
-  } else if (state.prefs.mode === 'sessions') {
-    let refSession = findIndex(state.sessions, session => session.id === tab.originSession);
-    each(state.sessions[refSession], (w) => {
-      if (!w || !w[tab.originWindow]) {
-        return;
-      }
-      let index = findIndex(w[tab.originWindow], w => w.id === tab.id);
-      if (index > -1) {
-        sessionsStore.v2RemoveTab(state.sessions, refSession, tab.originWindow, index, state.sessionTabs, state.sort);
-        return;
-      }
     });
   }
 
@@ -88,7 +102,7 @@ export var closeAllItems = () => {
     }
     closeTab(items[i])
   }
-  state.set({search: ''});
+  state.set({search: '', searchCache: []});
 };
 
 export var pin = (tab) => {
@@ -288,9 +302,3 @@ export var searchChange = (query, tabs) => {
 export var t = (key) => {
   return chrome.i18n.getMessage(key);
 };
-
-export const isNewTab = function(url) {
-  return (url && (url.indexOf('chrome://newtab/') > -1
-    || url.substr(-11) === 'newtab.html'
-    || url.substr(-11) === 'ewtab.html#'))
-}

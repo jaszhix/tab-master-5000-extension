@@ -68,7 +68,7 @@ class ContextMenu extends React.Component {
       let actionsStatus = this.getStatus('actions');
       let contextOptions = [
         {
-          argument: notAppsExt && p.prefs.mode !== 'sessions', // Temporary until session removal is fixed
+          argument: notAppsExt,
           onClick: ()=>this.handleMenuOption(p, 'close'),
           icon: `icon-${p.prefs.mode !== 'tabs' && !s.openTab ? 'eraser' : 'cross2'}`,
           label: isSelectedItems ? `${close} ${p.context.id.length} ${p.mode === 'history' ? `${p.mode} ${utils.t('items')}` : p.mode}` : close,
@@ -89,7 +89,7 @@ class ContextMenu extends React.Component {
           divider: null
         },
         {
-          argument: notAppsExt && p.prefs.mode !== 'sessions' && p.search.length > 0,
+          argument: notAppsExt && p.search.length > 0,
           onClick: ()=>this.handleMenuOption(p, 'closeSearched'),
           icon: 'icon-svg',
           label: `${close} ${utils.t('allSearchResults')}`,

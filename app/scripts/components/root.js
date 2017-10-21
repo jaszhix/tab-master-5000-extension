@@ -65,7 +65,6 @@ class Root extends React.Component {
       init: true,
       grid: true,
       window: true,
-      topLoad: false,
       screenshots: []
     };
     this.connections = [
@@ -91,14 +90,10 @@ class Root extends React.Component {
           if (partial.modeKey === 'searchCache') {
             return;
           }
-          state.set({search: ''});
+          state.set({search: '', searchCache: []});
         },
         folder: (partial) => {
           state.set(this.updateTabState(partial.folder, 'folder', partial));
-        },
-        favicons: (partial) => {
-          // TODO - Move loading indicators inside callbacks so they're useful
-          this.faviconsChange();
         },
         applyTabOrder: (partial) => {
           if (partial.applyTabOrder) {
@@ -134,15 +129,6 @@ class Root extends React.Component {
         state.set({actions: actions});
       });
     }
-    this.setState({
-      topLoad: false,
-      init: false
-    });
-  }
-  faviconsChange(){
-    this.setState({topLoad: true});
-    _.defer(()=>this.setState({topLoad: false}));
-    state.set({topNavButton: 'dlFavicons'});
   }
   chromeAppChange(e){
     this.setState({apps: e});
@@ -563,7 +549,7 @@ class Root extends React.Component {
               <Search
               s={p.s}
               event={s.event}
-              topLoad={s.topLoad}
+              topLoad={p.s.topLoad}
               theme={p.s.theme}  />
               <div style={{
                 position: 'absolute',

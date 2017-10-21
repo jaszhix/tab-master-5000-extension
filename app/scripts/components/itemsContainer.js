@@ -144,7 +144,7 @@ class ItemsContainer extends React.Component {
       range.start = 0;
     }
     this.scrollTimeout = null;
-    this.setState({range}, () => console.log(this.state.range));
+    this.setState({range});
   }
   dragStart(e, i) {
     state.set({dragging: true});

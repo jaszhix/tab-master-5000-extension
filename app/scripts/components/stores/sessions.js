@@ -141,7 +141,7 @@ let sessionsStore = {
       if (refSessionTab !== -1) {
         _.pullAt(sessionTabs, refSessionTab);
         stateUpdate.sessionTabs = sessionTabs;
-        state.set(stateUpdate);
+        state.set(stateUpdate, true);
       }
     }
     _.pullAt(sessions[session].tabs[_window], tab);

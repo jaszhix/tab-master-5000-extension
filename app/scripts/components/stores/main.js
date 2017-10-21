@@ -117,18 +117,6 @@ export var bookmarksStore = {
       }
       state.set({bookmarks: bk});
     });
-  },
-  remove(bookmarks, bookmarkId){
-    let stateUpdate = {};
-    let refBookmark = findIndex(bookmarks, bk => bk.id === bookmarkId);
-    if (refBookmark !== -1) {
-      _.pullAt(bookmarks, refBookmark);
-      stateUpdate.bookmarks = bookmarks;
-      if (bookmarks.length === 0) {
-        stateUpdate.search = '';
-      }
-      state.set(stateUpdate);
-    }
   }
 };
 
@@ -399,7 +387,6 @@ const checkDuplicateTabs = function(stateUpdate){
 export var msgStore = {
   init() {
     chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-      let stateUpdate = {};
       let s = state.get('*');
       if ((!s.prefs.allTabs
         && msg.windowId !== s.windowId
@@ -410,6 +397,7 @@ export var msgStore = {
         return;
       }
       console.log('msg: ', msg, 'sender: ', sender);
+      let stateUpdate = {};
       if (msg.hasOwnProperty('windows')) {
         stateUpdate = {
           allTabs: map(msg.windows, function(win) {
