@@ -97,9 +97,6 @@ let syncSession = (sessions, prefs, windows=null)=>{
         if (typeof windows[i].tabs[z] === 'undefined') {
           continue;
         }
-        if (isNewTab(windows[i].tabs[z].url)) {
-          _.pullAt(windows[i].tabs, z);
-        }
       }
     }
     sessions[refSession].tabs = allTabs;
@@ -762,14 +759,14 @@ class Bg extends React.Component {
     this.state.windows[refWindow].tabs = this.formatTabs(this.state.prefs, this.state.windows[refWindow].tabs);
     this.setState({windows: this.state.windows});
     // Activate the first new tab if it is open, and if this is a second new tab being created.
-    if (isNewTab(e.url)
-      && this.state.prefs.singleNewTab) {
+    if (isNewTab(e.url) && this.state.prefs.singleNewTab) {
       let refNewTab = findIndex(this.state.newTabs, tab => tab.windowId === e.windowId);
       if (refNewTab !== -1) {
         let refExistingTab = findIndex(this.state.windows[refWindow].tabs, tab => tab.id === this.state.newTabs[refNewTab].id);
-        if (refExistingTab === -1
-          || (typeof this.state.windows[refWindow].tabs[refExistingTab] !== 'undefined'
-            && !isNewTab(this.state.windows[refWindow].tabs[refExistingTab].url))) {
+        if ((typeof this.state.windows[refWindow].tabs[refExistingTab] !== 'undefined'
+          && !isNewTab(this.state.windows[refWindow].tabs[refExistingTab].url)
+          && this.state.newTabs.length > 1)
+          || refExistingTab === -1) {
           _.pullAt(this.state.newTabs, refNewTab);
           this.setState({newTabs: this.state.newTabs}, ()=>{
             chrome.tabs.create({active: true});
