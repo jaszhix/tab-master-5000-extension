@@ -44,7 +44,7 @@ class Slide extends React.Component {
       data-tip={`<div style="max-width: 350px;">${p['data-tip']}</div>`}>
         <Row className={p.className} onMouseEnter={p.onMouseEnter}>
           <div className={css(styles.sliderLabel)}>{p.label}</div>
-          <Slider min={p.min} max={p.max} defaultValue={p.defaultValue} value={p.value} onChange={p.onChange} onAfterChange={p.onAfterChange} />
+          <Slider min={p.min} max={p.max} defaultValue={p.defaultValue} value={p.value} onChange={p.onChange} />
         </Row>
       </div>
     );
@@ -309,11 +309,6 @@ class Preferences extends React.Component {
   handleSlide(e, opt) {
     let obj = {};
     obj[opt] = e;
-    state.set({prefs: obj});
-  }
-  handleSlideAfterChange(e, opt) {
-    let obj = {};
-    obj[opt] = e;
     msgStore.setPrefs(obj);
   }
   handleAutoDiscardTime(e) {
@@ -478,7 +473,6 @@ class Preferences extends React.Component {
                 defaultValue={p.prefs.screenshotBgOpacity}
                 value={p.prefs.screenshotBgOpacity}
                 onChange={(e)=>this.handleSlide(e, 'screenshotBgOpacity')}
-                onAfterChange={(e)=>this.handleSlideAfterChange(e, 'screenshotBgOpacity')}
                 onMouseEnter={()=>this.handleToggle('screenshotBgOpacity')}
                 hoverBg={p.theme.settingsItemHover}
                 data-tip={utils.t('screenshotBgOpacityTip')} />
@@ -490,7 +484,6 @@ class Preferences extends React.Component {
                 defaultValue={p.prefs.screenshotBgBlur}
                 value={p.prefs.screenshotBgBlur}
                 onChange={(e)=>this.handleSlide(e, 'screenshotBgBlur')}
-                onAfterChange={(e)=>this.handleSlideAfterChange(e, 'screenshotBgBlur')}
                 onMouseEnter={()=>this.handleToggle('screenshotBgBlur')}
                 hoverBg={p.theme.settingsItemHover}
                 data-tip={utils.t('screenshotBgBlurTip')} />
@@ -502,7 +495,6 @@ class Preferences extends React.Component {
                 defaultValue={p.prefs.tabSizeHeight}
                 value={p.prefs.tabSizeHeight}
                 onChange={(e)=>this.handleSlide(e, 'tabSizeHeight')}
-                onAfterChange={(e)=>this.handleSlideAfterChange(e, 'tabSizeHeight')}
                 onMouseEnter={()=>this.handleToggle('tabSizeHeight')}
                 step={20}
                 dots={true}
@@ -516,7 +508,6 @@ class Preferences extends React.Component {
                 defaultValue={p.prefs.tablePadding}
                 value={p.prefs.tablePadding}
                 onChange={(e)=>this.handleSlide(e, 'tablePadding')}
-                onAfterChange={(e)=>this.handleSlideAfterChange(e, 'tablePadding')}
                 onMouseEnter={()=>this.handleToggle('tablePadding')}
                 step={1}
                 dots={true}
