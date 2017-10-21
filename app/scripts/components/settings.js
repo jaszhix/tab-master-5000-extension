@@ -134,7 +134,7 @@ class Theming extends React.Component {
       themeHover: null,
       themeLabel: -1,
       themeLabelValue: '',
-      leftTab: 'custom',
+      leftTab: this.props.savedThemes.length > 0 ? 'custom' : 'tm5k',
       rightTab: 'color',
       isNewTheme: true,
       showCustomButtons: false,
@@ -291,6 +291,14 @@ class Theming extends React.Component {
       leftTab: 'custom',
       rightTab: 'color'
     });
+  }
+  handleSelectWallpaper(wpId) {
+    let id = -1;
+    if (this.props.prefs.wallpaper !== wpId) {
+      id = wpId;
+    }
+    console.log(id);
+    themeStore.selectWallpaper(this.state.selectedTheme.id, id, true);
   }
   getImportRef(ref) {
     this.importRef = ref;
@@ -471,7 +479,7 @@ class Theming extends React.Component {
                   return (
                     <div
                     key={i}
-                    onClick={p.prefs.wallpaper !== wp.id ? () => themeStore.selectWallpaper(s.selectedTheme.id, wp.id, true) : null}
+                    onClick={() => this.handleSelectWallpaper(wp.id)}
                     className="wallpaper-tile"
                     style={{
                       backgroundColor: selectedWallpaper ? p.theme.darkBtnBg : p.theme.lightBtnBg,
@@ -483,7 +491,7 @@ class Theming extends React.Component {
                       display: 'inline-block',
                       margin: '8px',
                       border: selectedWallpaper ? `4px solid ${p.theme.darkBtnBg}` : 'initial',
-                      cursor: selectedWallpaper ? null : 'pointer'}}>
+                      cursor: 'pointer'}}>
                         {selectedWallpaper ?
                           <i
                           className="icon-checkmark3"
