@@ -1,5 +1,24 @@
 #### Release Notes
 
+##### v2.5.0 / *10-21-17*
+
+*   Fixed the table row selection not being clearly indicated when using the default theme.
+*   Fixed a search input legibility issue when using a theme with a transparent header background in the table view.
+*   Fixed the table header column widths being inaccurate when transitioning to a fixed header in Firefox.
+*   Fixed the sort direction icons not updating on the fixed table header.
+*   Fixed the "Allow only one New Tab per window" option not working correctly in Firefox.
+*   Fixed clicking tabs from other windows not focusing the window in the table view and Current Session list in the Session Manager.
+*   Fixed various TrackJS errors.
+*   Fixed the search results not showing when hitting backspace.
+*   Fixed incorrect drag and drop behavior in both tile and table views.
+*   Fixed being unable to unset wallpapers.
+*   Fixed the "Reset Tile Size" button not working.
+*   The background blur setting now controls the modal backdrop blur as well.
+*   The search view is now reset on search result click, this can be disabled in Preferences.
+*   Reduced the table padding so more items can be visible, this can be customized in Preferences.
+*   Added a folder column to the bookmarks table view.
+*   Misc. style improvements and optimizations.
+
 ##### v2.4.0 / *10-16-17*
 
 *   Fixed the context menu not being visible when opened from the edge of the page.
