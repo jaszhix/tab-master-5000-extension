@@ -271,7 +271,7 @@ class Sidebar extends React.Component {
     if (!_.isEqual(nP.enabled, this.props.enabled)) {
       _.defer(() => {
         if (nP.enabled) {
-          this.setState({enabled: true});
+          _.defer(() => this.setState({enabled: true}));
         } else {
           _.delay(() => {
             this.setState({enabled: false});
@@ -282,7 +282,7 @@ class Sidebar extends React.Component {
   }
   handleClickOutside(){
     if (!this.props.disableSidebarClickOutside && this.props.enabled) {
-      state.set({sidebar: false});
+      state.set({sidebar: false}, ReactTooltip.hide);
     }
   }
   handleSort(){
@@ -290,7 +290,6 @@ class Sidebar extends React.Component {
   }
   render() {
     let p = this.props;
-    let s = this.state;
     const dynamicStyles = StyleSheet.create({
       container: {
         width: '280px',
@@ -300,14 +299,14 @@ class Sidebar extends React.Component {
         top: '52px',
         opacity: p.enabled ? '1' : '0',
         left: p.enabled ? '0px' : '-168px',
-        zIndex: s.enabled ? '6000' : '-999',
+        zIndex: this.state.enabled ? '6000' : '-999',
         backgroundColor: themeStore.opacify(p.theme.headerBg, 0.9),
         transition: p.prefs.animations ? 'left 0.2s, opacity 0.2s' : 'initial'
       }
     });
     return (
       <div className={css(dynamicStyles.container) + ' side-div'}>
-        {s.enabled ?
+        {this.state.enabled ?
         <SidebarMenu
         allTabs={p.allTabs}
         prefs={p.prefs}

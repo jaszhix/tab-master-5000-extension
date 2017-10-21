@@ -191,8 +191,8 @@ export class Table extends React.Component {
       shiftRange: null
     }
     this.connectId = state.connect(
-      ['tabs', 'history', 'sessionTabs', 'bookmarks', 'apps', 'extensions'],
-      () => this.buildTable(this.props)
+      ['tabs', 'history', 'sessionTabs', 'bookmarks', 'apps', 'extensions', 'searchCache', 'modeKey'],
+      () => _.defer(() => this.buildTable(this.props))
     );
     autoBind(this);
   }
@@ -406,7 +406,7 @@ export class Table extends React.Component {
                 );
               } else {
                 return (
-                  <tr key={i} className={css(styles.placeholder, dynamicStyles.placeholder)} />
+                  <tr key={row.id} className={css(styles.placeholder, dynamicStyles.placeholder)} />
                 );
               }
             })}
