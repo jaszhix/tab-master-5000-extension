@@ -109,11 +109,17 @@ export class SidebarMenu extends React.Component {
       {label: `${p.prefs.format === 'tile' ? utils.t('table') : utils.t('tile')} ${utils.t('format')}`, icon: `icon-${p.prefs.format === 'tile' ? 'list' : 'grid'}`, onClick: () => this.handleFormat()}
     ];
     let borderColor = tc(p.theme.darkBtnBg).isDark() ? p.theme.darkBtnText : p.theme.darkBtnBg;
-    let textColor = tc(p.theme.bodyBg).isDark() && tc(p.theme.bodyText).isLight() ? p.theme.bodyText : tc(p.theme.headerBg).isDark() ? p.theme.darkBtnText : p.theme.lightBtnText;
+    let textColorIsDark = tc(p.theme.bodyBg).isDark();
+    let textColor = textColorIsDark && tc(p.theme.bodyText).isLight() ? p.theme.bodyText : tc(p.theme.headerBg).isDark() ? p.theme.darkBtnText : p.theme.lightBtnText;
     let lightBtnIsDark = tc(p.theme.lightBtnBg).isDark();
+    let settingsItemHoverIsDark = tc(p.theme.settingsItemHover).isDark();
     const dynamicStyles = StyleSheet.create({
       container: {color: textColor},
       tab: {
+        ':hover': {
+          color: textColorIsDark === settingsItemHoverIsDark ? p.theme.bodyText : textColor,
+          backgroundColor: themeStore.opacify(p.theme.settingsItemHover, 0.4)
+        },
         color: lightBtnIsDark ? p.theme.lightBtnText : p.theme.darkBtnText,
         backgroundColor: lightBtnIsDark ? p.theme.lightBtnBg : p.theme.darkBtnBg,
         borderBottom: '0px',
@@ -180,8 +186,8 @@ export class SidebarMenu extends React.Component {
                                   {map(column, (option, o) => {
                                     if (option) {
                                       let lgBtnStyle = {
-                                        color: p.prefs.mode === option.label.toLowerCase() ? p.theme.lightBtnText : p.theme.darkBtnText,
-                                        backgroundColor: p.prefs.mode === option.label.toLowerCase() ? themeStore.opacify(p.theme.lightBtnBg, 0.8) : s.lgBtnHover === option.label ? p.theme.darkBtnBgHover : themeStore.opacify(p.theme.darkBtnBg, 0.8),
+                                        color: p.prefs.mode === option.label.toLowerCase() ? p.theme.darkBtnText : p.theme.lightBtnText,
+                                        backgroundColor: p.prefs.mode === option.label.toLowerCase() ? themeStore.opacify(p.theme.darkBtnBg, 0.8) : s.lgBtnHover === option.label ? p.theme.lightBtnBgHover : themeStore.opacify(p.theme.lightBtnBg, 0.8),
                                         marginBottom: '10px'
                                       };
                                       return (
@@ -279,6 +285,9 @@ class Sidebar extends React.Component {
         }
       });
     }
+  }
+  shouldComponentUpdate() {
+    return this.props.enabled;
   }
   handleClickOutside(){
     if (!this.props.disableSidebarClickOutside && this.props.enabled) {
