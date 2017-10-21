@@ -22,28 +22,30 @@ class ItemsContainer extends React.Component {
       showFloatingTableHeader: false,
       range: {start: 0, length: 0}
     }
-    this.connectId1 = state.connect(
-      ['modeKey', 'prefs'], (partial) => {
-        this.modeKey = partial.modeKey;
-        document.body.scrollIntoView();
-        document.body.scrollTop = 0;
-        this.setViewableRange(this.ref);
-      }
-    );
-    state.connect({
-      sort: () => {
-        if (this.props.s.prefs.format === 'tile') {
-          return;
+    this.connections = [
+      state.connect(
+        ['modeKey', 'prefs'], (partial) => {
+          this.modeKey = partial.modeKey;
+          document.body.scrollIntoView();
+          document.body.scrollTop = 0;
+          this.setViewableRange(this.ref);
         }
-        this.scrollTop = document.body.scrollTop;
-        _.defer(() => {
-          if (document.body.scrollTop === 0) {
-            document.body.scrollTop = this.scrollTop;
+      ),
+      state.connect({
+        sort: () => {
+          if (this.props.s.prefs.format === 'tile') {
+            return;
           }
-        });
-      }
-    })
-    this.connectId2 = state.connect(['prefs', 'wallpaper'], () => this.prefsInit(this.props));
+          this.scrollTop = document.body.scrollTop;
+          _.defer(() => {
+            if (document.body.scrollTop === 0) {
+              document.body.scrollTop = this.scrollTop;
+            }
+          });
+        }
+      }),
+      state.connect(['prefs', 'wallpaper'], () => this.prefsInit(this.props))
+    ];
     autoBind(this);
     this.height = 0;
     this._setViewableRange = _.throttle(this.setViewableRange, 2000, {leading: true});
@@ -85,6 +87,9 @@ class ItemsContainer extends React.Component {
     if (this.ref) {
       window.removeEventListener('scroll', this.handleScroll);
     }
+    each(this.connections, (connection) => {
+      state.disconnect(connection);
+    });
   }
   handleScroll() {
     this.scrollListener();
@@ -112,9 +117,6 @@ class ItemsContainer extends React.Component {
       itemHeight: isTableView ? this.props.s.prefs.tablePadding + 22 : this.props.s.prefs.tabSizeHeight + 14,
       columns
     };
-    if (this.props.s.chromeVersion === 1) {
-      config.outerHeight = Math.round(config.outerHeight * 2.2);
-    }
     if (isTableView) {
       let showFloatingTableHeader = document.body.scrollTop >= 52;
       let headerBgOpacityIsZero = themeStore.getOpacity(this.props.theme.headerBg) === 0;
@@ -134,8 +136,15 @@ class ItemsContainer extends React.Component {
     if (node.clientHeight > 0) {
       this.height = node.clientHeight;
     }
+    let range = whichToShow(config);
+    let startOffset = Math.ceil(columns / 3);
+    range.start -= startOffset;
+    range.length += columns + startOffset;
+    if (range.start < 0) {
+      range.start = 0;
+    }
     this.scrollTimeout = null;
-    this.setState({range: whichToShow(config)});
+    this.setState({range}, () => console.log(this.state.range));
   }
   dragStart(e, i) {
     state.set({dragging: true});
