@@ -362,16 +362,22 @@
     "message": "Controls the strength of the opacity of background screenshots and wallpaper."
   },
   "screenshotBgBlur": {
-    "message": "Set background image blur strength"
+    "message": "Set background blur strength"
   },
   "screenshotBgBlurTip": {
-    "message": "Controls the strength of the blur of background screenshots and wallpaper."
+    "message": "Controls the strength of the blur of background screenshots, wallpaper, and modal backdrops."
   },
   "tabSizeHeight": {
     "message": "Set tile size"
   },
   "tabSizeHeightTip": {
     "message": "Controls the size of the tiles."
+  },
+  "tablePadding": {
+    "message": "Set table row padding"
+  },
+  "tablePaddingTip": {
+    "message": "Controls how much space is around the text and icons on table rows."
   },
   "resetSearchOnClick": {
     "message": "Reset search on search result click"

@@ -97,8 +97,6 @@ class Tile extends React.Component {
     state.set({folder: p.folder ? false : folderName});
   }
   handleClick() {
-    let s = this.state;
-    let p = this.props;
     if (this.state.close) {
       return;
     }
@@ -108,6 +106,9 @@ class Tile extends React.Component {
   }
   // Trigger hovers states that will update the inline CSS in style.js.
   handleHoverIn() {
+    if (state.dragging) {
+      return false;
+    }
     let s = this.state;
     let p = this.props;
     this.setState({hover: true});
@@ -183,6 +184,10 @@ class Tile extends React.Component {
       this.setState({pinning: true});
     }
     utils.pin(this.props.tab);
+  }
+  handleDragStart(e) {
+    this.props.onDragStart(e, this.props.i);
+    _.defer(() => this.setState({render: false}));
   }
   getPanelRef(ref) {
     this.panelRef = ref;
@@ -376,7 +381,7 @@ class Tile extends React.Component {
       ref={this.getPanelRef}
       draggable={p.prefs.mode === 'tabs' && p.prefs.drag}
       onDragEnd={p.onDragEnd}
-      onDragStart={p.onDragStart}
+      onDragStart={this.handleDragStart}
       onDragOver={p.onDragOver}
       footerLeft={
         <div className="metadata-container">

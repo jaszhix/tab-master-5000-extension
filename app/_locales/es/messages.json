@@ -360,16 +360,22 @@
     "message": "Controla la fuerza de la opacidad de las capturas de pantalla de fondo y el fondo de pantalla."
   },
   "screenshotBgBlur": {
-    "message": "Establecer la fuerza de desenfoque de imagen de fondo"
+    "message": "Establecer la fuerza de desenfoque"
   },
   "screenshotBgBlurTip": {
-    "message": "Controla la fuerza de la borrosidad de las capturas de pantalla de fondo y papel tapiz."
+    "message": "Controla la intensidad del desenfoque de las capturas de pantalla de fondo, el fondo de pantalla y los telones de fondo modales."
   },
   "tabSizeHeight": {
     "message": "Ajustar el tamaño del mosaico"
   },
   "tabSizeHeightTip": {
     "message": "Controla el tamaño de las baldosas."
+  },
+  "tablePadding": {
+    "message": "Establecer relleno de fila de tabla"
+  },
+  "tablePaddingTip": {
+    "message": "Controla cuánto espacio hay alrededor del texto y los iconos en las filas de la tabla."
   },
   "resetSearchOnClick": {
     "message": "Restablecer búsqueda en el resultado de búsqueda clic"

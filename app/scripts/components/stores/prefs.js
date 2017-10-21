@@ -36,7 +36,8 @@ let prefsStore = initStore({
     tooltip: true,
     alerts: true,
     allTabs: false,
-    resetSearchOnClick: true
+    resetSearchOnClick: true,
+    tablePadding: 4
   },
   init: function() {
     let getPrefs = new Promise((resolve, reject)=>{
@@ -90,7 +91,8 @@ let prefsStore = initStore({
         tooltip: prefs.tooltip,
         alerts: prefs.alerts,
         allTabs: prefs.allTabs,
-        resetSearchOnClick: prefs.resetSearchOnClick
+        resetSearchOnClick: prefs.resetSearchOnClick,
+        tablePadding: prefs.tablePadding
       };
       // Migration
       if (typeof prefsStore.prefs.autoDiscard === 'undefined') {
@@ -155,6 +157,9 @@ let prefsStore = initStore({
       }
       if (typeof prefsStore.prefs.resetSearchOnClick === 'undefined') {
         prefsStore.prefs.resetSearchOnClick = true;
+      }
+      if (typeof prefsStore.prefs.tablePadding === 'undefined') {
+        prefsStore.prefs.tablePadding = 4;
       }
       console.log('load prefs: ', prefs, prefsStore.prefs);
       prefsStore.set({prefs: prefsStore.prefs}, true);

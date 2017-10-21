@@ -473,7 +473,8 @@ class Preferences extends React.Component {
                 <Slide
                 className="prefs-row-last"
                 label={`${utils.t('screenshotBgOpacity')}: ${p.prefs.screenshotBgOpacity}`}
-                min={0} max={10}
+                min={0}
+                max={10}
                 defaultValue={p.prefs.screenshotBgOpacity}
                 value={p.prefs.screenshotBgOpacity}
                 onChange={(e)=>this.handleSlide(e, 'screenshotBgOpacity')}
@@ -484,7 +485,8 @@ class Preferences extends React.Component {
                 <Slide
                 className="prefs-row-last"
                 label={`${utils.t('screenshotBgBlur')}: ${p.prefs.screenshotBgBlur}`}
-                min={0} max={15}
+                min={0}
+                max={15}
                 defaultValue={p.prefs.screenshotBgBlur}
                 value={p.prefs.screenshotBgBlur}
                 onChange={(e)=>this.handleSlide(e, 'screenshotBgBlur')}
@@ -495,7 +497,8 @@ class Preferences extends React.Component {
                 <Slide
                 className="prefs-row-last"
                 label={`${utils.t('tabSizeHeight')}: ${p.prefs.tabSizeHeight}x${p.prefs.tabSizeHeight+80}`}
-                min={134} max={300}
+                min={134}
+                max={300}
                 defaultValue={p.prefs.tabSizeHeight}
                 value={p.prefs.tabSizeHeight}
                 onChange={(e)=>this.handleSlide(e, 'tabSizeHeight')}
@@ -505,6 +508,20 @@ class Preferences extends React.Component {
                 dots={true}
                 hoverBg={p.theme.settingsItemHover}
                 data-tip={utils.t('tabSizeHeightTip')} />
+                <Slide
+                className="prefs-row-last"
+                label={`${utils.t('tablePadding')}: ${p.prefs.tablePadding}px`}
+                min={0}
+                max={16}
+                defaultValue={p.prefs.tablePadding}
+                value={p.prefs.tablePadding}
+                onChange={(e)=>this.handleSlide(e, 'tablePadding')}
+                onAfterChange={(e)=>this.handleSlideAfterChange(e, 'tablePadding')}
+                onMouseEnter={()=>this.handleToggle('tablePadding')}
+                step={1}
+                dots={true}
+                hoverBg={p.theme.settingsItemHover}
+                data-tip={utils.t('tablePaddingTip')} />
               </div>  : null}
             <Toggle
             theme={p.theme}

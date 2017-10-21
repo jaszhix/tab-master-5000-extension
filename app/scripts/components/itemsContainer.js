@@ -10,7 +10,7 @@ import themeStore from './stores/theme';
 
 import Tile from './tile';
 import {Table} from './table';
-import {map, whichToShow, tryFn} from './utils';
+import {map, whichToShow, tryFn, filter} from './utils';
 import * as utils from './stores/tileUtils';
 
 class ItemsContainer extends React.Component {
@@ -94,7 +94,7 @@ class ItemsContainer extends React.Component {
     let config = {
       outerHeight: window.innerHeight,
       scrollTop: (document.body.scrollTop) * columns - 1,
-      itemHeight: isTableView ? 46 : this.props.s.prefs.tabSizeHeight + 14,
+      itemHeight: isTableView ? this.props.s.prefs.tablePadding + 22 : this.props.s.prefs.tabSizeHeight + 14,
       columns
     };
     if (this.props.s.chromeVersion === 1) {
@@ -123,14 +123,17 @@ class ItemsContainer extends React.Component {
     this.setState({range: whichToShow(config)});
   }
   dragStart(e, i) {
+    state.set({dragging: true});
     e.dataTransfer.setData(1, 2); // FF fix
     e.dataTransfer.effectAllowed = 'move';
     this.dragged = {el: e.currentTarget, i: i};
-    this.placeholder = v(this.dragged.el).clone().empty().n;
+    if (this.props.s.prefs.format === 'table') {
+      this.placeholder = v(this.dragged.el).clone().n;
+    } else {
+      this.placeholder = v(this.dragged.el).clone().empty().n;
+    }
     v(this.placeholder).allChildren().removeAttr('data-reactid');
-    v(this.placeholder).css({
-      opacity: 0.5
-    });
+    v(this.placeholder).css({opacity: 0.5});
     this.placeholder.removeAttribute('id');
     this.placeholder.classList.add('tileClone');
   }
@@ -141,7 +144,11 @@ class ItemsContainer extends React.Component {
       return;
     }
     let end = this.over.i;
-    this.dragged.el.style.display = 'block';
+    if (this.props.s.prefs.format === 'table') {
+      this.dragged.el.style.display = 'table-row';
+    } else {
+      this.dragged.el.style.display = 'block';
+    }
     if (start === end) {
       _.defer(() => {
         tryFn(() => this.dragged.el.parentNode.removeChild(this.placeholder))
@@ -151,10 +158,15 @@ class ItemsContainer extends React.Component {
     if (start < end) {
       end--;
     }
-    chrome.tabs.move(p.s.tabs[start].id, {index: p.s.tabs[end].index}, () =>{
+    let tabs = filter(p.s.tabs, function(item) {
+      return !utils.isNewTab(item.url);
+    });
+    let index = tabs[end].index;
+    chrome.tabs.move(p.s.tabs[start].id, {index}, () =>{
       msgStore.queryTabs();
       _.defer(() => {
         tryFn(() => this.dragged.el.parentNode.removeChild(this.placeholder));
+        state.set({dragging: false});
       });
     });
   }
@@ -164,24 +176,23 @@ class ItemsContainer extends React.Component {
     if (p.s.tabs[i] === undefined || this.dragged === undefined || p.s.tabs[i].pinned !== p.s.tabs[this.dragged.i].pinned) {
       return;
     }
-    this.dragged.el.style.display = 'none';
     this.over = {el: e.target, i: i};
-    let relY = e.clientY - this.over.el.offsetTop;
-    let height = this.over.el.offsetHeight / 2;
     let parent = e.target.parentNode;
-    if (relY > height) {
+    let shouldInsert = tryFn(() => (e.target.parentNode.classList.value.indexOf('media') === -1
+      && e.target.parentNode.classList.value.indexOf('metadata-container') === -1
+      && e.target.nextElementSibling.parentNode.classList.value.indexOf('media') === -1),
+      () => null);
+    if (this.dragged.i < this.over.i) {
       this.nodePlacement = 'after';
       tryFn(() => {
-        if (e.target.nextElementSibling.parentNode.classList.value.indexOf('media') === -1
-          && e.target.nextElementSibling.parentNode.classList.value.indexOf('metadata-container') === -1) {
+        if (shouldInsert) {
           parent.parentNode.insertBefore(this.placeholder, e.target.nextElementSibling.parentNode);
         }
       });
-    } else if (relY < height) {
+    } else if (this.dragged.i > this.over.i) {
       this.nodePlacement = 'before';
       tryFn(() => {
-        if (e.target.parentNode.classList.value.indexOf('media') === -1
-          && e.target.parentNode.classList.value.indexOf('metadata-container') === -1) {
+        if (shouldInsert) {
           parent.parentNode.insertBefore(this.placeholder, e.target.parentNode);
         }
       });
@@ -257,6 +268,9 @@ class ItemsContainer extends React.Component {
           {p.s.prefs.format === 'table' ?
           <Table
           s={p.s}
+          onDragEnd={this.dragEnd}
+          onDragStart={this.dragStart}
+          onDragOver={this.dragOver}
           theme={p.theme}
           range={this.state.range}
           showFloatingTableHeader={this.state.showFloatingTableHeader} /> : null}

@@ -43,7 +43,7 @@ import ReactTooltip from 'react-tooltip';
 import {keyboardStore, utilityStore, msgStore} from './stores/main';
 import themeStore from './stores/theme';
 import * as utils from './stores/tileUtils';
-import {each, filter} from './utils';
+import {each, filter, tryFn} from './utils';
 import Sidebar from './sidebar';
 import ItemsContainer from './itemsContainer';
 import ModalHandler from './modal';
@@ -557,7 +557,7 @@ class Root extends React.Component {
             <div
             className="tile-container"
             style={{
-              filter: p.s.modal && p.s.modal.state && p.s.settings !== 'theming' ? `blur(5px)` : 'initial',
+              filter: p.s.modal && p.s.modal.state && p.s.settings !== 'theming' ? `blur(${p.s.prefs.screenshotBgBlur}px)` : 'initial',
               transition: 'filter 0.2s'
             }}>
               <Search
@@ -609,12 +609,12 @@ class App extends React.Component {
       .get('*');
     this.connectId = state.connect('*', (newState) => {
       console.log('STATE INPUT: ', newState);
-      try {
-        throw new Error('STATE STACK')
-      } catch (e) {
+      tryFn(() => {
+        throw new Error('STATE STACK');
+      }, (e) => {
         let stackParts = e.stack.split('\n');
         console.log('STATE CALLEE: ', stackParts[4].trim());
-      }
+      });
       this.setState(newState, () => console.log('STATE: ', this.state));
     });
     autoBind(this);

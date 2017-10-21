@@ -24,6 +24,17 @@ const toggleBool = ['pinned', 'enabled', 'mutedInfo'];
 class Row extends React.Component {
   constructor(props) {
     super(props);
+    this.state = {
+      render: true
+    };
+    autoBind(this);
+  }
+  handleDragStart(e) {
+    this.props.onDragStart(e);
+    _.defer(() => this.ref.style.display = 'none');
+  }
+  getRef(ref) {
+    this.ref = ref;
   }
   render(){
     let p = this.props;
@@ -38,12 +49,13 @@ class Row extends React.Component {
 
     return (
       <tr
+      ref={this.getRef}
       className={p.className}
       style={p.style}
       onMouseEnter={p.onMouseEnter}
       draggable={p.draggable}
       onDragEnd={p.onDragEnd}
-      onDragStart={p.onDragStart}
+      onDragStart={this.handleDragStart}
       onDragOver={p.onDragOver}
       onClick={p.onClick}
       onContextMenu={(e) => p.onContextMenu(e, p.row)}>
@@ -51,8 +63,8 @@ class Row extends React.Component {
           if (p.row.hasOwnProperty(column)) {
             if (column === 'title' || column === 'name') {
               return (
-                <td key={z} id={`column-${column}`} className={css(p.dynamicStyles.titleColumn)}>
-                  <div className="media-left media-middle">
+                <td key={z} id={`column-${column}`} className={css(p.dynamicStyles.titleColumn, p.dynamicStyles.columnCommon)}>
+                  <div className={css(p.dynamicStyles.faviconContainer) + ' media-left media-middle'}>
                     <img src={favIconUrl} className={css(styles.favicon)} />
                   </div>
                   <div className="media-left">
@@ -76,21 +88,21 @@ class Row extends React.Component {
               );
 
             } else if (p.s.prefs.mode === 'apps' && column === 'domain') {
-              return <td key={z} id={`column-${column}`}><i className={`icon-${typeof p.row[column] === 'string' ? 'check2' : 'cross'}`} /></td>;
+              return <td key={z} id={`column-${column}`} className={css(p.dynamicStyles.columnCommon)}><i className={`icon-${typeof p.row[column] === 'string' ? 'check2' : 'cross'}`} /></td>;
             } else if (typeof p.row[column] === 'boolean' || column === 'mutedInfo') {
               let bool = column === 'mutedInfo' ? p.row[column].muted : p.row[column];
               const columnStyles = StyleSheet.create({icon: {cursor: toggleBool.indexOf(column) !== -1 ? 'pointer' : 'initial'}});
               return (
-                <td key={z} id={`column-${column}`}>
+                <td key={z} id={`column-${column}`} className={css(p.dynamicStyles.columnCommon)}>
                   <i
                   className={css(columnStyles.icon) + ` icon-${bool ? 'check2' : 'cross'}`}
                   onClick={toggleBool.indexOf(column) !== -1 ? () => p.handleBooleanClick(column) : null} />
                 </td>
               )
             } else if (column === 'launchType') {
-              return <td key={z} id={`column-${column}`}>{p.row[column].indexOf('TAB') !== -1 ? 'Tab' : 'Window'}</td>;
+              return <td key={z} id={`column-${column}`} className={css(p.dynamicStyles.columnCommon)}>{p.row[column].indexOf('TAB') !== -1 ? 'Tab' : 'Window'}</td>;
             } else {
-              return <td key={z} id={`column-${column}`}>{column === 'mutedInfo' ? p.row[column].muted : p.row[column]}</td>;
+              return <td key={z} id={`column-${column}`} className={css(p.dynamicStyles.columnCommon)}>{column === 'mutedInfo' ? p.row[column].muted : p.row[column]}</td>;
             }
           }
         })}
@@ -152,7 +164,7 @@ export class TableHeader extends React.Component {
               <th
               key={i}
               id={this.props.isFloating ? `header-${column}` : ''}
-              className={`sorting${this.props.order === column ? '_'+this.props.direction : ''}`}
+              className={css(this.props.dynamicStyles.columnCommon) + ` sorting${this.props.order === column ? '_'+this.props.direction : ''}`}
               rowSpan="1"
               colSpan="1"
               onClick={() => this.props.handleColumnClick(column)}>
@@ -247,57 +259,12 @@ export class Table extends React.Component {
       chrome.management.setEnabled(row.id, !row.enabled);
     }
   }
-  dragStart(e, i) {
-    e.dataTransfer.setData(1, 2); // FF fix
-    e.dataTransfer.effectAllowed = 'move';
-    this.dragged = {el: e.currentTarget, i: i};
-    this.placeholder = v(this.dragged.el).clone().n;
-    v(this.placeholder).allChildren().removeAttr('data-reactid');
-    this.placeholder.removeAttribute('id');
-    this.placeholder.classList.add('tileClone');
-  }
-  dragEnd() {
-    let s = this.state;
-    let start = this.dragged.i;
-    if (this.over === undefined) {
+  handleHover(i) {
+    if (this.props.s.dragging) {
+      this.setState({rowHover: -1});
       return;
     }
-    let end = this.over.i;
-    this.dragged.el.style.display = 'table-row';
-    if (start === end) {
-      _.defer(() => {
-        tryFn(() => this.dragged.el.parentNode.removeChild(this.placeholder));
-      });
-      return;
-    }
-    if (start < end) {
-      end--;
-    }
-    chrome.tabs.move(s.rows[start].id, {index: s.rows[end].index}, () => {
-      _.defer(() => {
-        msgStore.queryTabs();
-        this.dragged.el.parentNode.removeChild(this.placeholder);
-      });
-    });
-  }
-  dragOver(e, i) {
-    e.preventDefault();
-    if (this.dragged === undefined || e.target === this.placeholder) {
-      return;
-    }
-    this.dragged.el.style.display = 'none';
-    this.over = {el: e.target, i: i};
-    let relY = e.clientY - this.over.el.offsetTop;
-    let height = this.over.el.offsetHeight / 2;
-    let parent = e.target.parentNode;
-
-    if (relY > height) {
-      this.nodePlacement = 'after';
-      tryFn(() => parent.parentNode.insertBefore(this.placeholder, e.target.nextElementSibling.parentNode));
-    } else if (relY < height) {
-      this.nodePlacement = 'before';
-      tryFn(() => parent.parentNode.insertBefore(this.placeholder, e.target.parentNode));
-    }
+    this.setState({rowHover: i});
   }
   handleSelect(i){
     let s = this.state;
@@ -378,12 +345,17 @@ export class Table extends React.Component {
     let p = this.props;
     if (s.columns && s.rows) {
       const dynamicStyles = StyleSheet.create({
+        columnCommon: {padding: `${p.s.prefs.tablePadding}px ${p.s.prefs.tablePadding + 8}px`},
         titleColumn: {maxWidth: p.s.width <= 950 ? '300px' : p.s.width <= 1015 ? '400px' : '700px', userSelect: 'none'},
+        faviconContainer: {paddingRight: `${p.s.prefs.tablePadding + 8}px`},
         tableCommon: {width: `${p.s.width}px`},
         fixedTableHeader: {
           tableLayout: 'fixed',
           top: '52px',
           left: '0px'
+        },
+        placeholder: {
+          height: p.s.prefs.tablePadding + 22
         }
       });
       return (
@@ -391,6 +363,7 @@ export class Table extends React.Component {
           <table
           className={css(dynamicStyles.tableCommon) + ' table datatable-responsive dataTable no-footer dtr-inline'}>
             <TableHeader
+            dynamicStyles={dynamicStyles}
             mode={p.s.prefs.mode}
             columns={s.columns}
             order={p.s.sort}
@@ -417,14 +390,14 @@ export class Table extends React.Component {
                 return (
                   <Row
                   s={p.s}
-                  key={i}
+                  key={row.id}
                   className={css(rowStyles.row) + (isEven ? ' even' : ' odd')}
                   dynamicStyles={dynamicStyles}
-                  onMouseEnter={() => this.setState({rowHover: i})}
+                  onMouseEnter={() => this.handleHover(i)}
                   draggable={p.s.prefs.mode === 'tabs' && p.s.prefs.drag}
-                  onDragEnd={this.dragEnd}
-                  onDragStart={(e) => this.dragStart(e, i)}
-                  onDragOver={(e) => this.dragOver(e, i)}
+                  onDragEnd={this.props.onDragEnd}
+                  onDragStart={(e) => this.props.onDragStart(e, i)}
+                  onDragOver={(e) => this.props.onDragOver(e, i)}
                   onClick={() => this.handleSelect(i)}
                   onContextMenu={this.handleContext}
                   handleBooleanClick={(column) => this.handleBooleanClick(column, row)}
@@ -433,7 +406,7 @@ export class Table extends React.Component {
                 );
               } else {
                 return (
-                  <tr key={i} className={css(styles.placeholder)} />
+                  <tr key={i} className={css(styles.placeholder, dynamicStyles.placeholder)} />
                 );
               }
             })}
@@ -445,6 +418,7 @@ export class Table extends React.Component {
           role="grid"
           aria-describedby="DataTables_Table_1_info">
             <TableHeader
+            dynamicStyles={dynamicStyles}
             mode={p.s.prefs.mode}
             columns={s.columns}
             order={p.s.sort}
