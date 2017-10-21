@@ -5,9 +5,9 @@ import _ from 'lodash';
 import v from 'vquery';
 import mouseTrap from 'mousetrap';
 import tc from 'tinycolor2';
-import {findIndex, map, tryFn} from './utils'
+import {findIndex, map, unref} from './utils'
 import state from './stores/state';
-import {setAlert, msgStore} from './stores/main';
+import {setAlert} from './stores/main';
 import themeStore from './stores/theme';
 import * as utils from './stores/tileUtils';
 
@@ -28,6 +28,9 @@ class Row extends React.Component {
       render: true
     };
     autoBind(this);
+  }
+  componentWillUnmount() {
+    unref(this);
   }
   handleDragStart(e) {
     this.props.onDragStart(e);
@@ -52,7 +55,6 @@ class Row extends React.Component {
       ref={this.getRef}
       className={p.className}
       style={p.style}
-      onMouseEnter={p.onMouseEnter}
       draggable={p.draggable}
       onDragEnd={p.onDragEnd}
       onDragStart={this.handleDragStart}
@@ -71,7 +73,7 @@ class Row extends React.Component {
                     <div style={textOverflow}>
                       <a
                       className={css(styles.mediaLeftLink) + ' text-default text-semibold'}
-                      onClick={() => utils.activateTab(p.row)}>
+                      onClick={this.props.onActivate}>
                         {p.row[column]}
                       </a>
                     </div>
@@ -120,7 +122,7 @@ export class TableHeader extends React.Component {
     if (!this.props.isFloating || this.willUnmount) {
       return;
     }
-    let columns = ['title', 'name', 'domain', 'pinned', 'mutedInfo'];
+    let columns = ['title', 'name', 'domain', 'pinned', 'mutedInfo', 'folder', 'enabled', 'offlineEnabled', 'version', 'launchType'];
     const adjustHeaderWidth = (recursion = 0) => {
       for (let i = 0; i < columns.length; i++) {
         let headerNode = v(`#header-${columns[i]}`);
@@ -223,7 +225,9 @@ export class Table extends React.Component {
       rows.push(row);
     }
     let columns = ['title', 'domain'];
-    if (p.s.prefs.mode === 'tabs' || p.s.prefs.mode === 'sessions' || p.s.prefs.mode === 'history') {
+    if (p.s.prefs.mode === 'bookmarks') {
+      columns = columns.concat(['folder']);
+    } else if (p.s.prefs.mode === 'tabs' || p.s.prefs.mode === 'sessions' || p.s.prefs.mode === 'history') {
       columns = columns.concat(['pinned', 'mutedInfo']);
     } else if (p.s.prefs.mode === 'apps' || p.s.prefs.mode === 'extensions') {
       columns[0] = 'name';
@@ -258,13 +262,6 @@ export class Table extends React.Component {
     } else if (column === 'enabled') {
       chrome.management.setEnabled(row.id, !row.enabled);
     }
-  }
-  handleHover(i) {
-    if (this.props.s.dragging) {
-      this.setState({rowHover: -1});
-      return;
-    }
-    this.setState({rowHover: i});
   }
   handleSelect(i){
     let s = this.state;
@@ -312,6 +309,12 @@ export class Table extends React.Component {
     }
     this.setState({selectedItems: s.selectedItems, shiftRange: s.shiftRange});
   }
+  handleActivation(i) {
+    if (window.cursor.keys.ctrl) {
+      return;
+    }
+    utils.activateTab(this.state.rows[i]);
+  }
   removeSelectedItems(){
     let s = this.state;
     let p = this.props;
@@ -325,19 +328,24 @@ export class Table extends React.Component {
     this.setState({rows: s.rows, selectedItems: [], shiftRange: null});
   }
   handleContext(e, row){
+    e.preventDefault();
     let s = this.state;
     let p = this.props;
-    if (p.s.prefs.context) {
-      e.preventDefault();
-      if (s.selectedItems.length > 0) {
-        let rows = [];
-        for (let z = 0, len = s.selectedItems.length; z < len; z++) {
-          rows.push(s.rows[s.selectedItems[z]]);
-        }
-        state.set({context: {value: true, id: rows.length > 1 ? rows : rows[0], origin: this}});
-      } else {
-        state.set({context: {value: true, id: row}});
+    if (!p.s.prefs.context) {
+      return;
+    }
+    if (p.s.context.id && p.s.context.id.id === row.id) {
+      state.set({context: {value: false, id: null}});
+      return;
+    }
+    if (s.selectedItems.length > 0) {
+      let rows = [];
+      for (let z = 0, len = s.selectedItems.length; z < len; z++) {
+        rows.push(s.rows[s.selectedItems[z]]);
       }
+      state.set({context: {value: true, id: rows.length > 1 ? rows : rows[0], origin: this}});
+    } else {
+      state.set({context: {value: true, id: row}});
     }
   }
   render(){
@@ -384,7 +392,8 @@ export class Table extends React.Component {
                   row: {
                     fontSize: '14px',
                     color: p.theme.tileText,
-                    backgroundColor: s.rowHover === i || s.selectedItems.indexOf(i) !== -1 ? p.theme.settingsItemHover : isEven ? themeStore.opacify(p.theme.tileBg, 0.34) : themeStore.opacify(p.theme.tileBgHover, 0.25)
+                    ':hover': {backgroundColor: p.theme.settingsItemHover},
+                    backgroundColor: s.selectedItems.indexOf(i) !== -1 ? p.theme.settingsItemHover : isEven ? themeStore.opacify(p.theme.tileBg, 0.34) : themeStore.opacify(p.theme.tileBgHover, 0.25)
                   }
                 });
                 return (
@@ -393,12 +402,12 @@ export class Table extends React.Component {
                   key={row.id}
                   className={css(rowStyles.row) + (isEven ? ' even' : ' odd')}
                   dynamicStyles={dynamicStyles}
-                  onMouseEnter={() => this.handleHover(i)}
                   draggable={p.s.prefs.mode === 'tabs' && p.s.prefs.drag}
                   onDragEnd={this.props.onDragEnd}
                   onDragStart={(e) => this.props.onDragStart(e, i)}
                   onDragOver={(e) => this.props.onDragOver(e, i)}
                   onClick={() => this.handleSelect(i)}
+                  onActivate={() => this.handleActivation(i)}
                   onContextMenu={this.handleContext}
                   handleBooleanClick={(column) => this.handleBooleanClick(column, row)}
                   row={row}

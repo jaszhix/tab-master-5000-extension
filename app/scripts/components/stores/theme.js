@@ -641,11 +641,10 @@ const themeStore = initStore({
       open: true
     });
   },
-  selectWallpaper: (themeId, wpId) => {
+  selectWallpaper: (themeId, wpId, setPrefs = false) => {
     console.log('selectWallpaper', themeId, wpId);
     let refWallpaper;
-    let setPrefs = false;
-    if (wpId) {
+    if (wpId && wpId > 0) {
       setPrefs = true;
       refWallpaper = find(themeStore.wallpapers, wallpaper => wallpaper.id === wpId);
     } else {
@@ -697,7 +696,7 @@ const themeStore = initStore({
     if (_.isEqual(refTheme.theme, state.theme)) {
       themeStore.theme = themeStore.standardThemes[0].theme;
       themeStore.currentWallpaper = {data: -1};
-      msgStore.setPrefs({theme: 9000});
+      msgStore.setPrefs({theme: 9000, wallpaper: -1});
     }
     themeStore.savedThemes = _.without(themeStore.savedThemes, refTheme);
     chrome.storage.local.set({themes: themeStore.savedThemes});

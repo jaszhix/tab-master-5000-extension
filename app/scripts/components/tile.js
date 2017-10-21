@@ -10,7 +10,7 @@ import themeStore from './stores/theme';
 
 import {Panel} from './bootstrap';
 import style from './style';
-import {findIndex} from './utils';
+import {findIndex, unref} from './utils';
 import * as utils from './stores/tileUtils';
 
 const styles = StyleSheet.create({
@@ -43,7 +43,7 @@ class Tile extends React.Component {
     autoBind(this);
   }
   componentDidMount() {
-    this.initMethods();
+    this.updateScreenshot('init', this.props);
   }
   componentWillReceiveProps(nP) {
     let p = this.props;
@@ -71,9 +71,11 @@ class Tile extends React.Component {
       this.setState({close: false, render: true, duplicate: false});
     }
   }
-  initMethods() {
-    let p = this.props;
-    this.updateScreenshot('init', p);
+  shouldComponentUpdate(nP, nS) {
+    return (!_.isEqual(this.props, nP) || !_.isEqual(this.state, nS)) && state.settings !== 'sessions';
+  }
+  componentWillUnmount() {
+    unref(this);
   }
   updateScreenshot(opt, p) {
     let setScreeenshot = () => {
@@ -402,15 +404,15 @@ class Tile extends React.Component {
             <div
             onMouseEnter={() => this.setState({stHover: true})}
             onMouseLeave={() => this.setState({stHover: false})}>
-              <div className={css(dynamicStyles.ST) + ' text-muted text-size-small'}>
+              <div onClick={this.handleClick} className={css(dynamicStyles.ST1) + ' text-muted text-size-small'}>
                 {p.tab.domain ? p.tab.domain : p.tab.url.split('/')[2]}
               </div>
               {isTab && hasDiscarded && p.tab.discarded ?
-              <div className={css(dynamicStyles.ST2) + ' text-muted text-size-small'}>
+              <div onClick={this.handleClick} className={css(dynamicStyles.ST2) + ' text-muted text-size-small'}>
                 Discarded
               </div> : null}
               {p.prefs.mode === 'history' ?
-              <div className={css(dynamicStyles.ST2) + ' text-muted text-size-small'}>
+              <div onClick={this.handleClick} className={css(dynamicStyles.ST2) + ' text-muted text-size-small'}>
                 {_.capitalize(moment(p.tab.lastVisitTime).fromNow())}
               </div> : null}
               {p.prefs.mode === 'bookmarks' ?
@@ -495,7 +497,7 @@ class Tile extends React.Component {
       onMouseEnter={this.handleHoverIn}
       onMouseLeave={this.handleHoverOut}
       onBodyClick={this.handleClick}
-      onFooterClick={!s.stHover ? () => this.handleClick(p.tab) : null}
+      onFooterClick={!s.stHover ? () => this.handleClick() : null}
       onContextMenu={this.handleContextClick}>
         {!favIconUrl || (p.tab.domain && p.tab.domain === 'chrome') ?
         <div className={css(dynamicStyles.titleContainer)}>

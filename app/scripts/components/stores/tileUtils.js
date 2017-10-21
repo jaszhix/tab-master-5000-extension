@@ -23,7 +23,7 @@ export const activateTab = function(tab) {
       chrome.windows.update(tab.windowId, {focused: true});
     }
   }
-  if (state.prefs.resetSearchOnClick) {
+  if (state.search.length > 0 && state.prefs.resetSearchOnClick) {
     utilityStore.handleMode(state.prefs.mode);
   }
 };
@@ -88,6 +88,7 @@ export var closeAllItems = () => {
     }
     closeTab(items[i])
   }
+  state.set({search: ''});
 };
 
 export var pin = (tab) => {

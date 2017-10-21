@@ -5802,18 +5802,18 @@ rc-color-picker@^1.2.0:
     tinycolor2 "^1.4.1"
 
 rc-slider@^8.3.2:
-  version "8.3.2"
-  resolved "https://registry.yarnpkg.com/rc-slider/-/rc-slider-8.3.2.tgz#80ca8386df36679f647839c64b45f935cc3e5620"
+  version "8.3.3"
+  resolved "https://registry.yarnpkg.com/rc-slider/-/rc-slider-8.3.3.tgz#a819896f930e78bdd7d6d20dcb8b20445267c821"
   dependencies:
     babel-runtime "6.x"
     classnames "^2.2.5"
     prop-types "^15.5.4"
-    rc-tooltip "^3.4.2"
+    rc-tooltip "^3.4.3"
     rc-util "^4.0.4"
     shallowequal "^1.0.1"
     warning "^3.0.0"
 
-rc-tooltip@^3.4.2:
+rc-tooltip@^3.4.3:
   version "3.5.0"
   resolved "https://registry.yarnpkg.com/rc-tooltip/-/rc-tooltip-3.5.0.tgz#f73e835ae174ecfa81cddda1b1fa318361f57dc1"
   dependencies:
@@ -5882,8 +5882,8 @@ react-hot-loader@^3.1.1:
     source-map "^0.6.1"
 
 react-onclickoutside@^6.6.0:
-  version "6.6.0"
-  resolved "https://registry.yarnpkg.com/react-onclickoutside/-/react-onclickoutside-6.6.0.tgz#8526d0675fad26558e9f0a400c983b813c99ef3c"
+  version "6.6.2"
+  resolved "https://registry.yarnpkg.com/react-onclickoutside/-/react-onclickoutside-6.6.2.tgz#8446f665460ffda1c68b7f3aeeea3a217bfdf18f"
 
 react-proxy@^1.1.7:
   version "1.1.8"

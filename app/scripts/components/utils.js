@@ -96,3 +96,12 @@ export const tryFn = function(fn, errCb) {
     }
   }
 };
+
+export const unref = function(object) {
+  setTimeout(() => {
+    let keys = Object.keys(object);
+    for (let i = 0; i < keys.length; i++) {
+      object[keys[i]] = null;
+    }
+  }, 0);
+};

@@ -70,21 +70,21 @@ a.badge,
 .select2-selection--single:not([class*=bg-]),
 .select2-selection--multiple:not([class*=bg-]) .select2-selection__choice,
 .bootstrap-select.btn-group .dropdown-menu > li > a .check-mark {
-  -webkit-transition: all ease-in-out 0.15s;
-  -o-transition: all ease-in-out 0.15s;
-  transition: all ease-in-out 0.15s;
+  -webkit-transition: all ease-in-out 0.02s;
+  -o-transition: all ease-in-out 0.02s;
+  transition: all ease-in-out 0.02s;
 }
 .close,
 .tag [data-role="remove"],
 .select2-selection__choice__remove {
-  -webkit-transition: opacity ease-in-out 0.15s;
-  -o-transition: opacity ease-in-out 0.15s;
-  transition: opacity ease-in-out 0.15s;
+  -webkit-transition: opacity ease-in-out 0.02s;
+  -o-transition: opacity ease-in-out 0.02s;
+  transition: opacity ease-in-out 0.02s;
 }
 .checker span {
-  -webkit-transition: border-color ease-in-out 0.15s;
-  -o-transition: border-color ease-in-out 0.15s;
-  transition: border-color ease-in-out 0.15s;
+  -webkit-transition: border-color ease-in-out 0.02s;
+  -o-transition: border-color ease-in-out 0.02s;
+  transition: border-color ease-in-out 0.02s;
 }
 .table tr,
 .table th,
@@ -98,9 +98,9 @@ a.badge,
   transition: background-color ease-in-out 0.02s;
 }
 .sidebar-user-material-menu > a > .caret {
-  -webkit-transition: -webkit-transform ease-in-out 0.15s;
-  -o-transition: -webkit-transform ease-in-out 0.15s;
-  transition: -webkit-transform ease-in-out 0.15s;
+  -webkit-transition: -webkit-transform ease-in-out 0.02s;
+  -o-transition: -webkit-transform ease-in-out 0.02s;
+  transition: -webkit-transform ease-in-out 0.02s;
 }
 .sidebar {
   color: #fff;
@@ -319,9 +319,9 @@ a.badge,
 .navigation li a {
   color: rgba(255, 255, 255, 0.75);
   display: block;
-  -webkit-transition: background 0.15s linear, color 0.15s linear;
-  -o-transition: background 0.15s linear, color 0.15s linear;
-  transition: background 0.15s linear, color 0.15s linear;
+  -webkit-transition: background 0.02s linear, color 0.02s linear;
+  -o-transition: background 0.02s linear, color 0.02s linear;
+  transition: background 0.02s linear, color 0.02s linear;
 }
 .navigation li a:hover,
 .navigation li a:focus {
@@ -610,9 +610,9 @@ a.badge,
     width: 260px;
     top: 20px;
     bottom: 20px;
-    -webkit-transition: bottom ease-in-out 0.15s;
-    -o-transition: bottom ease-in-out 0.15s;
-    transition: bottom ease-in-out 0.15s;
+    -webkit-transition: bottom ease-in-out 0.02s;
+    -o-transition: bottom ease-in-out 0.02s;
+    transition: bottom ease-in-out 0.02s;
   }
   .sidebar-fixed.affix .sidebar-content {
     max-height: 100%;
@@ -3670,9 +3670,9 @@ a.editable-empty:focus {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 34px;
-  -webkit-transition: all 0.15s ease-in-out;
-  -o-transition: all 0.15s ease-in-out;
-  transition: all 0.15s ease-in-out;
+  -webkit-transition: all 0.02s ease-in-out;
+  -o-transition: all 0.02s ease-in-out;
+  transition: all 0.02s ease-in-out;
 }
 .wizard > .steps > ul > li.disabled a,
 .wizard > .steps > ul > li.disabled a:hover,
@@ -3699,9 +3699,9 @@ a.editable-empty:focus {
   line-height: 34px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  -webkit-transition: all 0.15s ease-in-out;
-  -o-transition: all 0.15s ease-in-out;
-  transition: all 0.15s ease-in-out;
+  -webkit-transition: all 0.02s ease-in-out;
+  -o-transition: all 0.02s ease-in-out;
+  transition: all 0.02s ease-in-out;
 }
 .wizard > .steps > ul > li.error .number {
   border-color: #F44336;
@@ -4361,9 +4361,9 @@ body.stop-scrolling {
   padding: 0 10px;
   max-height: 0;
   border-radius: 3px;
-  -webkit-transition: padding 0.15s, max-height 0.15s;
-  -o-transition: padding 0.15s, max-height 0.15s;
-  transition: padding 0.15s, max-height 0.15s;
+  -webkit-transition: padding 0.02s, max-height 0.02s;
+  -o-transition: padding 0.02s, max-height 0.02s;
+  transition: padding 0.02s, max-height 0.02s;
 }
 .sweet-alert .sa-error-container p {
   display: inline-block;
@@ -5577,9 +5577,9 @@ img ~ .legitRipple-ripple {
 .fab-menu-bottom-left,
 .fab-menu-bottom-right {
   bottom: 20px;
-  -webkit-transition: bottom ease-in-out 0.15s;
-  -o-transition: bottom ease-in-out 0.15s;
-  transition: bottom ease-in-out 0.15s;
+  -webkit-transition: bottom ease-in-out 0.02s;
+  -o-transition: bottom ease-in-out 0.02s;
+  transition: bottom ease-in-out 0.02s;
 }
 .fab-menu-bottom-left.reached-bottom,
 .fab-menu-bottom-right.reached-bottom {
@@ -5766,8 +5766,8 @@ img ~ .legitRipple-ripple {
   transition-delay: 0.1s;
 }
 .fab-menu .fab-menu-inner > li:nth-child(3) {
-  -webkit-transition-delay: 0.15s;
-  transition-delay: 0.15s;
+  -webkit-transition-delay: 0.02s;
+  transition-delay: 0.02s;
 }
 .fab-menu .fab-menu-inner > li:nth-child(4) {
   -webkit-transition-delay: 0.2s;
@@ -5809,8 +5809,8 @@ img ~ .legitRipple-ripple {
 .fab-menu-top-left[data-fab-state="open"] .fab-menu-inner > li:nth-child(3),
 .fab-menu-top-right[data-fab-state="open"] .fab-menu-inner > li:nth-child(3) {
   top: 208px;
-  -webkit-transition-delay: 0.15s;
-  transition-delay: 0.15s;
+  -webkit-transition-delay: 0.02s;
+  transition-delay: 0.02s;
 }
 .fab-menu-top[data-fab-toggle="hover"]:hover .fab-menu-inner > li:nth-child(4),
 .fab-menu-top-left[data-fab-toggle="hover"]:hover .fab-menu-inner > li:nth-child(4),
@@ -5859,8 +5859,8 @@ img ~ .legitRipple-ripple {
 .fab-menu-bottom-left[data-fab-state="open"] .fab-menu-inner > li:nth-child(3),
 .fab-menu-bottom-right[data-fab-state="open"] .fab-menu-inner > li:nth-child(3) {
   top: -200px;
-  -webkit-transition-delay: 0.15s;
-  transition-delay: 0.15s;
+  -webkit-transition-delay: 0.02s;
+  transition-delay: 0.02s;
 }
 .fab-menu-bottom[data-fab-toggle="hover"]:hover .fab-menu-inner > li:nth-child(4),
 .fab-menu-bottom-left[data-fab-toggle="hover"]:hover .fab-menu-inner > li:nth-child(4),
