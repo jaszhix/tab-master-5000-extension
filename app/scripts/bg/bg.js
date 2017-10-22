@@ -41,7 +41,7 @@ import _ from 'lodash';
 import v from 'vquery';
 import uuid from 'node-uuid';
 import prefsStore from '../components/stores/prefs';
-import {findIndex} from '../components/utils';
+import {findIndex, find} from '../components/utils';
 import {isNewTab} from '../components/stores/tileUtils';
 
 const eventState = {
@@ -253,6 +253,7 @@ class Bg extends React.Component {
       prefs: null,
       init: true,
       windows: [],
+      removed: [],
       newTabs: [],
       sessions: [],
       screenshots: [],
@@ -371,6 +372,7 @@ class Bg extends React.Component {
     */
     chrome.tabs.onCreated.addListener((e, info) => {
       eventState.onCreated = e;
+      console.log('onCreated: ', e, info);
       this.createSingleItem(e);
     });
     /*
@@ -378,6 +380,7 @@ class Bg extends React.Component {
     */
     chrome.tabs.onRemoved.addListener((e, info) => {
       eventState.onRemoved = e;
+      console.log('onRemoved: ', e, info);
       this.removeSingleItem(e, info.windowId);
     });
     /*
@@ -385,6 +388,7 @@ class Bg extends React.Component {
     */
     chrome.tabs.onActivated.addListener((e, info) => {
       eventState.onActivated = e;
+      console.log('onActivated: ', e, info);
       this.handleActivation(e);
     });
     /*
@@ -392,6 +396,7 @@ class Bg extends React.Component {
     */
     chrome.tabs.onUpdated.addListener((e, info) => {
       eventState.onUpdated = e;
+      console.log('onUpdated: ', e, info);
       this.updateSingleItem(e);
     });
     /*
@@ -399,6 +404,7 @@ class Bg extends React.Component {
     */
     chrome.tabs.onMoved.addListener((e, info) => {
       eventState.onMoved = e;
+      console.log('onMoved: ', e, info);
       this.moveSingleItem(e);
     });
     /*
@@ -406,14 +412,16 @@ class Bg extends React.Component {
     */
     chrome.tabs.onAttached.addListener((e, info) => {
       eventState.onAttached = e;
-      this.createSingleItem(e);
+      console.log('onAttached: ', e, info);
+      this.createSingleItem(e, info.newWindowId);
     });
     /*
     Tabs detached
     */
     chrome.tabs.onDetached.addListener((e, info) => {
       eventState.onDetached = e;
-      this.removeSingleItem(e, info.windowId);
+      console.log('onDetached: ', e, info);
+      this.removeSingleItem(e, info.oldWindowId);
     });
     /*
     Bookmarks created
@@ -721,7 +729,10 @@ class Bg extends React.Component {
       createScreenshotThrottled(this, refWindow, refTab);
     }
   }
-  createSingleItem(e, recursion = 0) {
+  createSingleItem(e, windowId, recursion = 0) {
+    if (!windowId) {
+      windowId = e.windowId;
+    }
     // Firefox fix: In Chrome, the tab url is always resolved by the time onCreated is fired,
     // but in FF some tabs will show "about:blank" initially.
     if (this.state.chromeVersion === 1
@@ -729,14 +740,22 @@ class Bg extends React.Component {
       && recursion === 0) {
       _.defer(() => {
         this.getSingleTab(e.id).then((tab) => {
-          this.createSingleItem(tab, 1);
+          this.createSingleItem(tab, windowId, 1);
         });
       });
       return;
     }
-    let refWindow = findIndex(this.state.windows, win => win.id === e.windowId);
+    let refWindow = findIndex(this.state.windows, win => win.id === windowId);
     if (refWindow === -1) {
       return;
+    }
+
+    // Check if called from onAttached, need to get full tab object from state.removed.
+    if (typeof e === 'number') {
+      e = find(this.state.removed, tab => tab.id === e);
+      if (!e) {
+        return;
+      }
     }
 
     if (typeof this.state.windows[refWindow].tabs[e.index] !== 'undefined') {
@@ -760,7 +779,7 @@ class Bg extends React.Component {
     this.setState({windows: this.state.windows});
     // Activate the first new tab if it is open, and if this is a second new tab being created.
     if (isNewTab(e.url) && this.state.prefs.singleNewTab) {
-      let refNewTab = findIndex(this.state.newTabs, tab => tab.windowId === e.windowId);
+      let refNewTab = findIndex(this.state.newTabs, tab => tab.windowId === windowId);
       if (refNewTab !== -1) {
         let refExistingTab = findIndex(this.state.windows[refWindow].tabs, tab => tab.id === this.state.newTabs[refNewTab].id);
         if ((typeof this.state.windows[refWindow].tabs[refExistingTab] !== 'undefined'
@@ -779,7 +798,7 @@ class Bg extends React.Component {
     }
     setActionThrottled(this, 'create', e);
     synchronizeSession(this.state.sessions, this.state.prefs, this.state.windows);
-    sendMsg({windows: this.state.windows, windowId: e.windowId});
+    sendMsg({windows: this.state.windows, windowId: windowId});
   }
   removeSingleItem(e, windowId) {
     let refWindow = findIndex(this.state.windows, win => win.id === windowId);
@@ -796,10 +815,18 @@ class Bg extends React.Component {
     let refTab = findIndex(this.state.windows[refWindow].tabs, tab => tab.id === e);
     if (refTab > -1) {
       setActionThrottled(this, 'remove', this.state.windows[refWindow].tabs[refTab]);
+      if (this.state.removed.length > 10) {
+        this.state.removed.shift();
+      }
+      this.state.removed.push(this.state.windows[refWindow].tabs[refTab]);
       _.pullAt(this.state.windows[refWindow].tabs, refTab);
 
       this.state.windows[refWindow].tabs = _.orderBy(_.uniqBy(this.state.windows[refWindow].tabs, 'id'), ['pinned'], ['desc']);
-      this.setState({windows: this.state.windows, newTabs: this.state.newTabs});
+      this.setState({
+        windows: this.state.windows,
+        newTabs: this.state.newTabs,
+        removed: this.state.removed
+      });
       synchronizeSession(this.state.sessions, this.state.prefs, this.state.windows);
       sendMsg({windows: this.state.windows, windowId: windowId});
     }
