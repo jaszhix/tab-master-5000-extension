@@ -11,6 +11,20 @@ export const isNewTab = function(url) {
     || url.substr(-11) === 'ewtab.html#'))
 }
 
+export const handleAppClick = (tab) => {
+  if (tab.enabled) {
+    if (state.prefs.mode === 'extensions' || tab.launchType === 'OPEN_AS_REGULAR_TAB') {
+      if (tab.url.length > 0) {
+        chrome.tabs.create({url: tab.url});
+      } else {
+        chrome.tabs.create({url: tab.homepageUrl});
+      }
+    } else {
+      chrome.management.launchApp(tab.id);
+    }
+  }
+};
+
 export const activateTab = function(tab) {
   if (tab.hasOwnProperty('openTab') && !tab.openTab) {
     chrome.tabs.create({url: tab.url}, (t) =>{
@@ -18,7 +32,7 @@ export const activateTab = function(tab) {
       let index = findIndex(state[state.modeKey], item => item.id === tab.id);
       _.assignIn(state[state.modeKey][index], t);
       state[state.modeKey][index].openTab = true;
-      stateUpdate[p.modeKey] = state[state.modeKey];
+      stateUpdate[state.modeKey] = state[state.modeKey];
       state.set(stateUpdate);
     });
   } else if (state.prefs.mode === 'apps' || state.prefs.mode === 'extensions') {
@@ -34,7 +48,7 @@ export const activateTab = function(tab) {
   }
 };
 
-export var closeTab = (tab) => {
+export const closeTab = (tab) => {
   let stateUpdate = {};
 
   if (state.prefs.mode === 'sessions') {
@@ -83,7 +97,7 @@ export var closeTab = (tab) => {
   }
 };
 
-export var closeAllTabs = (tab) => {
+export const closeAllTabs = (tab) => {
   let urlPath = tab.url.split('/');
   chrome.tabs.query({
     url: '*://'+urlPath[2]+'/*'
@@ -94,7 +108,7 @@ export var closeAllTabs = (tab) => {
   });
 };
 
-export var closeAllItems = () => {
+export const closeAllItems = () => {
   let items = state.get(state.modeKey);
   for (let i = 0, len = items.length; i < len; i++) {
     if (!items[i]) {
@@ -105,19 +119,19 @@ export var closeAllItems = () => {
   state.set({search: '', searchCache: []});
 };
 
-export var pin = (tab) => {
+export const pin = (tab) => {
   chrome.tabs.update(tab.id, {pinned: !tab.pinned});
 };
 
-export var mute = (tab) => {
+export const mute = (tab) => {
   chrome.tabs.update(tab.id, {muted: !tab.mutedInfo.muted});
 };
 
-export var discard = (id) => {
+export const discard = (id) => {
   chrome.tabs.discard(id);
 };
 
-export var checkDuplicateTabs = (tab, cb) => {
+export const checkDuplicateTabs = (tab, cb) => {
   if (!state.prefs.duplicate || state.prefs.mode !== 'tabs' || state.duplicateTabs.indexOf(tab.url) === -1) {
     return;
   }
@@ -142,21 +156,7 @@ export var checkDuplicateTabs = (tab, cb) => {
   }
 };
 
-export var handleAppClick = (tab) => {
-  if (tab.enabled) {
-    if (state.prefs.mode === 'extensions' || tab.launchType === 'OPEN_AS_REGULAR_TAB') {
-      if (tab.url.length > 0) {
-        chrome.tabs.create({url: tab.url});
-      } else {
-        chrome.tabs.create({url: tab.homepageUrl});
-      }
-    } else {
-      chrome.management.launchApp(tab.id);
-    }
-  }
-};
-
-export var app = (tab, opt) => {
+export const app = (tab, opt) => {
   if (opt === 'toggleEnable') {
     chrome.management.setEnabled(tab.id, !tab.enabled);
   } else if (opt === 'uninstallApp') {
@@ -175,7 +175,7 @@ export var app = (tab, opt) => {
   }
 };
 
-export var checkFavicons = (tabs) => {
+export const checkFavicons = (tabs) => {
   let ignoredCount = filter(tabs, function(tab) {
     return tab.url.indexOf('chrome://') > -1
     || tab.url.indexOf('moz-extension') > -1
@@ -214,7 +214,7 @@ const isStandardChromePage = function(chromePage) {
   return chromePage === 'DOWNLOADADS' || chromePage === 'EXTENSIONS' || chromePage === 'HISTORY' || chromePage === 'SETTINGS';
 };
 
-export var filterFavicons = (faviconUrl, tabUrl, mode=null) => {
+export const filterFavicons = (faviconUrl, tabUrl, mode=null) => {
   // Work around for Chrome favicon useage restriction.
   // TODO: Check this behavior in FF, and clean this up.
   let urlPart, chromePage;
@@ -240,7 +240,7 @@ export var filterFavicons = (faviconUrl, tabUrl, mode=null) => {
   }
 };
 
-export var sort = (data) => {
+export const sort = (data) => {
   let result;
 
   if (state.prefs.mode === 'tabs') {
@@ -255,20 +255,20 @@ export var sort = (data) => {
   return result;
 };
 
-export var hasDuplicates = (array) => {
+export const hasDuplicates = (array) => {
   return (new Set(array)).size !== array.length;
 };
-export var getDuplicates = (array) => {
+export const getDuplicates = (array) => {
   return filter(array, (x, i, array) => {
     return includes(array, x, i + 1);
   });
 };
-export var arrayMove = (arr, fromIndex, toIndex) => {
+export const arrayMove = (arr, fromIndex, toIndex) => {
   let element = arr[fromIndex];
   arr.splice(fromIndex, 1);
   arr.splice(toIndex, 0, element);
 };
-export var formatBytes = (bytes, decimals) => {
+export const formatBytes = (bytes, decimals) => {
   if (bytes === 0) {
     return '0 Byte';
   }
@@ -279,7 +279,7 @@ export var formatBytes = (bytes, decimals) => {
   return (bytes / Math.pow(k, i)).toPrecision(dm) + ' ' + sizes[i];
 };
 
-export var searchChange = (query, tabs) => {
+export const searchChange = (query, tabs) => {
   let _tabs;
   tryFn(() => {
     let tabsSearch = new Fuse(tabs, {
@@ -299,6 +299,6 @@ export var searchChange = (query, tabs) => {
   return _tabs;
 };
 
-export var t = (key) => {
+export const t = (key) => {
   return chrome.i18n.getMessage(key);
 };

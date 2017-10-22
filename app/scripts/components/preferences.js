@@ -130,7 +130,10 @@ class Blacklist extends React.Component {
   }
   blacklistSubmit() {
     let blacklistStr = this.state.blacklistValue || '';
-    if (_.trim(blacklistStr) === '') {
+    if (typeof blacklistStr !== 'string') {
+      blacklistStr = blacklistStr.toString();
+    }
+    if (!blacklistStr || !blacklistStr.trim()) {
       setBlackList([]);
       this.setState({
         formatErrorStr: false,
