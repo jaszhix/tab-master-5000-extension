@@ -1,5 +1,11 @@
 #### Release Notes
 
+##### v2.5.1 / *10-22-17*
+
+*   Fixed the "Show tabs across all windows" option not working.
+*   Fixed attaching and detaching tabs not being reflected.
+*   Fixed a couple TrackJS errors.
+
 ##### v2.5.0 / *10-21-17*
 
 *   Fixed the table row selection not being clearly indicated when using the default theme.

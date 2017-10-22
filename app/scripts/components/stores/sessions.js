@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import uuid from 'node-uuid';
 import ReactTooltip from 'react-tooltip';
-import {each, findIndex} from '../utils';
+import {each, findIndex, filter} from '../utils';
 import state from './state';
 import {msgStore, utilityStore, setAlert} from './main';
 
@@ -179,6 +179,9 @@ let sessionsStore = {
     cb(sessions);
   },
   v2Save(opt){
+    opt.tabs = filter(opt.tabs, function(Window) {
+      return Window && Window.length > 0;
+    });
     each(opt.tabs, (Window, wKey)=>{
       each(Window, (Tab, tKey)=>{
         if (Tab.favIconUrl !== undefined && Tab.favIconUrl && Tab.favIconUrl.indexOf('data') !== -1) {

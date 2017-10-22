@@ -1,7 +1,7 @@
 {
   "name": "__MSG_appName__",
   "short_name": "TM5K",
-  "version": "2.5.0.1",
+  "version": "2.5.1",
   "manifest_version": 2,
   "description": "__MSG_appDesc__",
   "icons": {
