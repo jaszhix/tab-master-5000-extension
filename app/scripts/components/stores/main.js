@@ -411,9 +411,13 @@ export var msgStore = {
         }
         let windowId = msg.init ? stateUpdate.windowId : s.windowId;
         if (s.prefs.mode === 'tabs') {
-          stateUpdate.tabs = find(msg.windows, function(win) {
-            return win.id === windowId;
-          }).tabs;
+          if (s.prefs.allTabs) {
+            stateUpdate.tabs = _.flatten(stateUpdate.allTabs);
+          } else {
+            stateUpdate.tabs = find(msg.windows, function(win) {
+              return win.id === windowId;
+            }).tabs;
+          }
           stateUpdate.tabs = utils.checkFavicons(stateUpdate.tabs, windowId);
           stateUpdate = checkDuplicateTabs(stateUpdate);
         } else if (s.prefs.mode === 'sessions') {
