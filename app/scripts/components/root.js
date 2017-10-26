@@ -29,6 +29,7 @@ window._trackJs = {
 };
 const trackJs = require('trackjs');
 import moment from 'moment';
+moment.locale(chrome.i18n.getUILanguage());
 import state from './stores/state';
 if (!state.isOptions) {
   document.querySelector('.startup-text-wrapper > .startup-p').innerText = moment().format('h:mm A');
