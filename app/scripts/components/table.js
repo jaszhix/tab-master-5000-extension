@@ -1,5 +1,6 @@
 import React from 'react';
 import autoBind from 'react-autobind';
+import moment from 'moment';
 import {StyleSheet, css} from 'aphrodite';
 import _ from 'lodash';
 import v from 'vquery';
@@ -101,6 +102,8 @@ class Row extends React.Component {
                   onClick={toggleBool.indexOf(column) !== -1 ? () => p.handleBooleanClick(column) : null} />
                 </td>
               )
+            } else if (column === 'lastVisitTime' || column === 'dateAdded') {
+              return <td key={z} id={`column-${column}`} className={css(p.dynamicStyles.columnCommon)}>{moment(p.row[column]).fromNow().replace(/a /, '1 ')}</td>;
             } else if (column === 'launchType') {
               return <td key={z} id={`column-${column}`} className={css(p.dynamicStyles.columnCommon)}>{p.row[column].indexOf('TAB') !== -1 ? 'Tab' : 'Window'}</td>;
             } else {
@@ -226,9 +229,11 @@ export class Table extends React.Component {
     }
     let columns = ['title', 'domain'];
     if (p.s.prefs.mode === 'bookmarks') {
-      columns = columns.concat(['folder']);
-    } else if (p.s.prefs.mode === 'tabs' || p.s.prefs.mode === 'sessions' || p.s.prefs.mode === 'history') {
+      columns = columns.concat(['folder', 'dateAdded']);
+    } else if (p.s.prefs.mode === 'tabs' || p.s.prefs.mode === 'sessions') {
       columns = columns.concat(['pinned', 'mutedInfo']);
+    } else if (p.s.prefs.mode === 'history') {
+      columns = columns.concat(['lastVisitTime', 'visitCount', 'typedCount']);
     } else if (p.s.prefs.mode === 'apps' || p.s.prefs.mode === 'extensions') {
       columns[0] = 'name';
       if (p.s.prefs.mode === 'apps') {
