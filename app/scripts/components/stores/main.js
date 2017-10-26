@@ -87,7 +87,7 @@ export var bookmarksStore = {
         const findOpenTab = url => tab => tab.url === url;
         for (let i = 0, len = bookmarks.length; i < len; i++) {
           let refOpenTab = findIndex(tabs, findOpenTab(bookmarks[i].url));
-          if (refOpenTab !== -1) {
+          if (refOpenTab > -1) {
             console.log('refOpenTab', refOpenTab);
             bookmarks[i] = _.merge(_.cloneDeep(tabs[refOpenTab]), bookmarks[i]);
             bookmarks[i].openTab = ++openTab;

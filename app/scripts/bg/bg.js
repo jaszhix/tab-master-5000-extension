@@ -182,7 +182,7 @@ let createScreenshot = (t, refWindow, refTab, run=0)=>{
         timeStamp: Date.now()
       };
 
-      let refScreenshot = findIndex(t.state.screenshots, ss => ss.url === t.state.windows[refWindow].tabs[refTab].url);
+      let refScreenshot = findIndex(t.state.screenshots, ss => ss && ss.url === t.state.windows[refWindow].tabs[refTab].url);
       if (refScreenshot !== -1) {
         t.state.screenshots[refScreenshot] = screenshot;
       } else {

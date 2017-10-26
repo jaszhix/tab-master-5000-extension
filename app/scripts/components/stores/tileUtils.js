@@ -26,6 +26,9 @@ export const handleAppClick = (tab) => {
 };
 
 export const activateTab = function(tab) {
+  if (!tab || typeof tab.id !== 'number') {
+    return;
+  }
   if (tab.hasOwnProperty('openTab') && !tab.openTab) {
     chrome.tabs.create({url: tab.url}, (t) =>{
       let stateUpdate = {};
@@ -49,6 +52,10 @@ export const activateTab = function(tab) {
 };
 
 export const closeTab = (tab) => {
+  if (!tab) {
+    return;
+  }
+
   let stateUpdate = {};
 
   if (state.prefs.mode === 'sessions') {
