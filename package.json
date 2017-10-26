@@ -1,15 +1,16 @@
 {
   "name": "tab-master-5000",
-  "version": "2.4.0",
+  "version": "2.6.0",
   "description": "Tab Master 5000",
   "repository": {
     "type": "git",
     "url": "https://github.com/jaszhix/tab-master-5000-chrome-extension"
   },
   "scripts": {
-    "dev": "NODE_ENV=development concurrently \"gulp build-bg\" \"gulp spawn-watch\" \"node --max_old_space_size=16192 --trace-warnings  ./node_modules/webpack-dev-server/bin/webpack-dev-server --config ./webpack.config\"",
-    "build-chrome": "NODE_ENV=production gulp dist",
-    "build-firefox": "NODE_ENV=production gulp dist-firefox"
+    "dev-chrome": "DEV_ENV=chrome NODE_ENV=development concurrently \"gulp build-bg\" \"gulp spawn-watch\" \"node --max_old_space_size=16192 --trace-warnings  ./node_modules/webpack-dev-server/bin/webpack-dev-server --config ./webpack.config\"",
+    "dev-firefox": "DEV_ENV=firefox NODE_ENV=development concurrently \"gulp build-bg\" \"gulp spawn-watch\" \"node --max_old_space_size=16192 --trace-warnings  ./node_modules/webpack-dev-server/bin/webpack-dev-server --config ./webpack.config\"",
+    "build-chrome": "DEV_ENV=chrome NODE_ENV=production gulp dist",
+    "build-firefox": "DEV_ENV=firefox NODE_ENV=production gulp dist"
   },
   "homepage": "https://chrome.google.com/webstore/detail/tab-master-5000-tab-swiss/mippmhcfjhliihkkdobllhpdnmmciaim",
   "keywords": [

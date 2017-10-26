@@ -1,0 +1,60 @@
+{
+  "name": "__MSG_appName__",
+  "short_name": "TM5K",
+  "version": "2.5.1",
+  "manifest_version": 2,
+  "description": "__MSG_appDesc__",
+  "icons": {
+    "16": "images/icon-16.png",
+    "128": "images/icon-128.png"
+  },
+  "chrome_url_overrides": {
+    "newtab": "newtab.html"
+  },
+  "options_page": "options.html",
+  "default_locale": "en",
+  "background": {
+    "scripts": [
+      "scripts/background.js"
+    ],
+    "persistent": true
+  },
+  "page_action": {
+    "default_icon": {
+      "19": "images/icon-19.png",
+      "38": "images/icon-38.png"
+    },
+    "default_title": "__MSG_appName__"
+  },
+  "offline_enabled": true,
+  "content_scripts": [
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "scripts/content.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+  "permissions": [
+    "<all_urls>",
+    "activeTab",
+    "tabs",
+    "http://*/*",
+    "https://*/*",
+    "storage",
+    "unlimitedStorage",
+    "idle",
+    "system.memory",
+    "tabCapture",
+    "management",
+    "bookmarks",
+    "history",
+    "downloads"
+  ],
+  "content_security_policy": "script-src http://127.0.0.1:8009 https://cdn.trackjs.com 'unsafe-eval'; connect-src http://127.0.0.1:8009 http://127.0.0.1:8009 ws://127.0.0.1:8009/ https://capture.trackjs.com; object-src 'self'; style-src * 'unsafe-inline' 'self' blob:;"
+}

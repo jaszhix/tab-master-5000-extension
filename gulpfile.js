@@ -51,12 +51,6 @@ gulp.task('htmlmin', function() {
     .pipe(rename('newtab.html'))
     .pipe(gulp.dest('./dist'));
 });
-gulp.task('firefox-manifest-rename', function() {
-  del.sync(['./dist/manifest.json']);
-  return gulp.src('./dist/manifest_firefox.json')
-    .pipe(rename('manifest.json'))
-    .pipe(gulp.dest('./dist'));
-});
 gulp.task('imgmin', function() {
   return gulp.src('./dist/images/*.{png,jpg,gif}')
     .pipe(imagemin({
@@ -80,10 +74,6 @@ gulp.task('package', function() {
 gulp.task('dist',  function (callback) {
   env.production = true;
   runSequence('build', 'copy', 'htmlmin', 'imgmin', 'package', callback);
-});
-gulp.task('dist-firefox',  function (callback) {
-  env.production = true;
-  runSequence('build', 'copy', 'htmlmin', 'imgmin', 'firefox-manifest-rename', 'package', callback);
 });
 gulp.task('watch', function() {
   //gulp.watch('./app/scripts/components/**/*.{js,jsx,es6}', ['build']);

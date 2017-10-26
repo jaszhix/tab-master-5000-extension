@@ -1,3 +1,4 @@
+const fs = require('fs');
 const path = require('path');
 const webpack = require('webpack');
 const autoprefixer = require('autoprefixer');
@@ -12,6 +13,11 @@ const aliases = Object.assign({
 
 const publicPath = 'http://127.0.0.1:8009/app/scripts/';
 const PROD = process.env.NODE_ENV === 'production';
+const WORKDIR = PROD ? 'dist' : 'app';
+
+fs.createReadStream(`./app/manifest_${process.env.DEV_ENV}.json`)
+  .pipe(fs.createWriteStream(`./${WORKDIR}/manifest.json`));
+
 const postcssPlugins = () => {
   let processors = [
     autoprefixer({
