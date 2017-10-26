@@ -242,7 +242,7 @@ class ItemsContainer extends React.Component {
       <div className="tile-body">
         <div id="grid" ref={this.getRef}>
           {p.s.prefs.format === 'tile' ? map(p.s[p.s.modeKey], (tab, i) => {
-            if (utils.isNewTab(tab.url)) {
+            if (utils.isNewTab(tab.url) || !tab.title) {
               return null;
             }
             let isVisible = i >= this.state.range.start && i <= this.state.range.start + this.state.range.length;

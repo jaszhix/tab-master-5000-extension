@@ -382,7 +382,7 @@ export class Table extends React.Component {
             showFloatingTableHeader={this.props.showFloatingTableHeader} />
             <tbody onMouseLeave={() => this.setState({rowHover: -1})}>
             {map(s.rows, (row, i) => {
-              if (utils.isNewTab(row.url)) {
+              if (utils.isNewTab(row.url) || !row.title) {
                 return null;
               }
               let isVisible = i >= p.range.start && i <= p.range.start + p.range.length;
