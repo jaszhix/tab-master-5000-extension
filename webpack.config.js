@@ -11,10 +11,19 @@ const aliases = Object.assign({
   underscore: 'lodash'
 }, require('lodash-loader').createLodashAliases());
 
-const publicPath = 'http://127.0.0.1:8009/app/scripts/';
 const PROD = process.env.NODE_ENV === 'production';
-const WORKDIR = PROD ? 'dist' : 'app';
+const ENTRY = process.env.BUNDLE_ENTRY;
+const SKIP_MINIFY = JSON.parse(process.env.SKIP_MINIFY || 'false');
+const publicPath = PROD ? '/' : 'http://127.0.0.1:8009/app/scripts/';
 
+const CONTENT_BASE = SKIP_MINIFY ? 'sources' : 'dist';
+const WORKDIR = PROD ? CONTENT_BASE : 'app';
+console.log(`ENTRY:`, ENTRY || 'app');
+console.log(`NODE_ENV:`, process.env.NODE_ENV);
+console.log(`BUILD ENV:`, process.env.DEV_ENV);
+console.log(`SKIP MINIFICATION:`, SKIP_MINIFY);
+console.log(`WORKDIR:`, WORKDIR);
+console.log(`========================================`);
 fs.createReadStream(`./app/manifest_${process.env.DEV_ENV}.json`)
   .pipe(fs.createWriteStream(`./${WORKDIR}/manifest.json`));
 
@@ -38,7 +47,7 @@ const postcssPlugins = () => {
 }
 
 const config = {
-  context: path.resolve(__dirname, 'app/scripts/components'),
+  context: path.resolve(__dirname),
   entry: [
     'react-hot-loader/patch',
     'webpack-dev-server/client?http://127.0.0.1:8009',
@@ -46,7 +55,7 @@ const config = {
     'app.js',
   ],
   output: {
-    path: path.resolve('./scripts/'),
+    path: path.resolve(__dirname, `${CONTENT_BASE}/scripts`),
     filename: 'app.js',
     publicPath
   },
@@ -138,6 +147,16 @@ const config = {
       {
         test: require.resolve('trackjs'),
         loader: 'exports-loader?trackJs'
+      },
+      {
+        test: /\.worker\.js$/,
+        use: {
+          loader: 'worker-loader',
+          options: {
+            name: '[name].js',
+            publicPath: '/scripts/'
+          }
+        }
       }
     ],
   },
@@ -164,38 +183,55 @@ const config = {
   },
 };
 
-if (PROD) {
+if (PROD && ENTRY) {
+  if (ENTRY === 'app') {
+    config.entry = './app/scripts/components/app.js';
+    config.output.filename = 'app.js';
+  } else if (ENTRY === 'bg') {
+    config.entry = './app/scripts/bg/bg.js';
+    config.output.filename = 'background.js';
+  } else {
+    config.entry = './app/scripts/content/content.js';
+    config.output.filename = 'content.js';
+  }
+
   config.entry = ['babel-polyfill', config.entry];
   config.devtool = 'hidden-source-map';
-  config.plugins.push(
-    new webpack.optimize.UglifyJsPlugin({
-      mangle: false,
-      sourceMap: true,
-      compress: {
-        warnings: false,
-        drop_console: true,
-        dead_code: true,
-        unused: true,
-        booleans: true,
-        join_vars: true,
-        negate_iife: true,
-        sequences: true,
-        properties: true,
-        evaluate: false,
-        loops: true,
-        if_return: true,
-        cascade: true,
-        unsafe: false
-      },
-      output: {
-        comments: false
-      }
-    }),
-    new BundleAnalyzerPlugin({
-      openAnalyzer: false,
-      analyzerMode: 'static',
-      reportFilename: 'bundleReport.html'
-    }));
+  if (!SKIP_MINIFY) {
+    config.plugins.push(
+      new webpack.optimize.UglifyJsPlugin({
+        mangle: false,
+        sourceMap: true,
+        compress: {
+          warnings: false,
+          drop_console: true,
+          dead_code: true,
+          unused: true,
+          booleans: true,
+          join_vars: true,
+          negate_iife: true,
+          sequences: true,
+          properties: true,
+          evaluate: false,
+          loops: true,
+          if_return: true,
+          cascade: true,
+          unsafe: false
+        },
+        output: {
+          comments: false
+        }
+      })
+    );
+  } else {
+    config.plugins.push(
+      new BundleAnalyzerPlugin({
+        openAnalyzer: false,
+        analyzerMode: 'static',
+        reportFilename: `../bundle_analysis/${ENTRY}_bundleReport.html`
+      })
+    );
+  }
 } else {
   config.plugins.push(
     new webpack.NoEmitOnErrorsPlugin(),
@@ -205,5 +241,4 @@ if (PROD) {
     })
   );
 }
-
 module.exports = config;

@@ -7,10 +7,15 @@
     "url": "https://github.com/jaszhix/tab-master-5000-chrome-extension"
   },
   "scripts": {
-    "dev-chrome": "DEV_ENV=chrome NODE_ENV=development concurrently \"gulp build-bg\" \"gulp spawn-watch\" \"node --max_old_space_size=16192 --trace-warnings  ./node_modules/webpack-dev-server/bin/webpack-dev-server --config ./webpack.config\"",
-    "dev-firefox": "DEV_ENV=firefox NODE_ENV=development concurrently \"gulp build-bg\" \"gulp spawn-watch\" \"node --max_old_space_size=16192 --trace-warnings  ./node_modules/webpack-dev-server/bin/webpack-dev-server --config ./webpack.config\"",
-    "build-chrome": "DEV_ENV=chrome NODE_ENV=production gulp dist",
-    "build-firefox": "DEV_ENV=firefox NODE_ENV=production gulp dist"
+    "dev-chrome": "cross-env DEV_ENV=chrome NODE_ENV=development concurrently \"gulp build-bg\" \"gulp spawn-watch\" \"node --max_old_space_size=16192 --trace-warnings  ./node_modules/webpack-dev-server/bin/webpack-dev-server --config ./webpack.config\"",
+    "dev-firefox": "cross-env DEV_ENV=firefox NODE_ENV=development concurrently \"gulp build-bg\" \"gulp spawn-watch\" \"node --max_old_space_size=16192 --trace-warnings  ./node_modules/webpack-dev-server/bin/webpack-dev-server --config ./webpack.config\"",
+    "build-bg": "cross-env BUNDLE_ENTRY=bg node --trace-warnings ./node_modules/webpack/bin/webpack --config webpack.config.js --profile --colors",
+    "build-content": "cross-env BUNDLE_ENTRY=content node --trace-warnings ./node_modules/webpack/bin/webpack --config webpack.config.js --profile --colors",
+    "build-app": "cross-env BUNDLE_ENTRY=app node --trace-warnings ./node_modules/webpack/bin/webpack --config webpack.config.js --profile --colors",
+    "build-all": "concurrently \"npm run build-app && gulp dist\" \"npm run build-bg\" \"npm run build-content\" \"gulp clean\"",
+    "build-chrome": "cross-env NODE_ENV=production DEV_ENV=chrome npm run build-all",
+    "build-firefox": "cross-env NODE_ENV=production DEV_ENV=firefox npm run build-all",
+    "build-sources": "cross-env NODE_ENV=production SKIP_MINIFY=true npm run build-firefox"
   },
   "homepage": "https://chrome.google.com/webstore/detail/tab-master-5000-tab-swiss/mippmhcfjhliihkkdobllhpdnmmciaim",
   "keywords": [
@@ -47,6 +52,7 @@
     "classnames": "^2.2.5",
     "clear": "^0.0.1",
     "concurrently": "^3.5.0",
+    "cross-env": "^5.1.0",
     "css-loader": "^0.28.7",
     "cssnano": "^3.10.0",
     "del": "^3.0.0",
@@ -97,7 +103,8 @@
     "webpack-bundle-analyzer": "^2.9.0",
     "webpack-dev-server": "^2.9.2",
     "webpack-module-hot-accept": "^1.0.5",
-    "webpack-stream": "^4.0.0"
+    "webpack-stream": "^4.0.0",
+    "worker-loader": "^1.1.0"
   },
   "engines": {
     "node": ">=0.8.0"
