@@ -141,11 +141,11 @@ let sessionsStore = {
       if (refSessionTab !== -1) {
         _.pullAt(sessionTabs, refSessionTab);
         stateUpdate.sessionTabs = sessionTabs;
-        state.set(stateUpdate, true);
       }
     }
     _.pullAt(sessions[session].tabs[_window], tab);
-    state.set({sessions: sessions});
+    stateUpdate.sessions = sessions;
+    state.set(stateUpdate, true);
     chrome.storage.local.set({sessions: sessions}, ()=> {
       console.log('session tab removed', sessions);
     });

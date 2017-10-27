@@ -2,7 +2,7 @@ import _ from 'lodash';
 import Fuse from 'fuse.js';
 import {each, findIndex, filter, tryFn, includes, map} from '../utils';
 import state from './state';
-import {historyStore, chromeAppStore, faviconStore, utilityStore} from './main';
+import {historyStore, chromeAppStore, utilityStore} from './main';
 import sessionsStore from './sessions';
 
 export const isNewTab = function(url) {
@@ -26,7 +26,7 @@ export const handleAppClick = (tab) => {
 };
 
 export const activateTab = function(tab) {
-  if (!tab || typeof tab.id !== 'number') {
+  if (!tab) {
     return;
   }
   if (tab.hasOwnProperty('openTab') && !tab.openTab) {
@@ -40,8 +40,8 @@ export const activateTab = function(tab) {
     });
   } else if (state.prefs.mode === 'apps' || state.prefs.mode === 'extensions') {
     handleAppClick(tab);
-  } else {
-    chrome.tabs.update(tab.id, {active: true});
+  } else if (typeof tab.id === 'number' || tab.openTab) {
+    chrome.tabs.update(tab.openTab ? tab.openTab : tab.id, {active: true});
     if (tab.windowId !== state.windowId) {
       chrome.windows.update(tab.windowId, {focused: true});
     }
@@ -58,7 +58,9 @@ export const closeTab = (tab) => {
 
   let stateUpdate = {};
 
-  if (state.prefs.mode === 'sessions') {
+  if (state.prefs.mode === 'tabs' || tab.openTab) {
+    chrome.tabs.remove(tab.openTab ? tab.openTab : tab.id);
+  } else if (state.prefs.mode === 'sessions') {
     // The sessionTabs array is unique, so we're re-mapping the tabs from the session data.
     let tabs = [];
     let completeSessionTabs = map(state.sessions, session => session.tabs);
@@ -82,9 +84,6 @@ export const closeTab = (tab) => {
         }
       });
     });
-  } else if ((state.prefs.mode === 'tabs' || tab.openTab)
-    && typeof tab.id === 'number') {
-    chrome.tabs.remove(tab.id);
   } else if (state.prefs.mode === 'bookmarks') {
     chrome.bookmarks.remove(tab.id);
   } else if (state.prefs.mode === 'history') {
@@ -183,38 +182,11 @@ export const app = (tab, opt) => {
 };
 
 export const checkFavicons = (tabs) => {
-  let ignoredCount = filter(tabs, function(tab) {
-    return tab.url.indexOf('chrome://') > -1
-    || tab.url.indexOf('moz-extension') > -1
-    || tab.url.indexOf('about:') > -1
-    || tab.favIconUrl === '../images/file_paper_blank_document.png'
-  }).length;
-  let unmatchedCount = 1;
-  if (state.favicons.length === 0) {
-    each(tabs, function(tab, i) {
-      faviconStore.set_favicon(tab, tabs.length - ignoredCount, unmatchedCount++);
-    });
-    return tabs;
-  }
-  let matched = [];
-  each(tabs, function(tab, i) {
-    each(state.favicons, function(favicon) {
-      if (favicon && favicon.domain && tab.url.indexOf(favicon.domain) > -1) {
-        matched.push(tab.id);
-        tabs[i].favIconUrl = favicon.favIconUrl;
-      }
-    });
+  window.tmWorker.postMessage({
+    msg: 'checkFavicons',
+    state: state.getStateWithoutAPI(),
+    tabs
   });
-
-  if (state.prefs.mode === 'tabs' || state.prefs.mode === 'sessions') {
-    each(tabs, function(tab, i) {
-      if (matched.indexOf(tab.id) > -1) {
-        return;
-      }
-      faviconStore.set_favicon(tab, tabs.length - ignoredCount, unmatchedCount++);
-    });
-  }
-  return tabs;
 };
 
 const isStandardChromePage = function(chromePage) {
@@ -262,14 +234,6 @@ export const sort = (data) => {
   return result;
 };
 
-export const hasDuplicates = (array) => {
-  return (new Set(array)).size !== array.length;
-};
-export const getDuplicates = (array) => {
-  return filter(array, (x, i, array) => {
-    return includes(array, x, i + 1);
-  });
-};
 export const arrayMove = (arr, fromIndex, toIndex) => {
   let element = arr[fromIndex];
   arr.splice(fromIndex, 1);

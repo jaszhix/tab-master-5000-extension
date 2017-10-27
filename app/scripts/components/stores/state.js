@@ -2,7 +2,7 @@ import initStore from '../store';
 
 const state = initStore({
   // Core
-  init: true,
+  init: false,
   prefs: {},
   modeKey: 'tabs',
   sessions: [],

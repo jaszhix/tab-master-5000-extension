@@ -11,7 +11,7 @@ import React from 'react';
 import autoBind from 'react-autobind';
 import _ from 'lodash';
 import ReactTooltip from 'react-tooltip';
-import {keyboardStore, utilityStore, msgStore} from './stores/main';
+import {keyboardStore, utilityStore, msgStore, faviconStore} from './stores/main';
 import themeStore from './stores/theme';
 import * as utils from './stores/tileUtils';
 import {each, filter, tryFn} from './utils';
@@ -23,6 +23,30 @@ import Preferences from './preferences';
 import Alert from './alert';
 import Loading from './loading';
 import Search from './search';
+import tmWorker from './main.worker.js';
+
+window.tmWorker = new tmWorker();
+window.tmWorker.onmessage = function(e) {
+  console.log('WORKER: ', e.data);
+  if (e.data.favicons) {
+    chrome.storage.local.set({favicons: e.data.favicons}, ()=> {
+      console.log('favicons saved');
+      state.set({favicons: e.data.favicons});
+    });
+  } else if (e.data.setPrefs) {
+    msgStore.setPrefs(e.data.setPrefs);
+  } else if (e.data.msg === 'handleMode') {
+    utilityStore.handleMode(e.data.mode, e.data.stateUpdate);
+  } else if (e.data.msg === 'setFavicon') {
+    faviconStore.set_favicon(...e.data.args);
+  } else if (e.data.stateUpdate) {
+    if (!state.init) {
+      e.data.stateUpdate.init = true;
+      v('section').remove();
+    }
+    state.set(e.data.stateUpdate);
+  }
+}
 
 if (module.hot) {
   module.hot.accept();
@@ -52,9 +76,11 @@ class Root extends React.Component {
             return;
           }
           let modeKey = this.props.s.prefs.mode === 'sessions' ? 'sessionTabs' : this.props.s.prefs.mode;
-          state.set({
-            modeKey: 'searchCache',
-            searchCache: utils.searchChange(partial.search, this.props.s[modeKey])
+          window.tmWorker.postMessage({
+            msg: {
+              query: partial.search,
+              items: this.props.s[modeKey]
+            }
           });
         },
         modeKey: (partial) => {
@@ -88,8 +114,8 @@ class Root extends React.Component {
     each(connections, connection => state.disconnect(connection));
   }
   init(p){
-    msgStore.getTabs(true);
     msgStore.getSessions();
+    msgStore.getTabs(true);
     if (p.s.prefs.screenshot) {
       msgStore.getScreenshots().then((screenshots)=>{
         state.set({screenshots: screenshots});
@@ -420,6 +446,9 @@ class Root extends React.Component {
   render() {
     let s = this.state;
     let p = this.props;
+    if (!p.s.init) {
+      return null;
+    }
     if (p.s.theme && p.s.prefs) {
       let keys = [];
       let labels = {};
@@ -581,13 +610,15 @@ class App extends React.Component {
       .setMergeKeys(['prefs', 'alert'])
       .get('*');
     this.connectId = state.connect('*', (newState) => {
-      console.log('STATE INPUT: ', newState);
-      tryFn(() => {
-        throw new Error('STATE STACK');
-      }, (e) => {
-        let stackParts = e.stack.split('\n');
-        console.log('STATE CALLEE: ', stackParts[4].trim());
-      });
+      if (process.env.NODE_ENV === 'development') {
+        console.log('STATE INPUT: ', newState);
+        tryFn(() => {
+          throw new Error('STATE STACK');
+        }, (e) => {
+          let stackParts = e.stack.split('\n');
+          console.log('STATE CALLEE: ', stackParts[6].trim());
+        });
+      }
       this.setState(newState, () => console.log('STATE: ', this.state));
     });
     autoBind(this);
@@ -614,7 +645,7 @@ class App extends React.Component {
       width: window.innerWidth,
       height: window.innerHeight
     };
-    if (s.init && _stateUpdate) {
+    if (!s.init && _stateUpdate) {
       _.assignIn(stateUpdate, _stateUpdate);
       this.setKeyboardShortcuts(stateUpdate);
     }
@@ -629,11 +660,7 @@ class App extends React.Component {
     });
   }
   render(){
-    if (!this.state.init) {
-      return <Root s={this.state} />;
-    } else {
-      return null;
-    }
+    return <Root s={this.state} />;
   }
 }
 

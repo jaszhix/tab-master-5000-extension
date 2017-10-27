@@ -428,49 +428,49 @@ class Bg extends React.Component {
     */
     chrome.bookmarks.onCreated.addListener((e, info) => {
       eventState.bookmarksOnCreated = e;
-      sendMsg({e: e, type: 'bookmarks', action: true});
+      this.queryBookmarks();
     });
     /*
     Bookmarks removed
     */
     chrome.bookmarks.onRemoved.addListener((e, info) => {
       eventState.bookmarksOnRemoved = e;
-      sendMsg({e: e, type: 'bookmarks', action: true});
+      this.queryBookmarks();
     });
     /*
     Bookmarks changed
     */
     chrome.bookmarks.onChanged.addListener((e, info) => {
-      eventState.bookmarksOnChanged= e;;
-      sendMsg({e: e, type: 'bookmarks', action: true});
+      eventState.bookmarksOnChanged = e;
+      this.queryBookmarks();
     });
     /*
     Bookmarks moved
     */
     chrome.bookmarks.onMoved.addListener((e, info) => {
-      eventState.bookmarksOnMoved= e;
-      sendMsg({e: e, type: 'bookmarks', action: true});
+      eventState.bookmarksOnMoved = e;
+      this.queryBookmarks();
     });
     /*
     History visited
     */
     chrome.history.onVisited.addListener((e, info) => {
       eventState.historyOnVisited = e;
-      sendMsg({e: e, type: 'history', action: 'visited'});
+      this.queryHistory();
     });
     /*
     History removed
     */
     chrome.history.onVisitRemoved.addListener((e, info) => {
       eventState.historyOnVisitRemoved = e;
-      sendMsg({e: e, type: 'history', action: 'remove'});
+      this.queryHistory();
     });
     /*
     App/ext enabled
     */
     chrome.management.onEnabled.addListener((details)=>{
       eventState.onEnabled = details;
-      sendMsg({e: details, type: 'app', action: true});
+      this.queryExtensions();
     });
     this.attachMessageListener(s);
     this.setState({init: false});
@@ -535,6 +535,12 @@ class Bg extends React.Component {
         this.queryTabs(true, this.state.prefs, sender.tab.windowId);
       } else if (msg.method === 'getSessions') {
         sendMsg({sessions: this.state.sessions, windowId: sender.tab.windowId});
+      } else if (msg.method === 'queryBookmarks') {
+        this.queryBookmarks();
+      } else if (msg.method === 'queryHistory') {
+        this.queryHistory();
+      } else if (msg.method === 'queryExtensions') {
+        this.queryExtensions();
       } else if (msg.method === 'getScreenshots') {
         sendResponse({screenshots: this.state.screenshots});
       } else if (msg.method === 'removeSingleWindow') {
@@ -583,6 +589,27 @@ class Bg extends React.Component {
           sendMsg({windows: this.state.windows, windowId, init});
         }
       });
+    });
+  }
+  queryBookmarks() {
+    chrome.bookmarks.getTree((bookmarks) => {
+      sendMsg({bookmarks, action: true});
+    });
+  }
+  queryHistory() {
+    let now = Date.now();
+    chrome.history.search({
+      text: '',
+      maxResults: 1000,
+      startTime: now - 6.048e+8,
+      endTime: now
+    }, (history) => {
+      sendMsg({history, action: true});
+    });
+  }
+  queryExtensions() {
+    chrome.management.getAll((extensions) => {
+      sendMsg({extensions, action: true});
     });
   }
   convertV1Sessions(_item) {

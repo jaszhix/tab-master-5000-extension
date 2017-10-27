@@ -49,7 +49,6 @@ class Row extends React.Component {
       textOverflow: 'ellipsis',
       display: 'inline-block'
     };
-    let favIconUrl = p.row.favIconUrl ? utils.filterFavicons(p.row.favIconUrl, p.row.url) : '../images/file_paper_blank_document.png';
 
     return (
       <tr
@@ -68,7 +67,7 @@ class Row extends React.Component {
               return (
                 <td key={z} id={`column-${column}`} className={css(p.dynamicStyles.titleColumn, p.dynamicStyles.columnCommon)}>
                   <div className={css(p.dynamicStyles.faviconContainer) + ' media-left media-middle'}>
-                    <img src={favIconUrl} className={css(styles.favicon)} />
+                    <img src={p.row.favIconUrl} className={css(styles.favicon)} />
                   </div>
                   <div className="media-left">
                     <div style={textOverflow}>
@@ -396,9 +395,9 @@ export class Table extends React.Component {
                 const rowStyles = StyleSheet.create({
                   row: {
                     fontSize: '14px',
-                    color: p.theme.tileText,
-                    ':hover': {backgroundColor: p.theme.settingsItemHover},
-                    backgroundColor: s.selectedItems.indexOf(i) !== -1 ? p.theme.settingsItemHover : isEven ? themeStore.opacify(p.theme.tileBg, 0.34) : themeStore.opacify(p.theme.tileBgHover, 0.25)
+                    color: p.s.theme.tileText,
+                    ':hover': {backgroundColor: p.s.theme.settingsItemHover},
+                    backgroundColor: s.selectedItems.indexOf(i) !== -1 ? p.s.theme.settingsItemHover : isEven ? themeStore.opacify(p.s.theme.tileBg, 0.34) : themeStore.opacify(p.s.theme.tileBgHover, 0.25)
                   }
                 });
                 return (
@@ -439,9 +438,9 @@ export class Table extends React.Component {
             direction={p.s.direction}
             handleColumnClick={this.handleColumnClick}
             width={p.s.width}
-            lightBtnText={p.theme.lightBtnText}
-            darkBtnText={p.theme.darkBtnText}
-            headerBg={p.theme.headerBg}
+            lightBtnText={p.s.theme.lightBtnText}
+            darkBtnText={p.s.theme.darkBtnText}
+            headerBg={p.s.theme.headerBg}
             isFloating={true} />
           </table> : null}
         </div>

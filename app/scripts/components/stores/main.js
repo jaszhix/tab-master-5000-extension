@@ -26,190 +26,15 @@ export const setBlackList = function(domainsArr) {
 };
 
 export const getBlackList = function(cb) {
-    tryFn(() => {
-      chrome.storage.sync.get('blacklist', (bl) => {
-        if (bl && bl.blacklist) {
-          cb(bl.blacklist);
-        } else {
-          cb([]);
-        }
-      });
-    }, () => cb([]));
-  };
-
-let defaults = (iteration) => {
-  return {
-    mutedInfo: {muted: false},
-    audible: false,
-    active: false,
-    favIconUrl: '',
-    highlighted: false,
-    pinned: false,
-    selected: false,
-    status: 'complete',
-    index: iteration,
-    openTab: null,
-    windowId: state.get().windowId,
-  };
-};
-
-export var bookmarksStore = {
-  set_bookmarks() {
-    return new Promise((resolve) => {
-      chrome.bookmarks.getTree((bk) => {
-        let bookmarks = [];
-        let folders = [];
-        let s = state.get();
-        let tabs = _.flatten(s.allTabs);
-        let openTab = 0;
-        let iter = -1;
-        let addBookmarkChildren = (bookmarkLevel, title='')=> {
-          bookmarkLevel.folder = title;
-          iter = ++iter;
-          if (!bookmarkLevel.children) {
-            bookmarks.push(bookmarkLevel);
-          } else {
-            folders.push(bookmarkLevel);
-            for (let i = 0, len = bookmarks.length; i < len; i++) {
-              for (let x = 0, _len = folders.length; x < _len; x++) {
-                if (bookmarks[i].parentId === folders[x].id) {
-                  bookmarks[i].folder = folders[x].title;
-                }
-              }
-            }
-            for (let i = 0, len = bookmarkLevel.children.length; i < len; i++) {
-              addBookmarkChildren(bookmarkLevel.children[i], title);
-            }
-          }
-        };
-        addBookmarkChildren(bk[0]);
-        bookmarks = _.uniqBy(bookmarks, 'id')
-        const findOpenTab = url => tab => tab.url === url;
-        for (let i = 0, len = bookmarks.length; i < len; i++) {
-          let refOpenTab = findIndex(tabs, findOpenTab(bookmarks[i].url));
-          if (refOpenTab > -1) {
-            console.log('refOpenTab', refOpenTab);
-            bookmarks[i] = _.merge(_.cloneDeep(tabs[refOpenTab]), bookmarks[i]);
-            bookmarks[i].openTab = ++openTab;
-          } else {
-            bookmarks[i] = _.assignIn(bookmarks[i], _.cloneDeep(defaults(iter)));
-          }
-        }
-        bookmarks = _.orderBy(
-          filter(bookmarks, (bookmark) => {
-            return bookmark.url.substr(0, 10) !== 'javascript';
-          }),
-          ['dateAdded', 'openTab'], ['desc', 'asc']
-        );
-        if (bookmarks) {
-          bookmarks = utils.checkFavicons(bookmarks);
-          resolve(bookmarks);
-        }
-      });
-    });
-  },
-  getBookmarks() {
-    this.set_bookmarks().then((bk) => {
-      let s = state.get();
-      bk = utils.sort(bk);
-      if (s.search.length > 0) {
-        bk = utils.searchChange(s.search, bk);
-      }
-      state.set({bookmarks: bk});
-    });
-  }
-};
-
-export var historyStore = {
-  setHistory() {
-    return new Promise((resolve) => {
-      let now = Date.now();
-      chrome.history.search({
-        text: '',
-        maxResults: 1000,
-        startTime: now - 6.048e+8,
-        endTime: now
-      }, (h) => {
-        let s = state.get();
-        let tabs = _.flatten(s.allTabs);
-        let openTab = 0;
-        for (let i = 0, len = h.length; i < len; i++) {
-          let urlMatch = h[i].url.match(s.domainRegEx);
-          _.assign(h[i], {
-            openTab: null,
-            mutedInfo: {muted: false},
-            audible: false,
-            active: false,
-            favIconUrl: '',
-            domain: urlMatch ? urlMatch[1] : false,
-            highlighted: false,
-            pinned: false,
-            selected: false,
-            status: 'complete',
-            index: i,
-            windowId: s.windowId
-          });
-          for (let y = 0, _len = tabs.length; y < _len; y++) {
-            if (h[i].url === tabs[y].url) {
-              h[i] = _.assignIn(_.cloneDeep(tabs[y]), h[i]);
-              h[i].openTab = ++openTab;
-            }
-          }
-        }
-        h = utils.checkFavicons(h);
-        resolve(_.uniqBy(h, 'url'));
-      });
-    });
-  },
-  getHistory() {
-    this.setHistory().then((h) => {
-      let s = state.get();
-      if (s.search.length > 0) {
-        h = utils.searchChange(s.search, h);
-      }
-      state.set({history: h});
-    });
-  },
-  remove(history, url){
-    let stateUpdate = {};
-    let refHistory = findIndex(history, item => item.url === url);
-    if (refHistory !== -1) {
-      _.pullAt(history, refHistory);
-      stateUpdate.history = history;
-      if (history.length === 0) {
-        stateUpdate.search = '';
-      }
-      state.set(stateUpdate);
-    }
-  }
-};
-
-export var chromeAppStore = {
-  set(isApp){
-    let s = state.get()
-    chrome.management.getAll((apps) => {
-      let _apps = filter(apps, app => app.isApp === isApp);
-      if (_apps) {
-        for (let i = 0, len = _apps.length; i < len; i++) {
-          _.assign(_apps[i], {
-            favIconUrl: _apps[i].icons ? utils.filterFavicons(_.last(_apps[i].icons).url, _.last(_apps[i].icons).url) : '../images/IDR_EXTENSIONS_FAVICON@2x.png',
-            id: _apps[i].id,
-            url: isApp ? _apps[i].appLaunchUrl : _apps[i].optionsUrl,
-            title: _apps[i].name
-          });
-          _apps[i] = _.assignIn(defaults(i), _apps[i]);
-        }
-        if (s.search.length > 0) {
-          _apps = utils.searchChange(s.search, _apps);
-        }
-        let stateKey = isApp ? {apps: _apps} : {extensions: _apps};
-        stateKey.direction = 'asc';
-        state.set(stateKey);
-
-        console.log('installed apps: ', _apps);
+  tryFn(() => {
+    chrome.storage.sync.get('blacklist', (bl) => {
+      if (bl && bl.blacklist) {
+        cb(bl.blacklist);
+      } else {
+        cb([]);
       }
     });
-  }
+  }, () => cb([]));
 };
 
 export const getBytesInUse = function(item) {
@@ -241,13 +66,7 @@ export var utilityStore = {
       console.log('Tab created from utilityStore.createTab: ', t);
     });
   },
-  handleMode(mode, stateUpdate = null){
-    let shouldReturnStateUpdate = false;
-    if (!stateUpdate) {
-      stateUpdate = {};
-    } else {
-      shouldReturnStateUpdate = true;
-    }
+  handleMode(mode, stateUpdate = {}){
     let currentMode = state.get().prefs.mode;
     if (currentMode !== mode) {
       stateUpdate.direction = 'desc';
@@ -262,29 +81,23 @@ export var utilityStore = {
       }
     }
     if (mode === 'apps' || mode === 'extensions') {
-      chromeAppStore.set(mode === 'apps');
+      msgStore.queryExtensions();
     } else if (mode === 'bookmarks') {
-      bookmarksStore.getBookmarks();
+      msgStore.queryBookmarks();
     } else if (mode === 'history') {
-      historyStore.getHistory();
-    } else if (mode === 'sessions') {
-      msgStore.getSessions();
+      msgStore.queryHistory();
     } else {
+      if (mode === 'sessions') {
+        msgStore.getSessions();
+      }
       msgStore.getTabs();
     }
     _.assignIn(stateUpdate, {modeKey: mode === 'sessions' ? 'sessionTabs' : mode});
-    if (shouldReturnStateUpdate) {
-      return stateUpdate;
-    }
     state.set(stateUpdate);
     msgStore.setPrefs({mode: mode});
   },
   now(){
     return new Date(Date.now()).getTime();
-  },
-  initTrackJs(prefs, savedThemes){
-    window.trackJs.addMetadata('User Themes', savedThemes);
-    window.trackJs.addMetadata('User Preferences', prefs);
   },
 };
 window.utilityStore = utilityStore;
@@ -372,79 +185,37 @@ export var keyboardStore = {
   }
 };
 
-const checkDuplicateTabs = function(stateUpdate){
-  let tabUrls = map(stateUpdate.tabs, function(tab) {
-    return tab.url;
-  })
-  console.log('Duplicates: ', utils.getDuplicates(tabUrls));
-  if (utils.hasDuplicates(tabUrls)) {
-    stateUpdate.duplicateTabs = utils.getDuplicates(tabUrls);
-  }
-  return stateUpdate;
-}
-
 // Chrome event listeners set to trigger re-renders.
 export var msgStore = {
   init() {
     chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       let s = state.get('*');
-      if ((!s.prefs.allTabs
+      if (!s.prefs.allTabs && msg.windowId !== s.windowId && s.windowId > 0 && (s.settings !== 'sessions' && !s.modal.state) && !msg.action) {
+        return;
+      }
+      /* if ((!s.prefs.allTabs
         && msg.windowId !== s.windowId
         && !msg.init
         && s.settings !== 'sessions'
-        && !msg.action)
+        && !msg.action
+        && !msg.sessions)
         || s.windowRestored) {
         return;
-      }
+      } */
       console.log('msg: ', msg, 'sender: ', sender);
-      let stateUpdate = {};
-      if (msg.hasOwnProperty('windows')) {
-        stateUpdate = {
-          allTabs: map(msg.windows, function(win) {
-            return win.tabs;
-          })
-        };
-        if (msg.init) {
-          v('section').remove();
-          stateUpdate.windowId = msg.windowId;
-          utilityStore.initTrackJs(s.prefs, s.savedThemes);
-        }
-        let windowId = msg.init ? stateUpdate.windowId : s.windowId;
-        if (s.prefs.mode === 'tabs') {
-          if (s.prefs.allTabs) {
-            stateUpdate.tabs = _.flatten(stateUpdate.allTabs);
-          } else {
-            stateUpdate.tabs = find(msg.windows, function(win) {
-              return win.id === windowId;
-            }).tabs;
-          }
-          stateUpdate.tabs = utils.checkFavicons(stateUpdate.tabs, windowId);
-          stateUpdate = checkDuplicateTabs(stateUpdate);
-        } else if (s.prefs.mode === 'sessions') {
-          stateUpdate.modeKey = 'sessionTabs';
-          stateUpdate.sessionTabs = utils.checkFavicons(sessionsStore.flatten(s.sessions, _.flatten(stateUpdate.allTabs), windowId))
-        } else {
-          stateUpdate = utilityStore.handleMode(s.prefs.mode, stateUpdate)
-        }
-        state.set(stateUpdate);
+      if (msg.hasOwnProperty('windows')
+        || (msg.bookmarks && s.prefs.mode === 'bookmarks')
+        || (msg.history && s.prefs.mode === 'history')
+        || (msg.extensions && (s.prefs.mode === 'apps' || s.prefs.mode === 'extensions'))) {
+        window.tmWorker.postMessage({state: state.exclude(['modal', 'context']), msg});
       } else if (msg.hasOwnProperty('sessions')) {
-        stateUpdate = {sessions: msg.sessions};
-        if (s.prefs.mode === 'sessions') {
-          stateUpdate.sessionTabs = utils.checkFavicons(sessionsStore.flatten(msg.sessions, _.flatten(s.allTabs), s.windowId))
-        }
-        state.set(stateUpdate);
+        state.set({sessions: msg.sessions});
       } else if (msg.hasOwnProperty('screenshots')) {
         state.set({screenshots: msg.screenshots});
       } else if (msg.hasOwnProperty('actions')) {
         state.set({actions: msg.actions});
       } else if (msg.hasOwnProperty('focusSearchEntry')) {
         keyboardStore.focusSearchEntry();
-      } else if (msg.type === 'bookmarks' && s.prefs.mode === msg.type) {
-        bookmarksStore.getBookmarks();
-      } else if (msg.type === 'history' && s.prefs.mode === msg.type) {
-        historyStore.getHistory();
-      } else if (msg.type === 'app') {
-        chromeAppStore.set(s.prefs.mode === 'apps');
       } else if (msg.type === 'appState') {
         state.set({topNavButton: msg.action});
       } else if (msg.type === 'screenshot') {
@@ -476,6 +247,15 @@ export var msgStore = {
   },
   getTabs(init = false) {
     chrome.runtime.sendMessage(chrome.runtime.id, {method: 'getTabs', init});
+  },
+  queryBookmarks() {
+    chrome.runtime.sendMessage(chrome.runtime.id, {method: 'queryBookmarks'});
+  },
+  queryHistory() {
+    chrome.runtime.sendMessage(chrome.runtime.id, {method: 'queryHistory'});
+  },
+  queryExtensions() {
+    chrome.runtime.sendMessage(chrome.runtime.id, {method: 'queryExtensions'});
   },
   queryTabs(){
     chrome.runtime.sendMessage(chrome.runtime.id, {method: 'queryTabs'});
@@ -530,12 +310,12 @@ export var faviconStore = {
       let saveFavicon = (__img) => {
         s.favicons.push({
           favIconUrl: __img,
-          domain:  domain
+          domain
         });
         s.favicons = _.uniqBy(s.favicons, 'domain');
         chrome.storage.local.set({favicons: s.favicons}, ()=> {
           console.log('favicons saved');
-          state.set({favicons: s.favicons});
+          state.set({favicons: s.favicons}, true);
         });
       };
       let sourceImage = new Image();

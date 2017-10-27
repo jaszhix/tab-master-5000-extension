@@ -1,4 +1,4 @@
-import {clone, isEqual, intersection as intersect, difference} from 'lodash'
+import {clone, isEqual, intersection as intersect, difference} from 'lodash';
 import {find, findIndex, filter} from './utils';
 
 function storeError(method, key, message) {
@@ -146,15 +146,16 @@ function init(state = {}, listeners = [], mergeKeys = [], connections = 0) {
    * excludeKeys excluded, along with the public API for chaining.
    */
   function exclude(excludeKeys) {
-    let object = {};
-    let keys = Object.keys(state);
-    for (let i = 0; i < keys.length; i++) {
-      if (excludeKeys.indexOf(keys[i]) === -1) {
-        object[keys[i]] = state[keys[i]];
+    let apiKeys = Object.keys(publicAPI);
+    let stateKeys = Object.keys(state);
+    let filteredState = {};
+    for (let i = 0, len = stateKeys.length; i < len; i++) {
+      if (apiKeys.indexOf(stateKeys[i]) === -1
+        && excludeKeys.indexOf(stateKeys[i]) === -1) {
+        filteredState[stateKeys[i]] = state[stateKeys[i]];
       }
     }
-
-    return getAPIWithObject(object);
+    return filteredState;
   }
 
   /**

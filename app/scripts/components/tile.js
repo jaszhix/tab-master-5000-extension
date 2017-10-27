@@ -234,7 +234,6 @@ class Tile extends React.Component {
       opacity: s.stHover ? '0.2' : '1',
       transition: p.prefs.animations ? 'opacity 0.2s, white-space 0.1s' : 'initial'
     };
-    let favIconUrl = p.tab.favIconUrl ? utils.filterFavicons(p.tab.favIconUrl, p.tab.url) : '../images/file_paper_blank_document.png';
 
     const dynamicStyles = StyleSheet.create({
       ST1: Object.assign({
@@ -247,13 +246,13 @@ class Tile extends React.Component {
       }, subTitleStyle),
       panelContainer: {
         position: 'relative',
-        display: s.render ? 'block' : 'none',
+        display: 'block',
         height: p.prefs.tabSizeHeight,
         width: `${p.prefs.tabSizeHeight + 80}px`,
         float: 'left',
         margin: '6px',
         backgroundColor: s.hover ? p.theme.tileBgHover : p.theme.tileBg,
-        backgroundImage: `url('${s.screenshot ? s.screenshot : favIconUrl}')`,
+        backgroundImage: `url('${s.screenshot ? s.screenshot : p.tab.favIconUrl}')`,
         backgroundBlendMode: s.screenshot ? 'multiply, lighten' : 'luminosity',
         backgroundPosition: 'center',
         backgroundSize: s.screenshot ? 'cover' : 'contain',
@@ -271,7 +270,7 @@ class Tile extends React.Component {
         width: p.prefs.tabSizeHeight+80,
         padding: s.hover ? '0px' : 'initial',
         borderRadius: '0px',
-        backgroundImage: `url('${favIconUrl}')`,
+        backgroundImage: `url('${p.tab.favIconUrl}')`,
         backgroundBlendMode: 'luminosity',
         backgroundPosition: 'center',
         backgroundSize: '1px, auto, contain',
@@ -389,7 +388,7 @@ class Tile extends React.Component {
       footerLeft={
         <div className="metadata-container">
           <div className={`media-left ${css(styles.mediaLeft)}`}>
-            <img src={favIconUrl} className={css(styles.mediaLeftImage)} />
+            <img src={p.tab.favIconUrl} className={css(styles.mediaLeftImage)} />
           </div>
           <div className="media-left">
             <div className={css(dynamicStyles.footerTitleContainer)}>
@@ -500,9 +499,9 @@ class Tile extends React.Component {
       onBodyClick={this.handleClick}
       onFooterClick={!s.stHover ? () => this.handleClick() : null}
       onContextMenu={this.handleContextClick}>
-        {!favIconUrl || (p.tab.domain && p.tab.domain === 'chrome') ?
+        {!p.tab.favIconUrl || (p.tab.domain && p.tab.domain === 'chrome') ?
         <div className={css(dynamicStyles.titleContainer)}>
-          {p.tab.title.length > 0 && p.tab.title? sanitize(p.tab.title) : p.tab.domain ? sanitize(p.tab.domain) : null}
+          {p.tab.title.length > 0 && p.tab.title ? sanitize(p.tab.title) : p.tab.domain ? sanitize(p.tab.domain) : null}
         </div>
         : null}
       </Panel>
