@@ -29,3 +29,7 @@ app/scripts/content.js
 /app/scripts/glyphicons-halflings-regular.woff
 /app/scripts/glyphicons-halflings-regular.woff2
 app/manifest.json
+sources/
+source_maps/
+/app/scripts/main.worker.js
+/app/scripts/main.worker.js.map
