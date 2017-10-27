@@ -1,382 +1,380 @@
-@import "bootstrap";
-@import "animate";
-@import "loading";
-@import "rc";
-@import "buttons";
-@import "core";
-@import "components";
+@import 'bootstrap';
+@import 'animate';
+@import 'loading';
+@import 'rc';
+@import 'buttons';
+@import 'core';
+@import 'components';
 
 body {
-    overflow-x: hidden;
+  overflow-x: hidden;
 }
 
 #main {
-    left: 0;
-    right: 0;
-    z-index: 9990;
+  left: 0;
+  right: 0;
+  z-index: 9990;
 }
 #bgImg {
-    transition: background-color .02s ease-in, opacity .02s ease-in, filter 0.2s ease-in;
-    position: fixed;
-    display: none;
-    left: -5px;
-    right: 0;
-    z-index: 1;
-    overflow-x: hidden;
-    background-color: rgba(255, 255, 255, 0.45);
-    background-blend-mode: soft-light;
-    background-size: cover;
-
+  transition: background-color 0.02s ease-in, opacity 0.02s ease-in, filter 0.2s ease-in;
+  position: fixed;
+  display: none;
+  left: -5px;
+  right: 0;
+  z-index: 1;
+  overflow-x: hidden;
+  background-color: rgba(255, 255, 255, 0.45);
+  background-blend-mode: soft-light;
+  background-size: cover;
 }
 .search-tabs {
-    position: relative;
-    left: 20px;
+  position: relative;
+  left: 20px;
 }
 .session-field {
-    position: relative;
-    height: 24px;
+  position: relative;
+  height: 24px;
 }
 .tm-nav.ntg-form {
-    box-shadow: rgb(133, 132, 132) 1px 1px 3px -1px;
+  box-shadow: rgb(133, 132, 132) 1px 1px 3px -1px;
 }
 .tile-container {
-    margin-right: auto;
-    margin-left: auto;
+  margin-right: auto;
+  margin-left: auto;
 }
 
 .tile-body {
-    user-select: none;
-    padding-left: 0px;
-    padding-right: 0px;
-    margin-top: 1px;
+  user-select: none;
+  padding-left: 0px;
+  padding-right: 0px;
+  margin-top: 1px;
 }
 
 .sort-bar {
-    position: relative;
-    margin-top: 3px;
-    padding-left: 1%;
-    padding-right: 1%
+  position: relative;
+  margin-top: 3px;
+  padding-left: 1%;
+  padding-right: 1%;
 }
 .mode-container {
-    margin-top: 24px;
+  margin-top: 24px;
 }
 .side-div {
-    user-select: none;
-    float: left;
-    position: relative;
+  user-select: none;
+  float: left;
+  position: relative;
 }
 .tile-div {
-    float: left;
-    position: relative;
-    padding-right: 15px;
-    padding-left: 15px;
+  float: left;
+  position: relative;
+  padding-right: 15px;
+  padding-left: 15px;
 }
 
 .session-col {
-    overflow-wrap: normal;
+  overflow-wrap: normal;
 }
 .label-session-input {
-    position: relative;
-    height: 28px;
-    padding-left: 8px;
+  position: relative;
+  height: 28px;
+  padding-left: 8px;
 }
 .preferences {
-    user-select: none;
-    margin-top: 8px;
+  user-select: none;
+  margin-top: 8px;
 }
 .prefs-row {
-    margin-top: 8px;
-    margin-bottom: 8px;
+  margin-top: 8px;
+  margin-bottom: 8px;
 }
 .prefs-row-child {
-    margin-top: 8px;
+  margin-top: 8px;
 }
 .prefs-row-first {
-    margin-top: 8px;
+  margin-top: 8px;
 }
 .prefs-row-last {
-    margin-bottom: 8px;
+  margin-bottom: 8px;
 }
 .prefs-info {
-    position: absolute;
-    top: 80%;
-    padding-right: 2%;
-    padding-left: 2%;
+  position: absolute;
+  top: 80%;
+  padding-right: 2%;
+  padding-left: 2%;
 }
 
 .ntg-form {
-    background-color: #ededed;
+  background-color: #ededed;
 }
 .ntg-title {
-    font-size: 15px;
-    font-weight: 400;
-    text-shadow: 2px 2px #fff;
-    position: relative;
-    margin-top: 5px;
+  font-size: 15px;
+  font-weight: 400;
+  text-shadow: 2px 2px #fff;
+  position: relative;
+  margin-top: 5px;
 }
 .ntg-folder {
-    font-size: 15px;
-    font-weight: 400;
-    text-shadow: 2px 2px #fff;
-    position: absolute;
-    margin-top: 5px;
-    top: 95px;
-    left: -40px;
-    width: auto;
-    z-index: 300
+  font-size: 15px;
+  font-weight: 400;
+  text-shadow: 2px 2px #fff;
+  position: absolute;
+  margin-top: 5px;
+  top: 95px;
+  left: -40px;
+  width: auto;
+  z-index: 300;
 }
 .ntg-title-container {
-    padding: 0;
-    width: 66.66666667%;
-    float:left;
+  padding: 0;
+  width: 66.66666667%;
+  float: left;
 }
 .ntg-tile-row-top {
-    height: 60%;
+  height: 60%;
 }
 .ntg-tile-row-bottom {
-    height: 80%;
-    position: relative;
-    top: -48px;
+  height: 80%;
+  position: relative;
+  top: -48px;
 }
 .ntg-tile-row-bottom-bk {
-    height: 68%;
-    position: relative;
-    top: -56px;
+  height: 68%;
+  position: relative;
+  top: -56px;
 }
 .ntg-search-google-text {
-    position: absolute;
-    left: -160px;
-    top: 7px;
-    color: #CCC;
+  position: absolute;
+  left: -160px;
+  top: 7px;
+  color: #ccc;
 }
 .ntg-favicon {
-    width: 40px;
-    position: relative;
-    margin-top: 20px;
+  width: 40px;
+  position: relative;
+  margin-top: 20px;
 }
 .ntg-favicon-blur {
-    opacity: 0.3;
-    filter: blur(3px);
-    width: 40px;
-    position: relative;
+  opacity: 0.3;
+  filter: blur(3px);
+  width: 40px;
+  position: relative;
 }
 .ntg-small-favicon {
-    width: 15px;
+  width: 15px;
 }
 .ntg-pinned {
-    transition: color .05s ease-in;
-    width: 15px;
-    height: 15px;
-    position: absolute;
-    left: 17px;
-    opacity: 0.8;
-    padding:1px;
+  transition: color 0.05s ease-in;
+  width: 15px;
+  height: 15px;
+  position: absolute;
+  left: 17px;
+  opacity: 0.8;
+  padding: 1px;
 }
 .ntg-pinned-hover {
-    transition: color .05s ease-in;
-    width: 15px;
-    height: 15px;
-    position: absolute;
-    left: 17px;
-    padding:1px;
+  transition: color 0.05s ease-in;
+  width: 15px;
+  height: 15px;
+  position: absolute;
+  left: 17px;
+  padding: 1px;
 }
 .ntg-mute {
-    transition: color .05s ease-in;
-    width: 15px;
-    height: 15px;
-    position: absolute;
-    left: 34px;
-    opacity: 0.8;
-    padding:1px;
+  transition: color 0.05s ease-in;
+  width: 15px;
+  height: 15px;
+  position: absolute;
+  left: 34px;
+  opacity: 0.8;
+  padding: 1px;
 }
 .ntg-mute-hover {
-    transition: color .05s ease-in;
-    width: 15px;
-    height: 15px;
-    position: absolute;
-    left: 34px;
-    padding:1px;
+  transition: color 0.05s ease-in;
+  width: 15px;
+  height: 15px;
+  position: absolute;
+  left: 34px;
+  padding: 1px;
 }
 .ntg-mute-audible {
-    transition: color .05s ease-in;
-    width: 15px;
-    height: 15px;
-    position: absolute;
-    left: 34px;
-    opacity: 0.8;
-    padding:1px;
-    color: #B67777;
+  transition: color 0.05s ease-in;
+  width: 15px;
+  height: 15px;
+  position: absolute;
+  left: 34px;
+  opacity: 0.8;
+  padding: 1px;
+  color: #b67777;
 }
 .ntg-mute-audible-hover {
-    transition: color .05s ease-in;
-    width: 15px;
-    height: 15px;
-    position: absolute;
-    left: 34px;
-    padding:1px;
-    color: #B67777;
+  transition: color 0.05s ease-in;
+  width: 15px;
+  height: 15px;
+  position: absolute;
+  left: 34px;
+  padding: 1px;
+  color: #b67777;
 }
 .ntg-x {
-    transition: color .05s ease-in;
-    width: 15px;
-    height: 15px;
-    position: absolute;
-    left: 0;
-    opacity: 0.8;
-    padding:1px;
+  transition: color 0.05s ease-in;
+  width: 15px;
+  height: 15px;
+  position: absolute;
+  left: 0;
+  opacity: 0.8;
+  padding: 1px;
 }
 .ntg-x-hover {
-    transition: color .05s ease-in;
-    width: 15px;
-    height: 15px;
-    position: absolute;
-    left: 0;
-    padding:1px;
+  transition: color 0.05s ease-in;
+  width: 15px;
+  height: 15px;
+  position: absolute;
+  left: 0;
+  padding: 1px;
 }
 .ntg-move {
-    transition: color .05s ease-in;
-    width: 15px;
-    height: 15px;
-    position: absolute;
-    right: -17;
-    top: 0;
-    opacity: 0.8;
-    padding:1px;
-    cursor: move;
+  transition: color 0.05s ease-in;
+  width: 15px;
+  height: 15px;
+  position: absolute;
+  right: -17;
+  top: 0;
+  opacity: 0.8;
+  padding: 1px;
+  cursor: move;
 }
 .ntg-move-hover {
-    transition: color .05s ease-in;
-    color: #FFF;
-    width: 15px;
-    height: 15px;
-    position: absolute;
-    right: -17;
-    top: 0;
-    padding:1px;
-    cursor: move;
+  transition: color 0.05s ease-in;
+  color: #fff;
+  width: 15px;
+  height: 15px;
+  position: absolute;
+  right: -17;
+  top: 0;
+  padding: 1px;
+  cursor: move;
 }
 div.row.ntg-tile-row-top > div.col-xs-3 > div > i {
-    font-size: 13px;
-};
+  font-size: 13px;
+}
 .ntg-tile {
-    background-color: rgb(237, 237, 237);
-    box-shadow: rgb(133, 132, 132) 1px 1px 5px -1px;
-    transition: background-color .05s ease-in;
-    background-size: cover;
-    margin: 6px;
-    height: auto;
-    width: auto;
-    overflow-wrap: break-word;
-    float: left;
+  background-color: rgb(237, 237, 237);
+  box-shadow: rgb(133, 132, 132) 1px 1px 5px -1px;
+  transition: background-color 0.05s ease-in;
+  background-size: cover;
+  margin: 6px;
+  height: auto;
+  width: auto;
+  overflow-wrap: break-word;
+  float: left;
 }
 .ntg-tile-disabled {
-    background-color: rgb(237, 237, 237);
-    box-shadow: rgb(133, 132, 132) 1px 1px 5px -1px;
-    background-size: cover;
-    margin: 6px;
-    height: auto;
-    width: auto;
-    overflow-wrap: break-word;
-    float: left;
-    opacity: 0.4;
-    cursor: default;
+  background-color: rgb(237, 237, 237);
+  box-shadow: rgb(133, 132, 132) 1px 1px 5px -1px;
+  background-size: cover;
+  margin: 6px;
+  height: auto;
+  width: auto;
+  overflow-wrap: break-word;
+  float: left;
+  opacity: 0.4;
+  cursor: default;
 }
 .ntg-tile-hover {
-    background-color: rgb(247, 247, 247);
-    box-shadow: rgb(133, 132, 132) 1px 1px 5px -1px;
-    transition: background-color .05s ease-in;
-    background-size: cover;
-    margin: 6px;
-    height: 134px;
-    width: 200px;
-    overflow-wrap: break-word;
-    cursor: pointer;
-    float: left;
+  background-color: rgb(247, 247, 247);
+  box-shadow: rgb(133, 132, 132) 1px 1px 5px -1px;
+  transition: background-color 0.05s ease-in;
+  background-size: cover;
+  margin: 6px;
+  height: 134px;
+  width: 200px;
+  overflow-wrap: break-word;
+  cursor: pointer;
+  float: left;
 }
 .ntg-tile-moving {
-    text-align: center;
-    background-color: rgb(247, 247, 247);
-    box-shadow: rgb(133, 132, 132) 1px 1px 5px -1px;
-    transition: background-color .05s ease-in;
-    background-size: cover;
-    margin: 3px;
-    height: 134px;
-    width: 200px;
-    overflow-wrap: break-word;
-    cursor: move;
-    float: left;
+  text-align: center;
+  background-color: rgb(247, 247, 247);
+  box-shadow: rgb(133, 132, 132) 1px 1px 5px -1px;
+  transition: background-color 0.05s ease-in;
+  background-size: cover;
+  margin: 3px;
+  height: 134px;
+  width: 200px;
+  overflow-wrap: break-word;
+  cursor: move;
+  float: left;
 }
 .ntg-tile-focus-hover {
-    display: inline;
-    background-color: rgb(247, 247, 247);
-    box-shadow: rgb(133, 132, 132) 1px 1px 5px -1px;
-    transition: background-color .05s ease-in;
+  display: inline;
+  background-color: rgb(247, 247, 247);
+  box-shadow: rgb(133, 132, 132) 1px 1px 5px -1px;
+  transition: background-color 0.05s ease-in;
 }
 .ntg-session-pin {
-    padding-left: 3px;
-    opacity: 0.8;
+  padding-left: 3px;
+  opacity: 0.8;
 }
 .ntg-session-row {
-    vertical-align: middle;
-    padding-top: 4px;
-    padding-bottom: 4px;
-    height: auto;
+  vertical-align: middle;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  height: auto;
 }
 .ntg-session-text {
-    transition: color .05s ease-in;
-    font-size:14px;
-    padding-left: 8px;
-    overflow: hidden;
+  transition: color 0.05s ease-in;
+  font-size: 14px;
+  padding-left: 8px;
+  overflow: hidden;
 }
 .ntg-session-expanded {
-    overflow-y: scroll;
-    height: 200px;
-    width: 100%;
-    background-color: #ffffff;
-    margin-top: 4px;
+  overflow-y: auto;
+  width: 100%;
+  background-color: #ffffff;
+  margin-top: 4px;
 }
 .settings-fa {
-    position: relative;
-    top: -1px
+  position: relative;
+  top: -1px;
 }
 .blacklist {
-    margin-top: 4px;
+  margin-top: 4px;
 }
 .ntg-bl-row {
-    vertical-align: middle;
-    padding-top: 4px;
-    padding-bottom: 4px;
-    padding-left: 4px;
-    height: auto;
+  vertical-align: middle;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 4px;
+  height: auto;
 }
 .ntg-cc {
-    position: fixed;
-    display: table;
-    top: 80%;
-    left: 48%;
+  position: fixed;
+  display: table;
+  top: 80%;
+  left: 48%;
 }
 .ntg-about {
-    margin-left: auto;
-    margin-right: auto;
-    position: relative;
-    display: table;
+  margin-left: auto;
+  margin-right: auto;
+  position: relative;
+  display: table;
 }
 .ntg-about-c {
-    font-size: 12px;
-    position: relative;
-    display: table;
+  font-size: 12px;
+  position: relative;
+  display: table;
 }
 .ntg-context-menu {
-    position: absolute;
-    background-color: rgba(255, 255, 255, 0);
-    overflow: hidden;
-    -webkit-overflow-scrolling: touch;
-    width: auto;
-    height: auto;
-    padding-top: 7px;
-    padding-left: 7px;
-    padding-right: 7px;
-    padding-bottom: 2px;
+  position: absolute;
+  background-color: rgba(255, 255, 255, 0);
+  overflow: hidden;
+  -webkit-overflow-scrolling: touch;
+  width: auto;
+  height: auto;
+  padding-top: 7px;
+  padding-left: 7px;
+  padding-right: 7px;
+  padding-bottom: 2px;
 }
 .ntg-context {
   position: absolute;
@@ -385,54 +383,92 @@ div.row.ntg-tile-row-top > div.col-xs-3 > div > i {
   z-index: 9999;
 }
 .tm5k-info {
-    margin-top: 7px;
-    text-shadow: 1px 1px #fff;
+  margin-top: 7px;
+  text-shadow: 1px 1px #fff;
 }
 .form-control::-webkit-input-placeholder {
-    transition: color .01s ease-in;
-    color: #CCCCCC;
+  transition: color 0.01s ease-in;
+  color: #cccccc;
 }
 .form-control::-moz-placeholder {
-    transition: color .01s ease-in;
-    color: #CCCCCC;
+  transition: color 0.01s ease-in;
+  color: #cccccc;
 }
 .small-tab {
-    padding: 5px 7.5px;
+  padding: 5px 7.5px;
 }
 .nav-tabs {
-    border: none;
+  border: none;
 }
-.nav-tabs>li>a {
-    border-radius: initial;
-    margin-right: initial;
+.nav-tabs > li > a {
+  border-radius: initial;
+  margin-right: initial;
 }
-tr.placeholder {background: rgb(255,240,120);}
+tr.placeholder {
+  background: rgb(255, 240, 120);
+}
 tr.placeholder:before {
-  content: "Drop here";
+  content: 'Drop here';
 }
 .table > thead {
-    transition: background-color 0.2s;
+  transition: background-color 0.2s;
 }
 
 .table > thead > th {
-    width: auto;
-    transition: width 2s
+  width: auto;
+  transition: width 2s;
 }
 
-.theming, .modal-tm5k, .sessions {
-    user-select: none;
+.theming,
+.modal-tm5k,
+.sessions {
+  user-select: none;
 }
 
 .tile-placeholder {
-    position: relative;
-    display: block;
-    float: left;
-    margin: 6px;
+  position: relative;
+  display: block;
+  float: left;
+  margin: 6px;
 }
 
 .disk-usage-container {
-    display: inline-block;
-    position: absolute;
-    right: 62px;
-    bottom: 17px;
+  display: inline-block;
+  position: absolute;
+  right: 62px;
+  bottom: 17px;
+}
+
+.startup {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  font-family: 'Lato', sans-serif;
+  font-weight: 300;
+  background-color: rgba(237, 240, 242, 0.74902);
+}
+.startup-text-wrapper {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  text-align: center;
+}
+.startup-p {
+  color: rgb(103, 112, 115);
+  margin: 0;
+  font-size: 3em;
+  position: absolute;
+  display: inline-block;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  color: hsla(0, 0, 0, 0);
 }

@@ -108,6 +108,7 @@ const styles = StyleSheet.create({
   tabPanelStyle: {position: 'relative', top: '18px'},
   themeNameEditButtonContainerStyle: {width: 'auto', float: 'right', display: 'inline', marginRight: '4px'},
   noPaddingStyle: {padding: '0px'},
+  noWrap: {whiteSpace: 'nowrap'},
   tabLinkStyle: {padding: '5px 7.5px'},
   colorPickerTabContainerStyle: {marginTop: '8px', maxHeight: '218px', minHeight: '218px'},
   colorPickerRowStyle: {marginBottom: '28px', minHeight: '184px'},
@@ -174,7 +175,7 @@ class Theming extends React.Component {
   componentWillReceiveProps(nP) {
     let p = this.props;
     let refTheme;
-    if (true||nP.prefs.theme < 9000 || (this.state.leftTab === 'custom' && this.state.isNewTheme)) {
+    if (nP.prefs.theme < 9000 || (this.state.leftTab === 'custom' && this.state.isNewTheme)) {
       refTheme = find(nP.savedThemes, theme => theme.id === nP.prefs.theme);
       this.setState({showCustomButtons: true});
     } else {
@@ -320,7 +321,7 @@ class Theming extends React.Component {
       <div className="theming">
         <input type="file" onChange={(e)=>themeStore.import(e)} accept=".json" ref={this.getImportRef} style={style.hiddenInput} />
         <input type="file" onChange={(e)=>themeStore.importWallpaper(e, s.selectedTheme.id)} accept=".jpg,.jpeg,.png" ref={this.getWallpaperRef} style={style.hiddenInput} />
-        <Col size="3" className="ntg-tabs" style={{borderBottom: 'initial', position: 'fixed', zIndex: '9999', marginTop: '-20px', height: '50px', backgroundColor: p.theme.settingsBg}}>
+        <Col size="3" className="ntg-tabs" style={{borderBottom: 'initial', position: 'fixed', zIndex: '9999', marginTop: '-20px', height: '50px', backgroundColor: p.theme.settingsBg, width: '221px'}}>
           <div role="tabpanel" className={css(styles.tabPanelStyle)}>
             <ul className="nav nav-tabs">
               <li className={css(styles.noPaddingStyle) + ` ${s.leftTab === 'custom' ? 'active' : ''}`}>
@@ -431,7 +432,7 @@ class Theming extends React.Component {
         <Row>
           <Col size="3" />
           <Col className={css(styles.colorPickerTabContainerStyle) + ' pickerCont'} size="9">
-            <Col size="8" className="ntg-tabs" style={{borderBottom: 'initial', position: 'fixed', zIndex: '9999', marginTop: '-28px', height: '50px', backgroundColor: p.theme.settingsBg}}>
+            <div className="ntg-tabs" style={{borderBottom: 'initial', position: 'fixed', zIndex: '9999', marginTop: '-28px', height: '50px', backgroundColor: p.theme.settingsBg}}>
               <div role="tabpanel" className={css(styles.tabPanelStyle)}>
                 <ul className="nav nav-tabs">
                   <li className={css(styles.noPaddingStyle) + ` ${s.rightTab === 'color' ? 'active' : ''}`}>
@@ -443,7 +444,7 @@ class Theming extends React.Component {
                   </li> : null}
                 </ul>
               </div>
-            </Col>
+            </div>
             {s.rightTab === 'color' ?
             <Row className={css(styles.colorPickerRowStyle)}>
               {map(themeFields, (fields, q) => {
@@ -539,11 +540,17 @@ class Sessions extends React.Component {
       selectedCurrentSessionWindow: -1,
       selectedSavedSessionWindow: -1
     }
+    state.connect({
+      favicons: (partial) => this.handleSessionsState(partial)
+    });
     autoBind(this);
   }
   componentDidMount() {
     let p = this.props;
     let s = this.state;
+    this.modalBody = v('.modal-body').n;
+    this.onModalBodyScroll = () => v('#currentSession').css({top: this.modalBody.scrollTop});
+    this.modalBody.addEventListener('scroll', this.onModalBodyScroll);
     p.modal.footer = (
       <div>
         <Btn onClick={() => sessionsStore.exportSessions(p.sessions)} className="ntg-setting-btn" icon="database-export">{utils.t('export')}</Btn>
@@ -552,36 +559,35 @@ class Sessions extends React.Component {
       </div>
     );
     state.set({modal: p.modal}, true);
-    this.handleSessionsState(p);
+    this.handleSessionsState(state);
   }
   componentDidUpdate() {
     ReactTooltip.rebuild();
   }
-  handleSessionsState(p) {
-    each(p.sessions, (session, sKey) => {
-      each(session.tabs, (Window, wKey) => {
-        each(Window, (tab, tKey) => {
-          if (!tab) {
-            return;
-          }
-          if (!utils.isNewTab(tab.url)) {
-            if (!find(p.favicons, fv => fv.domain === tab.url.split('/')[2]) && tab.url.indexOf('127.0.0.1') === -1 && tab.url.indexOf('localhost') === -1) {
-              faviconStore.set_favicon(tab, session.tabs.length, tKey);
-            }
-            let fvData = _.result(find(p.favicons, fv => fv.domain === tab.url.split('/')[2]), 'favIconUrl');
-            p.sessions[sKey].tabs[wKey][tKey].favIconUrl = fvData ? fvData : utils.filterFavicons(tab.favIconUrl, tab.url, 'settings');
-          } else {
-            _.pullAt(p.sessions[sKey].tabs[wKey], tKey);
-          }
-        });
+  componentWillUnmount() {
+    this.modalBody.removeEventListener('scroll', this.onModalBodyScroll);
+  }
+  handleSessionsState(partial) {
+    const replaceFavicon = (tab) => {
+      if (!tab) {
+        return;
+      }
+      let favicon = find(partial.favicons, fv => tab.url.indexOf(fv.domain) > -1);
+      if (favicon) {
+        tab.favIconUrl = favicon.favIconUrl;
+      } else if (tab.url.indexOf('chrome://') === -1) {
+        tab.favIconUrl = '../images/file_paper_blank_document.png';
+      }
+    };
+    each(this.props.sessions, (session, s) => {
+      each(session.tabs, (Window, w) => {
+        each(Window, replaceFavicon);
       });
     });
-    state.set({sessions: p.sessions});
-  }
-  componentWillReceiveProps(nP) {
-    if (!_.isEqual(nP.favicons, this.props.favicons)) {
-      this.handleSessionsState(nP);
-    }
+    each(state.allTabs, (Window) => {
+      each(Window, replaceFavicon);
+    });
+    state.set({sessions: this.props.sessions, allTabs: this.props.allTabs});
   }
   labelSession(session) {
     session.label = this.state.sessionLabelValue;
@@ -612,17 +618,28 @@ class Sessions extends React.Component {
     ReactTooltip.hide();
     this.setState({selectedSessionTabHover: i});
   }
-  expandSelectedSession(i, e) {
-    let s = this.state;
-    if (s.labelSession) {
-      e.preventDefault();
-    } else {
-      if (i === this.state.expandedSession) {
-        this.setState({expandedSession: null});
-      } else {
-        this.setState({expandedSession: i});
+  handleSearchActivation(i) {
+    this.setState({searchField: this.state.searchField === i ? -1 : i, expandedSession: i}, () => {
+      if (this.state.searchField !== i) {
+        return;
       }
-    }
+      v('#sessionSearch').n.focus();
+    });
+  }
+  expandSelectedSession(i, e) {
+    this.setState({
+      expandedSession: this.state.expandedSession === i ? -1 : i,
+      selectedSavedSessionWindow: -1,
+      searchField: -1,
+      search: '',
+      labelSession: -1
+    }, () => {
+      _.delay(() => {
+        if (v(`#ntg-session-row-${i}`).height() + (i * 30) > v('.modal-body').height()) {
+          v(`#ntg-session-row-${i}`).n.scrollIntoView();
+        }
+      }, 200);
+    });
   }
   handleCurrentSessionCloseTab(id, refWindow, refTab) {
     chrome.tabs.remove(id);
@@ -637,30 +654,35 @@ class Sessions extends React.Component {
     state.set({allTabs: this.props.allTabs});
     ReactTooltip.hide();
   }
+  handleRemoveSession(session) {
+    this.setState({expandedSession: -1, selectedSavedSessionWindow: -1});
+    sessionsStore.v2Remove(this.props.sessions, session);
+  }
   getFileInputRef(ref) {
     this.fileInputRef = ref;
   }
   render() {
     let p = this.props;
     let s = this.state;
+    const searchActive = s.search.length > 0;
     const currentSessionSelected = s.selectedCurrentSessionWindow > -1;
-    const columnStyle = {transition: p.prefs.animations ? 'width 0.2s' : 'initial'};
     const sessionInputStyle = {backgroundColor: p.theme.settingsBg, color: p.theme.bodyText};
-    const sessionExpandedRowStyle = {backgroundColor: p.theme.settingsBg, color: p.theme.bodyText, height: '400px'};
+    const sessionExpandedRowStyle = {backgroundColor: p.theme.settingsBg, color: p.theme.bodyText, maxHeight: '400px'};
     return (
       <div className="sessions">
         <Col
-        size={currentSessionSelected ? '6' : '9'}
-        style={columnStyle}
+        size={currentSessionSelected || p.prefs.settingsMax ? '6' : '9'}
+        style={{transition: p.prefs.animations ? 'width 0.15s' : 'initial'}}
         className="session-col"
         onMouseLeave={() => this.handleSessionHoverOut(-1)}>
           <h4>{utils.t('savedSessions')} {p.sessions.length > 0 ? `(${p.sessions.length})` : null}</h4>
           {map(p.sessions, (session, i) => {
             let time = _.capitalize(moment(session.timeStamp).fromNow());
             let _time = time === 'A few seconds ago' ? 'Seconds ago' : time;
+            let sessionTabsLength = session.tabs.length;
             let getTabsCount = () => {
               let int = 0;
-              for (let i = 0, len = session.tabs.length; i < len; i++) {
+              for (let i = 0; i < sessionTabsLength; i++) {
                 for (let y = session.tabs[i].length - 1; y >= 0; y--) {
                   ++int;
                 }
@@ -669,15 +691,47 @@ class Sessions extends React.Component {
             };
             let tabsCount = getTabsCount();
             let sessionTitle = `${session.label ? session.label : _time}: ${session.tabs.length} ${utils.t('window')}${session.tabs.length > 1 ? 's' : ''}, ${tabsCount} ${utils.t('tab')}${tabsCount > 1 ? 's' : ''}`;
+            let tabsLength = 0;
             return (
               <Row
+              ref={(ref) => {
+                if (!ref || !p.prefs.animations) {
+                  return;
+                }
+                let height = 30;
+                if (s.expandedSession === i) {
+                  height += sessionTabsLength * 30;
+                  if (s.selectedSavedSessionWindow > -1 || searchActive) {
+                    let len = tabsLength * 20;
+                    let maxMultiplier = searchActive ? sessionTabsLength : 1;
+                    let max = 400 * maxMultiplier;
+                    height += len > max ? max : len;
+                  }
+                  if (s.searchField === i) {
+                    height += 44;
+                  }
+                  if (s.labelSession === i) {
+                    height += 41;
+                  }
+                }
+                if (ref.height && height === ref.height) {
+                  return;
+                }
+                v(`#ntg-session-row-${i}`).css({
+                  height: `${height}px`
+                });
+                ref.height = height;
+              }}
               onMouseEnter={() => this.handleSessionHoverIn(i)}
               onMouseLeave={() => this.handleSessionHoverOut(i)}
-              key={i} className="ntg-session-row"
+              key={i}
+              className="ntg-session-row"
+              id={`ntg-session-row-${i}`}
               style={{
                 backgroundColor: s.sessionHover === i || s.expandedSession === i ? p.theme.settingsItemHover : 'initial',
                 minHeight: '30px',
-                userSelect: 'none'
+                userSelect: 'none',
+                transition: 'height 0.15s'
               }}>
                 <Row>
                   <div className={css(styles.sessionTitleContainerStyle)}>
@@ -704,7 +758,7 @@ class Sessions extends React.Component {
                   {s.sessionHover === i ?
                   <div className={css(styles.sessionItemContainerStyle)}>
                     <Btn
-                    onClick={() => sessionsStore.v2Remove(p.sessions, session)}
+                    onClick={() => this.handleRemoveSession(session)}
                     className="ntg-session-btn"
                     icon="cross"
                     faStyle={sessionButtonIconStyle}
@@ -726,7 +780,7 @@ class Sessions extends React.Component {
                     noIconPadding={true}
                     data-tip={p.prefs.syncedSession === session.id ? utils.t('desynchronizeSession') : utils.t('synchronizeSession')} /> : null}
                     <Btn
-                    onClick={() => this.setState({searchField: s.searchField === i ? -1 : i, expandedSession: i})}
+                    onClick={() => this.handleSearchActivation(i)}
                     className="ntg-session-btn"
                     icon="search4"
                     faStyle={sessionHoverButtonIconStyle}
@@ -753,6 +807,7 @@ class Sessions extends React.Component {
                             this.labelSession(session);
                           }}>
                             <input
+                            id="sessionLabel"
                             type="text"
                             value={s.sessionLabelValue}
                             className="form-control label-session-input"
@@ -781,6 +836,7 @@ class Sessions extends React.Component {
                       {s.searchField === i ?
                       <Col size="12" className={css(styles.sessionSearchContainer)}>
                         <input
+                        id="sessionSearch"
                         type="text"
                         value={s.search}
                         className="form-control label-session-input"
@@ -795,11 +851,11 @@ class Sessions extends React.Component {
                     <Row
                     key={w}
                     className="ntg-session-row"
-                    style={{backgroundColor: s.windowHover === w ? p.theme.settingsItemHover : p.theme.settingsBg}}
+                    style={{backgroundColor: s.windowHover === w || s.selectedSavedSessionWindow === w ? p.theme.settingsItemHover : p.theme.settingsBg}}
                     onMouseEnter={() => this.setState({windowHover: w})}>
                       <Row
                       className="ntg-session-text"
-                      style={{marginBottom: s.selectedSavedSessionWindow === w || s.search.length > 0 ? '1px' : 'initial', minHeight: '22px'}}>
+                      style={{marginBottom: s.selectedSavedSessionWindow === w || searchActive ? '1px' : 'initial', minHeight: '22px'}}>
                         <span
                         title={windowTitle}
                         className={css(styles.sessionWindowTitleSpanStyle) + ' ntg-session-text'}
@@ -817,14 +873,11 @@ class Sessions extends React.Component {
                           data-tip={utils.t('restoreWindow')} /> : null}
                         </div>
                       </Row>
-                      {s.selectedSavedSessionWindow === w || s.search.length > 0 ?
+                      {s.selectedSavedSessionWindow === w || searchActive ?
                       <Row className="ntg-session-expanded" style={sessionExpandedRowStyle} onMouseLeave={() => this.handleSelectedSessionTabHoverOut(-1)}>
                       {map(_window, (t, x) => {
-                        if (s.search.length === 0 || t.title.toLowerCase().indexOf(s.search) > -1) {
-                          if (!find(p.favicons, fv => fv.domain === t.url.split('/')[2]) && t.url.indexOf('127.0.0.1') === -1) {
-                            faviconStore.set_favicon(t, session.tabs.length, x);
-                          }
-                          let favIconUrl = t.favIconUrl ? utils.filterFavicons(t.favIconUrl, t.url) : '../images/file_paper_blank_document.png';
+                        if (!searchActive || t.title.toLowerCase().indexOf(s.search) > -1) {
+                          tabsLength++;
                           return (
                             <Row
                             className="ntg-session-text"
@@ -833,8 +886,8 @@ class Sessions extends React.Component {
                             key={x}
                             style={{backgroundColor: s.selectedSessionTabHover === x ? p.theme.settingsItemHover : 'initial', maxHeight: '20px'}}>
                               <Col size="11" className={css(styles.noPaddingStyle)}>
-                                <span title={t.title} onClick={() => utilityStore.createTab(t.url)} className={css(styles.cursorPointerStyle)}>
-                                  <img className="ntg-small-favicon" style={{position: 'relative', top: '-1px'}} src={favIconUrl} />
+                                <span title={t.title} onClick={() => utilityStore.createTab(t.url)} className={css(styles.cursorPointerStyle, styles.noWrap)}>
+                                  <img className="ntg-small-favicon" style={{position: 'relative', top: '-1px'}} src={t.favIconUrl} />
                                   {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {t.title}
                                 </span>
                               </Col>
@@ -869,26 +922,49 @@ class Sessions extends React.Component {
           style={style.hiddenInput} />
         </Col>
         <Col
-        size={currentSessionSelected ? '6' : '3'}
+        size={currentSessionSelected || p.prefs.settingsMax ? '6' : '3'}
         className="session-col"
-        style={columnStyle}
+        id="currentSession"
+        style={{postion: 'absolute', right: '0px', transition: p.prefs.animations ? 'width 0.15s' : 'initial'}}
         onMouseLeave={() => this.setState({currentSessionHover: -1})}>
           <h4>{utils.t('currentSession')}</h4>
           {p.allTabs ? map(state.allTabs, (_window, w) => {
-            if (_window.length === 0) {
+            let windowLength = _window.length;
+            if (windowLength === 0) {
               return null;
             }
             _window = filter(_window, function(tab) {
               return !utils.isNewTab(tab.url);
             });
-            let windowTitle = `${utils.t('window')} ${w + 1}: ${_window.length} ${_.upperFirst(utils.t('tabs'))}`;
+            let windowTitle = `${utils.t('window')} ${w + 1}: ${windowLength} ${_.upperFirst(utils.t('tabs'))}`;
             return (
               <Row
               key={w}
+              ref={(ref) => {
+                if (!ref || !p.prefs.animations) {
+                  return;
+                }
+                _.defer(() => {
+                  let height = 30;
+                if (s.selectedCurrentSessionWindow === w) {
+                  let len = windowLength * 20;
+                  height += len > 400 ? 400 : len;
+                }
+                if (ref.height && ref.height === height) {
+                  return;
+                }
+                v(`#ntg-session-row-2-${w}`).css({
+                  height: `${height}px`
+                });
+                ref.height = height;
+                });
+              }}
               className="ntg-session-row"
+              id={`ntg-session-row-2-${w}`}
               style={{
                 backgroundColor: s.currentSessionHover === w || s.selectedCurrentSessionWindow === w ? p.theme.settingsItemHover : 'initial',
-                paddingBottom: s.selectedCurrentSessionWindow === w ? '4px' : '5px'
+                paddingBottom: s.selectedCurrentSessionWindow === w ? '4px' : '5px',
+                transition: 'height 0.15s'
               }}
               onMouseEnter={() => this.setState({currentSessionHover: w})}
               onMouseLeave={() => this.setState({currentSessionTabHover: -1})}>
@@ -920,10 +996,9 @@ class Sessions extends React.Component {
                   if (!t) {
                     return null;
                   }
-                  let favIconUrl = t.favIconUrl ? utils.filterFavicons(t.favIconUrl, t.url) : '../images/file_paper_blank_document.png';
                   if (utils.isNewTab(t.url)) {
                     _.pullAt(_window, i);
-                    return;
+                    return null;
                   }
                   return (
                     <Row
@@ -935,8 +1010,8 @@ class Sessions extends React.Component {
                       <span
                       title={t.title}
                       onClick={() => utils.activateTab(t)}
-                      className={css(styles.cursorPointerStyle)}>
-                        <img className="ntg-small-favicon" style={{position: 'relative', top: '-1px'}} src={favIconUrl} />
+                      className={css(styles.cursorPointerStyle, styles.noWrap)}>
+                        <img className="ntg-small-favicon" style={{position: 'relative', top: '-1px'}} src={t.favIconUrl} />
                         {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {t.title}
                       </span>
                       </Col>
