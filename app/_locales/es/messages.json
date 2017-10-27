@@ -353,6 +353,12 @@
   "alertsTip": {
     "message": "Cambia las notificaciones que aparecen en la esquina inferior derecha de la pantalla."
   },
+  "errorTelemetry": {
+    "message": "Habilitar informes de errores anónimos"
+  },
+  "errorTelemetryTip": {
+    "message": "Mantener esto habilitado ayuda a mejorar TM5K. Cuando se produce un error en el código, los datos de configuración de su navegador, sistema operativo, IP y TM5K (excluida la lista negra) se envían a TrackJS junto con un seguimiento de pila, para que los desarrolladores puedan identificar el error y aplicarle un parche para la próxima versión."
+  },
   "screenshotBgOpacity": {
     "message": "Establecer la opacidad de la imagen de fondo"
   },

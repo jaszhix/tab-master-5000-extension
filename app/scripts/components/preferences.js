@@ -303,10 +303,10 @@ class Preferences extends React.Component {
     state.set({prefs: obj});
 
     msgStore.setPrefs(obj);
-    if (opt === 'animations') {
-      _.defer(()=>window.location.reload());
-    } else if (opt === 'screenshot') {
+    if (opt === 'screenshot') {
       _.delay(()=>chrome.runtime.reload(), 500);
+    } else if (opt === 'errorTelemetry') {
+      window.location.reload();
     }
   }
   handleSlide(e, opt) {
@@ -464,6 +464,12 @@ class Preferences extends React.Component {
             onClick={()=>this.handleClick('alerts')}
             on={p.prefs.alerts} label={utils.t('alerts')}
             data-tip={utils.t('alertsTip')} />
+            <Toggle
+            theme={p.theme}
+            onMouseEnter={()=>this.handleToggle('errorTelemetry')}
+            onClick={()=>this.handleClick('errorTelemetry')}
+            on={p.prefs.errorTelemetry} label={utils.t('errorTelemetry')}
+            data-tip={utils.t('errorTelemetryTip')} />
           </Col>
           <Col size="6">
             {!p.options ?
