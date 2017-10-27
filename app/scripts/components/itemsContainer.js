@@ -25,17 +25,15 @@ class ItemsContainer extends React.Component {
     this.connections = [
       state.connect(
         ['modeKey', 'prefs'], (partial) => {
+          if (this.modeKey === partial.modeKey) {
+            return;
+          }
           this.modeKey = partial.modeKey;
           document.body.scrollIntoView();
           document.body.scrollTop = 0;
           this.setViewableRange(this.ref);
-        }
-      ),
-      state.connect({
-        sort: () => {
-          if (this.props.s.prefs.format === 'tile') {
-            return;
-          }
+        },
+        ['sort', 'prefs'], () => {
           this.scrollTop = document.body.scrollTop;
           _.defer(() => {
             if (document.body.scrollTop === 0) {
@@ -79,8 +77,11 @@ class ItemsContainer extends React.Component {
     if (!this.ref) {
       return;
     }
-    this.scrollTop = document.body.scrollTop;
-    this.setViewableRange(this.ref);
+
+    if (this.scrollTop !== document.body.scrollTop) {
+      this.setViewableRange(this.ref);
+      this.scrollTop = document.body.scrollTop;
+    }
   }
   setViewableRange(node) {
     if (!node) {
