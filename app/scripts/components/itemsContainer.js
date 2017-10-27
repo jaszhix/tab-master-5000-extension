@@ -43,15 +43,13 @@ class ItemsContainer extends React.Component {
             }
           });
         }
-      }),
-      state.connect(['prefs', 'wallpaper'], () => this.prefsInit(this.props))
+      )
     ];
     autoBind(this);
     this.height = 0;
     this._setViewableRange = _.throttle(this.setViewableRange, 2000, {leading: true});
   }
   componentDidMount() {
-    this.prefsInit(this.props);
     let checkNode = ()=>{
       if (this.ref) {
         window.addEventListener('scroll', this.handleScroll);
@@ -61,27 +59,6 @@ class ItemsContainer extends React.Component {
       }
     };
     checkNode();
-  }
-  prefsInit(p) {
-    if (p.s.prefs.screenshotBg || p.s.prefs.screenshot || p.wallpaper && p.wallpaper.data !== -1) {
-      v('#main').css({position: 'absolute'});
-      v('#bgImg').css({
-        display: 'inline-block',
-        width: window.innerWidth + 30,
-        height: window.innerHeight + 5,
-        filter: `blur(${p.s.prefs.screenshotBgBlur}px)`,
-        opacity: 0.1 * p.s.prefs.screenshotBgOpacity
-      });
-    } else {
-      v('#main').css({position: p.wallpaper ? 'absolute' : ''});
-      v('#bgImg').css({
-        display: 'none',
-        backgroundImage: 'none',
-        backgroundBlendMode: 'normal',
-        filter: `blur(${p.s.prefs.screenshotBgBlur}px)`,
-        opacity: 1
-      });
-    }
   }
   componentWillUnmount() {
     if (this.ref) {

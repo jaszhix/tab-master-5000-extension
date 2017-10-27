@@ -1,33 +1,3 @@
-const PROD = process.env.NODE_ENV === 'production';
-window._trackJs = {
-  token: 'bd495185bd7643e3bc43fa62a30cec92',
-  enabled: PROD,
-  onError: function () {return true;},
-  version: "",
-  callback: {
-    enabled: true,
-    bindStack: true
-  },
-  console: {
-    enabled: PROD,
-    display: true,
-    error: true,
-    warn: false,
-    watch: ['info', 'warn', 'error']
-  },
-  network: {
-    enabled: true,
-    error: true
-  },
-  visitor: {
-    enabled: true
-  },
-  window: {
-    enabled: true,
-    promise: true
-  }
-};
-const trackJs = require('trackjs');
 import moment from 'moment';
 moment.locale(chrome.i18n.getUILanguage());
 import state from './stores/state';
@@ -158,15 +128,15 @@ class Root extends React.Component {
     if (e.savedThemes) {
       stateUpdate.savedThemes = e.savedThemes;
     }
+    let style = v('#theme-style-el').n;
+    if (!style) {
+      return;
+    }
     if (e.theme) {
       let sessionFieldColor = themeStore.balance(e.theme.settingsBg);
       let vendor = p.s.chromeVersion > 1 ? 'webkit' : 'moz';
       let inputPlaceholder = p.s.chromeVersion > 1 ? `${vendor}-input` : vendor;
-      let style = v('style').n;
-      if (!style) {
-        return;
-      }
-      v('#theme-style-el').n.innerHTML = `
+      style.innerHTML = `
       a, a:focus, a:hover {
         color: ${themeStore.opacify(e.theme.bodyText, 0.9)};
       }
@@ -337,16 +307,18 @@ class Root extends React.Component {
         background-color: ${e.theme.tileBg};
         border-color: ${e.theme.tileShadow};
       }
+      .panel-flat>.panel-heading {
+        background-color: ${e.theme.tileBg};
+      }
+      body {
+        color: ${e.theme.bodyText};
+        background-color: ${e.theme.bodyBg};
+      }
       `;
-      v(document.body).css({
-        color: e.theme.bodyText,
-        backgroundColor: e.theme.bodyBg,
-      });
-      v('#bgImg').css({backgroundColor: e.theme.bodyBg});
 
       // Firefox options integration
       if (state.isOptions && state.chromeVersion === 1) {
-        v('#theme-style-el').n.innerHTML += `
+        style.innerHTML += `
           small {
             background-color: rgba(235, 235, 235, 1) !important;
           }
@@ -377,15 +349,29 @@ class Root extends React.Component {
     }
     if (e.currentWallpaper && typeof e.currentWallpaper.data !== 'undefined') {
       if (e.currentWallpaper.data !== -1) {
-        v('#bgImg').css({
-          backgroundImage: `url('${e.currentWallpaper.data}')`,
-          backgroundSize: 'cover'
-        });
+        style.innerHTML += `
+          #bgImg {
+            display: inline-block !important;
+            filter: blur(${p.s.prefs.screenshotBgBlur}px) !important;
+            opacity: ${0.1 * p.s.prefs.screenshotBgOpacity} !important;
+            background-color: ${e.theme.bodyBg} !important;
+            background-image: url('${e.currentWallpaper.data}') !important;
+            background-size: cover !important;
+          }
+        `;
         stateUpdate.currentWallpaper = e.currentWallpaper;
       } else {
-        v('#bgImg').css({
-          backgroundImage: 'none'
-        });
+        style.innerHTML += `
+          #bgImg {
+            display: none;
+            filter: blur(${p.s.prefs.screenshotBgBlur}px);
+            opacity: 1;
+            background-color: ${e.theme.bodyBg};
+            background-image: none;
+            background-size: cover;
+            background-blend-mode: normal;
+          }
+        `;
         stateUpdate.currentWallpaper = null;
       }
     }

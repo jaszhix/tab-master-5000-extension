@@ -30,9 +30,41 @@ const loadPrefs = ()=>{
     if (!response) {
       return;
     }
+    const enabled = response.prefs.errorTelemetry;
+    window._trackJs = {
+      token: 'bd495185bd7643e3bc43fa62a30cec92',
+      enabled: enabled,
+      onError: function () {return true;},
+      version: "",
+      callback: {
+        enabled: enabled,
+        bindStack: enabled
+      },
+      console: {
+        enabled: enabled,
+        display: enabled,
+        error: enabled,
+        warn: false,
+        watch: ['info', 'warn', 'error']
+      },
+      network: {
+        enabled: enabled,
+        error: enabled
+      },
+      visitor: {
+        enabled: enabled
+      },
+      window: {
+        enabled: enabled,
+        promise: enabled
+      }
+    };
+    if (enabled) {
+      const trackJs = require('trackjs');
+      trackJs.addMetadata('prefs', response.prefs);
+    }
     const stateUpdate = {
       prefs: response.prefs,
-      init: false,
       chromeVersion: utilityStore.chromeVersion()
     };
     console.log('Prefs loaded: ', response);
