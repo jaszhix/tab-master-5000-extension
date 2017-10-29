@@ -210,6 +210,7 @@ class Tile extends React.Component {
     let hasDiscarded = p.chromeVersion >= 54; // should be in parent
     let openTab = p.tab.hasOwnProperty('openTab') && p.tab.openTab;
     let isTab = p.prefs.mode === 'tabs' || openTab;
+    let isLoading = p.tab.status === 'loading';
 
     let sanitize = (str) =>{
       let result = str.replace(/[^a-z0-9]/gi, '')[0];
@@ -316,7 +317,7 @@ class Tile extends React.Component {
         width: `${p.prefs.tabSizeHeight + 80}px`,
         padding: '0px',
         borderRadius: '0px',
-        backgroundColor: s.hover ? p.theme.tileBg : p.tab.pinned || p.tab.mutedInfo.muted || p.tab.audible ? themeStore.opacify(p.theme.tileBg, 0.8) : 'rgba(255, 255, 255, 0)',
+        backgroundColor: s.hover ? p.theme.tileBg : p.tab.pinned || p.tab.mutedInfo.muted || p.tab.audible || s.duplicate ? themeStore.opacify(p.theme.tileBg, 0.8) : 'rgba(255, 255, 255, 0)',
         position: 'absolute',
         zIndex: '11',
         transition: p.prefs.animations ? 'opacity 0.2s, background-color 0.1s' : 'initial',
@@ -334,7 +335,7 @@ class Tile extends React.Component {
       headerIconContainer: {
         display: 'flex',
         position: 'relative',
-        left: `${p.prefs.tabSizeHeight + (isTab ? 27 : p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ? 46 : 62)}px`,
+        left: `${p.prefs.tabSizeHeight + (isTab ? s.duplicate || isLoading ? 22 : 27 : p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ? 46 : 62)}px`,
         top: '1px'
       },
       iconCommon: {
@@ -376,6 +377,16 @@ class Tile extends React.Component {
         top: isTab ? '-1px' : '1px',
         right: isTab ? 'initial' : '0px',
         fontSize: isTab ? '16px' : '12px'
+      },
+      notificationIcon: {
+        color: p.theme.tileMuteAudibleHover,
+        top: '2px',
+        left: `-${p.prefs.tabSizeHeight + 20}px`,
+        fontSize: '13px',
+        position: 'absolute',
+        transition: 'opacity 0.5s',
+        animationIterationCount: 'infinite',
+        animationDuration: '1s'
       }
     })
     return (
@@ -440,6 +451,15 @@ class Tile extends React.Component {
       header={
         <div className={css(styles.headerContainer)}>
           <ul className={css(dynamicStyles.headerIconContainer) + ' icons-list'}>
+            {isTab && (s.duplicate || isLoading) ?
+            <li>
+              <i
+              title={isLoading ? utils.t('loading') : utils.t('duplicateTab')}
+              className={css(dynamicStyles.notificationIcon) + ` icon-${isLoading ? 'spinner2 rotating' : `notification2 ${p.prefs.animations && p.prefs.duplicate ? 'pulse' : ''}`} `}
+              onMouseEnter={this.handlePinHoverIn}
+              onMouseLeave={this.handlePinHoverOut} />
+            </li>
+            : null}
             {(p.chromeVersion >= 46 || p.chromeVersion === 1) && (openTab || p.prefs.mode === 'tabs') ?
             <li>
               <i
@@ -490,7 +510,7 @@ class Tile extends React.Component {
           </ul>
         </div>
       }
-      className={css(dynamicStyles.panelContainer) + (s.duplicate && !s.hover ? ' animated flash ' : '')}
+      className={css(dynamicStyles.panelContainer)}
       bodyStyle={css(dynamicStyles.panelBody)}
       footerStyle={css(dynamicStyles.panelFooter)}
       headingStyle={css(dynamicStyles.panelHeading)}
