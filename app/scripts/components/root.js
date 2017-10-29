@@ -8,7 +8,6 @@ import v from 'vquery';
 window.v = v;
 import tc from 'tinycolor2';
 import React from 'react';
-import autoBind from 'react-autobind';
 import _ from 'lodash';
 import ReactTooltip from 'react-tooltip';
 import {keyboardStore, utilityStore, msgStore, faviconStore} from './stores/main';
@@ -26,7 +25,7 @@ import Search from './search';
 import tmWorker from './main.worker.js';
 
 window.tmWorker = new tmWorker();
-window.tmWorker.onmessage = function(e) {
+window.tmWorker.onmessage = (e) => {
   console.log('WORKER: ', e.data);
   if (e.data.favicons) {
     chrome.storage.local.set({favicons: e.data.favicons}, ()=> {
@@ -36,15 +35,17 @@ window.tmWorker.onmessage = function(e) {
   } else if (e.data.setPrefs) {
     msgStore.setPrefs(e.data.setPrefs);
   } else if (e.data.msg === 'handleMode') {
-    utilityStore.handleMode(e.data.mode, e.data.stateUpdate);
+    utilityStore.handleMode(e.data.mode, e.data.stateUpdate, e.data.init);
   } else if (e.data.msg === 'setFavicon') {
     faviconStore.set_favicon(...e.data.args);
   } else if (e.data.stateUpdate) {
-    if (!state.init) {
+    let init = state.get('init');
+    if (!init) {
       e.data.stateUpdate.init = true;
       v('section').remove();
+      console.timeEnd('init');
     }
-    state.set(e.data.stateUpdate);
+    tryFn(() => state.set(e.data.stateUpdate));
   }
 }
 
@@ -64,10 +65,26 @@ class Root extends React.Component {
     };
     this.connections = [
       themeStore.connect('*', (e) => this.themeChange(e)),
-      state.connect(['sort', 'direction'], () => {
-        let sU = {};
-        sU[this.props.s.modeKey] = utils.sort(this.props.s[this.props.s.modeKey]);
-        state.set(sU, true);
+      state.connect(['sort', 'direction'], (partial) => {
+        if (!this.props.s.modeKey) {
+          return;
+        }
+        if (this.sort === partial.sort && this.direction === partial.direction) {
+          return;
+        }
+        this.sort = partial.sort;
+        this.direction = partial.direction;
+        window.tmWorker.postMessage({
+          msg: {
+            sort: state.sort,
+            direction: state.direction,
+            data: state[state.modeKey],
+            modeKey: state.modeKey,
+            prefs: {
+              mode: state.prefs.mode
+            }
+          }
+        });
       }),
       state.connect({
         search: (partial) => {
@@ -93,44 +110,50 @@ class Root extends React.Component {
           state.set(this.updateTabState(partial.folder, 'folder', partial));
         },
         applyTabOrder: (partial) => {
-          if (partial.applyTabOrder) {
-            _.defer(()=>state.set({applyTabOrder: false}, () => msgStore.queryTabs()));
+          if (!partial.applyTabOrder) {
+            return;
           }
+          for (let i = 0, len = this.props.s.tabs.length; i < len; i++) {
+            chrome.tabs.move(this.props.s.tabs[i].id, {index: i});
+          }
+          state.set({applyTabOrder: false});
+
         }
       })
     ];
-    autoBind(this);
   }
-  componentDidMount() {
+  componentDidMount = () => {
     // Initialize Reflux listeners.
     themeStore.load(this.props.s.prefs);
     window._trackJs.version = utilityStore.get_manifest().version;
     this.init(this.props);
 
   }
-  componentWillUnmount() {
+  componentWillUnmount = () => {
     const [themeStoreConnection, ...connections] = this.connections;
     themeStore.disconnect(themeStoreConnection);
     each(connections, connection => state.disconnect(connection));
   }
-  init(p){
-    msgStore.getSessions();
-    msgStore.getTabs(true);
-    if (p.s.prefs.screenshot) {
-      msgStore.getScreenshots().then((screenshots)=>{
-        state.set({screenshots: screenshots});
-      });
-    }
-    if (p.s.prefs.actions) {
-      msgStore.getActions().then((actions)=>{
-        state.set({actions: actions});
-      });
-    }
+  init = (p) => {
+    msgStore.getWindowId().then(() => {
+      msgStore.getSessions();
+      msgStore.getTabs(true);
+      if (p.s.prefs.screenshot) {
+        msgStore.getScreenshots().then((screenshots)=>{
+          state.set({screenshots: screenshots});
+        });
+      }
+      if (p.s.prefs.actions) {
+        msgStore.getActions().then((actions)=>{
+          state.set({actions: actions});
+        });
+      }
+    });
   }
-  chromeAppChange(e){
+  chromeAppChange = (e) => {
     this.setState({apps: e});
   }
-  themeChange(e){
+  themeChange = (e) => {
     if (state.isOptions && state.chromeVersion === 1) {
       Object.assign(e.theme, {
         bodyBg: 'rgba(250, 250, 250, 1)',
@@ -207,6 +230,9 @@ class Root extends React.Component {
       }
       .dropdown-menu>li>label:hover, .dropdown-menu>li>label:focus {
         background-color: ${e.theme.settingsItemHover};
+      }
+      .dropdown-menu .divider {
+        background-color: ${e.theme.textFieldsBorder};
       }
       .ntg-x {
         color: ${e.theme.tileX};
@@ -383,6 +409,7 @@ class Root extends React.Component {
             background-color: ${e.theme.bodyBg} !important;
             background-image: url('${e.currentWallpaper.data}') !important;
             background-size: cover !important;
+            z-index: -12;
           }
         `;
         stateUpdate.currentWallpaper = e.currentWallpaper;
@@ -396,6 +423,7 @@ class Root extends React.Component {
             background-image: none;
             background-size: cover;
             background-blend-mode: normal;
+            z-index: -12;
           }
         `;
         stateUpdate.currentWallpaper = null;
@@ -406,7 +434,7 @@ class Root extends React.Component {
     }
     state.set(stateUpdate, true);
   }
-  updateTabState(e, opt, sU=null){
+  updateTabState = (e, opt, sU=null) => {
     let p = this.props;
     console.log('updateTabState: ', e);
     let stateUpdate = {};
@@ -443,7 +471,7 @@ class Root extends React.Component {
       utilityStore.handleMode(p.s.prefs.mode);
     }
   }
-  render() {
+  render = () => {
     let s = this.state;
     let p = this.props;
     if (!p.s.init) {
@@ -621,24 +649,23 @@ class App extends React.Component {
       }
       this.setState(newState, () => console.log('STATE: ', this.state));
     });
-    autoBind(this);
   }
-  componentDidMount(){
+  componentDidMount = () => {
     window.addEventListener('resize', this.onWindowResize);
     this.onWindowResize(null, this.props.stateUpdate);
   }
-  componentWillUnmount() {
+  componentWillUnmount = () => {
     window.removeEventListener('resize', this.onWindowResize);
     state.disconnect(this.connectId);
   }
-  setKeyboardShortcuts(e){
+  setKeyboardShortcuts = (e) => {
     if (e.prefs.keyboardShortcuts) {
       keyboardStore.set(e);
     } else {
       keyboardStore.reset();
     }
   }
-  onWindowResize(e, _stateUpdate) {
+  onWindowResize = (e, _stateUpdate) => {
     let s = this.state;
     let stateUpdate = {
       collapse: window.innerWidth >= 1565,
@@ -659,7 +686,7 @@ class App extends React.Component {
       height: window.innerHeight + 5,
     });
   }
-  render(){
+  render = () => {
     return <Root s={this.state} />;
   }
 }

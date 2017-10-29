@@ -1,12 +1,11 @@
 import React from 'react';
-import autoBind from 'react-autobind';
 import moment from 'moment';
 import {StyleSheet, css} from 'aphrodite';
 import _ from 'lodash';
 import v from 'vquery';
 import mouseTrap from 'mousetrap';
 import tc from 'tinycolor2';
-import {findIndex, map, unref} from './utils'
+import {findIndex, map, each, filter, isNewTab, unref} from './utils'
 import state from './stores/state';
 import {setAlert} from './stores/main';
 import themeStore from './stores/theme';
@@ -14,7 +13,7 @@ import * as utils from './stores/tileUtils';
 
 const styles = StyleSheet.create({
   favicon: {width: '16px', height: '16px'},
-  mediaLeftLink: {cursor: 'pointer', fontSize: '14px'},
+  mediaLeftLink: {fontSize: '14px'},
   mediaLeftDescription: {whiteSpace: 'nowrap', cursor: 'default'},
   mediaRight: {right: '20px'},
   placeholder: {height: '46px'}
@@ -22,25 +21,32 @@ const styles = StyleSheet.create({
 
 const toggleBool = ['pinned', 'enabled', 'mutedInfo'];
 
+const formatDate = function(date) {
+  return moment(date)
+    .fromNow()
+    .replace(/a few seconds/, '1 second')
+    .replace(/an hour/, '1 hour')
+    .replace(/a min/, '1 min');
+};
+
 class Row extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       render: true
     };
-    autoBind(this);
   }
-  componentWillUnmount() {
+  componentWillUnmount = () => {
     unref(this);
   }
-  handleDragStart(e) {
+  handleDragStart = (e) => {
     this.props.onDragStart(e);
     _.defer(() => this.ref.style.display = 'none');
   }
-  getRef(ref) {
+  getRef = (ref) => {
     this.ref = ref;
   }
-  render(){
+  render = () => {
     let p = this.props;
     let textOverflow = {
       whiteSpace: 'nowrap',
@@ -62,52 +68,101 @@ class Row extends React.Component {
       onClick={p.onClick}
       onContextMenu={(e) => p.onContextMenu(e, p.row)}>
         {map(p.columns, (column, z) => {
-          if (p.row.hasOwnProperty(column)) {
-            if (column === 'title' || column === 'name') {
-              return (
-                <td key={z} id={`column-${column}`} className={css(p.dynamicStyles.titleColumn, p.dynamicStyles.columnCommon)}>
-                  <div className={css(p.dynamicStyles.faviconContainer) + ' media-left media-middle'}>
-                    <img src={p.row.favIconUrl} className={css(styles.favicon)} />
-                  </div>
-                  <div className="media-left">
-                    <div style={textOverflow}>
-                      <a
-                      className={css(styles.mediaLeftLink) + ' text-default text-semibold'}
-                      onClick={this.props.onActivate}>
-                        {p.row[column]}
-                      </a>
+          if (!p.row.hasOwnProperty(column) && column !== 'session') {
+            return;
+          }
+          if (column === 'title' || column === 'name') {
+            return (
+              <td
+              key={z}
+              onClick={this.props.onActivate}
+              id={`column-${column}`}
+              className={css(p.dynamicStyles.titleColumn, p.dynamicStyles.columnCommon)}>
+                <div className={css(p.dynamicStyles.faviconContainer) + ' media-left media-middle'}>
+                  <img src={p.row.favIconUrl} className={css(styles.favicon)} />
+                </div>
+                <div className="media-left">
+                  <div style={textOverflow}>
+                    <div className={css(styles.mediaLeftLink) + ' text-default text-semibold'}>
+                      {p.row[column]}
                     </div>
-                    {p.s.prefs.mode === 'apps' || p.s.prefs.mode === 'extensions' ?
-                    <div className={css(styles.mediaLeftDescription) + ' text-muted text-size-small'}>
-                      {p.row.description}
-                    </div> : null}
                   </div>
-                  {p.row.audible ?
-                  <div className={css(styles.mediaRight) + ' media-right media-middle'}>
-                    <i className="icon-volume-medium" />
+                  {p.s.prefs.mode === 'apps' || p.s.prefs.mode === 'extensions' ?
+                  <div className={css(styles.mediaLeftDescription) + ' text-muted text-size-small'}>
+                    {p.row.description}
                   </div> : null}
-                </td>
-              );
+                </div>
+                {p.row.audible ?
+                <div className={css(styles.mediaRight) + ' media-right media-middle'}>
+                  <i className="icon-volume-medium" />
+                </div> : null}
+              </td>
+            );
 
-            } else if (p.s.prefs.mode === 'apps' && column === 'domain') {
-              return <td key={z} id={`column-${column}`} className={css(p.dynamicStyles.columnCommon)}><i className={`icon-${typeof p.row[column] === 'string' ? 'check2' : 'cross'}`} /></td>;
-            } else if (typeof p.row[column] === 'boolean' || column === 'mutedInfo') {
-              let bool = column === 'mutedInfo' ? p.row[column].muted : p.row[column];
-              const columnStyles = StyleSheet.create({icon: {cursor: toggleBool.indexOf(column) !== -1 ? 'pointer' : 'initial'}});
-              return (
-                <td key={z} id={`column-${column}`} className={css(p.dynamicStyles.columnCommon)}>
-                  <i
-                  className={css(columnStyles.icon) + ` icon-${bool ? 'check2' : 'cross'}`}
-                  onClick={toggleBool.indexOf(column) !== -1 ? () => p.handleBooleanClick(column) : null} />
-                </td>
-              )
-            } else if (column === 'lastVisitTime' || column === 'dateAdded') {
-              return <td key={z} id={`column-${column}`} className={css(p.dynamicStyles.columnCommon)}>{moment(p.row[column]).fromNow().replace(/a /, '1 ')}</td>;
-            } else if (column === 'launchType') {
-              return <td key={z} id={`column-${column}`} className={css(p.dynamicStyles.columnCommon)}>{p.row[column].indexOf('TAB') !== -1 ? 'Tab' : 'Window'}</td>;
-            } else {
-              return <td key={z} id={`column-${column}`} className={css(p.dynamicStyles.columnCommon)}>{column === 'mutedInfo' ? p.row[column].muted : p.row[column]}</td>;
-            }
+          } else if (p.s.prefs.mode === 'apps' && column === 'domain') {
+            return (
+              <td
+              key={z}
+              id={`column-${column}`}
+              className={css(p.dynamicStyles.columnCommon)}>
+                <i className={`icon-${typeof p.row[column] === 'string' ? 'check2' : 'cross'}`} />
+              </td>
+            );
+          } else if (typeof p.row[column] === 'boolean' || column === 'mutedInfo') {
+            let bool = column === 'mutedInfo' ? p.row[column].muted : p.row[column];
+            const columnStyles = StyleSheet.create({icon: {cursor: toggleBool.indexOf(column) !== -1 ? 'pointer' : 'initial'}});
+            return (
+              <td key={z} id={`column-${column}`} className={css(p.dynamicStyles.columnCommon)}>
+                <i
+                className={css(columnStyles.icon) + ` icon-${bool ? 'check2' : 'cross'}`}
+                onClick={toggleBool.indexOf(column) !== -1 ? () => p.handleBooleanClick(column) : null} />
+              </td>
+            )
+          } else if (column === 'lastVisitTime' || column === 'dateAdded') {
+            return (
+              <td
+              key={z}
+              id={`column-${column}`}
+              className={css(p.dynamicStyles.columnCommon)}>
+                {formatDate(p.row[column])}
+              </td>
+            );
+          } else if (column === 'session') {
+            return (
+              <td
+              key={z}
+              id={`column-${column}`}
+              className={css(p.dynamicStyles.columnCommon)}>
+                {p.row.label ? p.row.label : formatDate(p.row.sTimeStamp)}
+              </td>
+            );
+          } else if (column === 'launchType') {
+            return (
+              <td
+              key={z}
+              id={`column-${column}`}
+              className={css(p.dynamicStyles.columnCommon)}>
+                {p.row[column].indexOf('TAB') !== -1 ? 'Tab' : 'Window'}
+              </td>
+            );
+          } else if (column === 'launchType') {
+            return (
+              <td
+              key={z}
+              id={`column-${column}`}
+              className={css(p.dynamicStyles.columnCommon)}>
+                {p.row[column].indexOf('TAB') !== -1 ? 'Tab' : 'Window'}
+              </td>
+            );
+          } else {
+            return (
+              <td
+              key={z}
+              id={`column-${column}`}
+              className={css(p.dynamicStyles.columnCommon)}>
+                {column === 'mutedInfo' ? p.row[column].muted : p.row[column]}
+              </td>
+            );
           }
         })}
       </tr>
@@ -118,13 +173,12 @@ class Row extends React.Component {
 export class TableHeader extends React.Component {
   constructor(props) {
     super(props);
-    autoBind(this)
   }
-  componentDidMount () {
+  componentDidMount = () => {
     if (!this.props.isFloating || this.willUnmount) {
       return;
     }
-    let columns = ['title', 'name', 'domain', 'pinned', 'mutedInfo', 'folder', 'enabled', 'offlineEnabled', 'version', 'launchType'];
+    let columns = ['title', 'name', 'domain', 'pinned', 'mutedInfo', 'folder', 'enabled', 'offlineEnabled', 'version', 'launchType', 'session'];
     const adjustHeaderWidth = (recursion = 0) => {
       for (let i = 0; i < columns.length; i++) {
         let headerNode = v(`#header-${columns[i]}`);
@@ -140,10 +194,11 @@ export class TableHeader extends React.Component {
     };
     adjustHeaderWidth();
   }
-  componentWillUnmount() {
+  componentWillUnmount = () => {
     this.willUnmount = true;
+    unref(this);
   }
-  getRef(ref) {
+  getRef = (ref) => {
     if (!this.props.isFloating || !ref) {
       return;
     }
@@ -155,7 +210,7 @@ export class TableHeader extends React.Component {
       }
     });
   }
-  render() {
+  render = () => {
     return (
       <thead
       ref={this.getRef}
@@ -193,25 +248,35 @@ export class Table extends React.Component {
       muteInit: true,
       selectedItems: [],
       shiftRange: null
-    }
-    this.connectId = state.connect(
-      ['tabs', 'history', 'sessionTabs', 'bookmarks', 'apps', 'extensions', 'searchCache', 'modeKey'],
-      () => _.defer(() => this.buildTable(this.props))
-    );
-    autoBind(this);
+    };
   }
-  componentDidMount(){
+  componentDidMount = () => {
+    this.connections = [
+      state.connect(
+        ['tabs', 'history', 'sessionTabs', 'bookmarks', 'apps', 'extensions', 'searchCache', 'modeKey'],
+        () => this.buildTable(this.props)
+      ),
+      state.connect({
+        selectAllFromDomain: (domain) => this.selectAllFromDomain(domain),
+        invertSelection: () => this.invertSelection(),
+        deselectSelection: () => this.setState({selectedItems: []})
+      })
+    ];
+
     let p = this.props;
     this.buildTable(p);
     mouseTrap.bind('del', () => {
       this.removeSelectedItems();
     });
   }
-  componentWillUnmount() {
+  componentWillUnmount = () => {
     this.willUnmount = true;
-    state.disconnect(this.disconnectId);
+    each(this.connections, function(connection) {
+      state.disconnect(connection);
+    });
+    unref(this);
   }
-  buildTable(p){
+  buildTable = (p) => {
     if (this.willUnmount) {
       return;
     }
@@ -229,8 +294,10 @@ export class Table extends React.Component {
     let columns = ['title', 'domain'];
     if (p.s.prefs.mode === 'bookmarks') {
       columns = columns.concat(['folder', 'dateAdded']);
-    } else if (p.s.prefs.mode === 'tabs' || p.s.prefs.mode === 'sessions') {
+    } else if (p.s.prefs.mode === 'tabs') {
       columns = columns.concat(['pinned', 'mutedInfo']);
+    } else if (p.s.prefs.mode === 'sessions') {
+      columns = columns.concat(['session']);
     } else if (p.s.prefs.mode === 'history') {
       columns = columns.concat(['lastVisitTime', 'visitCount', 'typedCount']);
     } else if (p.s.prefs.mode === 'apps' || p.s.prefs.mode === 'extensions') {
@@ -245,13 +312,16 @@ export class Table extends React.Component {
     this.setState({columns, rows});
     console.log('buildTable: ', this.state);
   }
-  handleColumnClick(column){
+  handleColumnClick = (column) => {
+    if (column === 'session') {
+      column = 'sTimeStamp';
+    }
     state.set({
       sort: column,
       direction: this.props.s.sort === column && this.props.s.direction === 'asc' ? 'desc' : 'asc'
     });
   }
-  handleBooleanClick(column, row){
+  handleBooleanClick = (column, row) => {
     let s = this.state;
     if (column === 'pinned') {
       chrome.tabs.update(row.id, {pinned: !row.pinned});
@@ -267,7 +337,7 @@ export class Table extends React.Component {
       chrome.management.setEnabled(row.id, !row.enabled);
     }
   }
-  handleSelect(i){
+  handleSelect = (i) => {
     let s = this.state;
     let p = this.props;
     if (window.cursor.keys.ctrl) {
@@ -313,25 +383,55 @@ export class Table extends React.Component {
     }
     this.setState({selectedItems: s.selectedItems, shiftRange: s.shiftRange});
   }
-  handleActivation(i) {
+  selectAllFromDomain = (domain) => {
+    let {rows, selectedItems, shiftRange} = this.state;
+    let selected = filter(rows, (row) => {
+      return row.url.indexOf(domain) > -1;
+    });
+    if (!selected || selected.length === 0) {
+      return;
+    }
+    each(selected, (row) => {
+      let rowIndex = findIndex(rows, _row => _row.id === row.id);
+      selectedItems.push(rowIndex);
+    });
+    shiftRange = selectedItems[0];
+    this.setState({selectedItems, shiftRange});
+  }
+  invertSelection = () => {
+    let {rows, selectedItems, shiftRange} = this.state;
+    let selected = filter(rows, (row, i) => {
+      return selectedItems.indexOf(i) === -1
+    });
+    selectedItems = [];
+    if (!selected || selected.length === 0) {
+      return;
+    }
+    each(selected, (row) => {
+      let rowIndex = findIndex(rows, _row => _row.id === row.id);
+      if (selectedItems.indexOf(rowIndex) === -1) {
+        selectedItems.push(rowIndex);
+      }
+    });
+    shiftRange = selectedItems[0];
+    this.setState({selectedItems, shiftRange});
+
+  }
+  handleActivation = (i) => {
     if (window.cursor.keys.ctrl) {
       return;
     }
     utils.activateTab(this.state.rows[i]);
   }
-  removeSelectedItems(){
+  removeSelectedItems = () => {
     let s = this.state;
-    let p = this.props;
-    let cT = _.cloneDeep(this);
-    cT.props.prefs = p.s.prefs;
     for (let i = 0, len = s.selectedItems.length; i < len; i++) {
-      cT.props.tab = s.rows[s.selectedItems[i]];
       utils.closeTab(s.rows[s.selectedItems[i]]);
       _.pullAt(s.rows, s.selectedItems[i]);
     }
     this.setState({rows: s.rows, selectedItems: [], shiftRange: null});
   }
-  handleContext(e, row){
+  handleContext = (e, row) => {
     e.preventDefault();
     let s = this.state;
     let p = this.props;
@@ -347,18 +447,18 @@ export class Table extends React.Component {
       for (let z = 0, len = s.selectedItems.length; z < len; z++) {
         rows.push(s.rows[s.selectedItems[z]]);
       }
-      state.set({context: {value: true, id: rows.length > 1 ? rows : rows[0], origin: this}});
+      state.set({context: {value: true, id: rows.length > 1 ? rows : rows[0]}});
     } else {
       state.set({context: {value: true, id: row}});
     }
   }
-  render(){
+  render = () => {
     let s = this.state;
     let p = this.props;
     if (s.columns && s.rows) {
       const dynamicStyles = StyleSheet.create({
         columnCommon: {padding: `${p.s.prefs.tablePadding}px ${p.s.prefs.tablePadding + 8}px`},
-        titleColumn: {maxWidth: p.s.width <= 950 ? '300px' : p.s.width <= 1015 ? '400px' : '700px', userSelect: 'none'},
+        titleColumn: {maxWidth: p.s.width <= 950 ? '300px' : p.s.width <= 1015 ? '400px' : '700px', userSelect: 'none', cursor: 'pointer'},
         faviconContainer: {paddingRight: `${p.s.prefs.tablePadding + 8}px`},
         tableCommon: {width: `${p.s.width}px`},
         fixedTableHeader: {
@@ -386,7 +486,7 @@ export class Table extends React.Component {
             showFloatingTableHeader={this.props.showFloatingTableHeader} />
             <tbody onMouseLeave={() => this.setState({rowHover: -1})}>
             {map(s.rows, (row, i) => {
-              if (utils.isNewTab(row.url) || !row.title) {
+              if (isNewTab(row.url) || !row.title) {
                 return null;
               }
               let isVisible = i >= p.range.start && i <= p.range.start + p.range.length;

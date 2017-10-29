@@ -179,7 +179,6 @@ const processBookmarks = function(s, msg) {
   for (let i = 0, len = _bookmarks.length; i < len; i++) {
     let refOpenTab = findIndex(tabs, findOpenTab(_bookmarks[i].url));
     if (refOpenTab > -1) {
-      console.log('refOpenTab', refOpenTab);
       _bookmarks[i] = _.merge(_.cloneDeep(tabs[refOpenTab]), _bookmarks[i]);
       _bookmarks[i].openTab = tabs[refOpenTab].id;
     } else {
@@ -254,9 +253,7 @@ const processWindows = function(s, msg) {
     allTabs: map(msg.windows, function(win) {
       return win.tabs;
     }),
-    modeKey: 'tabs',
-    direction: 'desc',
-    sort: 'index'
+    modeKey: 'tabs'
   };
   if (msg.init) {
     if (msg.screenshots) {
@@ -264,6 +261,8 @@ const processWindows = function(s, msg) {
     }
   }
   if (s.prefs.mode === 'tabs') {
+    stateUpdate.sort = 'index';
+    stateUpdate.direction = 'desc';
     if (s.prefs.allTabs) {
       stateUpdate.tabs = _.flatten(stateUpdate.allTabs);
     } else if (!msg.modalOpen) {

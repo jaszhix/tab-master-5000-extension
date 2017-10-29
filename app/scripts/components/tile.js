@@ -1,8 +1,6 @@
 import React from 'react';
-import autoBind from 'react-autobind';
 import {StyleSheet, css} from 'aphrodite';
 import _ from 'lodash';
-import v from 'vquery';
 import moment from 'moment';
 
 import state from './stores/state';
@@ -10,7 +8,7 @@ import themeStore from './stores/theme';
 
 import {Panel} from './bootstrap';
 import style from './style';
-import {findIndex, unref} from './utils';
+import {findIndex, tryFn, unref} from './utils';
 import * as utils from './stores/tileUtils';
 
 const styles = StyleSheet.create({
@@ -41,74 +39,45 @@ class Tile extends React.Component {
       i: this.props.i
     }
     this.connectId = state.connect({
-      duplicateTabs: () => utils.checkDuplicateTabs(this.props.tab, () => this.setState({duplicate: true}))
-    });
-    autoBind(this);
-  }
-  componentDidMount() {
-    this.updateScreenshot('init', this.props);
-  }
-  componentWillReceiveProps(nP) {
-    let p = this.props;
-    if (nP.prefs.mode === 'tabs') {
-      utils.checkDuplicateTabs(nP.tab, () => this.setState({duplicate: true}));
-    }
-    if (nP.i !== p.i && this.panelRef) {
-      this.setState({i: nP.i, duplicate: false});
-      v(this.panelRef).removeClass('animated');
-    }
-    if (nP.screenshotClear !== p.screenshotClear) {
-      this.setState({screenshot: null});
-    }
-    if (nP.applyTabOrder) {
-      this.applyTabOrder();
-    }
-    /* Reset tab state after close */
-    if (!_.isEqual(nP.tab, p.tab)) {
-      if (this.closeTimeout) {
-        clearTimeout(this.closeTimeout);
+      duplicateTabs: () => tryFn(() => utils.checkDuplicateTabs(props.tab, () => this.setState({duplicate: true}))),
+      screenshots: () => tryFn(() => this.updateScreenshot(props)),
+      screenshotClear: () => {
+        this.setState({screenshot: null}, () => state.set({screenshotClear: false}));
       }
-      this.setState({close: false, render: true, duplicate: false});
-    }
+    });
   }
-  shouldComponentUpdate(nP, nS) {
-    return (!_.isEqual(this.props, nP) || !_.isEqual(this.state, nS)) && state.settings !== 'sessions';
+  componentDidMount = () => {
+    this.updateScreenshot(this.props);
+    utils.checkDuplicateTabs(this.props.tab, () => this.setState({duplicate: true}));
   }
-  componentWillUnmount() {
+  shouldComponentUpdate = (nP, nS) => {
+    return (!_.isEqual(this.props, nP) || !_.isEqual(this.state, nS) || state.screenshotClear) && state.settings !== 'sessions';
+  }
+  componentWillUnmount = () => {
     state.disconnect(this.connectId);
     unref(this);
   }
-  updateScreenshot(opt, p) {
-    let setScreeenshot = () => {
-      if (p.prefs.screenshot) {
-        let refSS = findIndex(p.screenshots, ss => ss.url === p.tab.url);
-        if (refSS > -1) {
-          this.setState({screenshot: p.screenshots[refSS].data});
-        }
-      }
-    };
-    if (opt === 'init') {
-      setScreeenshot();
-    } else {
-      if (p.tab.active) {
-        setScreeenshot();
-      }
+  updateScreenshot = (p) => {
+    if (!state.prefs.screenshot) {
+      return;
+    }
+    let refSS = findIndex(state.screenshots, ss => ss && ss.url === p.tab.url);
+    if (refSS > -1) {
+      this.setState({screenshot: state.screenshots[refSS].data});
     }
   }
-  filterFolders(folderName) {
+  filterFolders = (folderName) => {
     let p = this.props;
     state.set({folder: p.folder ? false : folderName});
   }
-  handleClick() {
+  handleClick = () => {
     if (this.state.close) {
       return;
     }
-    this.setState({render: false});
     utils.activateTab(this.props.tab);
-    this.setState({render: true});
   }
   // Trigger hovers states that will update the inline CSS in style.js.
-  handleHoverIn() {
+  handleHoverIn = () => {
     if (state.dragging) {
       return false;
     }
@@ -126,45 +95,28 @@ class Tile extends React.Component {
       }
     }
   }
-  handleHoverOut() {
+  handleHoverOut = () => {
     this.setState({hover: false});
   }
-  handleTabCloseHoverIn() {
+  handleTabCloseHoverIn = () => {
     this.setState({xHover: true});
   }
-  handleTabCloseHoverOut() {
+  handleTabCloseHoverOut = () => {
     this.setState({xHover: false});
   }
-  handlePinHoverIn() {
+  handlePinHoverIn = () => {
     this.setState({pHover: true});
   }
-  handlePinHoverOut() {
+  handlePinHoverOut = () => {
     this.setState({pHover: false});
   }
-  handleTabMuteHoverIn() {
+  handleTabMuteHoverIn = () => {
     this.setState({mHover: true});
   }
-  handleTabMuteHoverOut() {
+  handleTabMuteHoverOut = () => {
     this.setState({mHover: false});
   }
-  applyTabOrder() {
-    // Apply the sorted tab grid state to the Chrome window.
-    let s = this.state;
-    let p = this.props;
-    let tabs = _.orderBy(p.tabs, ['index'], ['desc']);
-    if (tabs.length > 0) {
-      if (p.tab.title === 'New Tab') {
-        chrome.tabs.move(p.tab.id, {
-          index: -1
-        });
-      } else {
-        chrome.tabs.move(p.tab.id, {
-          index: s.i
-        });
-      }
-    }
-  }
-  handleContextClick(e) {
+  handleContextClick = (e) => {
     e.preventDefault();
     if (!this.props.prefs.context) {
       return;
@@ -175,27 +127,31 @@ class Tile extends React.Component {
       state.set({context: {value: true, id: this.props.tab}});
     }
   }
-  handleCloseTab() {
+  handleCloseTab = () => {
     this.setState({duplicate: false, close: true, screenshot: null});
     utils.closeTab(this.props.tab);
   }
-  handleMute() {
+  handleMute = () => {
     utils.mute(this.props.tab);
   }
-  handlePinning() {
+  handlePinning = () => {
     if (state.prefs.animations) {
       this.setState({pinning: true});
     }
     utils.pin(this.props.tab);
   }
-  handleDragStart(e) {
+  handleDragStart = (e) => {
     this.props.onDragStart(e, this.props.i);
     _.defer(() => this.setState({render: false}));
   }
-  getPanelRef(ref) {
+  handleDragEnd = () => {
+    this.props.onDragEnd();
+    this.setState({render: true});
+  }
+  getPanelRef = (ref) => {
     this.panelRef = ref;
   }
-  render() {
+  render = () => {
     let s = this.state;
     let p = this.props;
     style.ssIconBg = _.cloneDeep(_.assignIn(style.ssIconBg, {
@@ -247,7 +203,7 @@ class Tile extends React.Component {
       }, subTitleStyle),
       panelContainer: {
         position: 'relative',
-        display: 'block',
+        display: s.render ? 'block' : 'none',
         height: p.prefs.tabSizeHeight,
         width: `${p.prefs.tabSizeHeight + 80}px`,
         float: 'left',
@@ -393,7 +349,7 @@ class Tile extends React.Component {
       <Panel
       ref={this.getPanelRef}
       draggable={p.prefs.mode === 'tabs' && p.prefs.drag}
-      onDragEnd={p.onDragEnd}
+      onDragEnd={this.handleDragEnd}
       onDragStart={this.handleDragStart}
       onDragOver={p.onDragOver}
       footerLeft={

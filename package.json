@@ -10,9 +10,8 @@
     "dev-chrome": "cross-env DEV_ENV=chrome NODE_ENV=development concurrently \"gulp build-bg\" \"gulp spawn-watch\" \"node --max_old_space_size=16192 --trace-warnings  ./node_modules/webpack-dev-server/bin/webpack-dev-server --config ./webpack.config\"",
     "dev-firefox": "cross-env DEV_ENV=firefox NODE_ENV=development concurrently \"gulp build-bg\" \"gulp spawn-watch\" \"node --max_old_space_size=16192 --trace-warnings  ./node_modules/webpack-dev-server/bin/webpack-dev-server --config ./webpack.config\"",
     "build-bg": "cross-env BUNDLE_ENTRY=bg node --trace-warnings ./node_modules/webpack/bin/webpack --config webpack.config.js --profile --colors",
-    "build-content": "cross-env BUNDLE_ENTRY=content node --trace-warnings ./node_modules/webpack/bin/webpack --config webpack.config.js --profile --colors",
     "build-app": "cross-env BUNDLE_ENTRY=app node --trace-warnings ./node_modules/webpack/bin/webpack --config webpack.config.js --profile --colors",
-    "build-all": "concurrently \"npm run build-app && gulp dist\" \"npm run build-bg\" \"npm run build-content\" \"gulp clean\"",
+    "build-all": "concurrently \"npm run build-app && gulp dist\" \"npm run build-bg\" \"gulp clean\"",
     "build-chrome": "cross-env NODE_ENV=production DEV_ENV=chrome npm run build-all",
     "build-firefox": "cross-env NODE_ENV=production DEV_ENV=firefox npm run build-all",
     "build-sources": "cross-env NODE_ENV=production SKIP_MINIFY=true npm run build-firefox"
@@ -82,7 +81,6 @@
     "rc-color-picker": "^1.2.0",
     "rc-slider": "^8.3.2",
     "react": "^16.0.0",
-    "react-autobind": "^1.0.6",
     "react-dom": "^16.0.0",
     "react-hot-loader": "^3.1.1",
     "react-onclickoutside": "6.5.0",

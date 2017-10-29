@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import autoBind from 'react-autobind';
 import {StyleSheet, css} from 'aphrodite';
 import _ from 'lodash';
 import onClickOutside from 'react-onclickoutside';
@@ -17,9 +16,8 @@ export class Btn extends React.Component {
       hover: false
     }
     this.connectId = themeStore.connect('*', (e) => this.themeChange(e));
-    autoBind(this);
   }
-  componentDidMount(){
+  componentDidMount = () => {
     let selectedTheme = themeStore.getSelectedTheme();
     this.setState({theme: selectedTheme});
     this.themeChange({theme: selectedTheme});
@@ -29,7 +27,7 @@ export class Btn extends React.Component {
       ReactTooltip.hide();
     }
   }
-  componentWillUnmount(){
+  componentWillUnmount = () => {
     themeStore.disconnect(this.connectId);
     tryFn(() => this.ref.style.display = 'none');
   }
@@ -39,22 +37,22 @@ export class Btn extends React.Component {
       _.defer(()=>ReactTooltip.rebuild());
     }
   }
-  handleHoverIn(){
+  handleHoverIn = () => {
     this.setState({hover: true});
     if (this.props.onMouseEnter) {
       this.props.onMouseEnter();
     }
   }
-  handleHoverOut(){
+  handleHoverOut = () => {
     this.setState({hover: false});
     if (this.props.onMouseLeave) {
       this.props.onMouseLeave();
     }
   }
-  getRef(ref) {
+  getRef = (ref) => {
     this.ref = ref;
   }
-  render() {
+  render = () => {
     let p = this.props;
     let s = this.state;
     let style = {};
@@ -118,10 +116,10 @@ export class Col extends React.Component {
   static propTypes = {
     size: PropTypes.string.isRequired
   };
-  constructor(props){
+  constructor(props) {
     super(props);
   }
-  render(){
+  render = () => {
     let p = this.props;
     return (
       <div
@@ -147,10 +145,10 @@ export class Row extends React.Component {
   static defaultProps = {
     fluid: false,
   };
-  constructor(props){
+  constructor(props) {
     super(props);
   }
-  render(){
+  render = () => {
     let p = this.props;
     return (
       <div
@@ -176,10 +174,10 @@ export class Container extends React.Component {
   static defaultProps = {
     fluid: false
   };
-  constructor(props){
+  constructor(props) {
     super(props);
   }
-  render() {
+  render = () => {
     let p = this.props;
     return (
       <div
@@ -197,10 +195,10 @@ export class Container extends React.Component {
 }
 
 export class Panel extends React.Component {
-  constructor(props){
+  constructor(props) {
     super(props);
   }
-  render(){
+  render = () => {
     let p = this.props;
     let defaultStyle = {};
     if (p.content) {
@@ -264,16 +262,15 @@ export class Tabs extends React.Component {
     this.state = {
       active: 0
     }
-    autoBind(this);
   }
-  componentDidMount(){
+  componentDidMount = () => {
     this.setState({active: this.props.initActiveOption});
   }
-  handleTabClick(option, i){
+  handleTabClick = (option, i) => {
     this.props.onClick(option);
     this.setState({active: i});
   }
-  render(){
+  render = () => {
     let p = this.props;
     let s = this.state;
     return (
@@ -313,12 +310,11 @@ Tabs.defaultProps = {
 export class Context extends React.Component {
   constructor(props) {
     super(props);
-    autoBind(this);
   }
-  handleClickOutside(){
+  handleClickOutside = () => {
     this.props.onClickOutside();
   }
-  render(){
+  render = () => {
     let p = this.props;
     return (
       <ul

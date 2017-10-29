@@ -1,4 +1,4 @@
-import {clone, isEqual, intersection as intersect, difference} from 'lodash';
+import {clone, isEqual, intersection as intersect, difference, pullAt} from 'lodash';
 import {find, findIndex, filter} from './utils';
 
 function storeError(method, key, message) {
@@ -110,7 +110,10 @@ function init(state = {}, listeners = [], mergeKeys = [], connections = 0) {
 
     if ((changed || cb === true) && listeners.length > 0) {
       dispatch(object);
-    }
+    }/*  else {
+      try {throw new Error()} catch (e) {console.log(`e.stack: `, e.stack);}
+      console.log('NO CHANGE:', keys.join(', '))
+    } */
 
     if (typeof cb === 'function') {
       cb();
@@ -190,7 +193,7 @@ function init(state = {}, listeners = [], mergeKeys = [], connections = 0) {
     let listener;
 
     if (callback) {
-      listener = find(listeners, listener => listener.callback === callback);
+      listener = find(listeners, _listener => _listener && _listener.callback === callback);
     }
     if (listener) {
       let newKeys = difference(keys, listener.keys);
@@ -233,8 +236,7 @@ function init(state = {}, listeners = [], mergeKeys = [], connections = 0) {
     if (listenerIndex === -1) {
       throw storeError('disconnect', key, 'Invalid disconnect key.');
     }
-    listeners[listenerIndex] = undefined;
-    listeners.splice(listenerIndex, 1);
+    pullAt(listeners, listenerIndex);
   }
 
   /**
@@ -259,8 +261,7 @@ function init(state = {}, listeners = [], mergeKeys = [], connections = 0) {
         indexes.push(i);
       }
       for (let i = 0; i < indexes.length; i++) {
-        listeners[indexes[i]] = undefined;
-        listeners.splice(indexes[i], 1);
+        pullAt(listeners, indexes[i]);
       }
     }
   }

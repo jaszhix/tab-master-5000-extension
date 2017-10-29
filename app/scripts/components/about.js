@@ -18,7 +18,7 @@ class Contribute extends React.Component {
   constructor(props) {
     super(props);
   }
-  render(){
+  render() {
     let contributeFile;
     let locale = chrome.i18n.getUILanguage();
     if (locale === 'es') {
@@ -77,7 +77,7 @@ class License extends React.Component {
   constructor(props) {
     super(props);
   }
-  render(){
+  render() {
     function createMarkup() {return {__html: license};}
     return (
       <div style={containerStyle}>
@@ -98,7 +98,7 @@ class Support extends React.Component {
   constructor(props) {
     super(props);
   }
-  render(){
+  render() {
     let supportFile;
     let locale = chrome.i18n.getUILanguage();
     if (locale === 'es') {
@@ -127,7 +127,7 @@ class Attribution extends React.Component {
       dependencies: null
     };
   }
-  componentDidMount(){
+  componentDidMount() {
     let deps = require('json-loader!../../../package.json');
     let state = [];
     for (let key in deps.devDependencies) {
@@ -139,7 +139,7 @@ class Attribution extends React.Component {
     }
     this.setState({dependencies: state});
   }
-  render(){
+  render() {
     let s = this.state;
     if (!s.dependencies) {
       return null;
@@ -185,7 +185,7 @@ class ReleaseNotes extends React.Component {
   constructor(props) {
     super(props);
   }
-  render(){
+  render() {
     function createMarkup() {return {__html: changelog};}
     let p = this.props;
     return (
@@ -223,7 +223,7 @@ class About extends React.Component {
       tab: 'release'
     };
   }
-  componentWillMount(){
+  componentWillMount() {
     let p = this.props;
     p.modal.footer = (
       <div>

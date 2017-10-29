@@ -23,17 +23,10 @@ gulp.task('build', ['build-bg'], function() {
     .pipe(webpackStream(config))
     .pipe(gulp.dest('./app/scripts/'));
 });
-gulp.task('build-bg', ['build-content'], function() {
+gulp.task('build-bg', function() {
   config.entry = './app/scripts/bg/bg.js';
   config.output.filename = 'background.js';
   return gulp.src('./app/scripts/background.js')
-    .pipe(webpackStream(config))
-    .pipe(gulp.dest('./app/scripts/'));
-});
-gulp.task('build-content', function() {
-  config.entry = './app/scripts/content/content.js';
-  config.output.filename = 'content.js';
-  return gulp.src('./app/scripts/content.js')
     .pipe(webpackStream(config))
     .pipe(gulp.dest('./app/scripts/'));
 });
@@ -95,8 +88,6 @@ gulp.task('dist',  function (callback) {
 });
 gulp.task('watch', function() {
   gulp.watch('./app/scripts/bg/*.{js,jsx,es6}', ['build-bg']);
-  gulp.watch('./app/scripts/content/*.{js,jsx,es6}', ['build-content']);
- // gulp.watch('./app/styles/*.scss', ['build']);
 });
 gulp.task('clear-terminal', function() {
   clear();

@@ -1,5 +1,4 @@
 import React from 'react';
-import autoBind from 'react-autobind';
 import _ from 'lodash';
 import tc from 'tinycolor2';
 import onClickOutside from 'react-onclickoutside';
@@ -19,14 +18,13 @@ let mount = false;
 export class ModalDefault extends React.Component {
   constructor(props) {
     super(props);
-    autoBind(this);
   }
-  handleClickOutside(){
+  handleClickOutside = () => {
     if (this.props.clickOutside) {
       this.props.onClose();
     }
   }
-  render(){
+  render = () => {
     let p = this.props;
     let heightOffset = p.heightOffset ? p.heightOffset : p.footerComponent ? p.maximized ? 125 : 200 : 140;
     let bodyStyle = {maxHeight: `${p.height - heightOffset}px`, overflowY: 'auto', transition: p.animations ? 'max-height 0.2s' : 'initial'};
@@ -90,9 +88,8 @@ class ModalHandler extends React.Component {
     this.state = {
       maximized: false
     }
-    autoBind(this);
   }
-  componentDidMount(){
+  componentDidMount = () => {
     mount = true;
   }
   componentWillReceiveProps(nP){
@@ -100,10 +97,10 @@ class ModalHandler extends React.Component {
       this.setState({modal: nP.modal});
     }
   }
-  componentWillUnmount(){
+  componentWillUnmount = () => {
     mount = false;
   }
-  handleClose(){
+  handleClose = () => {
     msgStore.queryTabs();
     state.set({
       modal: {state: false},
@@ -111,10 +108,10 @@ class ModalHandler extends React.Component {
       windowRestored: false
     });
   }
-  handleMaximize() {
+  handleMaximize = () => {
     msgStore.setPrefs({settingsMax: !this.props.prefs.settingsMax});
   }
-  render() {
+  render = () => {
     let p = this.props;
     let maximized = p.prefs.settingsMax && p.settings !== 'theming';
     let tabOptions = [
@@ -128,7 +125,7 @@ class ModalHandler extends React.Component {
       display: 'block',
       paddingRight: '15px',
       transition: p.prefs.animations ? 'top 0.2s' : 'initial',
-      top: p.settings === 'theming' ? '55%' : '0',
+      top: p.settings === 'theming' ? p.height > 1300 ? '60%' : p.height > 1000 ? '55%' : p.height > 900 ? '45%' : '35%' : '0',
     };
     let dialogStyle = {
       zIndex: '50',

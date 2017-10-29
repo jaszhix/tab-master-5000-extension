@@ -1,5 +1,4 @@
 import React from 'react';
-import autoBind from 'react-autobind';
 import ReactTooltip from 'react-tooltip';
 
 import state from './stores/state';
@@ -14,9 +13,8 @@ class Search extends React.Component {
     this.state = {
       theme: this.props.theme
     }
-    autoBind(this);
   }
-  componentWillReceiveProps(nP){
+  componentWillReceiveProps = (nP) => {
     if (nP.theme !== this.props.theme) {
       this.setState({theme: nP.theme});
     }
@@ -24,13 +22,13 @@ class Search extends React.Component {
       ReactTooltip.rebuild();
     }
   }
-  preventSubmit(e) {
+  preventSubmit = (e) => {
     e.preventDefault();
   }
-  handleSearch(e) {
+  handleSearch = (e) => {
     state.set({search: e.target.value});
   }
-  handleWebSearch(e) {
+  handleWebSearch = (e) => {
     e.preventDefault();
     chrome.tabs.query({
       title: 'New Tab'
@@ -40,22 +38,22 @@ class Search extends React.Component {
       });
     });
   }
-  openAbout(){
+  openAbout = () => {
     state.set({settings: 'about', modal: {state: true, type: 'settings'}});
   }
-  handleSidebar(){
+  handleSidebar = () => {
     state.set({sidebar: !this.props.s.sidebar});
   }
-  handleEnter(e){
+  handleEnter = (e) => {
     if (e.keyCode === 13) {
       this.handleWebSearch(e);
     }
   }
-  handleTopNavButtonClick(cb){
+  handleTopNavButtonClick = (cb) => {
     state.set({topNavButton: null});
     cb();
   }
-  render() {
+  render = () => {
     let p = this.props;
     const headerStyle = {
       backgroundColor: p.theme.headerBg,

@@ -1,5 +1,4 @@
 import React from 'react';
-import autoBind from 'react-autobind';
 import {StyleSheet, css} from 'aphrodite';
 import _ from 'lodash';
 import onClickOutside from 'react-onclickoutside';
@@ -27,7 +26,7 @@ class LargeBtn extends React.Component {
   constructor(props) {
     super(props);
   }
-  render(){
+  render = () => {
     let p = this.props;
     return (
       <button
@@ -54,21 +53,24 @@ export class SidebarMenu extends React.Component {
       viewMode: true,
       sortBy: true
     }
-    autoBind(this);
   }
-  handleFormat(){
+  handleFormat = () => {
     let prefsUpdate = {format: this.props.prefs.format === 'tile' ? 'table' : 'tile'};
     state.set({prefs: _.assignIn(this.props.prefs, prefsUpdate)});
     _.defer(() => msgStore.setPrefs(prefsUpdate));
     ReactTooltip.hide();
   }
-  handleSortOption(key) {
-    state.set({sort: key, direction: this.props.direction === 'desc' ? 'asc' : 'desc'});
-    if (key === 'index') {
+  handleSortOption = (key) => {
+    if (state.prefs.mode === 'tabs' && key === 'index') {
       msgStore.queryTabs(true);
+      return;
     }
+    state.set({
+      sort: key,
+      direction: state.sort !== key ? state.direction : state.direction === 'desc' ? 'asc' : 'desc'
+    }, true);
   }
-  render(){
+  render = () => {
     let p = this.props;
     let s = this.state;
 
@@ -241,7 +243,7 @@ export class SidebarMenu extends React.Component {
                                       onClick={() => this.handleSortOption(key)} />
                                     </span>
                                   </div>
-                                  {p.labels[key]}
+                                  {`${p.labels[key]} ${p.sort === key ? `(${p.direction === 'asc' ? utils.t('ascending') : utils.t('descending')})` : ''}`}
                                 </label>
                               </div>
                             );
@@ -270,9 +272,8 @@ class Sidebar extends React.Component {
     this.state = {
       enabled: false
     }
-    autoBind(this);
   }
-  componentWillReceiveProps(nP){
+  componentWillReceiveProps = (nP) => {
     ReactTooltip.rebuild();
     if (!_.isEqual(nP.enabled, this.props.enabled)) {
       _.defer(() => {
@@ -286,18 +287,18 @@ class Sidebar extends React.Component {
       });
     }
   }
-  shouldComponentUpdate() {
+  shouldComponentUpdate = () => {
     return this.props.enabled;
   }
-  handleClickOutside(){
+  handleClickOutside = () => {
     if (!this.props.disableSidebarClickOutside && this.props.enabled) {
       state.set({sidebar: false}, ReactTooltip.hide);
     }
   }
-  handleSort(){
+  handleSort = () => {
     msgStore.setPrefs({sort: !this.props.prefs.sort});
   }
-  render() {
+  render = () => {
     let p = this.props;
     const dynamicStyles = StyleSheet.create({
       container: {
@@ -307,10 +308,10 @@ class Sidebar extends React.Component {
         position: 'fixed',
         top: '52px',
         opacity: p.enabled ? '1' : '0',
-        left: p.enabled ? '0px' : '-168px',
-        zIndex: this.state.enabled ? '6000' : '-999',
+        left: p.enabled ? '0px' : '-285px',
+        zIndex: this.state.enabled ? '6000' : '-9999',
         backgroundColor: themeStore.opacify(p.theme.headerBg, 0.9),
-        transition: p.prefs.animations ? 'left 0.2s, opacity 0.2s' : 'initial'
+        transition: p.prefs.animations ? 'left 0.225s, opacity 0.2s' : 'initial'
       }
     });
     return (

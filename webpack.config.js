@@ -153,8 +153,8 @@ const config = {
         use: {
           loader: 'worker-loader',
           options: {
-            name: '[name].js',
-            publicPath: '/scripts/'
+            name: PROD ? '[name].js' : '[hash].worker.js',
+            publicPath: PROD ? '/scripts/' : publicPath
           }
         }
       }

@@ -14,7 +14,6 @@ let prefsStore = initStore({
     animations: true,
     duplicate: true,
     screenshot: false,
-    screenshotInit: false,
     screenshotChrome: true,
     screenshotBg: false,
     screenshotBgBlur: 5,
@@ -27,7 +26,7 @@ let prefsStore = initStore({
     format: 'tile',
     installTime: Date.now(),
     actions: false,
-    sessionsSync: false,
+    sessionsSync: true,
     singleNewTab: false,
     keyboardShortcuts: true,
     resolutionWarning: true,
@@ -38,8 +37,8 @@ let prefsStore = initStore({
     alerts: true,
     allTabs: false,
     resetSearchOnClick: true,
-    tablePadding: 4,
-    errorTelemetry: true
+    tablePadding: 5,
+    errorTelemetry: false
   },
   init: function() {
     let getPrefs = new Promise((resolve, reject)=>{

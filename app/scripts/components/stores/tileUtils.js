@@ -2,7 +2,7 @@ import _ from 'lodash';
 import Fuse from 'fuse.js';
 import {each, findIndex, filter, tryFn, map} from '../utils';
 import state from './state';
-import {historyStore, chromeAppStore, utilityStore} from './main';
+import {utilityStore} from './main';
 import sessionsStore from './sessions';
 
 export const isNewTab = function(url) {
@@ -29,7 +29,7 @@ export const activateTab = function(tab) {
   if (!tab) {
     return;
   }
-  if (tab.hasOwnProperty('openTab') && !tab.openTab) {
+  if (!tab.openTab) {
     chrome.tabs.create({url: tab.url}, (t) =>{
       let stateUpdate = {};
       let index = findIndex(state[state.modeKey], item => item.id === tab.id);
@@ -42,9 +42,7 @@ export const activateTab = function(tab) {
     handleAppClick(tab);
   } else if (typeof tab.id === 'number' || tab.openTab) {
     chrome.tabs.update(tab.openTab ? tab.openTab : tab.id, {active: true});
-    if (tab.windowId !== state.windowId) {
-      chrome.windows.update(tab.windowId, {focused: true});
-    }
+    tryFn(() => chrome.windows.update(tab.windowId, {focused: true}));
   }
   if (state.search.length > 0 && state.prefs.resetSearchOnClick) {
     utilityStore.handleMode(state.prefs.mode);
@@ -91,9 +89,7 @@ export const closeTab = (tab) => {
   } else if (state.prefs.mode === 'bookmarks') {
     chrome.bookmarks.remove(tab.id);
   } else if (state.prefs.mode === 'history') {
-    chrome.history.deleteUrl({url: tab.url}, (h) => {
-      historyStore.remove(state.history, tab.url);
-    });
+    chrome.history.deleteUrl({url: tab.url});
   }
 
   if (state.modeKey) {
@@ -129,14 +125,23 @@ export const closeAllItems = ({tab = null, left = false, right = false}) => {
 };
 
 export const pin = (tab) => {
-  chrome.tabs.update(tab.id, {pinned: !tab.pinned});
+  if (!tab.openTab && typeof tab.id === 'string') {
+    return;
+  }
+  chrome.tabs.update(tab.openTab ? tab.openTab : tab.id, {pinned: !tab.pinned});
 };
 
 export const mute = (tab) => {
-  chrome.tabs.update(tab.id, {muted: !tab.mutedInfo.muted});
+  if (!tab.openTab && typeof tab.id === 'string') {
+    return;
+  }
+  chrome.tabs.update(tab.openTab ? tab.openTab : tab.id, {muted: !tab.mutedInfo.muted});
 };
 
 export const discard = (id) => {
+  if (typeof tab.id === 'string') {
+    return;
+  }
   chrome.tabs.discard(id);
 };
 
@@ -181,7 +186,7 @@ export const app = (tab, opt) => {
     chrome.management.setEnabled(tab.id, !tab.enabled);
   } else if (opt === 'uninstallApp') {
     chrome.management.uninstall(tab.id, () => {
-      chromeAppStore.set(state.prefs.mode === 'apps');
+      msgStore.queryExtensions();
     });
   } else if (opt  === 'createAppShortcut') {
     chrome.management.createAppShortcut(tab.id);
@@ -191,7 +196,7 @@ export const app = (tab, opt) => {
     chrome.management.setLaunchType(tab.id, opt);
   }
   if (opt !== 'launchApp' && opt !== 'uninstallApp') {
-    chromeAppStore.set(state.prefs.mode === 'apps');
+    msgStore.queryExtensions();
   }
 };
 

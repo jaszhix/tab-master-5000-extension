@@ -46,6 +46,12 @@
   "allFrom": {
     "message": "all from"
   },
+  "allLeft": {
+    "message": "tabs to the left"
+  },
+  "allRight": {
+    "message": "tabs to the right"
+  },
   "bookmarks": {
     "message": "bookmarks"
   },
@@ -72,6 +78,18 @@
   },
   "allSearchResults": {
     "message": "all search results"
+  },
+  "reload": {
+    "message": "Reload"
+  },
+  "reloadSelected": {
+    "message": "Reload selected"
+  },
+  "selectAllFromDomain": {
+    "message": "Select all from domain"
+  },
+  "invertSelection": {
+    "message": "Invert selection"
   },
   "togglePinningOf": {
     "message": "Toggle pinning of"
@@ -223,6 +241,12 @@
   "offlineEnabled": {
     "message": "Offline Enabled"
   },
+  "duplicateTab": {
+    "message": "Duplicate Tab"
+  },
+  "loading": {
+    "message": "Loading"
+  },
   "tabOrder": {
     "message": "Tab Order"
   },
@@ -324,12 +348,6 @@
   },
   "screenshotDiskUsageTip": {
     "message": "If you notice performance issues, clearing the screenshot cache occassionally can help. Screenshots older than three days will start being purged once the cache reaches 50MB."
-  },
-  "screenshotInit": {
-    "message": "Capture screenshots when a tab loads"
-  },
-  "screenshotInitTip": {
-    "message": "Enabling this will make TM5K attempt to capture tabs after they are loaded. This option is for users with fast computers, or those who have few tabs open."
   },
   "screenshotChrome": {
     "message": "Capture screenshots using the Chrome API"
@@ -460,6 +478,12 @@
   "editLabel": {
     "message": "Edit Label"
   },
+  "cancelEdit": {
+    "message": "Cancel Edit"
+  },
+  "removeTheme": {
+    "message": "Remove Theme"
+  },
   "searchSession": {
     "message": "Search Session"
   },
@@ -513,6 +537,9 @@
   },
   "updateTheme": {
     "message": "Update Theme"
+  },
+  "updateLabel": {
+    "message": "Update Label"
   },
   "bodyHeaderAndFields": {
     "message": "Body, Header, and Fields"
@@ -687,5 +714,11 @@
   },
   "license": {
     "message": "license"
+  },
+  "descending": {
+    "message": "Descending"
+  },
+  "ascending": {
+    "message": "Ascending"
   }
 }

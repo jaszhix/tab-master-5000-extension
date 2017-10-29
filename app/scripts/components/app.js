@@ -1,3 +1,4 @@
+console.time('init');
 import '../../styles/app.scss';
 import React from 'react';
 import {render} from 'react-dom';
@@ -33,29 +34,29 @@ const loadPrefs = ()=>{
     const enabled = response.prefs.errorTelemetry;
     window._trackJs = {
       token: 'bd495185bd7643e3bc43fa62a30cec92',
-      enabled: enabled,
+      enabled,
       onError: function () {return true;},
       version: "",
       callback: {
-        enabled: enabled,
+        enabled,
         bindStack: enabled
       },
       console: {
-        enabled: enabled,
+        enabled,
         display: enabled,
         error: enabled,
         warn: false,
         watch: ['info', 'warn', 'error']
       },
       network: {
-        enabled: enabled,
+        enabled,
         error: enabled
       },
       visitor: {
         enabled: enabled
       },
       window: {
-        enabled: enabled,
+        enabled,
         promise: enabled
       }
     };

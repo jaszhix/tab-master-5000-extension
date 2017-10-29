@@ -611,7 +611,7 @@ const themeStore = initStore({
     });
     themeStore.setTriggers({savedThemes: themeStore.savedThemes});
     themeStore.selectTheme(newTheme.id);
-
+    return newTheme;
   },
   newTheme: () => {
     themeStore.theme = _.cloneDeep(themeStore.standardThemes[0].theme);

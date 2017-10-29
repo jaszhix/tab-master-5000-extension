@@ -44,6 +44,12 @@
   "allFrom": {
     "message": "todo desde"
   },
+  "allLeft": {
+    "message": "pestañas a la izquierda"
+  },
+  "allRight": {
+    "message": "pestañas a la derecha"
+  },
   "bookmarks": {
     "message": "marcadores"
   },
@@ -73,6 +79,18 @@
   },
   "allSearchResults": {
     "message": "todos los resultados de búsqueda"
+  },
+  "reload": {
+    "message": "Recargar"
+  },
+  "reloadSelected": {
+    "message": "Recargar seleccionado"
+  },
+  "selectAllFromDomain": {
+    "message": "Seleccionar todo desde el dominio"
+  },
+  "invertSelection": {
+    "message": "Invertir selección"
   },
   "togglePinningOf": {
     "message": "Toggle pinning de"
@@ -221,6 +239,12 @@
   "offlineEnabled": {
     "message": "Desconectado habilitado"
   },
+  "duplicateTab": {
+    "message": "Pestaña duplicada"
+  },
+  "loading": {
+    "message": "Cargando"
+  },
   "tabOrder": {
     "message": "Orden de tabulación"
   },
@@ -322,12 +346,6 @@
   },
   "screenshotDiskUsageTip": {
     "message": "Si observa problemas de rendimiento, puede borrar el caché de captura de pantalla de forma ocasional. Las capturas de pantalla de más de tres días comenzarán a purgarse una vez que la caché alcance los 50 MB."
-  },
-  "screenshotInit": {
-    "message": "Capturar capturas de pantalla cuando una pestaña se carga"
-  },
-  "screenshotInitTip": {
-    "message": "Al habilitar esto, TM5K intentará capturar pestañas después de cargarlas. Esta opción es para usuarios con equipos rápidos o aquellos que tienen pocas pestañas abiertas."
   },
   "screenshotChrome": {
     "message": "Capturar capturas de pantalla mediante la API de Chrome"
@@ -458,6 +476,12 @@
   "editLabel": {
     "message": "Editar etiqueta"
   },
+  "cancelEdit": {
+    "message": "Cancelar Editar"
+  },
+  "removeTheme": {
+    "message": "Eliminar tema"
+  },
   "searchSession": {
     "message": "Sesión de búsqueda"
   },
@@ -511,6 +535,9 @@
   },
   "updateTheme": {
     "message": "Actualizar Tema"
+  },
+  "updateLabel": {
+    "message": "Actualizar etiqueta"
   },
   "bodyHeaderAndFields": {
     "message": "Cuerpo, cabecera y campos"
@@ -685,5 +712,11 @@
   },
   "license": {
     "message": "license"
+  },
+  "descending": {
+    "message": "Descendente"
+  },
+  "ascending": {
+    "message": "Ascendente"
   }
 }

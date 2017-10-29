@@ -2,11 +2,9 @@ import _ from 'lodash';
 import v from 'vquery';
 import mouseTrap from 'mousetrap';
 
-import screenshotStore from './screenshot';
 import sessionsStore from './sessions';
 import state from './state';
-import * as utils from './tileUtils';
-import {findIndex, find, map, tryFn, each, filter} from '../utils';
+import {find, tryFn, each, filter} from '../utils';
 
 const DOMAIN_REGEX = /^(?!:\/\/)([a-zA-Z0-9]+\.)?[a-zA-Z0-9][a-zA-Z0-9-]+\.[a-zA-Z]{2,6}?$/i;
 
@@ -38,8 +36,9 @@ export const getBlackList = function(cb) {
 };
 
 export const getBytesInUse = function(item) {
+  let chromeVersion = state.get('chromeVersion');
   return new Promise((resolve) => {
-    if (state.chromeVersion === 1) {
+    if (chromeVersion === 1) {
       resolve(0);
       return;
     }
@@ -66,26 +65,14 @@ export var utilityStore = {
       console.log('Tab created from utilityStore.createTab: ', t);
     });
   },
-  handleMode(mode, stateUpdate = {}){
+  handleMode(mode, stateUpdate = {}, init = false){
     let currentMode = state.get().prefs.mode;
-    if (currentMode !== mode) {
-      stateUpdate.direction = 'desc';
-      if (mode === 'bookmarks') {
-        stateUpdate.sort = 'dateAdded';
-      } else if (mode === 'history') {
-        stateUpdate.sort = 'lastVisitTime';
-      } else if (mode === 'sessions') {
-        stateUpdate.sort = 'sTimeStamp';
-      } else {
-        stateUpdate.sort = 'index';
-      }
-    }
     if (mode === 'apps' || mode === 'extensions') {
       msgStore.queryExtensions();
     } else if (mode === 'bookmarks') {
-      msgStore.queryBookmarks();
+      msgStore.queryBookmarks(init);
     } else if (mode === 'history') {
-      msgStore.queryHistory();
+      msgStore.queryHistory(init);
     } else {
       if (mode === 'sessions') {
         msgStore.getSessions();
@@ -185,47 +172,55 @@ export var keyboardStore = {
   }
 };
 
-// Chrome event listeners set to trigger re-renders.
+const handleMessage = function(s, msg, sender, sendResponse) {
+  if ((!s.prefs.allTabs
+    && msg.windowId !== s.windowId
+    && !msg.init
+    && s.settings !== 'sessions'
+    && !msg.action
+    && !msg.sessions
+    && !msg.windowIdQuery)
+    || s.windowRestored
+    || !s.windowId) {
+    return;
+  }
+  console.log('msg: ', msg, 'sender: ', sender);
+  if (msg.hasOwnProperty('windows')
+    || (msg.bookmarks && s.prefs.mode === 'bookmarks')
+    || (msg.history && s.prefs.mode === 'history')
+    || (msg.extensions && (s.prefs.mode === 'apps' || s.prefs.mode === 'extensions'))) {
+    if (s.modal.state) {
+      msg.modalOpen = true;
+    }
+    window.tmWorker.postMessage({state: state.exclude(['modal', 'context']), msg});
+  } else if (msg.hasOwnProperty('sessions')) {
+    state.set({sessions: msg.sessions});
+  } else if (msg.hasOwnProperty('screenshots')) {
+    state.set({screenshots: msg.screenshots});
+  } else if (msg.hasOwnProperty('actions')) {
+    state.set({actions: msg.actions});
+  } else if (msg.hasOwnProperty('focusSearchEntry')) {
+    keyboardStore.focusSearchEntry();
+  } else if (msg.type === 'appState') {
+    state.set({topNavButton: msg.action});
+  } else if (msg.type === 'checkSSCapture') {
+    console.log('checkSSCapture: Sending screenshot to '+sender.tab.url);
+    sendResponse(filter(s.screenshots, ss => ss && ss.url === sender.tab.url));
+  } else if (msg.type === 'startup') {
+    _.delay(()=>window.location.reload(), 500);
+  }
+};
+
 export var msgStore = {
   init() {
-    chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-      let s = state.get('*');
-      if (!s.prefs.allTabs && msg.windowId !== s.windowId && s.windowId > 0 && (s.settings !== 'sessions' && !s.modal.state) && !msg.action) {
+    chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
+      let s = state.get();
+      console.log(`msg.windowId: `, msg.windowId);
+      if (msg.windowIdQuery) {
+        state.set({windowId: msg.windowIdQuery});
         return;
       }
-      /* if ((!s.prefs.allTabs
-        && msg.windowId !== s.windowId
-        && !msg.init
-        && s.settings !== 'sessions'
-        && !msg.action
-        && !msg.sessions)
-        || s.windowRestored) {
-        return;
-      } */
-      console.log('msg: ', msg, 'sender: ', sender);
-      if (msg.hasOwnProperty('windows')
-        || (msg.bookmarks && s.prefs.mode === 'bookmarks')
-        || (msg.history && s.prefs.mode === 'history')
-        || (msg.extensions && (s.prefs.mode === 'apps' || s.prefs.mode === 'extensions'))) {
-        window.tmWorker.postMessage({state: state.exclude(['modal', 'context']), msg});
-      } else if (msg.hasOwnProperty('sessions')) {
-        state.set({sessions: msg.sessions});
-      } else if (msg.hasOwnProperty('screenshots')) {
-        state.set({screenshots: msg.screenshots});
-      } else if (msg.hasOwnProperty('actions')) {
-        state.set({actions: msg.actions});
-      } else if (msg.hasOwnProperty('focusSearchEntry')) {
-        keyboardStore.focusSearchEntry();
-      } else if (msg.type === 'appState') {
-        state.set({topNavButton: msg.action});
-      } else if (msg.type === 'screenshot') {
-        screenshotStore.capture(sender.tab.id, sender.tab.windowId, msg.image, msg.type);
-      } else if (msg.type === 'checkSSCapture') {
-        console.log('checkSSCapture: Sending screenshot to '+sender.tab.url);
-        sendResponse(screenshotStore.tabHasScreenshot(sender.tab.url));
-      } else if (msg.type === 'startup') {
-        _.delay(()=>window.location.reload(), 500);
-      }
+      handleMessage(s, msg, sender, sendResponse);
     });
   },
   setPrefs(obj){
@@ -245,20 +240,28 @@ export var msgStore = {
       });
     });
   },
+  getWindowId() {
+    return new Promise((resolve) => {
+      chrome.runtime.sendMessage(chrome.runtime.id, {method: 'getWindowId'}, (windowId) => {
+        state.set({windowId});
+        resolve();
+      });
+    });
+  },
   getTabs(init = false) {
     chrome.runtime.sendMessage(chrome.runtime.id, {method: 'getTabs', init});
   },
-  queryBookmarks() {
-    chrome.runtime.sendMessage(chrome.runtime.id, {method: 'queryBookmarks'});
+  queryBookmarks(init = false) {
+    chrome.runtime.sendMessage(chrome.runtime.id, {method: 'queryBookmarks', init});
   },
-  queryHistory() {
-    chrome.runtime.sendMessage(chrome.runtime.id, {method: 'queryHistory'});
+  queryHistory(init = false) {
+    chrome.runtime.sendMessage(chrome.runtime.id, {method: 'queryHistory', init});
   },
   queryExtensions() {
     chrome.runtime.sendMessage(chrome.runtime.id, {method: 'queryExtensions'});
   },
-  queryTabs(){
-    chrome.runtime.sendMessage(chrome.runtime.id, {method: 'queryTabs'});
+  queryTabs(init = false){
+    chrome.runtime.sendMessage(chrome.runtime.id, {method: 'queryTabs', init});
   },
   getSessions(){
     chrome.runtime.sendMessage(chrome.runtime.id, {method: 'getSessions'});
@@ -347,7 +350,8 @@ export var faviconStore = {
 };
 
 export const setAlert = function(alert) {
-  if (state.alert.tag !== 'alert-success' && typeof alert.tag === 'undefined') {
+  let _alert = state.get('alert');
+  if (_alert.tag !== 'alert-success' && typeof alert.tag === 'undefined') {
     alert.class = 'alert-success';
   }
   state.set({alert});

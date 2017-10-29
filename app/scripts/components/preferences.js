@@ -1,5 +1,4 @@
 import React from 'react';
-import autoBind from 'react-autobind';
 import {StyleSheet, css} from 'aphrodite';
 import _ from 'lodash';
 import tc from 'tinycolor2';
@@ -10,7 +9,6 @@ import * as utils from './stores/tileUtils';
 import state from './stores/state';
 import {map, each} from './utils'
 import {msgStore, getBlackList, setBlackList, isValidDomain, faviconStore, getBytesInUse} from './stores/main';
-import screenshotStore from './stores/screenshot';
 
 import {Btn, Col, Row} from './bootstrap';
 
@@ -31,7 +29,7 @@ class Slide extends React.Component {
       hover: false
     }
   }
-  render() {
+  render = () => {
     let p = this.props;
     let s = this.state;
     return (
@@ -59,10 +57,10 @@ class Toggle extends React.Component {
       hover: false
     }
   }
-  componentDidMount() {
+  componentDidMount = () => {
     ReactTooltip.rebuild();
   }
-  render() {
+  render = () => {
     let p = this.props;
     let s = this.state;
     return (
@@ -108,9 +106,8 @@ class Blacklist extends React.Component {
       blacklistNeedsSave: false,
       formatError: null
     }
-    autoBind(this);
   }
-  componentDidMount() {
+  componentDidMount = () => {
     getBlackList((blacklist = '') => {
       if (blacklist && blacklist.length > 0) {
         blacklist = blacklist.join(' \n') + ' ';
@@ -118,7 +115,7 @@ class Blacklist extends React.Component {
       this.setState({blacklistValue: blacklist});
     });
   }
-  blacklistFieldChange (e) {
+  blacklistFieldChange = (e) => {
     let blacklistNeedsSave = this.state.blacklistNeedsSave;
     if (!blacklistNeedsSave && e.target.value !== this.state.blacklistValue) {
       blacklistNeedsSave = true;
@@ -128,7 +125,7 @@ class Blacklist extends React.Component {
       blacklistValue: e.target.value,
     });
   }
-  blacklistSubmit() {
+  blacklistSubmit = () => {
     let blacklistStr = this.state.blacklistValue || '';
     if (typeof blacklistStr !== 'string') {
       blacklistStr = blacklistStr.toString();
@@ -180,7 +177,7 @@ class Blacklist extends React.Component {
     });
     setBlackList(domains.valid);
   }
-  render() {
+  render = () => {
     let s = this.state;
     let p = this.props;
     return (
@@ -215,9 +212,8 @@ class Preferences extends React.Component {
       screenshotsBytesInUse: 0,
       aboutAddonsOpen: false
     }
-    autoBind(this);
   }
-  componentDidMount() {
+  componentDidMount = () => {
     this.buildFooter();
     if (!this.props.chromeVersion || this.props.chromeVersion !== 1) {
       return;
@@ -225,10 +221,10 @@ class Preferences extends React.Component {
     this.connectId = state.connect('allTabs', (partial) => this.checkAddonTab(partial));
     this.checkAddonTab();
   }
-  componentWillUnmount() {
+  componentWillUnmount = () => {
     state.disconnect(this.connectId);
   }
-  buildFooter() {
+  buildFooter = () => {
     this.getBytesInUse().then(() => {
       let p = this.props;
       if (!p.options) {
@@ -268,7 +264,7 @@ class Preferences extends React.Component {
       }
     });
   }
-  checkAddonTab(partial) {
+  checkAddonTab = (partial) => {
     let aboutAddonsOpen = false
     each(partial ? partial.allTabs : state.allTabs, (win) => {
       each(win, (tab) => {
@@ -283,7 +279,7 @@ class Preferences extends React.Component {
     });
     this.setState({aboutAddonsOpen});
   }
-  getBytesInUse() {
+  getBytesInUse = () => {
     return getBytesInUse('favicons').then((bytes) => {
       this.setState({faviconsBytesInUse: bytes});
       if (this.props.prefs.screenshot) {
@@ -293,10 +289,10 @@ class Preferences extends React.Component {
       this.setState({screenshotsBytesInUse: bytes});
     });
   }
-  handleToggle(opt) {
+  handleToggle = (opt) => {
     this.setState({hover: opt});
   }
-  handleClick(opt) {
+  handleClick = (opt) => {
     let p = this.props;
     let obj = {};
     obj[opt] = !p.prefs[opt];
@@ -309,26 +305,28 @@ class Preferences extends React.Component {
       window.location.reload();
     }
   }
-  handleSlide(e, opt) {
+  handleSlide = (e, opt) => {
     let obj = {};
     obj[opt] = e;
     msgStore.setPrefs(obj);
   }
-  handleAutoDiscardTime(e) {
+  handleAutoDiscardTime = (e) => {
     let discardTime = parseInt(e.target.value.split(' ')[0]);
     let isMinute = e.target.value.indexOf('Minute') !== -1;
     let output = isMinute && discardTime === 30 ? 0.5 : isMinute && discardTime === 15 ? 0.25 : discardTime;
     msgStore.setPrefs({autoDiscardTime: output * 3600000});
   }
-  handleScreenshotClear() {
-    screenshotStore.clear();
-    this.buildFooter();
+  handleScreenshotClear = () => {
+    chrome.storage.local.remove('screenshots', ()=>{
+      this.buildFooter();
+      state.set({screenshotClear: true, screenshots: []});
+    });
   }
-  handleFaviconClear() {
+  handleFaviconClear = () => {
     faviconStore.clear();
     this.buildFooter();
   }
-  render() {
+  render = () => {
     let s = this.state;
     let p = this.props;
     let autoDiscardTimeOptions = [15, 30, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24];

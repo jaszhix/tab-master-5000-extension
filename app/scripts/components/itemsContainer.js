@@ -1,5 +1,4 @@
 import React from 'react';
-import autoBind from 'react-autobind';
 import {StyleSheet, css} from 'aphrodite';
 import _ from 'lodash';
 import v from 'vquery';
@@ -10,7 +9,7 @@ import themeStore from './stores/theme';
 
 import Tile from './tile';
 import {Table} from './table';
-import {map, whichToShow, tryFn, filter, each} from './utils';
+import {map, whichToShow, tryFn, isNewTab, each} from './utils';
 import * as utils from './stores/tileUtils';
 
 class ItemsContainer extends React.Component {
@@ -24,15 +23,18 @@ class ItemsContainer extends React.Component {
     }
     this.connections = [
       state.connect(
-        ['modeKey', 'prefs'], (partial) => {
-          if (this.modeKey === partial.modeKey) {
+        ['modeKey', 'prefs'], () => {
+          if (this.modeKey === state.modeKey && this.format === state.prefs.format) {
             return;
           }
-          this.modeKey = partial.modeKey;
+          this.modeKey = state.modeKey;
+          this.format = state.prefs.format;
           document.body.scrollIntoView();
           document.body.scrollTop = 0;
           this.setViewableRange(this.ref);
-        },
+        }
+      ),
+      state.connect(
         ['sort', 'prefs'], () => {
           this.scrollTop = document.body.scrollTop;
           _.defer(() => {
@@ -43,11 +45,10 @@ class ItemsContainer extends React.Component {
         }
       )
     ];
-    autoBind(this);
     this.height = 0;
     this._setViewableRange = _.throttle(this.setViewableRange, 2000, {leading: true});
   }
-  componentDidMount() {
+  componentDidMount = () => {
     let checkNode = ()=>{
       if (this.ref) {
         window.addEventListener('scroll', this.handleScroll);
@@ -58,7 +59,7 @@ class ItemsContainer extends React.Component {
     };
     checkNode();
   }
-  componentWillUnmount() {
+  componentWillUnmount = () => {
     if (this.ref) {
       window.removeEventListener('scroll', this.handleScroll);
     }
@@ -66,14 +67,14 @@ class ItemsContainer extends React.Component {
       state.disconnect(connection);
     });
   }
-  handleScroll() {
+  handleScroll = () => {
     this.scrollListener();
     if (this.scrollTimeout) {
       clearTimeout(this.scrollTimeout);
     }
     this.scrollTimeout = setTimeout(this.scrollListener, 25);
   }
-  scrollListener() {
+  scrollListener = () => {
     if (!this.ref) {
       return;
     }
@@ -83,7 +84,7 @@ class ItemsContainer extends React.Component {
       this.scrollTop = document.body.scrollTop;
     }
   }
-  setViewableRange(node) {
+  setViewableRange = (node) => {
     if (!node) {
       return;
     }
@@ -91,7 +92,7 @@ class ItemsContainer extends React.Component {
     let columns = isTableView ? 1 : Math.floor(window.innerWidth / (this.props.s.prefs.tabSizeHeight + 80));
     let config = {
       outerHeight: window.innerHeight,
-      scrollTop: (document.body.scrollTop) * columns - 1,
+      scrollTop: (document.body.scrollTop) * columns,
       itemHeight: isTableView ? this.props.s.prefs.tablePadding + 22 : this.props.s.prefs.tabSizeHeight + 14,
       columns
     };
@@ -124,7 +125,7 @@ class ItemsContainer extends React.Component {
     this.scrollTimeout = null;
     this.setState({range});
   }
-  dragStart(e, i) {
+  dragStart = (e, i) => {
     state.set({dragging: true});
     e.dataTransfer.setData(1, 2); // FF fix
     e.dataTransfer.effectAllowed = 'move';
@@ -139,7 +140,7 @@ class ItemsContainer extends React.Component {
     this.placeholder.removeAttribute('id');
     this.placeholder.classList.add('tileClone');
   }
-  dragEnd() {
+  dragEnd = () => {
     let p = this.props;
     let start = this.dragged.i;
     if (this.over === undefined) {
@@ -160,10 +161,7 @@ class ItemsContainer extends React.Component {
     if (start < end) {
       end--;
     }
-    let tabs = filter(p.s.tabs, function(item) {
-      return !utils.isNewTab(item.url);
-    });
-    let index = tabs[end].index;
+    let index = p.s.tabs[end].index;
     chrome.tabs.move(p.s.tabs[start].id, {index}, () =>{
       msgStore.queryTabs();
       _.defer(() => {
@@ -172,7 +170,7 @@ class ItemsContainer extends React.Component {
       });
     });
   }
-  dragOver(e, i) {
+  dragOver = (e, i) => {
     let p = this.props;
     e.preventDefault();
     if (p.s.tabs[i] === undefined || this.dragged === undefined || p.s.tabs[i].pinned !== p.s.tabs[this.dragged.i].pinned) {
@@ -200,10 +198,10 @@ class ItemsContainer extends React.Component {
       });
     }
   }
-  getRef(ref) {
+  getRef = (ref) => {
     this.ref = ref;
   }
-  render() {
+  render = () => {
     let p = this.props;
     let tileLetterTopPos = p.s.prefs.tabSizeHeight >= 175 ?
       parseInt((p.s.prefs.tabSizeHeight + 80).toString()[0]+(p.s.prefs.tabSizeHeight + 80).toString()[1]) - 10
@@ -220,7 +218,7 @@ class ItemsContainer extends React.Component {
       <div className="tile-body">
         <div id="grid" ref={this.getRef}>
           {p.s.prefs.format === 'tile' ? map(p.s[p.s.modeKey], (tab, i) => {
-            if (utils.isNewTab(tab.url) || !tab.title) {
+            if (isNewTab(tab.url) || !tab.title) {
               return null;
             }
             let isVisible = i >= this.state.range.start && i <= this.state.range.start + this.state.range.length;
@@ -266,8 +264,7 @@ class ItemsContainer extends React.Component {
               screenshotClear={p.s.screenshotClear} />
             );
           })
-          : null}
-          {p.s.prefs.format === 'table' ?
+          :
           <Table
           s={p.s}
           onDragEnd={this.dragEnd}
@@ -275,7 +272,7 @@ class ItemsContainer extends React.Component {
           onDragOver={this.dragOver}
           theme={p.theme}
           range={this.state.range}
-          showFloatingTableHeader={this.state.showFloatingTableHeader} /> : null}
+          showFloatingTableHeader={this.state.showFloatingTableHeader} />}
         </div>
       </div>
     );

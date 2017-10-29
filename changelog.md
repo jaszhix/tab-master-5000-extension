@@ -1,5 +1,18 @@
 #### Release Notes
 
+##### v2.6.0 / *10-29-17*
+
+*   Added an option to toggle TrackJS error telemetry, and made it opt-in only.
+*   Moved some CPU bound operations to a worker thread.
+*   Fixed tabs being reset to another window's tab set when a New Tab is opened from another window.
+*   Fixed a bug causing all tabs from a particular URL to be closed when selecting "Close all duplicates".
+*   Changed the duplicate tab indicator to a pulsing exclamation icon.
+*   Added a loading indicator for tabs in the tile view.
+*   Removed the canvas-based screenshot capturer due to performance issues.
+*   Added new context menu options: Reload, Close all to the left/right, Select all from domain, and Invert selection.
+*   Re-added the option to maximize the settings modal size.
+*   Added UI improvements covering the session and theme manager, sidebar, and more.
+
 ##### v2.5.1 / *10-22-17*
 
 *   Fixed the "Show tabs across all windows" option not working.
