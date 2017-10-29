@@ -17,7 +17,7 @@ const state = initStore({
   massUpdate: null,
   remove: null,
   create: null,
-  screenshotClear: null,
+  screenshotClear: false,
   // UI
   search: '',
   width: window.innerWidth,

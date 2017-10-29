@@ -125,7 +125,7 @@ let sessionsStore = {
           allTabs.push(sessions[i].tabs[y]);
         }
       }
-      let _tabs = _.orderBy(_.uniqBy(_.flatten(allTabs), 'url'), ['sTimeStamp'], ['desc']);
+      let _tabs = _.uniqBy(_.flatten(allTabs), 'url')
       return _tabs;
     } else {
       msgStore.setPrefs({mode: 'tabs'});

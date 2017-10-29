@@ -105,3 +105,9 @@ export const unref = function(object) {
     }
   }, 0);
 };
+
+export const isNewTab = function(url) {
+  return (url && (url.indexOf('chrome://newtab/') > -1
+    || url.substr(-11) === 'newtab.html'
+    || url.substr(-11) === 'ewtab.html#'))
+}

@@ -1,6 +1,6 @@
 import Fuse from 'fuse.js';
 import uuid from 'node-uuid';
-import {each, find, findIndex, filter, map, includes, tryFn} from './utils';
+import {each, find, findIndex, filter, map, includes, tryFn, isNewTab} from './utils';
 import _ from 'lodash';
 
 const defaultFavicon = '../images/file_paper_blank_document.png';
@@ -58,6 +58,21 @@ let defaults = (iteration, windowId) => {
   };
 };
 
+const sort = (state, data) => {
+  let result;
+
+  if (state.prefs.mode === 'tabs') {
+    let pinned = _.orderBy(filter(data, tab => tab.pinned === true), state.sort, state.direction);
+    let unpinned = _.orderBy(filter(data, tab => tab.pinned === false), state.sort, state.direction);
+    let concat = _.concat(pinned, unpinned);
+    result = _.orderBy(concat, ['pinned', state.sort], [state.direction]);
+  } else {
+    result = _.orderBy(data, [state.sort], [state.direction]);
+  }
+
+  return result;
+};
+
 const checkFavicons = (state, tabs, stateUpdate = {}) => {
   let ignoredCount = filter(tabs, function(tab) {
     return tab.favIconUrl === defaultFavicon
@@ -89,7 +104,11 @@ const checkFavicons = (state, tabs, stateUpdate = {}) => {
   if (stateUpdate.sessions) {
     state.modeKey = 'sessionTabs';
   }
-  stateUpdate[state.modeKey] = tabs;
+  stateUpdate[state.modeKey] = sort({
+    prefs: state.prefs,
+    sort: stateUpdate.sort,
+    direction: stateUpdate.direction
+  }, tabs);
   postMessage({stateUpdate});
 };
 
@@ -125,7 +144,8 @@ const processHistory = function(s, msg) {
       }
     }
   }
-  checkFavicons(s, history);
+  history = filter(history, item => item.title && !isNewTab(item.url));
+  checkFavicons(s, history, {direction: 'desc', sort: 'lastVisitTime'});
 };
 
 const processBookmarks = function(s, msg) {
@@ -166,13 +186,10 @@ const processBookmarks = function(s, msg) {
       _bookmarks[i] = _.assignIn(_bookmarks[i], _.cloneDeep(defaults(iter, s.windowId)));
     }
   }
-  _bookmarks = _.orderBy(
-    filter(_bookmarks, (bookmark) => {
-      return bookmark.url.substr(0, 10) !== 'javascript';
-    }),
-    ['dateAdded', 'openTab'], ['desc', 'asc']
-  );
-  checkFavicons(s, _bookmarks);
+  _bookmarks = filter(_bookmarks, (bookmark) => {
+    return bookmark.url.substr(0, 10) !== 'javascript';
+  });
+  checkFavicons(s, _bookmarks, {direction: 'desc', sort: 'dateAdded'});
 };
 
 const processAppExtension = function(s, msg) {
@@ -193,6 +210,7 @@ const processAppExtension = function(s, msg) {
   }
   let stateUpdate = isApp ? {apps: extensions} : {extensions};
   stateUpdate.direction = 'asc';
+  stateUpdate.sort = 'index';
   postMessage({stateUpdate});
 };
 
@@ -228,7 +246,7 @@ const processSessionTabs = function(sessions, tabs, windowId) {
       allTabs.push(sessions[i].tabs[y]);
     }
   }
-  return _.orderBy(_.uniqBy(_.flatten(allTabs), 'url'), ['sTimeStamp'], ['desc']);
+  return _.uniqBy(_.flatten(allTabs), 'url');
 }
 
 const processWindows = function(s, msg) {
@@ -236,18 +254,21 @@ const processWindows = function(s, msg) {
     allTabs: map(msg.windows, function(win) {
       return win.tabs;
     }),
-    modeKey: 'tabs'
+    modeKey: 'tabs',
+    direction: 'desc',
+    sort: 'index'
   };
-  /* if (msg.init) {
-    stateUpdate.windowId = msg.windowId;
-  } */
-  let windowId = (msg.init ? stateUpdate.windowId : s.windowId) || msg.windowId;
+  if (msg.init) {
+    if (msg.screenshots) {
+      stateUpdate.screenshots = msg.screenshots;
+    }
+  }
   if (s.prefs.mode === 'tabs') {
     if (s.prefs.allTabs) {
       stateUpdate.tabs = _.flatten(stateUpdate.allTabs);
-    } else {
+    } else if (!msg.modalOpen) {
       let win = find(msg.windows, function(win) {
-        return win.id === windowId;
+        return win.id === s.windowId;
       });
       if (win) {
         stateUpdate.tabs = win.tabs;
@@ -258,12 +279,22 @@ const processWindows = function(s, msg) {
     }
   } else if (s.prefs.mode === 'sessions') {
     stateUpdate.modeKey = 'sessionTabs';
-    stateUpdate.sessionTabs = processSessionTabs(s.sessions, _.flatten(stateUpdate.allTabs), windowId);
-  } /* else {
-    postMessage({msg: 'handleMode', mode: s.prefs.mode, stateUpdate});
+    stateUpdate.sort = 'sTimeStamp';
+    stateUpdate.direction = 'desc';
+    stateUpdate.sessionTabs = processSessionTabs(s.sessions, _.flatten(stateUpdate.allTabs), s.windowId);
+  } else {
+    postMessage({msg: 'handleMode', mode: s.prefs.mode, stateUpdate, init: msg.init});
     return;
-  } */
-  checkFavicons(s, stateUpdate[stateUpdate.modeKey], stateUpdate);
+  }
+  // Prevent state being overriden from another window while session manager is in use
+  if (!msg.modalOpen) {
+    stateUpdate[stateUpdate.modeKey] = filter(stateUpdate[stateUpdate.modeKey], function(item) {
+      return !isNewTab(item.url);
+    });
+    checkFavicons(s, stateUpdate[stateUpdate.modeKey], stateUpdate);
+  } else {
+    postMessage({stateUpdate});
+  }
 };
 
 onmessage = function(e) {
@@ -277,5 +308,9 @@ onmessage = function(e) {
     processAppExtension(e.data.state, e.data.msg);
   } else if (e.data.msg.query) {
     searchChange(e.data.msg.query, e.data.msg.items);
+  } else if (e.data.msg.sort) {
+    let stateUpdate = {};
+    stateUpdate[e.data.msg.modeKey] = sort(e.data.msg, e.data.msg.data);
+    postMessage({stateUpdate, force: true});
   }
 }

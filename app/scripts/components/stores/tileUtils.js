@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import Fuse from 'fuse.js';
-import {each, findIndex, filter, tryFn, includes, map} from '../utils';
+import {each, findIndex, filter, tryFn, map} from '../utils';
 import state from './state';
 import {historyStore, chromeAppStore, utilityStore} from './main';
 import sessionsStore from './sessions';
@@ -55,6 +55,10 @@ export const closeTab = (tab) => {
   if (!tab) {
     return;
   }
+  let refItem = findIndex(state[state.modeKey], item => item.id === tab.id);
+  if (refItem === -1) {
+    return;
+  }
 
   let stateUpdate = {};
 
@@ -93,7 +97,6 @@ export const closeTab = (tab) => {
   }
 
   if (state.modeKey) {
-    let refItem = findIndex(state[state.modeKey], item => item.id === tab.id);
     if (state[state.modeKey][refItem].openTab) {
       state[state.modeKey][refItem].openTab = null;
     }
@@ -114,10 +117,10 @@ export const closeAllTabs = (tab) => {
   });
 };
 
-export const closeAllItems = () => {
+export const closeAllItems = ({tab = null, left = false, right = false}) => {
   let items = state.get(state.modeKey);
   for (let i = 0, len = items.length; i < len; i++) {
-    if (!items[i]) {
+    if (!items[i] || (tab && (left && tab.index <= i || right && tab.index >= i || isNewTab(tab.url)))) {
       continue;
     }
     closeTab(items[i])
@@ -141,25 +144,36 @@ export const checkDuplicateTabs = (tab, cb) => {
   if (!state.prefs.duplicate || state.prefs.mode !== 'tabs' || state.duplicateTabs.indexOf(tab.url) === -1) {
     return;
   }
-  let [first, ...duplicates] = filter(state.tabs, function(_tab) {
-    return state.duplicateTabs.indexOf(_tab.url) > -1;
+  let sets = [];
+  each(state.duplicateTabs, function(url) {
+    let set = filter(state.tabs, function(_tab) {
+      return _tab.url === url;
+    });
+    if (set && set.length > 0) {
+      sets.push(set);
+    }
   });
-  if (!first) {
-    if (cb) {
-      cb(false);
+  each(sets, function(set) {
+    let [first, ...duplicates] = filter(set, function(_tab) {
+      return state.duplicateTabs.indexOf(_tab.url) > -1;
+    });
+    if (!first) {
+      if (cb) {
+        cb(false);
+      }
+      return false;
     }
-    return;
-  }
-  for (let y = 0, len = duplicates.length; y < len; y++) {
-    if (duplicates[y].id === first.id || (duplicates[y].id !== tab.id && cb)) {
-      continue;
+    for (let y = 0, len = duplicates.length; y < len; y++) {
+      if (duplicates[y].id === first.id || (duplicates[y].id !== tab.id && cb)) {
+        continue;
+      }
+      if (cb) {
+        cb(true);
+        continue;
+      }
+      closeTab(duplicates[y]);
     }
-    if (cb) {
-      cb(true);
-      continue;
-    }
-    closeTab(duplicates[y]);
-  }
+  });
 };
 
 export const app = (tab, opt) => {

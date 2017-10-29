@@ -20,20 +20,7 @@ class ContextMenu extends React.Component {
   }
   componentDidMount(){
     this.handleOptions(this.props);
-    _.defer(()=>{
-      let positionedDiv = v('#main > div > div > div.ntg-context > div');
-      let top = positionedDiv.css().top;
-      let divTop = 0;
-      if (top && top.indexOf('px') > -1) {
-        divTop = top.split('px')[0];
-      }
-      if (isNaN(divTop)) {
-        divTop = 0;
-      }
-      if (!positionedDiv.inViewport()) {
-        positionedDiv.css({top: `${divTop - 100}px`});
-      }
-    });
+    this.containerStyle = {left: window.cursor.page.x, top: window.cursor.page.y, opacity: 0};
   }
   componentWillReceiveProps(nextProps){
     let p = this.props;
@@ -294,7 +281,7 @@ class ContextMenu extends React.Component {
     let p = this.props;
     return (
       <div className="ntg-context">
-        <div ref={this.getRef} style={{left: window.cursor.page.x, top: window.cursor.page.y, opacity: 0}} className="ntg-context-menu">
+        <div ref={this.getRef} style={this.containerStyle} className="ntg-context-menu">
           <Context
           theme={p.theme}
           options={p.context.options}
