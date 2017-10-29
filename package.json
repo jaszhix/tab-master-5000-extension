@@ -68,7 +68,6 @@
     "gulp-rename": "^1.2.2",
     "gulp-zip": "^4.0.0",
     "html-loader": "^0.5.1",
-    "html2canvas": "^0.5.0-beta4",
     "json-loader": "^0.5.7",
     "lodash": "^4.17.4",
     "lodash-loader": "^1.2.0",

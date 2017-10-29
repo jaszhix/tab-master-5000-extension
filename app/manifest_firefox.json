@@ -1,7 +1,7 @@
 {
   "name": "__MSG_appName__",
   "short_name": "TM5K",
-  "version": "2.5.1",
+  "version": "2.6.0",
   "manifest_version": 2,
   "description": "__MSG_appDesc__",
   "icons": {
@@ -30,19 +30,6 @@
     },
     "default_title": "__MSG_appName__"
   },
-  "content_scripts": [
-    {
-      "matches": [
-        "http://*/*",
-        "https://*/*"
-      ],
-      "js": [
-        "scripts/content.js"
-      ],
-      "run_at": "document_idle",
-      "all_frames": false
-    }
-  ],
   "permissions": [
     "<all_urls>",
     "activeTab",

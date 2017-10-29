@@ -785,6 +785,16 @@ class Bg extends React.Component {
       }
     }
 
+    let urlMatch = e.url.match(DOMAIN_REGEX);
+    e.domain = urlMatch ? urlMatch[1] : e.url.split('/')[2];
+
+    for (let i = 0, len = this.state.blacklist.length; i < len; i++) {
+      if (this.state.blacklist[i].indexOf(e.domain) > -1) {
+        chrome.tabs.remove(e.id);
+        return;
+      }
+    }
+
     if (typeof this.state.windows[refWindow].tabs[e.index] !== 'undefined') {
       for (let i = 0, len = this.state.windows[refWindow].tabs.length; i < len; i++) {
         if (i > e.index) {

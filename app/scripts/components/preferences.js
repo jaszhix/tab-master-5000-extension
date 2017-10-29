@@ -427,14 +427,6 @@ class Preferences extends React.Component {
                 <div>
                   <Toggle
                   theme={p.theme}
-                  onMouseEnter={()=>this.handleToggle('screenshotInit')}
-                  onClick={()=>this.handleClick('screenshotInit')}
-                  on={p.prefs.screenshotInit}
-                  child={true}
-                  label={utils.t('screenshotInit')}
-                  data-tip={utils.t('screenshotInitTip')} />
-                  <Toggle
-                  theme={p.theme}
                   onMouseEnter={()=>this.handleToggle('screenshotChrome')}
                   onClick={()=>this.handleClick('screenshotChrome')}
                   on={p.prefs.screenshotChrome}
