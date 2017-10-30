@@ -29,7 +29,7 @@ export const activateTab = function(tab) {
   if (!tab) {
     return;
   }
-  if (!tab.openTab) {
+  if (tab.hasOwnProperty('openTab') && !tab.openTab) {
     chrome.tabs.create({url: tab.url}, (t) =>{
       let stateUpdate = {};
       let index = findIndex(state[state.modeKey], item => item.id === tab.id);
@@ -42,7 +42,9 @@ export const activateTab = function(tab) {
     handleAppClick(tab);
   } else if (typeof tab.id === 'number' || tab.openTab) {
     chrome.tabs.update(tab.openTab ? tab.openTab : tab.id, {active: true});
-    tryFn(() => chrome.windows.update(tab.windowId, {focused: true}));
+    if (tab.windowId !== state.windowId) {
+      chrome.windows.update(tab.windowId, {focused: true});
+    }
   }
   if (state.search.length > 0 && state.prefs.resetSearchOnClick) {
     utilityStore.handleMode(state.prefs.mode);

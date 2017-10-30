@@ -19,6 +19,8 @@ class ContextMenu extends React.Component {
   componentDidMount = () => {
     this.handleOptions(this.props);
     this.containerStyle = {left: window.cursor.page.x, top: window.cursor.page.y, opacity: 0};
+    // TBD
+    _.defer(() => this.containerStyle = {left: window.cursor.page.x, top: window.cursor.page.y, opacity: 0})
   }
   componentWillReceiveProps = (nextProps) => {
     let p = this.props;

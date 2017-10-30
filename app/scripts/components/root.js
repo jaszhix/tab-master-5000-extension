@@ -363,8 +363,8 @@ class Root extends React.Component {
         background-color: ${e.theme.tileBg};
       }
       body {
-        color: ${e.theme.bodyText};
-        background-color: ${e.theme.bodyBg};
+        color: ${e.theme.bodyText} !important;
+        background-color: ${e.theme.bodyBg} !important;
       }
       `;
 
@@ -400,7 +400,7 @@ class Root extends React.Component {
       stateUpdate.theme = e.theme;
     }
     if (e.currentWallpaper && typeof e.currentWallpaper.data !== 'undefined') {
-      if (e.currentWallpaper.data !== -1) {
+      if (e.currentWallpaper.data !== -1 && !state.isOptions) {
         style.innerHTML += `
           #bgImg {
             display: inline-block !important;
@@ -417,13 +417,11 @@ class Root extends React.Component {
         style.innerHTML += `
           #bgImg {
             display: none;
-            filter: blur(${p.s.prefs.screenshotBgBlur}px);
+            filter: blur(${p.s.prefs.screenshotBgBlur}px) !important;
             opacity: 1;
-            background-color: ${e.theme.bodyBg};
-            background-image: none;
-            background-size: cover;
-            background-blend-mode: normal;
-            z-index: -12;
+            background-color: ${e.theme.bodyBg} !important;
+            background-image: none !important;
+            z-index: -12 !important;
           }
         `;
         stateUpdate.currentWallpaper = null;

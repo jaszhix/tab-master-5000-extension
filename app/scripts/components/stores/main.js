@@ -192,7 +192,7 @@ const handleMessage = function(s, msg, sender, sendResponse) {
     if (s.modal.state) {
       msg.modalOpen = true;
     }
-    window.tmWorker.postMessage({state: state.exclude(['modal', 'context']), msg});
+    window.tmWorker.postMessage({state: state.exclude(['modal', 'context', 'isOptions']), msg});
   } else if (msg.hasOwnProperty('sessions')) {
     state.set({sessions: msg.sessions});
   } else if (msg.hasOwnProperty('screenshots')) {
