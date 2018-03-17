@@ -27,7 +27,7 @@ gulp.task('build-bg', function() {
   config.entry = './app/scripts/bg/bg.js';
   config.output.filename = 'background.js';
   return gulp.src('./app/scripts/background.js')
-    .pipe(webpackStream(config))
+    .pipe(webpackStream(config, require('webpack')))
     .pipe(gulp.dest('./app/scripts/'));
 });
 gulp.task('backup-source-maps', function() {

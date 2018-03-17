@@ -128,7 +128,7 @@ class Attribution extends React.Component {
     };
   }
   componentDidMount() {
-    let deps = require('json-loader!../../../package.json');
+    let deps = require('../../../package.json');
     let state = [];
     for (let key in deps.devDependencies) {
       let version = deps.devDependencies[key];

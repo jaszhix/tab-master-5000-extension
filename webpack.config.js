@@ -7,11 +7,13 @@ const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const LodashModuleReplacementPlugin = require('lodash-webpack-plugin');
 
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const aliases = Object.assign({
   underscore: 'lodash'
 }, require('lodash-loader').createLodashAliases());
 
-const PROD = process.env.NODE_ENV === 'production';
+const ENV = process.env.NODE_ENV || 'development';
+const PROD = ENV === 'production';
 const ENTRY = process.env.BUNDLE_ENTRY;
 const SKIP_MINIFY = JSON.parse(process.env.SKIP_MINIFY || 'false');
 const publicPath = PROD ? '/' : 'http://127.0.0.1:8009/app/scripts/';
@@ -75,7 +77,7 @@ const config = {
     new webpack.optimize.ModuleConcatenationPlugin(),
   ],
   module: {
-    loaders: [
+    rules: [
       // we pass the output from babel loader to react-hot loader
       { test: /\.(js|jsx)$/,
         exclude: /node_modules/,
@@ -199,24 +201,26 @@ if (PROD && ENTRY) {
   config.devtool = 'hidden-source-map';
   if (!SKIP_MINIFY) {
     config.plugins.push(
-      new webpack.optimize.UglifyJsPlugin({
+      new UglifyJsPlugin({
         mangle: false,
         sourceMap: true,
-        compress: {
-          warnings: false,
-          drop_console: true,
-          dead_code: true,
-          unused: true,
-          booleans: true,
-          join_vars: true,
-          negate_iife: true,
-          sequences: true,
-          properties: true,
-          evaluate: false,
-          loops: true,
-          if_return: true,
-          cascade: true,
-          unsafe: false
+        uglifyOptions: {
+          compress: {
+            warnings: false,
+            drop_console: true,
+            dead_code: true,
+            unused: true,
+            booleans: true,
+            join_vars: true,
+            negate_iife: true,
+            sequences: true,
+            properties: true,
+            evaluate: false,
+            loops: true,
+            if_return: true,
+            cascade: true,
+            unsafe: false
+          },
         },
         output: {
           comments: false

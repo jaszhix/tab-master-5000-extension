@@ -33,3 +33,4 @@ sources/
 source_maps/
 /app/scripts/main.worker.js
 /app/scripts/main.worker.js.map
+/yarn-error.log
