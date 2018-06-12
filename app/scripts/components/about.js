@@ -199,7 +199,7 @@ class ReleaseNotes extends React.Component {
           alt="Protected by TrackJS JavaScript Error Monitoring" />
         </a>
         <a href="https://eff.org" target="_blank">
-          <img style={{position: 'absolute', top: '50px', right:'8%', height: '120px', opacity: '0.7'}} src="../../images/eff.png" />
+          <img style={{position: 'absolute', top: '50px', right:'8%', height: '120px', opacity: '0.7'}} src="../../images/eff-member-badge-2018.png" />
         </a>
         <Col size="1" />
         <Col size="10" className="ntg-release">
