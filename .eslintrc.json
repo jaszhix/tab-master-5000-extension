@@ -19,6 +19,10 @@
     "plugins": [
         "react"
     ],
+    "globals": {
+        "chrome": false,
+        "v": false
+    },
     "rules": {
         "comma-dangle": 0,
         "no-cond-assign": 0,
@@ -111,7 +115,7 @@
         "no-shadow": 0,
         "no-undef-init": 0,
         "no-undef": 1,
-        "no-undefined": 2,
+        "no-undefined": 0,
         "no-unused-vars": 1,
         "react/jsx-uses-vars": 2,
         "react/jsx-key": 1,
