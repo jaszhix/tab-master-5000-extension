@@ -16,20 +16,17 @@ class ContextMenu extends React.Component {
       inViewport: true
     }
   }
+  static getDerivedStateFromProps = (nextProps, prevState) => {
+    if (!_.isEqual(nextProps.actions, prevState.actions)) {
+      return {actions: nextProps.actions}; // TBD
+    }
+    return null;
+  }
   componentDidMount = () => {
     this.handleOptions(this.props);
     this.containerStyle = {left: window.cursor.page.x, top: window.cursor.page.y, opacity: 0};
     // TBD
     _.defer(() => this.containerStyle = {left: window.cursor.page.x, top: window.cursor.page.y, opacity: 0})
-  }
-  componentWillReceiveProps = (nextProps) => {
-    let p = this.props;
-    if (!_.isEqual(nextProps.actions, p.actions)) {
-      this.setState({actions: nextProps.actions});
-    }
-    if (!_.isEqual(nextProps.context, p.context)) {
-      this.handleOptions(nextProps);
-    }
   }
   handleClickOutside = () => {
     let p = this.props;

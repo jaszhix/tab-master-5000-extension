@@ -92,11 +92,6 @@ class ModalHandler extends React.Component {
   componentDidMount = () => {
     mount = true;
   }
-  componentWillReceiveProps(nP){
-    if (!_.isEqual(nP.modal, this.props.modal) && mount || nP.settings !== this.props.settings) {
-      this.setState({modal: nP.modal});
-    }
-  }
   componentWillUnmount = () => {
     mount = false;
   }

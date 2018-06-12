@@ -20,10 +20,29 @@ import About from './about';
 import {Btn, Col, Row, Container} from './bootstrap';
 import style from './style';
 
+const convertColor = function(color) {
+  if (color.indexOf('#') !== -1) {
+    return {color: color};
+  } else if (color.indexOf('a') !== -1) {
+    let arr = color.split(', ');
+    let r = arr[0].split('rgba(')[1];
+    let g = arr[1];
+    let b = arr[2];
+    let alpha = arr[3].split(')')[0];
+    return {
+      alpha: alpha * 100,
+      color: tc({r: r, g: g, b: b}).toHexString()
+    }
+  }
+}
+
 class ColorPickerContainer extends React.Component {
   static defaultProps = {
     color: '#FFFFFF'
   };
+  static getDerivedStateFromProps = (nextProps) => {
+    return convertColor(nextProps.color);
+  }
   constructor(props) {
     super(props);
     this.state = {
@@ -31,12 +50,7 @@ class ColorPickerContainer extends React.Component {
       color: '#FFFFFF',
       hover: null
     }
-  }
-  componentDidMount = () => {
-    this.convertColor(this.props.color);
-  }
-  componentWillReceiveProps = (nP) => {
-    this.convertColor(nP.color);
+    _.assignIn(this.state, convertColor(props.color));
   }
   handleColorChange = (color) => {
     let rgb = tc(color.color).setAlpha(color.alpha / 100).toRgbString();
@@ -47,21 +61,6 @@ class ColorPickerContainer extends React.Component {
     theme[this.props.themeKey] = rgb;
     themeStore.set({theme});
     this.props.onChange();
-  }
-  convertColor = (color) => {
-    if (color.indexOf('#') !== -1) {
-      this.setState({color: color});
-    } else if (color.indexOf('a') !== -1) {
-      let arr = color.split(', ');
-      let r = arr[0].split('rgba(')[1];
-      let g = arr[1];
-      let b = arr[2];
-      let alpha = arr[3].split(')')[0];
-      this.setState({
-        alpha: alpha * 100,
-        color: tc({r: r, g: g, b: b}).toHexString()
-      });
-    }
   }
   render = () => {
     let s = this.state;

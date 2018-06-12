@@ -145,7 +145,7 @@
         }],
         "react/jsx-wrap-multilines": 1,
         "react/no-danger-with-children": 2,
-        "react/no-deprecated": 2,
+        "react/no-deprecated": 0,
         "react/no-did-update-set-state": 2,
         "react/no-direct-mutation-state": 0,
         "react/no-find-dom-node": 1,

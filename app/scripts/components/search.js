@@ -9,18 +9,6 @@ import Loading from './loading';
 class Search extends React.Component {
   constructor(props) {
     super(props);
-
-    this.state = {
-      theme: this.props.theme
-    }
-  }
-  componentWillReceiveProps = (nP) => {
-    if (nP.theme !== this.props.theme) {
-      this.setState({theme: nP.theme});
-    }
-    if (nP.s.width !== this.props.s.width) {
-      ReactTooltip.rebuild();
-    }
   }
   preventSubmit = (e) => {
     e.preventDefault();
