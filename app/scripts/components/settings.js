@@ -1,5 +1,4 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import {StyleSheet, css} from 'aphrodite';
 import moment from 'moment';
 import _ from 'lodash';
@@ -21,14 +20,6 @@ import About from './about';
 import {Btn, Col, Row, Container} from './bootstrap';
 import style from './style';
 
-ColorPicker.prototype.onVisibleChange = function onVisibleChange(open) {
-  this.setOpen(open, () => {
-    if (open && this.pickerPanelInstance) {
-      ReactDOM.findDOMNode(this.pickerPanelInstance).focus();
-    }
-  });
-}
-
 class ColorPickerContainer extends React.Component {
   static defaultProps = {
     color: '#FFFFFF'
@@ -37,7 +28,7 @@ class ColorPickerContainer extends React.Component {
     super(props);
     this.state = {
       alpha: 1,
-      color: null,
+      color: '#FFFFFF',
       hover: null
     }
   }
@@ -81,7 +72,7 @@ class ColorPickerContainer extends React.Component {
           <span>
             <ColorPicker
             animation="slide-up"
-            color={s.color ? s.color : '#FFFFFF'}
+            color={s.color}
             mode="RGB"
             onOpen={() => state.set({colorPickerOpen: true})}
             onClose={() => state.set({colorPickerOpen: false})}

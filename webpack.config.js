@@ -49,6 +49,7 @@ const postcssPlugins = () => {
 }
 
 const config = {
+  mode: ENV,
   context: path.resolve(__dirname),
   entry: [
     'react-hot-loader/patch',
@@ -59,7 +60,8 @@ const config = {
   output: {
     path: path.resolve(__dirname, `${CONTENT_BASE}/scripts`),
     filename: 'app.js',
-    publicPath
+    publicPath,
+    globalObject: 'this'
   },
   plugins: [
     new LodashModuleReplacementPlugin({
@@ -80,7 +82,7 @@ const config = {
     rules: [
       // we pass the output from babel loader to react-hot loader
       { test: /\.(js|jsx)$/,
-        exclude: /node_modules/,
+        exclude: /node_modules(?!\/rc-color-picker)/,
         use: [
           {loader: 'lodash-loader'},
           {loader: 'babel-loader'}
@@ -162,7 +164,7 @@ const config = {
       }
     ],
   },
-  devtool: 'cheap-module-source-map',
+  devtool: PROD ? 'source-map' : 'inline-source-map',
   stats: {
     children: false
   },
@@ -200,6 +202,29 @@ if (PROD && ENTRY) {
   config.entry = ['babel-polyfill', config.entry];
   config.devtool = 'hidden-source-map';
   if (!SKIP_MINIFY) {
+    config.optimization = {
+      minimize: false,
+      splitChunks: {
+        chunks: 'async',
+        minSize: 30000,
+        minChunks: 2,
+        maxAsyncRequests: 5,
+        maxInitialRequests: 3,
+        name: true,
+        cacheGroups: {
+          default: {
+            minChunks: 2,
+            priority: -20,
+            reuseExistingChunk: true,
+          },
+          vendors: {
+            test: /[\\/]node_modules[\\/]/,
+            priority: -10,
+            chunks: 'all'
+          }
+        }
+      }
+    };
     config.plugins.push(
       new UglifyJsPlugin({
         mangle: false,
