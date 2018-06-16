@@ -131,27 +131,53 @@ class Theming extends React.Component {
       boldUpdate: false,
       colorGroup: 'general'
     }
-  }
-  componentDidMount = () => {
-    let p = this.props;
     let refTheme;
     let isNewTheme = true;
     let showCustomButtons;
     this.standardThemes = themeStore.getStandardThemes();
-    if (p.prefs.theme < 9000) {
-      refTheme = find(p.savedThemes, theme => theme.id === p.prefs.theme);
+    if (props.prefs.theme < 9000) {
+      refTheme = find(props.savedThemes, theme => theme.id === props.prefs.theme);
       isNewTheme = false;
       showCustomButtons = true;
     } else {
-      refTheme = find(this.standardThemes, theme => theme.id === p.prefs.theme);
+      refTheme = find(this.standardThemes, theme => theme.id === props.prefs.theme);
       showCustomButtons = false;
     }
-    this.setState({
+    Object.assign(this.state, {
       selectedTheme: refTheme,
       isNewTheme: isNewTheme,
       showCustomButtons: showCustomButtons
     });
-    this.handleFooterButtons(this.props);
+    this.connectId = state.connect({
+      handleFooterButtons: (p) => this.handleFooterButtons(p),
+      themingProps: () => this.props
+    });
+  }
+  static getDerivedStateFromProps = (nP, pS) => {
+    let refTheme;
+    let stateUpdate = {};
+    if (nP.prefs.theme < 9000 || (pS.leftTab === 'custom' && pS.isNewTheme)) {
+      refTheme = find(nP.savedThemes, theme => theme.id === nP.prefs.theme);
+      stateUpdate.showCustomButtons = true;
+    } else {
+      refTheme = find(themeStore.standardThemes, theme => theme.id === nP.prefs.theme);
+      stateUpdate.showCustomButtons = false;
+    }
+    if (!_.isEqual(refTheme, pS.selectedTheme)) {
+      stateUpdate.selectedTheme = refTheme;
+    }
+    if (!_.isEqual(nP.savedThemes, pS.savedThemes)) {
+      Object.assign(stateUpdate, {
+        savedThemes: nP.savedThemes,
+        selectedTheme: refTheme,
+        isNewTheme: nP.savedThemes.length === 0
+      });
+    }
+    let p = state.trigger('themingProps');
+    if (!_.isEqual(nP.wallpaper, p.wallpaper)) {
+      state.trigger('handleFooterButtons', nP);
+    }
+    return stateUpdate;
   }
   componentDidUpdate = (pP, pS) =>  {
     ReactTooltip.rebuild();
@@ -159,31 +185,8 @@ class Theming extends React.Component {
       this.handleFooterButtons(this.props);
     }
   }
-  componentWillReceiveProps = (nP) => {
-    let p = this.props;
-    let refTheme;
-    if (nP.prefs.theme < 9000 || (this.state.leftTab === 'custom' && this.state.isNewTheme)) {
-      refTheme = find(nP.savedThemes, theme => theme.id === nP.prefs.theme);
-      this.setState({showCustomButtons: true});
-    } else {
-      refTheme = find(themeStore.standardThemes, theme => theme.id === nP.prefs.theme);
-      this.setState({showCustomButtons: false});
-    }
-    if (!_.isEqual(nP.prefs, p.prefs)) {
-      this.setState({
-        selectedTheme: refTheme
-      });
-    }
-    if (!_.isEqual(nP.savedThemes, p.savedThemes)) {
-      this.setState({
-        savedThemes: nP.savedThemes,
-        selectedTheme: refTheme,
-        isNewTheme: nP.savedThemes.length === 0
-      });
-    }
-    if (!_.isEqual(nP.wallpaper, p.wallpaper)) {
-      this.handleFooterButtons(nP);
-    }
+  componentWillUnmount() {
+    state.disconnect(this.connectId);
   }
   triggerRefClick = (ref) => {
     this[ref].click();

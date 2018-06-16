@@ -272,20 +272,22 @@ class Sidebar extends React.Component {
     this.state = {
       enabled: false
     }
-  }
-  componentWillReceiveProps = (nP) => {
-    ReactTooltip.rebuild();
-    if (!_.isEqual(nP.enabled, this.props.enabled)) {
-      _.defer(() => {
-        if (nP.enabled) {
-          _.defer(() => this.setState({enabled: true}));
-        } else {
-          _.delay(() => {
-            this.setState({enabled: false});
-          }, 200);
+    this.connectId = state.connect({
+      sidebar: ({sidebar}) => {
+        ReactTooltip.rebuild();
+        if (!_.isEqual(sidebar, this.props.enabled)) {
+          _.defer(() => {
+            if (sidebar) {
+              _.defer(() => this.setState({enabled: true}));
+            } else {
+              _.delay(() => {
+                this.setState({enabled: false});
+              }, 200);
+            }
+          });
         }
-      });
-    }
+      }
+    });
   }
   shouldComponentUpdate = () => {
     return this.props.enabled;
