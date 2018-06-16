@@ -587,8 +587,7 @@ const themeStore = initStore({
     let newThemeId = themeStore.themeId++;
     let existingTheme = findIndex(themeStore.savedThemes, theme => theme.id === newThemeId);
     if (existingTheme > -1) {
-      themeStore.save();
-      return;
+      return themeStore.save();
     }
     let newTheme = {
       id: newThemeId,
