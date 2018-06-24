@@ -85,6 +85,9 @@
   "reloadSelected": {
     "message": "Reload selected"
   },
+  "copyURLToClipboard": {
+    "message": "Copy URL to clipboard"
+  },
   "selectAllFromDomain": {
     "message": "Select all from domain"
   },

@@ -86,6 +86,9 @@
   "reloadSelected": {
     "message": "Recargar seleccionado"
   },
+  "copyURLToClipboard": {
+    "message": "Copiar URL al portapapeles"
+  },
   "selectAllFromDomain": {
     "message": "Seleccionar todo desde el dominio"
   },

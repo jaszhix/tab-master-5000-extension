@@ -1,5 +1,6 @@
 import React from 'react';
 import _ from 'lodash';
+import copyToClipboard from 'copy-to-clipboard';
 
 import {Context} from './bootstrap';
 import state from './stores/state';
@@ -54,105 +55,112 @@ class ContextMenu extends React.Component {
       let contextOptions = [
         {
           argument: notAppsExt,
-          onClick: ()=>this.handleMenuOption(p, 'close'),
+          onClick: () => this.handleMenuOption(p, 'close'),
           icon: `icon-${p.prefs.mode !== 'tabs' && !s.openTab ? 'eraser' : 'cross2'}`,
           label: isSelectedItems ? `${close} ${p.context.id.length} ${p.mode === 'history' ? `${p.mode} ${utils.t('items')}` : p.mode}` : close,
           divider: null
         },
         {
           argument: p.prefs.mode === 'tabs',
-          onClick: ()=>this.handleMenuOption(p, 'closeAll'),
+          onClick: () => this.handleMenuOption(p, 'closeAll'),
           icon: 'icon-stack-cancel',
           label: `${close} ${utils.t('allFrom')} ${isSelectedItems ? utils.t('selectedDomains') : p.context.id.url.split('/')[2]}`,
           divider: null
         },
         {
           argument: !isSelectedItems && p.prefs.mode === 'tabs',
-          onClick: ()=>this.handleMenuOption(p, 'allLeft'),
+          onClick: () => this.handleMenuOption(p, 'allLeft'),
           icon: 'icon-arrow-left16',
           label: `${close} ${utils.t('allLeft')}`,
           divider: null
         },
         {
           argument: !isSelectedItems && p.prefs.mode === 'tabs',
-          onClick: ()=>this.handleMenuOption(p, 'allRight'),
+          onClick: () => this.handleMenuOption(p, 'allRight'),
           icon: 'icon-arrow-right16',
           label: `${close} ${utils.t('allRight')}`,
           divider: null
         },
         {
           argument: !isSelectedItems && notAppsExt && this.getStatus('duplicate'),
-          onClick: ()=>this.handleMenuOption(p, 'closeAllDupes'),
+          onClick: () => this.handleMenuOption(p, 'closeAllDupes'),
           icon: 'icon-svg',
           label: `${close} ${utils.t('allDuplicates')}`,
           divider: null
         },
         {
           argument: !isSelectedItems && notAppsExt && state.search.length > 0,
-          onClick: ()=>this.handleMenuOption(p, 'closeSearched'),
+          onClick: () => this.handleMenuOption(p, 'closeSearched'),
           icon: 'icon-svg',
           label: `${close} ${utils.t('allSearchResults')}`
         },
         {divider: true},
         {
           argument: (isSelectedItems && p.prefs.mode === 'tabs') || (notBookmarksHistorySessAppsExt || p.context.id.openTab),
-          onClick: ()=>this.handleMenuOption(p, 'reload'),
+          onClick: () => this.handleMenuOption(p, 'reload'),
           icon: 'icon-reload-alt',
           label: isSelectedItems ? utils.t('reloadSelected') : utils.t('reload'),
           divider: null
         },
         {
           argument: (isSelectedItems && p.prefs.mode === 'tabs') || (notBookmarksHistorySessAppsExt || p.context.id.openTab),
-          onClick: ()=>this.handleMenuOption(p, 'pin'),
+          onClick: () => this.handleMenuOption(p, 'pin'),
           icon: 'icon-pushpin',
           label: isSelectedItems ? `${utils.t('togglePinningOf')} ${p.context.id.length} ${utils.t('tabs')}` : p.context.id.pinned ? utils.t('unpin') : utils.t('pin'),
           divider: null
         },
         {
           argument: (hasMute && (isSelectedItems && p.prefs.mode === 'tabs') || notBookmarksHistorySessAppsExt || p.context.id.openTab),
-          onClick: ()=>this.handleMenuOption(p, 'mute'),
+          onClick: () => this.handleMenuOption(p, 'mute'),
           icon: `icon-${isSelectedItems || p.context.id.mutedInfo.muted ? 'volume-medium' : 'volume-mute'}`,
           label: isSelectedItems ? `${utils.t('toggleMutingOf')} ${p.context.id.length} tabs` : p.context.id.mutedInfo.muted ? utils.t('unmute') : utils.t('mute'),
           divider: null
         },
         {
           argument: notAppsExt && !isSelectedItems && p.prefs.mode !== 'bookmarks',
-          onClick: ()=>this.handleMenuOption(p, 'toggleBookmark', 0, hasBookmark, bk),
+          onClick: () => this.handleMenuOption(p, 'toggleBookmark', 0, hasBookmark, bk),
           icon: 'icon-bookmark4',
           label: `${hasBookmark ? utils.t('removeFrom') : utils.t('addTo')} ${utils.t('bookmarks')}`,
           divider: null
         },
         {
+          argument: notAppsExt,
+          onClick: () => this.handleMenuOption(p, 'copyURLToClipboard'),
+          icon: 'icon-copy2',
+          label: utils.t('copyURLToClipboard'),
+          divider: null
+        },
+        {
           argument: !isSelectedItems && notAppsExt && p.prefs.format === 'table',
-          onClick: ()=>this.handleMenuOption(p, 'selectAllFromDomain'),
+          onClick: () => this.handleMenuOption(p, 'selectAllFromDomain'),
           icon: 'icon-add-to-list',
           label: utils.t('selectAllFromDomain'),
           divider: null
         },
         {
           argument: isSelectedItems,
-          onClick: ()=>this.handleMenuOption(p, 'invertSelection', 0, null, null, true),
+          onClick: () => this.handleMenuOption(p, 'invertSelection', 0, null, null, true),
           icon: 'icon-make-group',
           label: utils.t('invertSelection'),
           divider: null
         },
         {
           argument: !isSelectedItems && notAppsExt && p.prefs.actions && actionsStatus,
-          onClick: ()=>this.handleMenuOption(p, 'actions'),
+          onClick: () => this.handleMenuOption(p, 'actions'),
           icon: 'icon-undo',
           label: `${utils.t('undo')} ${actionsStatus}`,
           divider: null
         },
         {
           argument: !isSelectedItems && (p.prefs.mode === 'apps' || p.prefs.mode === 'extensions') && p.context.id.enabled,
-          onClick: ()=>this.handleMenuOption(p, 'launchApp'),
+          onClick: () => this.handleMenuOption(p, 'launchApp'),
           icon: 'icon-play4',
           label: p.context.id.title,
           divider: null
         },
         {
           argument: !isSelectedItems && p.prefs.mode === 'apps' && p.context.id.enabled,
-          onClick: ()=>this.handleMenuOption(p, 'createAppShortcut'),
+          onClick: () => this.handleMenuOption(p, 'createAppShortcut'),
           icon: 'icon-forward',
           label: isSelectedItems ? `${utils.t('createShortcutsFor')} ${p.context.id.length} ${p.mode}` : utils.t('createShortcut'),
           divider: null
@@ -163,7 +171,7 @@ class ContextMenu extends React.Component {
           if (launchType !== p.context.id.launchType) {
             let launchOption = {
               argument: true,
-              onClick: ()=>this.handleMenuOption(p, launchType),
+              onClick: () => this.handleMenuOption(p, launchType),
               icon: 'icon-gear',
               label: _.endsWith(launchType, 'SCREEN') ? utils.t('openFullscreen') : _.endsWith(launchType, 'PINNED_TAB') ? utils.t('openAsAPinnedTab') : `${utils.t('openAsA')} ${_.last(_.words(launchType.toLowerCase()))}`,
               divider: null
@@ -176,14 +184,14 @@ class ContextMenu extends React.Component {
         let appToggleOptions = [
           {
             argument: true,
-            onClick: ()=>this.handleMenuOption(p, 'toggleEnable'),
+            onClick: () => this.handleMenuOption(p, 'toggleEnable'),
             switch: isSelectedItems || p.context.id.enabled,
             label: isSelectedItems ? `${utils.t('toggle')} ${p.context.id.length} ${p.mode}` : p.context.id.enabled ? utils.t('disable') : utils.t('enable'),
             divider: null
           },
           {
             argument: true,
-            onClick: ()=>this.handleMenuOption(p, 'uninstallApp'),
+            onClick: () => this.handleMenuOption(p, 'uninstallApp'),
             icon: 'icon-trash',
             label: `${utils.t('uninstall')}${isSelectedItems ? ' '+p.context.id.length+' '+p.mode : ''}`,
             divider: null
@@ -237,6 +245,8 @@ class ContextMenu extends React.Component {
       utils.pin(p.context.id);
     } else if (opt === 'mute') {
       utils.mute(p.context.id);
+    } else if (opt === 'copyURLToClipboard') {
+      copyToClipboard(p.context.id.url);
     } else if (opt === 'selectAllFromDomain') {
       state.trigger('selectAllFromDomain', p.context.id.domain);
     } else if (opt === 'invertSelection') {
