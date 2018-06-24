@@ -28,6 +28,7 @@ let prefsStore = initStore({
     actions: false,
     sessionsSync: true,
     singleNewTab: false,
+    closeOnActivate: false,
     keyboardShortcuts: true,
     resolutionWarning: true,
     syncedSession: true,

@@ -293,6 +293,12 @@
   "singleNewTabTip": {
     "message": "Habilitar esta opción impone el cierre de todas las pestañas nuevas, excepto la que está actualmente enfocada. Esto es útil en computadoras más antiguas."
   },
+  "closeOnActivate": {
+    "message": "Cerrar nueva pestaña en la activación de la pestaña"
+  },
+  "closeOnActivateTip": {
+    "message": "Elija si TM5K está cerrado al hacer clic en un mosaico o fila de pestañas."
+  },
   "allTabs": {
     "message": "Mostrar pestañas en todas las ventanas"
   },

@@ -67,7 +67,7 @@ let syncSession = (sessions, prefs, windows=null) => {
     sessions[refSession].tabs = allTabs;
     sessions[refSession].timeStamp = new Date(Date.now());
     sessions[refSession] = sessions[refSession];
-    chrome.storage.local.set({sessions: sessions});
+    chrome.storage.local.set({sessions});
   }
 };
 

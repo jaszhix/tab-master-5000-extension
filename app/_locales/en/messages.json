@@ -295,6 +295,12 @@
   "singleNewTabTip": {
     "message": "Enabling this option enforces the closing of all New Tabs except the one that is currently focused. This is useful on older computers."
   },
+  "closeOnActivate": {
+    "message": "Close New Tab on tab activation"
+  },
+  "closeOnActivateTip": {
+    "message": "Choose whether or not TM5K is closed when clicking a tab tile or row."
+  },
   "allTabs": {
     "message": "Show tabs across all windows"
   },

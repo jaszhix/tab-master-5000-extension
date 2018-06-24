@@ -49,6 +49,9 @@ export const activateTab = function(tab) {
   if (state.search.length > 0 && state.prefs.resetSearchOnClick) {
     utilityStore.handleMode(state.prefs.mode);
   }
+  if (state.prefs.closeOnActivate) {
+    window.close();
+  }
 };
 
 export const closeTab = (tab) => {

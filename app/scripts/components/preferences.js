@@ -38,8 +38,8 @@ class Slide extends React.Component {
       <div
       className={css(styles.sliderContainer)}
       style={{backgroundColor: s.hover ? p.hoverBg : null}}
-      onMouseEnter={()=>this.setState({hover: true})}
-      onMouseLeave={()=>this.setState({hover: false})}
+      onMouseEnter={() => this.setState({hover: true})}
+      onMouseLeave={() => this.setState({hover: false})}
       data-place="bottom"
       data-tip={`<div style="max-width: 350px;">${p['data-tip']}</div>`}>
         <Row className={p.className} onMouseEnter={p.onMouseEnter}>
@@ -67,8 +67,8 @@ class Toggle extends React.Component {
     let s = this.state;
     return (
       <Row
-      onMouseEnter={()=>this.setState({hover: true})}
-      onMouseLeave={()=>this.setState({hover: false})}
+      onMouseEnter={() => this.setState({hover: true})}
+      onMouseLeave={() => this.setState({hover: false})}
       className={css(styles.cursorPointer)}
       style={s.hover ? {backgroundColor: p.theme.settingsItemHover} : null}
       data-place="bottom"
@@ -233,7 +233,7 @@ class Preferences extends React.Component {
         p.modal.footer = (
           <div>
             <Btn
-            onClick={()=>this.handleSlide(134, 'tabSizeHeight')}
+            onClick={() => this.handleSlide(134, 'tabSizeHeight')}
             className="ntg-setting-btn"
             icon="reset"
             faStyle={{position: 'relative', top: '-2px'}}>
@@ -358,34 +358,46 @@ class Preferences extends React.Component {
           <Col size="6">
             <Toggle
             theme={p.theme}
-            onMouseEnter={()=>this.handleToggle('context')}
-            onClick={()=>this.handleClick('context')}
-            on={p.prefs.context} label={utils.t('enableContextMenu')}
+            onMouseEnter={() => this.handleToggle('context')}
+            onClick={() => this.handleClick('context')}
+            on={p.prefs.context}
+            label={utils.t('enableContextMenu')}
             data-tip={utils.t('enableContextMenuTip')} />
             <Toggle
             theme={p.theme}
-            onMouseEnter={()=>this.handleToggle('drag')}
-            onClick={()=>this.handleClick('drag')}
-            on={p.prefs.drag} label={utils.t('enableDraggableTabReordering')}
+            onMouseEnter={() => this.handleToggle('drag')}
+            onClick={() => this.handleClick('drag')}
+            on={p.prefs.drag}
+            label={utils.t('enableDraggableTabReordering')}
             data-tip={utils.t('enableDraggableTabReorderingTip')} />
             <Toggle
             theme={p.theme}
-            onMouseEnter={()=>this.handleToggle('singleNewTab')}
-            onClick={()=>this.handleClick('singleNewTab')}
-            on={p.prefs.singleNewTab} label={utils.t('singleNewTab')}
+            onMouseEnter={() => this.handleToggle('singleNewTab')}
+            onClick={() => this.handleClick('singleNewTab')}
+            on={p.prefs.singleNewTab}
+            label={utils.t('singleNewTab')}
             data-tip={utils.t('singleNewTabTip')} />
             <Toggle
             theme={p.theme}
-            onMouseEnter={()=>this.handleToggle('allTabs')}
-            onClick={()=>this.handleClick('allTabs')}
-            on={p.prefs.allTabs} label={utils.t('allTabs')}
+            onMouseEnter={() => this.handleToggle('closeOnActivate')}
+            onClick={() => this.handleClick('closeOnActivate')}
+            on={p.prefs.closeOnActivate}
+            label={utils.t('closeOnActivate')}
+            data-tip={utils.t('closeOnActivateTip')} />
+            <Toggle
+            theme={p.theme}
+            onMouseEnter={() => this.handleToggle('allTabs')}
+            onClick={() => this.handleClick('allTabs')}
+            on={p.prefs.allTabs}
+            label={utils.t('allTabs')}
             data-tip={utils.t('allTabsTip')} />
             {p.chromeVersion >= 54?
             <Toggle
             theme={p.theme}
-            onMouseEnter={()=>this.handleToggle('autoDiscard')}
-            onClick={()=>this.handleClick('autoDiscard')}
-            on={p.prefs.autoDiscard} label={utils.t('autoDiscard')}
+            onMouseEnter={() => this.handleToggle('autoDiscard')}
+            onClick={() => this.handleClick('autoDiscard')}
+            on={p.prefs.autoDiscard}
+            label={utils.t('autoDiscard')}
             data-tip={utils.t('autoDiscardTip')}>
               {p.prefs.autoDiscard ?
               <div>
@@ -403,15 +415,16 @@ class Preferences extends React.Component {
             </Toggle> : null}
             <Toggle
             theme={p.theme}
-            onMouseEnter={()=>this.handleToggle('animations')}
-            onClick={()=>this.handleClick('animations')}
-            on={p.prefs.animations} label={utils.t('animations')}
+            onMouseEnter={() => this.handleToggle('animations')}
+            onClick={() => this.handleClick('animations')}
+            on={p.prefs.animations}
+            label={utils.t('animations')}
             data-tip={utils.t('animationsTip')}>
               {p.prefs.animations ?
               <Toggle
               theme={p.theme}
-              onMouseEnter={()=>this.handleToggle('duplicate')}
-              onClick={()=>this.handleClick('duplicate')}
+              onMouseEnter={() => this.handleToggle('duplicate')}
+              onClick={() => this.handleClick('duplicate')}
               on={p.prefs.duplicate}
               child={true}
               label={utils.t('duplicate')}
@@ -419,24 +432,24 @@ class Preferences extends React.Component {
             </Toggle>
             <Toggle
             theme={p.theme}
-            onMouseEnter={()=>this.handleToggle('screenshot')}
-            onClick={()=>this.handleClick('screenshot')}
+            onMouseEnter={() => this.handleToggle('screenshot')}
+            onClick={() => this.handleClick('screenshot')}
             on={p.prefs.screenshot} label={utils.t('screenshot')}
             data-tip={utils.t('screenshotTip')}>
               {p.prefs.screenshot ?
                 <div>
                   <Toggle
                   theme={p.theme}
-                  onMouseEnter={()=>this.handleToggle('screenshotChrome')}
-                  onClick={()=>this.handleClick('screenshotChrome')}
+                  onMouseEnter={() => this.handleToggle('screenshotChrome')}
+                  onClick={() => this.handleClick('screenshotChrome')}
                   on={p.prefs.screenshotChrome}
                   child={true}
                   label={utils.t('screenshotChrome')}
                   data-tip={utils.t('screenshotChromeTip')} />
                   <Toggle
                   theme={p.theme}
-                  onMouseEnter={()=>this.handleToggle('screenshotBg')}
-                  onClick={()=>this.handleClick('screenshotBg')}
+                  onMouseEnter={() => this.handleToggle('screenshotBg')}
+                  onClick={() => this.handleClick('screenshotBg')}
                   on={p.prefs.screenshotBg}
                   child={true}
                   label={utils.t('screenshotBg')}
@@ -446,21 +459,24 @@ class Preferences extends React.Component {
             </Toggle>
             <Toggle
             theme={p.theme}
-            onMouseEnter={()=>this.handleToggle('tooltip')}
-            onClick={()=>this.handleClick('tooltip')}
-            on={p.prefs.tooltip} label={utils.t('tooltip')}
+            onMouseEnter={() => this.handleToggle('tooltip')}
+            onClick={() => this.handleClick('tooltip')}
+            on={p.prefs.tooltip}
+            label={utils.t('tooltip')}
             data-tip={utils.t('tooltipTip')} />
             <Toggle
             theme={p.theme}
-            onMouseEnter={()=>this.handleToggle('alerts')}
-            onClick={()=>this.handleClick('alerts')}
-            on={p.prefs.alerts} label={utils.t('alerts')}
+            onMouseEnter={() => this.handleToggle('alerts')}
+            onClick={() => this.handleClick('alerts')}
+            on={p.prefs.alerts}
+            label={utils.t('alerts')}
             data-tip={utils.t('alertsTip')} />
             <Toggle
             theme={p.theme}
-            onMouseEnter={()=>this.handleToggle('errorTelemetry')}
-            onClick={()=>this.handleClick('errorTelemetry')}
-            on={p.prefs.errorTelemetry} label={utils.t('errorTelemetry')}
+            onMouseEnter={() => this.handleToggle('errorTelemetry')}
+            onClick={() => this.handleClick('errorTelemetry')}
+            on={p.prefs.errorTelemetry}
+            label={utils.t('errorTelemetry')}
             data-tip={utils.t('errorTelemetryTip')} />
           </Col>
           <Col size="6">
@@ -473,8 +489,8 @@ class Preferences extends React.Component {
                 max={10}
                 defaultValue={p.prefs.screenshotBgOpacity}
                 value={p.prefs.screenshotBgOpacity}
-                onChange={(e)=>this.handleSlide(e, 'screenshotBgOpacity')}
-                onMouseEnter={()=>this.handleToggle('screenshotBgOpacity')}
+                onChange={(e) => this.handleSlide(e, 'screenshotBgOpacity')}
+                onMouseEnter={() => this.handleToggle('screenshotBgOpacity')}
                 hoverBg={p.theme.settingsItemHover}
                 data-tip={utils.t('screenshotBgOpacityTip')} />
                 <Slide
@@ -484,8 +500,8 @@ class Preferences extends React.Component {
                 max={15}
                 defaultValue={p.prefs.screenshotBgBlur}
                 value={p.prefs.screenshotBgBlur}
-                onChange={(e)=>this.handleSlide(e, 'screenshotBgBlur')}
-                onMouseEnter={()=>this.handleToggle('screenshotBgBlur')}
+                onChange={(e) => this.handleSlide(e, 'screenshotBgBlur')}
+                onMouseEnter={() => this.handleToggle('screenshotBgBlur')}
                 hoverBg={p.theme.settingsItemHover}
                 data-tip={utils.t('screenshotBgBlurTip')} />
                 <Slide
@@ -495,8 +511,8 @@ class Preferences extends React.Component {
                 max={300}
                 defaultValue={p.prefs.tabSizeHeight}
                 value={p.prefs.tabSizeHeight}
-                onChange={(e)=>this.handleSlide(e, 'tabSizeHeight')}
-                onMouseEnter={()=>this.handleToggle('tabSizeHeight')}
+                onChange={(e) => this.handleSlide(e, 'tabSizeHeight')}
+                onMouseEnter={() => this.handleToggle('tabSizeHeight')}
                 step={20}
                 dots={true}
                 hoverBg={p.theme.settingsItemHover}
@@ -508,8 +524,8 @@ class Preferences extends React.Component {
                 max={16}
                 defaultValue={p.prefs.tablePadding}
                 value={p.prefs.tablePadding}
-                onChange={(e)=>this.handleSlide(e, 'tablePadding')}
-                onMouseEnter={()=>this.handleToggle('tablePadding')}
+                onChange={(e) => this.handleSlide(e, 'tablePadding')}
+                onMouseEnter={() => this.handleToggle('tablePadding')}
                 step={1}
                 dots={true}
                 hoverBg={p.theme.settingsItemHover}
@@ -517,27 +533,31 @@ class Preferences extends React.Component {
               </div>  : null}
             <Toggle
             theme={p.theme}
-            onMouseEnter={()=>this.handleToggle('resetSearchOnClick')}
-            onClick={()=>this.handleClick('resetSearchOnClick')}
-            on={p.prefs.resetSearchOnClick} label={utils.t('resetSearchOnClick')}
+            onMouseEnter={() => this.handleToggle('resetSearchOnClick')}
+            onClick={() => this.handleClick('resetSearchOnClick')}
+            on={p.prefs.resetSearchOnClick}
+            label={utils.t('resetSearchOnClick')}
             data-tip={utils.t('resetSearchOnClickTip')} />
             <Toggle
             theme={p.theme}
-            onMouseEnter={()=>this.handleToggle('sessionsSync')}
-            onClick={()=>this.handleClick('sessionsSync')}
-            on={p.prefs.sessionsSync} label={utils.t('sessionsSync')}
+            onMouseEnter={() => this.handleToggle('sessionsSync')}
+            onClick={() => this.handleClick('sessionsSync')}
+            on={p.prefs.sessionsSync}
+            label={utils.t('sessionsSync')}
             data-tip={utils.t('sessionsSyncTip')} />
             <Toggle
             theme={p.theme}
-            onMouseEnter={()=>this.handleToggle('actions')}
-            onClick={()=>this.handleClick('actions')}
-            on={p.prefs.actions} label={utils.t('actions')}
+            onMouseEnter={() => this.handleToggle('actions')}
+            onClick={() => this.handleClick('actions')}
+            on={p.prefs.actions}
+            label={utils.t('actions')}
             data-tip={utils.t('actionsTip')} />
             <Toggle
             theme={p.theme}
-            onMouseEnter={()=>this.handleToggle('keyboardShortcuts')}
-            onClick={()=>this.handleClick('keyboardShortcuts')}
-            on={p.prefs.keyboardShortcuts} label={utils.t('keyboardShortcuts')}
+            onMouseEnter={() => this.handleToggle('keyboardShortcuts')}
+            onClick={() => this.handleClick('keyboardShortcuts')}
+            on={p.prefs.keyboardShortcuts}
+            label={utils.t('keyboardShortcuts')}
             data-tip={`
               <div><strong>CTRL+Z</strong>: ${utils.t('ctrlZ')}</div>
               <div><strong>CTRL+F</strong>: ${utils.t('search')}</div>
@@ -556,9 +576,10 @@ class Preferences extends React.Component {
             `} />
             <Toggle
             theme={p.theme}
-            onMouseEnter={()=>this.handleToggle('blacklist')}
-            onClick={()=>this.handleClick('blacklist')}
-            on={p.prefs.blacklist} label={utils.t('blacklist')}
+            onMouseEnter={() => this.handleToggle('blacklist')}
+            onClick={() => this.handleClick('blacklist')}
+            on={p.prefs.blacklist}
+            label={utils.t('blacklist')}
             data-tip={utils.t('blacklistTip')}>
               {p.prefs.blacklist ? <Blacklist theme={p.theme} dynamicStyles={dynamicStyles} /> : null}
             </Toggle>
