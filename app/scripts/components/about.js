@@ -22,9 +22,9 @@ class Contribute extends React.Component {
     let contributeFile;
     let locale = chrome.i18n.getUILanguage();
     if (locale === 'es') {
-      contributeFile = require('html-loader!markdown-loader!../../../contribute_es.md');
+      contributeFile = require('html-loader!markdown-loader!../../../contribute_es.md').default;
     } else {
-      contributeFile = require('html-loader!markdown-loader!../../../contribute.md');
+      contributeFile = require('html-loader!markdown-loader!../../../contribute.md').default;
     }
     if (this.props.chromeVersion === 1) {
       contributeFile = contributeFile
@@ -102,9 +102,9 @@ class Support extends React.Component {
     let supportFile;
     let locale = chrome.i18n.getUILanguage();
     if (locale === 'es') {
-      supportFile = require('html-loader!markdown-loader!../../../support_es.md');
+      supportFile = require('html-loader!markdown-loader!../../../support_es.md').default;
     } else {
-      supportFile = require('html-loader!markdown-loader!../../../support.md');
+      supportFile = require('html-loader!markdown-loader!../../../support.md').default;
     }
     function createMarkup() {return {__html: supportFile};}
     return (
