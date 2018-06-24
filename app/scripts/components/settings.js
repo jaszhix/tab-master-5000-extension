@@ -148,10 +148,6 @@ class Theming extends React.Component {
       isNewTheme: isNewTheme,
       showCustomButtons: showCustomButtons
     });
-    this.connectId = state.connect({
-      handleFooterButtons: (p) => this.handleFooterButtons(p),
-      themingProps: () => this.props
-    });
   }
   static getDerivedStateFromProps = (nP, pS) => {
     let refTheme;
@@ -173,10 +169,6 @@ class Theming extends React.Component {
         isNewTheme: nP.savedThemes.length === 0
       });
     }
-    let p = state.trigger('themingProps');
-    if (!_.isEqual(nP.wallpaper, p.wallpaper)) {
-      state.trigger('handleFooterButtons', nP);
-    }
     return stateUpdate;
   }
   componentDidUpdate = (pP, pS) =>  {
@@ -184,9 +176,6 @@ class Theming extends React.Component {
     if (!_.isEqual(this.state, pS)) {
       this.handleFooterButtons(this.props);
     }
-  }
-  componentWillUnmount() {
-    state.disconnect(this.connectId);
   }
   triggerRefClick = (ref) => {
     this[ref].click();

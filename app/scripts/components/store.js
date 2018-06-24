@@ -2,7 +2,7 @@ import {clone, isEqual, intersection as intersect, difference, pullAt} from 'lod
 import {find, findIndex, filter} from './utils';
 
 function storeError(method, key, message) {
-  return new Error('[store -> ' + method + ' -> ' + key + '] ' + message);
+  console.warn('[store -> ' + method + ' -> ' + key + '] ' + message);
 }
 
 function getByPath(key, object) {
