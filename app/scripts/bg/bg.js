@@ -181,7 +181,7 @@ let setAction = (t, type, oldTabInstance, newTabInstance=null) => {
       _.pullAt(t.state.actions, firstAction);
     }
   }
-  if (!isNewTab(oldTabInstance.url) && newTabInstance && !isNewTab(newTabInstance.url)) {
+  if (oldTabInstance && !isNewTab(oldTabInstance.url) && newTabInstance && !isNewTab(newTabInstance.url)) {
     let action = {
       type: type,
       item: _.cloneDeep(type === 'update' ? newTabInstance : oldTabInstance),
@@ -815,7 +815,7 @@ class Bg /* extends React.Component */ {
       _.defer(() => {
         this.getSingleTab(e.id).then((tab) => {
           this.createSingleItem(tab, windowId, 1);
-        });
+        }).catch((e) => console.log(e));
       });
       return;
     }

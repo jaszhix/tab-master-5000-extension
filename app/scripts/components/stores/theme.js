@@ -667,6 +667,9 @@ const themeStore = initStore({
       themeCollectionKey = 'standardThemes';
       refTheme = findIndex(themeStore.standardThemes, theme => theme.id === themeId);
     }
+    if (refTheme < 0) {
+      return;
+    }
     if (refWallpaper && refWallpaper.data) {
       themeStore[themeCollectionKey][refTheme].wallpaper = refWallpaper.id;
     } else {
