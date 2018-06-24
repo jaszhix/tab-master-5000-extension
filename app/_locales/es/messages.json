@@ -500,6 +500,9 @@
   "removeSession": {
     "message": "Eliminar sesión"
   },
+  "removeWindow": {
+    "message": "Eliminar ventana"
+  },
   "window": {
     "message": "Ventana"
   },

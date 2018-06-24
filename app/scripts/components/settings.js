@@ -866,6 +866,14 @@ class Sessions extends React.Component {
                         <div className={css(styles.sessionItemContainerStyle)}>
                           {s.windowHover === w ?
                           <Btn
+                          onClick={() => sessionsStore.removeWindow(p.sessions, i, w)}
+                          className="ntg-session-btn"
+                          icon="cross"
+                          faStyle={buttonIconStyle}
+                          noIconPadding={true}
+                          data-tip={utils.t('removeWindow')} /> : null}
+                          {s.windowHover === w ?
+                          <Btn
                           onClick={() => sessionsStore.restoreWindow(session, w, p.chromeVersion)}
                           className="ntg-session-btn"
                           icon="folder-open2"

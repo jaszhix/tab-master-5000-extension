@@ -502,6 +502,9 @@
   "removeSession": {
     "message": "Remove Session"
   },
+  "removeWindow": {
+    "message": "Remove Window"
+  },
   "window": {
     "message": "Window"
   },

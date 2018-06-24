@@ -150,6 +150,13 @@ let sessionsStore = {
       console.log('session tab removed', sessions);
     });
   },
+  removeWindow(sessions, sessionIndex, windowIndex) {
+    _.pullAt(sessions[sessionIndex].tabs, windowIndex);
+    state.set({sessions});
+    chrome.storage.local.set({sessions}, ()=> {
+      console.log('session window removed', sessions);
+    });
+  },
   v2Remove(sessions, session){
     let refSession = findIndex(sessions, _session => _session.id === session.id);
     _.pullAt(sessions, refSession);
