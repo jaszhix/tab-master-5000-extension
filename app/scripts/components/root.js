@@ -399,20 +399,23 @@ class Root extends React.Component {
       }
       stateUpdate.theme = e.theme;
     }
-    if (e.currentWallpaper && typeof e.currentWallpaper.data !== 'undefined') {
-      if (e.currentWallpaper.data !== -1 && !state.isOptions) {
+    let currentWallpaper = e.currentWallpaper || e.hoverWallpaper || p.s.currentWallpaper;
+    if (currentWallpaper && typeof currentWallpaper.data !== 'undefined') {
+      if (currentWallpaper.data !== -1 && !state.isOptions) {
         style.innerHTML += `
           #bgImg {
             display: inline-block !important;
             filter: blur(${p.s.prefs.screenshotBgBlur}px) !important;
             opacity: ${0.1 * p.s.prefs.screenshotBgOpacity} !important;
             background-color: ${e.theme.bodyBg} !important;
-            background-image: url('${e.currentWallpaper.data}') !important;
+            background-image: url('${currentWallpaper.data}') !important;
             background-size: cover !important;
             z-index: -12;
           }
         `;
-        stateUpdate.currentWallpaper = e.currentWallpaper;
+        if (e.currentWallpaper) {
+          stateUpdate.currentWallpaper = e.currentWallpaper;
+        }
       } else {
         style.innerHTML += `
           #bgImg {

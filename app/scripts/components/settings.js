@@ -290,6 +290,9 @@ class Theming extends React.Component {
       v(this.themeNameEditInputRef).n.focus();
     });
   }
+  handleColorChange = () => {
+    this.setState({boldUpdate: true});
+  }
   getImportRef = (ref) => {
     this.importRef = ref;
   }
@@ -449,7 +452,7 @@ class Theming extends React.Component {
                         return (
                           <ColorPickerContainer
                           key={field.themeKey}
-                          onChange={() => this.setState({boldUpdate: true})}
+                          onChange={this.handleColorChange}
                           hoverBg={p.theme.settingsItemHover}
                           color={p.theme[field.themeKey]}
                           themeKey={field.themeKey}
