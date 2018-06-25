@@ -1,5 +1,16 @@
 #### Release Notes
 
+##### v2.7.0 / *6-25-18*
+
+*   Added an option to close TM5K on tab activation.
+*   Added a "Copy URL to clipboard" context menu option.
+*   Added an option to remove specific windows from saved sessions.
+*   Fixed a bug that can prevent theme creation.
+*   Fixed the wallpaper temporarily resetting when changing theme colors.
+*   Fixed tab screenshots not showing in the background on hover when the option is enabled.
+*   Addressed various errors found on TrackJS.
+*   Updated dependencies.
+
 ##### v2.6.0 / *10-29-17*
 
 *   Added an option to toggle TrackJS error telemetry, and made it opt-in only.
