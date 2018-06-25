@@ -228,9 +228,9 @@ if (PROD && ENTRY) {
     };
     config.plugins.push(
       new UglifyJsPlugin({
-        mangle: false,
         sourceMap: true,
         uglifyOptions: {
+          mangle: false,
           compress: {
             warnings: false,
             drop_console: true,
@@ -244,13 +244,12 @@ if (PROD && ENTRY) {
             evaluate: false,
             loops: true,
             if_return: true,
-            cascade: true,
             unsafe: false
           },
+          output: {
+            comments: false
+          }
         },
-        output: {
-          comments: false
-        }
       })
     );
   } else {
