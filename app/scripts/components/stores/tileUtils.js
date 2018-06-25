@@ -30,7 +30,7 @@ export const activateTab = function(tab) {
     return;
   }
   if (tab.hasOwnProperty('openTab') && !tab.openTab) {
-    chrome.tabs.create({url: tab.url}, (t) =>{
+    chrome.tabs.create({url: tab.url}, (t) => {
       let stateUpdate = {};
       let index = findIndex(state[state.modeKey], item => item.id === tab.id);
       _.assignIn(state[state.modeKey][index], t);
@@ -50,7 +50,14 @@ export const activateTab = function(tab) {
     utilityStore.handleMode(state.prefs.mode);
   }
   if (state.prefs.closeOnActivate) {
-    window.close();
+    // Firefox: Work around "Scripts may not close windows that were not opened by script."
+    if (state.chromeVersion > 1) {
+      window.close();
+    } else {
+      chrome.tabs.getCurrent(function(tab) {
+        chrome.tabs.remove(tab.id);
+      });
+    }
   }
 };
 
