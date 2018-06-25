@@ -9,7 +9,7 @@ const runSequence = require('run-sequence');
 const clear = require('clear');
 const rename = require('gulp-rename');
 const config = require('./webpack.config');
-const exec = require('child_process').exec;
+const childProcess = require('child_process');
 
 let env = {production: process.env.NODE_ENV === 'production'};
 
@@ -94,7 +94,7 @@ gulp.task('clear-terminal', function() {
 });
 gulp.task('spawn-watch', ['clear-terminal'], function() {
  let spawnWatch = function() {
-    let proc = require('child_process').spawn('gulp', ['watch'], {stdio: 'inherit'});
+    let proc = childProcess.spawn('gulp', ['watch'], {stdio: 'inherit'});
     proc.on('close', function (code) {
       spawnWatch();
     });

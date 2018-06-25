@@ -51,7 +51,10 @@ const postcssPlugins = () => {
 const config = {
   mode: ENV,
   context: path.resolve(__dirname),
-  entry: [
+  entry: PROD ? [
+    'babel-polyfill',
+    'app.js'
+  ] : [
     'react-hot-loader/patch',
     'webpack-dev-server/client?http://127.0.0.1:8009',
     'webpack/hot/only-dev-server',
@@ -74,9 +77,7 @@ const config = {
       'process.env': {
          NODE_ENV: JSON.stringify(process.env.NODE_ENV)
        }
-    }),
-    new webpack.NamedModulesPlugin(),
-    new webpack.optimize.ModuleConcatenationPlugin(),
+    })
   ],
   module: {
     rules: [

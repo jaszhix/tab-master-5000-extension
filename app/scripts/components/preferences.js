@@ -3,7 +3,7 @@ import {StyleSheet, css} from 'aphrodite';
 import _ from 'lodash';
 import tc from 'tinycolor2';
 import v from 'vquery'
-import slider from 'rc-slider';
+import Slider from 'rc-slider';
 import ReactTooltip from 'react-tooltip';
 import * as utils from './stores/tileUtils';
 import state from './stores/state';
@@ -11,8 +11,6 @@ import {map, each} from './utils'
 import {msgStore, getBlackList, setBlackList, isValidDomain, faviconStore, getBytesInUse} from './stores/main';
 
 import {Btn, Col, Row} from './bootstrap';
-
-const Slider = slider.default;
 
 const styles = StyleSheet.create({
   sliderLabel: {marginBottom: '4px'},

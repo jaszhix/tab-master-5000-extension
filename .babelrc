@@ -3,9 +3,7 @@
   "plugins": [
     "lodash",
     "transform-class-properties",
-    "transform-es2015-classes",
-    "add-module-exports",
-    "dynamic-import-webpack"
+    "transform-es2015-classes"
   ],
   "env": {
     "development": {
