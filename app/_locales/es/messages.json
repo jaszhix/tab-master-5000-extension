@@ -254,6 +254,9 @@
   "updated": {
     "message": "Actualizado"
   },
+  "mostUsed": {
+    "message": "Más usado"
+  },
   "audible": {
     "message": "Audible"
   },
@@ -304,6 +307,12 @@
   },
   "allTabsTip": {
     "message": "Controla si las pestañas de todas las ventanas se muestran o no en las vistas de cuadrícula / tabla de pestañas."
+  },
+  "trackMostUsed": {
+    "message": "Rastrea las pestañas más usadas"
+  },
+  "trackMostUsedTip": {
+    "message": "Mantiene un registro de cuántas veces se activa una pestaña, lo que habilita un modo de clasificación opcional."
   },
   "autoDiscard": {
     "message": "Habilitar el descarte automático de pestañas de la memoria"

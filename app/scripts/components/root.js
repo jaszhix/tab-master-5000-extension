@@ -23,6 +23,7 @@ import Alert from './alert';
 import Loading from './loading';
 import Search from './search';
 import tmWorker from './main.worker.js';
+import {tabSortKeys, extensionSortKeys, sessionSortKeys, historySortKeys, bookmarkSortKeys} from './constants';
 
 window.tmWorker = new tmWorker();
 window.tmWorker.onmessage = (e) => {
@@ -482,7 +483,7 @@ class Root extends React.Component {
       let keys = [];
       let labels = {};
       if (p.s.prefs.mode === 'bookmarks') {
-        keys = ['openTab', 'url', 'title', 'dateAdded', 'folder', 'index'];
+        keys = bookmarkSortKeys;
         labels = {
           folder: utils.t('folder'),
           dateAdded: utils.t('dateAdded'),
@@ -492,7 +493,7 @@ class Root extends React.Component {
           index: utils.t('originalOrder')
         };
       } else if (p.s.prefs.mode === 'history') {
-        keys = ['openTab', 'url', 'title', 'lastVisitTime', 'visitCount', 'index'];
+        keys = historySortKeys;
         labels = {
           visitCount: utils.t('mostVisited'),
           lastVisitTime: utils.t('lastVisit'),
@@ -502,7 +503,7 @@ class Root extends React.Component {
           index: utils.t('originalOrder')
         };
       } else if (p.s.prefs.mode === 'sessions') {
-        keys = ['openTab', 'url', 'title', 'sTimeStamp', 'label', 'index'];
+        keys = sessionSortKeys;
         labels = {
           label: utils.t('label'),
           sTimeStamp: utils.t('dateAdded'),
@@ -512,19 +513,20 @@ class Root extends React.Component {
           index: utils.t('originalOrder')
         };
       } else if (p.s.prefs.mode === 'apps' || p.s.prefs.mode === 'extensions') {
-        keys = ['title', 'offlineEnabled', 'index'];
+        keys = extensionSortKeys;
         labels = {
           offlineEnabled: utils.t('offlineEnabled'),
           title: utils.t('title'),
           index: utils.t('originalOrder')
         };
       } else {
-        keys = ['url', 'title', 'timeStamp', 'index'];
+        keys = tabSortKeys;
         labels = {
           index: utils.t('tabOrder'),
           url: utils.t('website'),
           title: utils.t('title'),
-          'timeStamp': utils.t('updated')
+          timeStamp: utils.t('updated'),
+          count: utils.t('mostUsed')
         };
         if ((p.s.chromeVersion >= 46 || p.s.chromeVersion === 1)) {
           let init = _.initial(keys);

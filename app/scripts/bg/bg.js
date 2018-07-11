@@ -593,8 +593,11 @@ class Bg /* extends React.Component */ {
       let urlMatch = tabs[i].url.match(DOMAIN_REGEX);
       _.assign(tabs[i], {
         timeStamp: new Date(Date.now()).getTime(),
-        domain: urlMatch ? urlMatch[1] : tabs[i].url.split('/')[2]
+        domain: urlMatch ? urlMatch[1] : tabs[i].url.split('/')[2],
       });
+      if (prefs.trackMostUsed) {
+        tabs[i].count = tabs[i].count != null ? tabs[i].count : 0;
+      }
       if (isNewTab(tabs[i].url)) {
         blacklisted.push({id: tabs[i].id, windowId: tabs[i].windowId});
       }
@@ -782,34 +785,42 @@ class Bg /* extends React.Component */ {
     });
   }
   handleActivation = (e) => {
-    let refWindow = findIndex(this.state.windows, win => win.id === e.windowId);
+    const {windows, prefs} = this.state;
+    let refWindow = findIndex(windows, win => win.id === e.windowId);
     if (refWindow === -1) {
       return;
     }
-    let refTab = findIndex(this.state.windows[refWindow].tabs, tab => tab.id === e.tabId);
+    let refTab = findIndex(windows[refWindow].tabs, tab => tab.id === e.tabId);
     if (refTab === -1) {
       return;
     }
-    if (isNewTab(this.state.windows[refWindow].tabs[refTab].url)) {
+    if (isNewTab(windows[refWindow].tabs[refTab].url)) {
       return;
     }
+    const tab = windows[refWindow].tabs[refTab];
     // Update timestamp for auto-discard feature's accuracy.
-    _.assignIn(this.state.windows[refWindow].tabs[refTab], {
+    _.assignIn(tab, {
       timeStamp: new Date(Date.now()).getTime()
     });
 
-    this.state.set({windows: this.state.windows}, true);
-    if (this.state.prefs && this.state.prefs.screenshot && this.state.prefs.screenshotChrome) {
+    if (prefs.trackMostUsed) {
+      tab.count = tab.count != null ? tab.count + 1 : 1;
+      sendMsg({windows, windowId: windows[refWindow].id});
+    }
+
+    this.state.set({windows}, true);
+    if (prefs && prefs.screenshot && prefs.screenshotChrome) {
       createScreenshotThrottled(this, refWindow, refTab);
     }
   }
   createSingleItem = (e, windowId, recursion = 0) => {
+    const {chromeVersion, prefs, windows, newTabs, removed, blacklist, sessions} = this.state;
     if (!windowId) {
       windowId = e.windowId;
     }
     // Firefox fix: In Chrome, the tab url is always resolved by the time onCreated is fired,
     // but in FF some tabs will show "about:blank" initially.
-    if (this.state.chromeVersion === 1
+    if (chromeVersion === 1
       && e.url === 'about:blank'
       && recursion === 0) {
       _.defer(() => {
@@ -819,14 +830,14 @@ class Bg /* extends React.Component */ {
       });
       return;
     }
-    let refWindow = findIndex(this.state.windows, win => win.id === windowId);
+    let refWindow = findIndex(windows, win => win.id === windowId);
     if (refWindow === -1) {
       return;
     }
 
     // Check if called from onAttached, need to get full tab object from state.removed.
     if (typeof e === 'number') {
-      e = find(this.state.removed, tab => tab.id === e);
+      e = find(removed, tab => tab.id === e);
       if (!e) {
         return;
       }
@@ -834,46 +845,49 @@ class Bg /* extends React.Component */ {
 
     let urlMatch = e.url.match(DOMAIN_REGEX);
     e.domain = urlMatch ? urlMatch[1] : e.url.split('/')[2];
+    if (prefs.trackMostUsed && e.count == null) {
+      e.count = 0;
+    }
 
-    for (let i = 0, len = this.state.blacklist.length; i < len; i++) {
-      if (this.state.blacklist[i].indexOf(e.domain) > -1) {
+    for (let i = 0, len = blacklist.length; i < len; i++) {
+      if (blacklist[i].indexOf(e.domain) > -1) {
         chrome.tabs.remove(e.id);
         return;
       }
     }
 
-    if (typeof this.state.windows[refWindow].tabs[e.index] !== 'undefined') {
-      for (let i = 0, len = this.state.windows[refWindow].tabs.length; i < len; i++) {
+    if (typeof windows[refWindow].tabs[e.index] !== 'undefined') {
+      for (let i = 0, len = windows[refWindow].tabs.length; i < len; i++) {
         if (i > e.index) {
-          if (i <= this.state.windows[refWindow].tabs.length) {
-            this.state.windows[refWindow].tabs[i].index = i + 1;
+          if (i <= windows[refWindow].tabs.length) {
+            windows[refWindow].tabs[i].index = i + 1;
           }
         }
       }
-      this.state.windows[refWindow].tabs.push(e);
-      this.state.windows[refWindow].tabs = v(this.state.windows[refWindow].tabs).move(
-        findIndex(this.state.windows[refWindow].tabs, tab => _.isEqual(_.last(this.state.windows[refWindow].tabs), tab)),
+      windows[refWindow].tabs.push(e);
+      windows[refWindow].tabs = v(windows[refWindow].tabs).move(
+        findIndex(windows[refWindow].tabs, tab => _.isEqual(_.last(windows[refWindow].tabs), tab)),
         e.index
       ).ns;
     } else {
-      this.state.windows[refWindow].tabs.push(e);
+      windows[refWindow].tabs.push(e);
     }
-    this.state.windows[refWindow].tabs = _.orderBy(_.uniqBy(this.state.windows[refWindow].tabs, 'id'), ['pinned'], ['desc']);
-    this.state.windows[refWindow].tabs = this.formatTabs(this.state.prefs, this.state.windows[refWindow].tabs);
-    this.state.set({windows: this.state.windows}, true);
+    windows[refWindow].tabs = _.orderBy(_.uniqBy(windows[refWindow].tabs, 'id'), ['pinned'], ['desc']);
+    windows[refWindow].tabs = this.formatTabs(prefs, windows[refWindow].tabs);
+    this.state.set({windows}, true);
     // Activate the first new tab if it is open, and if this is a second new tab being created.
-    if (isNewTab(e.url) && this.state.prefs.singleNewTab) {
-      let refNewTab = findIndex(this.state.newTabs, tab => tab.windowId === windowId);
+    if (isNewTab(e.url) && prefs.singleNewTab) {
+      let refNewTab = findIndex(newTabs, tab => tab.windowId === windowId);
       if (refNewTab !== -1) {
-        let refExistingTab = findIndex(this.state.windows[refWindow].tabs, tab => tab.id === this.state.newTabs[refNewTab].id);
-        if ((typeof this.state.windows[refWindow].tabs[refExistingTab] !== 'undefined'
-          && !isNewTab(this.state.windows[refWindow].tabs[refExistingTab].url)
-          && this.state.newTabs.length > 1)
+        let refExistingTab = findIndex(windows[refWindow].tabs, tab => tab.id === newTabs[refNewTab].id);
+        if ((typeof windows[refWindow].tabs[refExistingTab] !== 'undefined'
+          && !isNewTab(windows[refWindow].tabs[refExistingTab].url)
+          && newTabs.length > 1)
           || refExistingTab === -1) {
-          _.pullAt(this.state.newTabs, refNewTab);
-          this.state.set({newTabs: this.state.newTabs}, true);
+          _.pullAt(newTabs, refNewTab);
+          this.state.set({newTabs}, true);
         } else {
-          chrome.tabs.update(this.state.newTabs[refNewTab].id, {active: true}, () => {
+          chrome.tabs.update(newTabs[refNewTab].id, {active: true}, () => {
             sendMsg({focusSearchEntry: true, action: true});
           });
         }
@@ -881,8 +895,8 @@ class Bg /* extends React.Component */ {
       }
     }
     setActionThrottled(this, 'create', e);
-    synchronizeSession(this.state.sessions, this.state.prefs, this.state.windows);
-    sendMsg({windows: this.state.windows, windowId: windowId});
+    synchronizeSession(sessions, prefs, windows);
+    sendMsg({windows, windowId});
   }
   removeSingleItem = (e, windowId) => {
     let refWindow = findIndex(this.state.windows, win => win.id === windowId);

@@ -62,12 +62,14 @@ export class SidebarMenu extends React.Component {
   }
   handleSortOption = (key) => {
     if (state.prefs.mode === 'tabs' && key === 'index') {
-      msgStore.queryTabs(true);
+     // msgStore.queryTabs(true);
       return;
     }
     state.set({
       sort: key,
-      direction: state.sort !== key ? state.direction : state.direction === 'desc' ? 'asc' : 'desc'
+      direction: key === 'count' ? 'desc'
+      : state.sort !== key ? state.direction
+      : state.direction === 'desc' ? 'asc' : 'desc'
     }, true);
   }
   render = () => {

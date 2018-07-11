@@ -27,6 +27,7 @@ let prefsStore = initStore({
     installTime: Date.now(),
     actions: false,
     sessionsSync: true,
+    trackMostUsed: false,
     singleNewTab: false,
     closeOnActivate: false,
     keyboardShortcuts: true,

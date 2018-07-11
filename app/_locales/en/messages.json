@@ -256,6 +256,9 @@
   "updated": {
     "message": "Updated"
   },
+  "mostUsed": {
+    "message": "Most Used"
+  },
   "audible": {
     "message": "Audible"
   },
@@ -306,6 +309,12 @@
   },
   "allTabsTip": {
     "message": "Controls whether or not tabs across all windows are shown in the tabs grid/table views."
+  },
+  "trackMostUsed": {
+    "message": "Track most used tabs"
+  },
+  "trackMostUsedTip": {
+    "message": "Keeps record of how many times a tab is activated, which enables an optional sorting mode."
   },
   "autoDiscard": {
     "message": "Enable automatic discarding of tabs from memory"

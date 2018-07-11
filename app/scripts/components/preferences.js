@@ -389,6 +389,13 @@ class Preferences extends React.Component {
             on={p.prefs.allTabs}
             label={utils.t('allTabs')}
             data-tip={utils.t('allTabsTip')} />
+            <Toggle
+            theme={p.theme}
+            onMouseEnter={() => this.handleToggle('trackMostUsed')}
+            onClick={() => this.handleClick('trackMostUsed')}
+            on={p.prefs.trackMostUsed}
+            label={utils.t('trackMostUsed')}
+            data-tip={utils.t('trackMostUsedTip')} />
             {p.chromeVersion >= 54?
             <Toggle
             theme={p.theme}

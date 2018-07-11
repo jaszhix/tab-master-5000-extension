@@ -65,7 +65,11 @@ const sort = (state, data) => {
     let pinned = _.orderBy(filter(data, tab => tab.pinned === true), state.sort, state.direction);
     let unpinned = _.orderBy(filter(data, tab => tab.pinned === false), state.sort, state.direction);
     let concat = _.concat(pinned, unpinned);
-    result = _.orderBy(concat, ['pinned', state.sort], [state.direction]);
+    if (state.sort !== 'count') {
+      result = _.orderBy(concat, ['pinned', state.sort], [state.direction]);
+    } else {
+      result = concat;
+    }
   } else {
     result = _.orderBy(data, [state.sort], [state.direction]);
   }
@@ -261,8 +265,14 @@ const processWindows = function(s, msg) {
     }
   }
   if (s.prefs.mode === 'tabs') {
-    stateUpdate.sort = 'index';
-    stateUpdate.direction = 'desc';
+    if (s.modeKey === 'tabs') {
+      stateUpdate.sort = s.sort;
+      stateUpdate.direction = s.direction;
+    } else {
+      stateUpdate.sort = 'index';
+      stateUpdate.direction = 'desc';
+    }
+
     if (s.prefs.allTabs) {
       stateUpdate.tabs = _.flatten(stateUpdate.allTabs);
     } else if (!msg.modalOpen) {
@@ -278,8 +288,13 @@ const processWindows = function(s, msg) {
     }
   } else if (s.prefs.mode === 'sessions') {
     stateUpdate.modeKey = 'sessionTabs';
-    stateUpdate.sort = 'sTimeStamp';
-    stateUpdate.direction = 'desc';
+    if (s.modeKey === 'sessionTabs') {
+      stateUpdate.sort = s.sort;
+      stateUpdate.direction = s.direction;
+    } else {
+      stateUpdate.sort = 'sTimeStamp';
+      stateUpdate.direction = 'desc';
+    }
     stateUpdate.sessionTabs = processSessionTabs(s.sessions, _.flatten(stateUpdate.allTabs), s.windowId);
   } else {
     postMessage({msg: 'handleMode', mode: s.prefs.mode, stateUpdate, init: msg.init});

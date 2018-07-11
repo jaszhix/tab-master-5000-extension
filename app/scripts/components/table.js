@@ -296,6 +296,9 @@ export class Table extends React.Component {
       columns = columns.concat(['folder', 'dateAdded']);
     } else if (p.s.prefs.mode === 'tabs') {
       columns = columns.concat(['pinned', 'mutedInfo']);
+      if (p.s.prefs.trackMostUsed) {
+        columns.push('count');
+      }
     } else if (p.s.prefs.mode === 'sessions') {
       columns = columns.concat(['session']);
     } else if (p.s.prefs.mode === 'history') {
