@@ -50,6 +50,55 @@ const postcssPlugins = () => {
   return processors;
 }
 
+let cssLoaders = [
+  {
+    loader: 'css-loader',
+    options: {
+      sourceMap: true,
+      importLoaders: 1
+    }
+  },
+  {
+    loader: 'postcss-loader',
+    options: {
+      sourceMap: true,
+      plugins: postcssPlugins
+    }
+  },
+];
+
+let scssLoaders = [
+  {
+    loader: 'css-loader',
+    options: {
+      sourceMap: true,
+      importLoaders: 1
+    },
+  },
+  {
+    loader: 'postcss-loader',
+    options: {
+      sourceMap: true,
+      plugins: postcssPlugins
+    }
+  },
+  {
+    loader: 'sass-loader',
+    options: {
+      sourceMap: true,
+      includePaths: [
+        path.join(__dirname, 'node_modules')
+      ],
+      outputStyle: PROD ? 'compressed' : 'expanded'
+    }
+  }
+];
+
+if (!PROD) {
+  cssLoaders = ['style-loader'].concat(cssLoaders);
+  scssLoaders = ['style-loader'].concat(scssLoaders);
+}
+
 const config = {
   mode: ENV,
   context: path.resolve(__dirname),
@@ -69,12 +118,12 @@ const config = {
     globalObject: 'this'
   },
   plugins: [
+    new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
     new LodashModuleReplacementPlugin({
       cloning: true,
       flattening: true,
       shorthands: true
     }),
-    new ExtractTextPlugin(PROD ? 'main.css' : { disable: true }),
     new webpack.DefinePlugin({
       'process.env': {
          NODE_ENV: JSON.stringify(NODE_ENV)
@@ -93,55 +142,17 @@ const config = {
       },
       {
         test: /\.css$/,
-        use: ExtractTextPlugin.extract({
+        use: PROD ? ExtractTextPlugin.extract({
           fallback: 'style-loader',
-          use: [
-            {
-              loader: 'css-loader',
-              options: {
-                sourceMap: true,
-                importLoaders: 1
-              }
-            },
-            {
-              loader: 'postcss-loader',
-              options: {
-                sourceMap: true,
-                plugins: postcssPlugins
-              }
-            },
-          ],
-        }),
+          use: cssLoaders
+        }) : cssLoaders,
       },
       {
         test: /\.scss$/,
-        use: ExtractTextPlugin.extract({
+        use: PROD ? ExtractTextPlugin.extract({
           fallback: 'style-loader',
-          use: [
-            {
-              loader: 'css-loader',
-              options: {
-                sourceMap: true,
-                importLoaders: 1
-              },
-            },
-            {
-              loader: 'postcss-loader',
-              options: {
-                sourceMap: true,
-                plugins: postcssPlugins
-              }
-            },
-            {
-              loader: 'sass-loader',
-              options: {
-                sourceMap: true,
-                includePaths: [],
-                outputStyle: PROD ? 'compressed' : 'expanded'
-              }
-            }
-          ],
-        }),
+          use: scssLoaders
+        }) : scssLoaders,
       },
       {
         test: /\.(ttf|eot|svg|woff(2)?)(\S+)?$/,
@@ -194,6 +205,7 @@ if (PROD && ENTRY) {
   if (ENTRY === 'app') {
     config.entry = './app/scripts/components/app.js';
     config.output.filename = 'app.js';
+    config.plugins.push(new ExtractTextPlugin({filename: 'main.css', allChunks: false}));
   } else if (ENTRY === 'bg') {
     config.entry = './app/scripts/bg/bg.js';
     config.output.filename = 'background.js';

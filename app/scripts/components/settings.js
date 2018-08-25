@@ -8,17 +8,20 @@ import ColorPicker from 'rc-color-picker';
 import ReactTooltip from 'react-tooltip';
 
 import * as utils from './stores/tileUtils';
-import {each, find, map, filter, isNewTab} from './utils';
+import {each, find, map, filter, isNewTab, AsyncComponent} from './utils';
 import state from './stores/state';
 import {msgStore, utilityStore} from './stores/main';
 import themeStore from './stores/theme';
 import sessionsStore from './stores/sessions';
 
-import Preferences from './preferences';
 import About from './about';
 
 import {Btn, Col, Row, Container} from './bootstrap';
 import style from './style';
+
+let Preferences = AsyncComponent({
+  loader: () => import(/* webpackChunkName: "preferences" */ './preferences')
+});
 
 const convertColor = function(color) {
   if (color.indexOf('#') !== -1) {

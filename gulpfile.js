@@ -52,6 +52,10 @@ gulp.task('copy', function() {
   return gulp.src(patterns)
     .pipe(gulp.dest(`./${WORKDIR}/`));
 });
+gulp.task('copyChunks', function() {
+  return gulp.src([`./${WORKDIR}/scripts/*.app.js`])
+    .pipe(gulp.dest(`./${WORKDIR}/`));
+});
 gulp.task('htmlmin', function() {
   return gulp.src(`./${WORKDIR}/newtab_prod.html`)
     .pipe(htmlclean())
@@ -69,6 +73,7 @@ gulp.task('imgmin', function() {
 gulp.task('package', ['backup-source-maps'], function() {
   if (!SKIP_MINIFY) {
     del.sync([
+      './dist/scripts/*.app.js',
       './dist/scripts/components/',
       './dist/scripts/bg/',
       './dist/scripts/content/',
@@ -84,7 +89,7 @@ gulp.task('package', ['backup-source-maps'], function() {
 });
 gulp.task('dist',  function (callback) {
   env.production = true;
-  runSequence('copy', 'htmlmin', 'imgmin', 'package', callback);
+  runSequence('copy', 'copyChunks', 'htmlmin', 'imgmin', 'package', callback);
 });
 gulp.task('watch', function() {
   gulp.watch('./app/scripts/bg/*.{js,jsx,es6}', ['build-bg']);

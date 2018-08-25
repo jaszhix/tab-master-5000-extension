@@ -170,7 +170,7 @@ class Row extends React.Component {
   }
 }
 
-export class TableHeader extends React.Component {
+class TableHeader extends React.Component {
   constructor(props) {
     super(props);
   }
@@ -237,7 +237,7 @@ export class TableHeader extends React.Component {
   }
 }
 
-export class Table extends React.Component {
+class Table extends React.Component {
   constructor(props) {
     super(props);
 
@@ -553,3 +553,5 @@ export class Table extends React.Component {
     }
   }
 }
+
+export default Table;

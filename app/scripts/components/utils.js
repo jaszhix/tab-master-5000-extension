@@ -1,3 +1,6 @@
+import React from 'react';
+import Loadable from 'react-loadable';
+
 export const each = function(obj, cb) {
   if (Array.isArray(obj)) {
     for (let i = 0, len = obj.length; i < len; i++) {
@@ -111,3 +114,23 @@ export const isNewTab = function(url) {
     || url.substr(-11) === 'newtab.html'
     || url.substr(-11) === 'ewtab.html#'))
 }
+
+const Loading = function(props) {
+  if (props.error) {
+    return <div>Error! <button className="ntg-btn" onClick={props.retry}>Retry</button></div>;
+  } else if (props.timedOut) {
+    return <div>Taking a long time... <button className="ntg-btn" onClick={props.retry}>Retry</button></div>;
+  } else if (props.pastDelay) {
+    return <div>Loading...</div>;
+  } else {
+    return null;
+  }
+};
+
+export const AsyncComponent = function(opts) {
+  return Loadable(Object.assign({
+    loading: Loading,
+    delay: 200,
+    timeout: 10000,
+  }, opts));
+};

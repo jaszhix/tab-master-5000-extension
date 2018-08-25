@@ -13,17 +13,24 @@ import ReactTooltip from 'react-tooltip';
 import {keyboardStore, utilityStore, msgStore, faviconStore} from './stores/main';
 import themeStore from './stores/theme';
 import * as utils from './stores/tileUtils';
-import {each, filter, tryFn} from './utils';
+import {each, filter, tryFn, AsyncComponent} from './utils';
 import Sidebar from './sidebar';
 import ItemsContainer from './itemsContainer';
-import ModalHandler from './modal';
-import ContextMenu from './context';
-import Preferences from './preferences';
 import Alert from './alert';
 import Loading from './loading';
 import Search from './search';
 import tmWorker from './main.worker.js';
 import {tabSortKeys, extensionSortKeys, sessionSortKeys, historySortKeys, bookmarkSortKeys} from './constants';
+
+let Preferences = AsyncComponent({
+  loader: () => import(/* webpackChunkName: "preferences" */ './preferences')
+});
+let ContextMenu = AsyncComponent({
+  loader: () => import(/* webpackChunkName: "context" */ './context')
+});
+let ModalHandler = AsyncComponent({
+  loader: () => import(/* webpackChunkName: "modal" */ './modal')
+});
 
 window.tmWorker = new tmWorker();
 window.tmWorker.onmessage = (e) => {

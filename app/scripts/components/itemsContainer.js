@@ -7,10 +7,14 @@ import state from './stores/state';
 import {msgStore} from './stores/main';
 import themeStore from './stores/theme';
 
-import Tile from './tile';
-import {Table} from './table';
-import {map, whichToShow, tryFn, isNewTab, each} from './utils';
-import * as utils from './stores/tileUtils';
+import {map, whichToShow, tryFn, isNewTab, each, AsyncComponent} from './utils';
+
+let Tile = AsyncComponent({
+  loader: () => import(/* webpackChunkName: "tile" */ './tile')
+});
+let Table = AsyncComponent({
+  loader: () => import(/* webpackChunkName: "table" */ './table')
+});
 
 class ItemsContainer extends React.Component {
   constructor(props) {
