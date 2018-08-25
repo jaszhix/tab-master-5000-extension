@@ -6,6 +6,7 @@ const cssnano = require('cssnano');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const LodashModuleReplacementPlugin = require('lodash-webpack-plugin');
+const SizePlugin = require('size-plugin');
 
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const aliases = Object.assign({
@@ -268,7 +269,8 @@ if (PROD && ENTRY) {
     new webpack.HotModuleReplacementPlugin(),
     new webpack.LoaderOptionsPlugin({
       debug: true,
-    })
+    }),
+    new SizePlugin()
   );
 }
 module.exports = config;
