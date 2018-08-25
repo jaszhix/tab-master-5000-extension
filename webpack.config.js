@@ -12,21 +12,22 @@ const aliases = Object.assign({
   underscore: 'lodash'
 }, require('lodash-loader').createLodashAliases());
 
-const ENV = process.env.NODE_ENV || 'development';
+const {DEV_ENV, NODE_ENV, BUNDLE_ENTRY} = process.env;
+const ENV = NODE_ENV || 'development';
 const PROD = ENV === 'production';
-const ENTRY = process.env.BUNDLE_ENTRY;
+const ENTRY = BUNDLE_ENTRY;
 const SKIP_MINIFY = JSON.parse(process.env.SKIP_MINIFY || 'false');
 const publicPath = PROD ? '/' : 'http://127.0.0.1:8009/app/scripts/';
 
 const CONTENT_BASE = SKIP_MINIFY ? 'sources' : 'dist';
 const WORKDIR = PROD ? CONTENT_BASE : 'app';
 console.log(`ENTRY:`, ENTRY || 'app');
-console.log(`NODE_ENV:`, process.env.NODE_ENV);
-console.log(`BUILD ENV:`, process.env.DEV_ENV);
+console.log(`NODE_ENV:`, NODE_ENV);
+console.log(`BUILD ENV:`, DEV_ENV);
 console.log(`SKIP MINIFICATION:`, SKIP_MINIFY);
 console.log(`WORKDIR:`, WORKDIR);
 console.log(`========================================`);
-fs.createReadStream(`./app/manifest_${process.env.DEV_ENV}.json`)
+fs.createReadStream(`./app/manifest_${DEV_ENV}${DEV_ENV === 'chrome' && ENV === 'development' ? '.dev' : ''}.json`)
   .pipe(fs.createWriteStream(`./${WORKDIR}/manifest.json`));
 
 const postcssPlugins = () => {
@@ -75,7 +76,7 @@ const config = {
     new ExtractTextPlugin(PROD ? 'main.css' : { disable: true }),
     new webpack.DefinePlugin({
       'process.env': {
-         NODE_ENV: JSON.stringify(process.env.NODE_ENV)
+         NODE_ENV: JSON.stringify(NODE_ENV)
        }
     })
   ],
