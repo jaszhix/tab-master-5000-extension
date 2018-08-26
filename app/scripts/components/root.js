@@ -527,7 +527,7 @@ class Root extends React.Component {
           index: utils.t('originalOrder')
         };
       } else {
-        keys = tabSortKeys;
+        keys = tabSortKeys.slice();
         labels = {
           index: utils.t('tabOrder'),
           url: utils.t('website'),
@@ -535,6 +535,12 @@ class Root extends React.Component {
           timeStamp: utils.t('updated'),
           count: utils.t('mostUsed')
         };
+
+        if (!p.s.prefs.trackMostUsed) {
+          delete labels.count;
+          keys.splice(keys.indexOf('count'), 1);
+        }
+
         if ((p.s.chromeVersion >= 46 || p.s.chromeVersion === 1)) {
           let init = _.initial(keys);
           init.push('audible');
