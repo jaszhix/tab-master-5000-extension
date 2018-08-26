@@ -61,10 +61,6 @@ export class SidebarMenu extends React.Component {
     ReactTooltip.hide();
   }
   handleSortOption = (key) => {
-    if (state.prefs.mode === 'tabs' && key === 'index') {
-     // msgStore.queryTabs(true);
-      return;
-    }
     state.set({
       sort: key,
       direction: key === 'count' ? 'desc'
