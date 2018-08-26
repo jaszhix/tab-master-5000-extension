@@ -2,7 +2,8 @@ import moment from 'moment';
 moment.locale(chrome.i18n.getUILanguage());
 import state from './stores/state';
 if (!state.isOptions) {
-  document.querySelector('.startup-text-wrapper > .startup-p').innerText = moment().format('h:mm A');
+  let startupP = document.querySelector('.startup-text-wrapper > .startup-p');
+  if (startupP) startupP.innerText = moment().format('h:mm A');
 }
 import v from 'vquery';
 window.v = v;
