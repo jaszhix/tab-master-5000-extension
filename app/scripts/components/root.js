@@ -24,7 +24,7 @@ import tmWorker from './main.worker.js';
 import {tabSortKeys, extensionSortKeys, sessionSortKeys, historySortKeys, bookmarkSortKeys} from './constants';
 
 let Preferences = AsyncComponent({
-  loader: () => import(/* webpackChunkName: "preferences" */ './preferences')
+  loader: () => import(/* webpackChunkName: "preferences" */ './settings/preferences')
 });
 let ContextMenu = AsyncComponent({
   loader: () => import(/* webpackChunkName: "context" */ './context')

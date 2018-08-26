@@ -5,12 +5,12 @@ import tc from 'tinycolor2';
 import v from 'vquery'
 import Slider from 'rc-slider';
 import ReactTooltip from 'react-tooltip';
-import * as utils from './stores/tileUtils';
-import state from './stores/state';
-import {map, each} from './utils'
-import {msgStore, getBlackList, setBlackList, isValidDomain, faviconStore, getBytesInUse} from './stores/main';
+import * as utils from '../stores/tileUtils';
+import state from '../stores/state';
+import {map, each} from '../utils'
+import {msgStore, getBlackList, setBlackList, isValidDomain, faviconStore, getBytesInUse} from '../stores/main';
 
-import {Btn, Col, Row} from './bootstrap';
+import {Btn, Col, Row} from '../bootstrap';
 
 const styles = StyleSheet.create({
   sliderLabel: {marginBottom: '4px'},

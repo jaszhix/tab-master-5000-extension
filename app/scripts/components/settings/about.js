@@ -2,15 +2,15 @@ import React from 'react';
 import tc from 'tinycolor2';
 import moment from 'moment';
 
-import state from './stores/state';
-import {map} from './utils';
-import * as utils from './stores/tileUtils';
-import {utilityStore} from './stores/main';
+import state from '../stores/state';
+import {map} from '../utils';
+import * as utils from '../stores/tileUtils';
+import {utilityStore} from '../stores/main';
 
-import {Btn, Col, Row} from './bootstrap';
+import {Btn, Col, Row} from '../bootstrap';
 
-import changelog from 'html-loader!markdown-loader!../../../changelog.md';
-import license from 'html-loader!markdown-loader!../../../COPYING';
+import changelog from 'html-loader!markdown-loader!../../../../changelog.md';
+import license from 'html-loader!markdown-loader!../../../../COPYING';
 
 const containerStyle = {marginTop: '49px'};
 
@@ -22,9 +22,9 @@ class Contribute extends React.Component {
     let contributeFile;
     let locale = chrome.i18n.getUILanguage();
     if (locale === 'es') {
-      contributeFile = require('html-loader!markdown-loader!../../../contribute_es.md').default;
+      contributeFile = require('html-loader!markdown-loader!../../../../contribute_es.md').default;
     } else {
-      contributeFile = require('html-loader!markdown-loader!../../../contribute.md').default;
+      contributeFile = require('html-loader!markdown-loader!../../../../contribute.md').default;
     }
     if (this.props.chromeVersion === 1) {
       contributeFile = contributeFile
@@ -102,9 +102,9 @@ class Support extends React.Component {
     let supportFile;
     let locale = chrome.i18n.getUILanguage();
     if (locale === 'es') {
-      supportFile = require('html-loader!markdown-loader!../../../support_es.md').default;
+      supportFile = require('html-loader!markdown-loader!../../../../support_es.md').default;
     } else {
-      supportFile = require('html-loader!markdown-loader!../../../support.md').default;
+      supportFile = require('html-loader!markdown-loader!../../../../support.md').default;
     }
     function createMarkup() {return {__html: supportFile};}
     return (
@@ -128,7 +128,7 @@ class Attribution extends React.Component {
     };
   }
   componentDidMount() {
-    let deps = require('../../../package.json');
+    let deps = require('../../../../package.json');
     let state = [];
     for (let key in deps.devDependencies) {
       let version = deps.devDependencies[key];
