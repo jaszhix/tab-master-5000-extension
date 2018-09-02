@@ -225,44 +225,52 @@ class Preferences extends React.Component {
     state.disconnect(this.connectId);
   }
   buildFooter = () => {
-    this.getBytesInUse().then(() => {
-      let p = this.props;
-      if (!p.options) {
-        p.modal.footer = (
-          <div>
-            <Btn
-            onClick={() => this.handleSlide(134, 'tabSizeHeight')}
-            className="ntg-setting-btn"
-            icon="reset"
-            faStyle={{position: 'relative', top: '-2px'}}>
-              {utils.t('resetTileSize')}
-            </Btn>
-            {p.prefs.screenshot ?
-            <Btn
-            onClick={this.handleScreenshotClear}
-            className="ntg-setting-btn"
-            icon="trash"
-            faStyle={{paddingRight: '8px'}}>
-              {utils.t('clearScreenshotCache')}
-            </Btn> : null}
-            <Btn
-            onClick={this.handleFaviconClear}
-            className="ntg-setting-btn"
-            icon="trash"
-            faStyle={{paddingRight: '8px'}}>
-              {utils.t('clearFaviconCache')}
-            </Btn>
-            <div className="disk-usage-container">
-              <div>{this.state.faviconsBytesInUse ? `${utils.t('faviconsDiskUsage')}: ${utils.formatBytes(this.state.faviconsBytesInUse, 2)}` : null}</div>
-              <div>{this.state.screenshotsBytesInUse ? `${utils.t('screenshotDiskUsage')}: ${utils.formatBytes(this.state.screenshotsBytesInUse, 2)}` : null}</div>
-            </div>
-          </div>
-        );
-        state.set({modal: p.modal}, true);
-      } else {
-        v('#options').remove();
+    getBytesInUse('favicons').then((bytes) => {
+      this.setState({faviconsBytesInUse: bytes});
+      if (this.props.prefs.screenshot) {
+        return getBytesInUse('screenshots');
       }
-    });
+      return Promise.resolve(0);
+    }).then((bytes) => {
+      console.log({bytes})
+      if (bytes) this.setState({screenshotsBytesInUse: bytes});
+      let p = this.props;
+      if (p.options) {
+        v('#options').remove();
+        return;
+      }
+      p.modal.footer = (
+        <div>
+          <Btn
+          onClick={() => this.handleSlide(134, 'tabSizeHeight')}
+          className="ntg-setting-btn"
+          icon="reset"
+          faStyle={{position: 'relative', top: '-2px'}}>
+            {utils.t('resetTileSize')}
+          </Btn>
+          {p.prefs.screenshot ?
+          <Btn
+          onClick={this.handleScreenshotClear}
+          className="ntg-setting-btn"
+          icon="trash"
+          faStyle={{paddingRight: '8px'}}>
+            {utils.t('clearScreenshotCache')}
+          </Btn> : null}
+          <Btn
+          onClick={this.handleFaviconClear}
+          className="ntg-setting-btn"
+          icon="trash"
+          faStyle={{paddingRight: '8px'}}>
+            {utils.t('clearFaviconCache')}
+          </Btn>
+          <div className="disk-usage-container">
+            <div>{this.state.faviconsBytesInUse ? `${utils.t('faviconsDiskUsage')}: ${utils.formatBytes(this.state.faviconsBytesInUse, 2)}` : null}</div>
+            <div>{this.state.screenshotsBytesInUse ? `${utils.t('screenshotDiskUsage')}: ${utils.formatBytes(this.state.screenshotsBytesInUse, 2)}` : null}</div>
+          </div>
+        </div>
+      );
+      state.set({modal: p.modal}, true);
+    }).catch((e) => console.log(e));
   }
   checkAddonTab = (partial) => {
     let aboutAddonsOpen = false
@@ -278,16 +286,6 @@ class Preferences extends React.Component {
       }
     });
     this.setState({aboutAddonsOpen});
-  }
-  getBytesInUse = () => {
-    return getBytesInUse('favicons').then((bytes) => {
-      this.setState({faviconsBytesInUse: bytes});
-      if (this.props.prefs.screenshot) {
-        return getBytesInUse('screenshots');
-      }
-    }).then((bytes)=>{
-      this.setState({screenshotsBytesInUse: bytes});
-    });
   }
   handleToggle = (opt) => {
     this.setState({hover: opt});

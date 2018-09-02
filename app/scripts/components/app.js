@@ -6,8 +6,6 @@ import {AppContainer} from 'react-hot-loader';
 import App from './root';
 import v from 'vquery';
 import {tryFn} from './utils';
-import Promise from 'bluebird';
-window.Promise = Promise;
 
 const renderApp = (stateUpdate)=>{
   render(<App stateUpdate={stateUpdate} />, document.getElementById('main'));
