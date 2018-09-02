@@ -392,7 +392,7 @@ class Preferences extends React.Component {
             onMouseEnter={() => this.handleToggle('trackMostUsed')}
             onClick={() => this.handleClick('trackMostUsed')}
             on={p.prefs.trackMostUsed}
-            label={utils.t('trackMostUsed')}
+            label={`${utils.t('trackMostUsed')} (BETA)`}
             data-tip={utils.t('trackMostUsedTip')} />
             {p.chromeVersion >= 54?
             <Toggle

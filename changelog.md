@@ -1,5 +1,11 @@
 #### Release Notes
 
+##### v2.8.0 / *9-2-18*
+
+*   Added an experimental feature that allows sorting tabs by most used. Currently the tracking doesn't persist after Chrome is closed, but that is planned to be added in a future update.
+*   Fixed compatibility for Chrome 69.
+*   Misc. code improvements.
+
 ##### v2.7.0 / *6-25-18*
 
 *   Added an option to close TM5K on tab activation.
