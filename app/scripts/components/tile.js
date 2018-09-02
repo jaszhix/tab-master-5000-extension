@@ -84,12 +84,14 @@ class Tile extends React.Component {
     let s = this.state;
     let p = this.props;
     this.setState({hover: true});
-    if (p.prefs.screenshot && p.prefs.screenshotBg && s.screenshot && p.prefs.mode !== 'apps') {
-      themeStore.trigger('currentWallpaper', {hoverWallpaper: {data: s.screenshot}, theme: p.theme});
-    } else if (p.wallpaper && p.wallpaper.data !== -1) {
-      themeStore.trigger('currentWallpaper', {hoverWallpaper: {data: p.wallpaper.data}, theme: p.theme});
-    } else {
-      document.getElementById('bgImg').style.backgroundImage = '';
+    if (p.prefs.screenshot && p.prefs.screenshotBg) {
+      if (s.screenshot && p.prefs.mode !== 'apps') {
+        themeStore.trigger('currentWallpaper', {hoverWallpaper: {data: s.screenshot}, theme: p.theme});
+      } else if (p.wallpaper && p.wallpaper.data !== -1) {
+        themeStore.trigger('currentWallpaper', {hoverWallpaper: {data: p.wallpaper.data}, theme: p.theme});
+      } else {
+        document.getElementById('bgImg').style.backgroundImage = '';
+      }
     }
   }
   handleHoverOut = () => {
