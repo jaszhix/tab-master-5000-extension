@@ -1,13 +1,8 @@
 {
-  "presets": ["env", "stage-0", "react"],
+  "presets": ["@babel/preset-env", "@babel/preset-react"],
   "plugins": [
-    "lodash",
-    "transform-class-properties",
-    "transform-es2015-classes"
-  ],
-  "env": {
-    "development": {
-      "presets": ["react-hmre"]
-    }
-  }
+    "@babel/plugin-proposal-class-properties",
+    "@babel/plugin-transform-classes",
+    "@babel/plugin-syntax-dynamic-import"
+  ]
 }

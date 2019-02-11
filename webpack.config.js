@@ -103,7 +103,7 @@ const config = {
   mode: ENV,
   context: path.resolve(__dirname),
   entry: PROD ? [
-    'babel-polyfill',
+    '@babel/polyfill',
     'app.js'
   ] : [
     'react-hot-loader/patch',
@@ -197,6 +197,7 @@ const config = {
     historyApiFallback: true,
     contentBase: path.join(__dirname, 'dist'),
     headers: {'Access-Control-Allow-Origin': '*'},
+    disableHostCheck: true,
     publicPath
   },
 };
@@ -214,7 +215,7 @@ if (PROD && ENTRY) {
     config.output.filename = 'content.js';
   }
 
-  config.entry = ['babel-polyfill', config.entry];
+  config.entry = ['@babel/polyfill', config.entry];
   config.devtool = 'hidden-source-map';
   if (!SKIP_MINIFY) {
     config.optimization = {
@@ -244,21 +245,14 @@ if (PROD && ENTRY) {
       new UglifyJsPlugin({
         sourceMap: true,
         uglifyOptions: {
+          ecma: 8,
           mangle: false,
           compress: {
             warnings: false,
             drop_console: true,
+            drop_debugger: true,
             dead_code: true,
             unused: true,
-            booleans: true,
-            join_vars: true,
-            negate_iife: true,
-            sequences: true,
-            properties: true,
-            evaluate: false,
-            loops: true,
-            if_return: true,
-            unsafe: false
           },
           output: {
             comments: false
