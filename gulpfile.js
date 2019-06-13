@@ -5,10 +5,8 @@ const imagemin = require('gulp-imagemin');
 const htmlclean = require('gulp-htmlclean');
 const del = require('del');
 const zip = require('gulp-zip');
-const clear = require('clear');
 const rename = require('gulp-rename');
 const config = require('./webpack.config');
-const childProcess = require('child_process');
 
 const PROD = process.env.NODE_ENV === 'production';
 const SKIP_MINIFY = JSON.parse(process.env.SKIP_MINIFY || 'false');
@@ -102,21 +100,4 @@ gulp.task('watch', function(done) {
   done();
 });
 
-gulp.task('clear-terminal', function(done) {
-  clear();
-  done();
-});
-
-const spawnWatch = function() {
-  const proc = childProcess.spawn('gulp', ['watch'], {stdio: 'inherit'});
-  proc.on('close', function (code) {
-    spawnWatch();
-  });
-};
-
-gulp.task('spawn-watch', gulp.series('clear-terminal', function(done) {
-  spawnWatch();
-  done();
-}));
-
-gulp.task('default', gulp.series('spawn-watch', (done) => done()));
+gulp.task('default', gulp.series('watch', (done) => done()));
