@@ -134,7 +134,6 @@ class Root extends React.Component {
   componentDidMount = () => {
     // Initialize Reflux listeners.
     themeStore.load(this.props.s.prefs);
-    window._trackJs.version = utilityStore.get_manifest().version;
     this.init(this.props);
 
   }

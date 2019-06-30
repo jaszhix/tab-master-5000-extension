@@ -4,11 +4,19 @@ import React from 'react';
 import {render} from 'react-dom';
 import {AppContainer} from 'react-hot-loader';
 import App from './root';
+import ErrorBoundary from './errorBoundary';
 import v from 'vquery';
 import {tryFn} from './utils';
 
+let Sentry = null;
+
 const renderApp = (stateUpdate)=>{
-  render(<App stateUpdate={stateUpdate} />, document.getElementById('main'));
+  render(
+    <ErrorBoundary Sentry={Sentry}>
+      <App stateUpdate={stateUpdate} />
+    </ErrorBoundary>,
+    document.getElementById('main')
+  );
 };
 
 const loadFavicons = (cb)=>{
@@ -26,51 +34,35 @@ const loadFavicons = (cb)=>{
 
 const loadPrefs = ()=>{
   chrome.runtime.sendMessage(chrome.runtime.id, {method: 'prefs'}, (response)=>{
-    if (!response) {
-      return;
+    if (!response) return;
+
+    const chromeVersion = utilityStore.chromeVersion();
+
+    const next = () => {
+      const stateUpdate = {
+        prefs: response.prefs,
+        chromeVersion
+      };
+
+      console.log('Prefs loaded: ', response);
+
+      loadFavicons((fv)=>{
+        stateUpdate.favicons = fv;
+        renderApp(stateUpdate);
+      });
     }
-    const enabled = response.prefs.errorTelemetry;
-    window._trackJs = {
-      token: 'bd495185bd7643e3bc43fa62a30cec92',
-      enabled,
-      onError: function () {return true;},
-      version: "",
-      callback: {
-        enabled,
-        bindStack: enabled
-      },
-      console: {
-        enabled,
-        display: enabled,
-        error: enabled,
-        warn: false,
-        watch: ['info', 'warn', 'error']
-      },
-      network: {
-        enabled,
-        error: enabled
-      },
-      visitor: {
-        enabled: enabled
-      },
-      window: {
-        enabled,
-        promise: enabled
-      }
-    };
-    if (enabled) {
-      const trackJs = require('trackjs');
-      trackJs.addMetadata('prefs', response.prefs);
+
+    if (response.prefs.errorTelemetry /* && process.env.NODE_ENV === 'production' */) {
+      import(/* webpackChunkName: "sentry" */ '@sentry/browser').then((Module) => {
+        Sentry = Module;
+        Sentry.init({dsn: "https://e99b806ea1814d08a0d7be64cf931c81@sentry.io/1493513"});
+        Sentry.setExtra('TM5KVersion', chromeVersion);
+        next();
+      });
+    } else {
+      next();
     }
-    const stateUpdate = {
-      prefs: response.prefs,
-      chromeVersion: utilityStore.chromeVersion()
-    };
-    console.log('Prefs loaded: ', response);
-    loadFavicons((fv)=>{
-      stateUpdate.favicons = fv;
-      renderApp(stateUpdate);
-    });
+
   });
 };
 
@@ -83,7 +75,9 @@ if (module.hot) {
     const NextApp = require('./root');
     render(
       <AppContainer>
-        <NextApp />
+        <ErrorBoundary Sentry={Sentry}>
+          <NextApp />
+        </ErrorBoundary>
       </AppContainer>,
       document.getElementById('main')
     );

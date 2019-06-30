@@ -5,6 +5,9 @@ import uuid from 'node-uuid';
 import prefsStore from '../components/stores/prefs';
 import {findIndex, find, each, isNewTab, tryFn} from '../components/utils';
 import initStore from '../components/store';
+import * as Sentry from '@sentry/browser';
+
+let errorReportingEnabled = false;
 
 const DOMAIN_REGEX = /^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:/\n]+)/im;
 
@@ -27,14 +30,16 @@ chrome.runtime.onInstalled.addListener((details) => {
 });
 
 let checkChromeErrors = (err) => {
+  if (!errorReportingEnabled) return;
+
   if (chrome.runtime.lastError) {
-    window.trackJs.track(chrome.runtime.lastError);
+    Sentry.captureException(chrome.runtime.lastError);
   }
   if (chrome.extension.lastError) {
-    window.trackJs.track(chrome.extension.lastError);
+    Sentry.captureException(chrome.extension.lastError);
   }
   if (err) {
-    window.trackJs.track(err);
+    Sentry.captureException(err);
   }
 };
 
@@ -209,9 +214,8 @@ let setAction = (t, type, oldTabInstance, newTabInstance=null) => {
 
 let setActionThrottled = _.throttle(setAction, 100, {leading: true});
 
-class Bg /* extends React.Component */ {
+class Bg {
   constructor() {
-//    super(props);
     let version = 1;
     tryFn(() => version = parseInt(/Chrome\/([0-9.]+)/.exec(navigator.userAgent)[1].split('.')));
     this.state = initStore({
@@ -242,46 +246,18 @@ class Bg /* extends React.Component */ {
   }
   prefsChange = (e) => {
     let s = this.state;
+
     console.log('prefsChange', s);
+
     s.prefs = e;
     this.state.set({prefs: s.prefs});
+
     if (s.init) {
-      let enabled = s.prefs.errorTelemetry;
-      window._trackJs = {
-        token: 'bd495185bd7643e3bc43fa62a30cec92',
-        enabled,
-        onError: function (payload) {
-          console.log('payload', payload)
-          if (payload.message.indexOf('unknown') !== -1) {
-            return false;
-          }
-          return true;
-        },
-        version: "",
-        callback: {
-          enabled,
-          bindStack: enabled
-        },
-        console: {
-          enabled,
-          display: enabled,
-          error: enabled,
-          warn: false,
-          watch: ['log', 'info', 'warn', 'error']
-        },
-        network: {
-          enabled,
-          error: enabled
-        },
-        visitor: {
-          enabled
-        },
-        window: {
-          enabled,
-          promise: enabled
-        }
-      };
-      let trackJs = require('trackjs');
+      if (errorReportingEnabled = s.prefs.errorTelemetry) {
+        Sentry.init({dsn: "https://e99b806ea1814d08a0d7be64cf931c81@sentry.io/1493513"});
+        Sentry.setExtra('TM5KVersion', this.state.chromeVersion);
+      }
+
       chrome.storage.sync.get('blacklist', (bl) => {
         if (bl && bl.blacklist) {
           console.log(`BLACKLIST: `, bl.blacklist);
@@ -290,9 +266,11 @@ class Bg /* extends React.Component */ {
         this.attachListeners(s);
         this.queryTabs(null, s.prefs);
       });
+
       if (s.prefs.screenshot) {
         this.queryScreenshots();
       }
+
     } else {
       sendMsg({e, type: 'prefs'});
     }

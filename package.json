@@ -14,7 +14,8 @@
     "build-all": "concurrently \"npm run build-app && gulp dist\" \"npm run build-bg\" \"gulp clean\"",
     "build-chrome": "cross-env NODE_ENV=production DEV_ENV=chrome npm run build-all",
     "build-firefox": "cross-env NODE_ENV=production DEV_ENV=firefox npm run build-all",
-    "build-sources": "cross-env NODE_ENV=production SKIP_MINIFY=true npm run build-firefox"
+    "build-sources": "cross-env NODE_ENV=production SKIP_MINIFY=true npm run build-firefox",
+    "sentry-new-release": "sentry-cli releases -o jason-hicks new -p tm5k 2.8.0"
   },
   "homepage": "https://chrome.google.com/webstore/detail/tab-master-5000-tab-swiss/mippmhcfjhliihkkdobllhpdnmmciaim",
   "keywords": [
@@ -39,6 +40,8 @@
     "@babel/preset-env": "^7.4.5",
     "@babel/preset-react": "7",
     "@babel/runtime": "^7.3.1",
+    "@sentry/browser": "^5.4.3",
+    "@sentry/webpack-plugin": "^1.6.2",
     "aphrodite": "^2.3.1",
     "autoprefixer": "^9.4.7",
     "babel-eslint": "^10.0.1",
@@ -90,7 +93,6 @@
     "size-plugin": "^1.2.0",
     "style-loader": "^0.23.1",
     "tinycolor2": "^1.4.1",
-    "trackjs": "^3.3.0",
     "uglifyjs-webpack-plugin": "1",
     "vquery": "^5.0.1",
     "webpack": "^4.34.0",

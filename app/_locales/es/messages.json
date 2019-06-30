@@ -393,7 +393,7 @@
     "message": "Habilitar informes de errores anónimos"
   },
   "errorTelemetryTip": {
-    "message": "Mantener esto habilitado ayuda a mejorar TM5K. Cuando se produce un error en el código, los datos de configuración de su navegador, sistema operativo, IP y TM5K (excluida la lista negra) se envían a TrackJS junto con un seguimiento de pila, para que los desarrolladores puedan identificar el error y aplicarle un parche para la próxima versión."
+    "message": "Mantener esto habilitado ayuda a mejorar TM5K. Cuando se produce un error en el código, los datos de configuración de su navegador, sistema operativo, IP y TM5K (excluida la lista negra) se envían a Sentry junto con un seguimiento de pila, para que los desarrolladores puedan identificar el error y aplicarle un parche para la próxima versión."
   },
   "screenshotBgOpacity": {
     "message": "Establecer la opacidad de la imagen de fondo"

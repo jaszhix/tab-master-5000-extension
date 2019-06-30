@@ -36,9 +36,3 @@ Tab Master 5K replaces your New Tab page with a full-featured tabs, history, boo
 - Start the development environment with ```npm run dev-chrome``` for Chrome or ```npm run dev-firefox``` for Firefox.
 - Load the ```app``` directory as an unpackaged extension.
 - To build for production, run ```npm run build-chrome``` for Chrome, or ```npm run build-firefox``` for Firefox.
-
-<div>
-    <a href="">
-        <img src="https://trackjs.com/assets/external/badge.gif" height="40px" alt="Protected by TrackJS JavaScript Error Monitoring" style="border-radius:2px;">
-    </a>
-</div>

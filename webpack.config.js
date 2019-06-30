@@ -7,6 +7,7 @@ const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const LodashModuleReplacementPlugin = require('lodash-webpack-plugin');
 const SizePlugin = require('size-plugin');
+const SentryWebpackPlugin = require('@sentry/webpack-plugin');
 
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const aliases = Object.assign({
@@ -163,10 +164,6 @@ const config = {
         loader: 'file-loader?name=[name].[ext]'
       },
       {
-        test: require.resolve('trackjs'),
-        loader: 'exports-loader?trackJs'
-      },
-      {
         test: /\.worker\.js$/,
         use: {
           loader: 'worker-loader',
@@ -258,6 +255,12 @@ if (PROD && ENTRY) {
             comments: false
           }
         },
+      }),
+      new SentryWebpackPlugin({
+        include: '.',
+        ignoreFile: '.sentrycliignore',
+        ignore: ['node_modules', 'webpack.config.js'],
+        configFile: 'sentry.properties'
       })
     );
   } else {

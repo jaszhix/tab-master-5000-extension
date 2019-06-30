@@ -395,7 +395,7 @@
     "message": "Enable anonymous error reporting"
   },
   "errorTelemetryTip": {
-    "message": "Keeping this enabled helps improve TM5K. When an error is thrown in the code, your browser, OS, IP, and TM5K settings data (excluding the blacklist) are sent to TrackJS along with a stack trace, so the developers can pinpoint the error and patch it for the next release."
+    "message": "Keeping this enabled helps improve TM5K. When an error is thrown in the code, your browser, OS, IP, and TM5K settings data (excluding the blacklist) are sent to Sentry along with a stack trace, so the developers can pinpoint the error and patch it for the next release."
   },
   "screenshotBgOpacity": {
     "message": "Set background image opacity"
