@@ -52,11 +52,11 @@ const loadPrefs = ()=>{
       });
     }
 
-    if (response.prefs.errorTelemetry /* && process.env.NODE_ENV === 'production' */) {
+    if (response.prefs.errorTelemetry && process.env.NODE_ENV === 'production') {
       import(/* webpackChunkName: "sentry" */ '@sentry/browser').then((Module) => {
         Sentry = Module;
-        Sentry.init({dsn: "https://e99b806ea1814d08a0d7be64cf931c81@sentry.io/1493513"});
-        Sentry.setExtra('TM5KVersion', chromeVersion);
+        Sentry.init({dsn: 'https://e99b806ea1814d08a0d7be64cf931c81@sentry.io/1493513'});
+        Sentry.setExtra('TM5KVersion', chrome.runtime.getManifest().version);
         next();
       });
     } else {

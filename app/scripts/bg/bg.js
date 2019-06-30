@@ -254,8 +254,8 @@ class Bg {
 
     if (s.init) {
       if (errorReportingEnabled = s.prefs.errorTelemetry) {
-        Sentry.init({dsn: "https://e99b806ea1814d08a0d7be64cf931c81@sentry.io/1493513"});
-        Sentry.setExtra('TM5KVersion', this.state.chromeVersion);
+        Sentry.init({dsn: 'https://e99b806ea1814d08a0d7be64cf931c81@sentry.io/1493513'});
+        Sentry.setExtra('TM5KVersion', chrome.runtime.getManifest());
       }
 
       chrome.storage.sync.get('blacklist', (bl) => {
