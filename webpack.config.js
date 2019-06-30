@@ -256,13 +256,25 @@ if (PROD && ENTRY) {
           }
         },
       }),
-      new SentryWebpackPlugin({
-        include: '.',
-        ignoreFile: '.sentrycliignore',
-        ignore: ['node_modules', 'webpack.config.js'],
-        configFile: 'sentry.properties'
-      })
     );
+
+    if (fs.existsSync('./.sentryclirc')) {
+      config.plugins.push(
+        new SentryWebpackPlugin({
+          include: '.',
+          ignoreFile: '.sentrycliignore',
+          ignore: [
+            'node_modules',
+            'sources',
+            'source_maps',
+            'app',
+            'webpack.config.js',
+            'gulpfile.js',
+          ],
+          configFile: 'sentry.properties'
+        })
+      );
+    }
   } else {
     config.plugins.push(
       new BundleAnalyzerPlugin({
