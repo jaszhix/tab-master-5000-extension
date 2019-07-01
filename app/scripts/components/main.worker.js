@@ -38,6 +38,8 @@ const checkDuplicateTabs = function(stateUpdate){
   })
   if (hasDuplicates(tabUrls)) {
     stateUpdate.duplicateTabs = getDuplicates(tabUrls);
+  } else {
+    stateUpdate.duplicateTabs = [];
   }
   return stateUpdate;
 }

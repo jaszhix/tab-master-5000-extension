@@ -159,8 +159,10 @@ export const discard = (id) => {
 
 export const checkDuplicateTabs = (tab, cb) => {
   if (!state.prefs.duplicate || state.prefs.mode !== 'tabs' || state.duplicateTabs.indexOf(tab.url) === -1) {
+    if (cb) cb(false);
     return;
   }
+
   let sets = [];
   each(state.duplicateTabs, function(url) {
     let set = filter(state.tabs, function(_tab) {
@@ -170,6 +172,12 @@ export const checkDuplicateTabs = (tab, cb) => {
       sets.push(set);
     }
   });
+
+  if (!sets.length && cb) {
+    cb(false);
+    return;
+  }
+
   each(sets, function(set) {
     let [first, ...duplicates] = filter(set, function(_tab) {
       return state.duplicateTabs.indexOf(_tab.url) > -1;

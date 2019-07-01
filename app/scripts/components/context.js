@@ -252,7 +252,7 @@ class ContextMenu extends React.Component {
     } else if (opt === 'invertSelection') {
       state.trigger('invertSelection');
     } else if (opt === 'closeAllDupes') {
-      utils.checkDuplicateTabs(p.context.id, null);
+      utils.checkDuplicateTabs(p.context.id);
     } else if (opt === 'closeSearched') {
       utils.closeAllItems({tab: null, left: false, right: false});
     } else if (opt === 'uninstallApp'

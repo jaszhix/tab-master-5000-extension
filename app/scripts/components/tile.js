@@ -39,16 +39,16 @@ class Tile extends React.Component {
       i: this.props.i
     }
     this.connectId = state.connect({
-      duplicateTabs: () => tryFn(() => utils.checkDuplicateTabs(props.tab, () => this.setState({duplicate: true}))),
-      screenshots: () => tryFn(() => this.updateScreenshot(props)),
+      duplicateTabs: this.handleDuplicates,
+      screenshots: this.updateScreenshot,
       screenshotClear: () => {
         this.setState({screenshot: null}, () => state.set({screenshotClear: false}));
       }
     });
   }
   componentDidMount = () => {
-    this.updateScreenshot(this.props);
-    utils.checkDuplicateTabs(this.props.tab, () => this.setState({duplicate: true}));
+    this.updateScreenshot();
+    utils.checkDuplicateTabs(this.props.tab, (duplicate) => this.setState({duplicate}));
   }
   shouldComponentUpdate = (nP, nS) => {
     return (!_.isEqual(this.props, nP) || !_.isEqual(this.state, nS) || state.screenshotClear) && state.settings !== 'sessions';
@@ -57,11 +57,17 @@ class Tile extends React.Component {
     state.disconnect(this.connectId);
     unref(this);
   }
-  updateScreenshot = (p) => {
-    if (!state.prefs.screenshot) {
-      return;
-    }
-    let refSS = findIndex(state.screenshots, ss => ss && ss.url === p.tab.url);
+  handleDuplicates = () => {
+    utils.checkDuplicateTabs(this.props.tab, (duplicate) => {
+      if (duplicate !== this.state.duplicate) this.setState({duplicate})
+    });
+  }
+  updateScreenshot = () => {
+    if (!state.prefs.screenshot) return;
+
+    const {tab} = this.props;
+    const refSS = findIndex(state.screenshots, ss => ss && ss.url === tab.url);
+
     if (refSS > -1) {
       this.setState({screenshot: state.screenshots[refSS].data});
     }
