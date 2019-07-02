@@ -31,7 +31,6 @@
     "default_title": "__MSG_appName__"
   },
   "permissions": [
-    "<all_urls>",
     "activeTab",
     "tabs",
     "http://*/*",
