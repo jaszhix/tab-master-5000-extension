@@ -167,6 +167,23 @@ export class Row extends React.Component {
   }
 }
 
+export class Link extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.adjustedProps = Object.assign({}, this.props);
+
+    if (this.adjustedProps.target === '_blank') {
+      this.adjustedProps.rel = 'noreferrer noopener';
+    }
+  }
+  render() {
+    return (
+      <a {...this.adjustedProps} />
+    );
+  }
+}
+
 export class Container extends React.Component {
   static propTypes = {
     fluid: PropTypes.bool

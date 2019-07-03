@@ -7,7 +7,7 @@ import {map} from '../utils';
 import * as utils from '../stores/tileUtils';
 import {utilityStore} from '../stores/main';
 
-import {Btn, Col, Row} from '../bootstrap';
+import {Btn, Col, Row, Link} from '../bootstrap';
 
 import changelog from 'html-loader!markdown-loader!../../../../changelog.md';
 import license from 'html-loader!markdown-loader!../../../../COPYING';
@@ -42,9 +42,9 @@ class Contribute extends React.Component {
             <li>reset77</li>
             <li>Martin Lichtblau</li>
             <li>volcano99</li>
-            <li><a href="https://trackjs.com" target="_blank">TrackJS</a></li>
-            <li><a href="https://google.com" target="_blank">Google</a></li>
-            <li><a href="https://mozilla.org" target="_blank">Mozilla</a></li>
+            <li><Link href="https://trackjs.com" target="_blank">TrackJS</Link></li>
+            <li><Link href="https://google.com" target="_blank">Google</Link></li>
+            <li><Link href="https://mozilla.org" target="_blank">Mozilla</Link></li>
           </ul>
         </Col>
         <Col size="1" />
@@ -162,9 +162,9 @@ class Attribution extends React.Component {
                   let pkg = dep.split(' ');
                   return (
                     <li key={i}>
-                      <a target="_blank" href={`https://www.npmjs.com/package/${pkg[0]}`}>
+                      <Link target="_blank" href={`https://www.npmjs.com/package/${pkg[0]}`}>
                         {pkg[0]}
-                      </a> {pkg[1]}
+                      </Link> {pkg[1]}
                     </li>
                   );
                 })}
@@ -174,7 +174,7 @@ class Attribution extends React.Component {
         })}
         </Row>
         <Row className="content-divider">
-          {utils.t('attributionFooter')} <a href="https://creativecommons.org/publicdomain/zero/1.0/">Creative Commons Zero (CC0)</a> {utils.t('license')}.
+          {utils.t('attributionFooter')} <Link href="https://creativecommons.org/publicdomain/zero/1.0/">Creative Commons Zero (CC0)</Link> {utils.t('license')}.
         </Row>
       </div>
     );
@@ -191,9 +191,9 @@ class ReleaseNotes extends React.Component {
     return (
       <div>
         <img className="ntg-about" style={{top: '20px'}} src={p.tm5kLogo} />
-        <a href="https://eff.org" target="_blank">
-          <img style={{position: 'absolute', top: '50px', right:'8%', height: '120px', opacity: '0.7'}} src="../../images/eff-member-badge-2018.png" />
-        </a>
+        <Link href="https://eff.org" target="_blank">
+          <img style={{position: 'absolute', top: '50px', right:'8%', height: '120px', opacity: '0.7'}} src="../../images/eff-member-badge-2019.png" />
+        </Link>
         <Col size="1" />
         <Col size="10" className="ntg-release">
           <div dangerouslySetInnerHTML={createMarkup()} />
@@ -253,19 +253,19 @@ class About extends React.Component {
         <Row className="ntg-tabs">
           <ul className="nav nav-tabs" style={tabUlStyle} >
             <li style={tabLiStyle} className={`${s.tab === 'release' ? 'active' : ''}`}>
-              <a style={tabLinkStyle} onClick={() => this.setState({tab: 'release'})}>{utils.t('releaseNotes')}</a>
+              <Link style={tabLinkStyle} onClick={() => this.setState({tab: 'release'})}>{utils.t('releaseNotes')}</Link>
             </li>
             <li style={tabLiStyle} className={`${s.tab === 'support' ? 'active' : ''}`}>
-              <a style={tabLinkStyle} onClick={() => this.setState({tab: 'support'})}>{utils.t('support')}</a>
+              <Link style={tabLinkStyle} onClick={() => this.setState({tab: 'support'})}>{utils.t('support')}</Link>
             </li>
             <li style={tabLiStyle} className={`${s.tab === 'attribution' ? 'active' : ''}`}>
-              <a style={tabLinkStyle} onClick={() => this.setState({tab: 'attribution'})}>{utils.t('attribution')}</a>
+              <Link style={tabLinkStyle} onClick={() => this.setState({tab: 'attribution'})}>{utils.t('attribution')}</Link>
             </li>
             <li style={tabLiStyle} className={`${s.tab === 'contribute' ? 'active' : ''}`}>
-              <a style={tabLinkStyle} onClick={() => this.setState({tab: 'contribute'})}>{utils.t('contribute')}</a>
+              <Link style={tabLinkStyle} onClick={() => this.setState({tab: 'contribute'})}>{utils.t('contribute')}</Link>
             </li>
             <li style={tabLiStyle} className={`${s.tab === 'license' ? 'active' : ''}`}>
-              <a style={tabLinkStyle} onClick={() => this.setState({tab: 'license'})}>{utils.t('license')}</a>
+              <Link style={tabLinkStyle} onClick={() => this.setState({tab: 'license'})}>{utils.t('license')}</Link>
             </li>
           </ul>
         </Row>
