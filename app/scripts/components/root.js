@@ -182,13 +182,15 @@ class Root extends React.Component {
     }
     let p = this.props;
     let stateUpdate = {};
+    let currentWallpaper = e.currentWallpaper || e.hoverWallpaper;
+    let style = v('#theme-style-el').n;
+
     if (e.savedThemes) {
       stateUpdate.savedThemes = e.savedThemes;
     }
-    let style = v('#theme-style-el').n;
-    if (!style) {
-      return;
-    }
+
+    if (!style) return;
+
     if (e.theme) {
       let sessionFieldColor = themeStore.balance(e.theme.settingsBg);
       let vendor = p.s.chromeVersion > 1 ? 'webkit' : 'moz';
@@ -407,40 +409,40 @@ class Root extends React.Component {
       }
       stateUpdate.theme = e.theme;
     }
-    let currentWallpaper = e.currentWallpaper || e.hoverWallpaper || p.s.currentWallpaper;
-    if (currentWallpaper && typeof currentWallpaper.data !== 'undefined') {
-      if (currentWallpaper.data !== -1 && !state.isOptions) {
-        style.innerHTML += `
-          #bgImg {
-            display: inline-block !important;
-            filter: blur(${p.s.prefs.screenshotBgBlur}px) !important;
-            opacity: ${0.1 * p.s.prefs.screenshotBgOpacity} !important;
-            background-color: ${e.theme.bodyBg} !important;
-            background-image: url('${currentWallpaper.data}') !important;
-            background-size: cover !important;
-            z-index: -12;
-          }
-        `;
-        if (e.currentWallpaper) {
-          stateUpdate.currentWallpaper = e.currentWallpaper;
+
+    if (currentWallpaper && currentWallpaper.data != null && currentWallpaper.data !== -1 && !state.isOptions) {
+      style.innerHTML += `
+        #bgImg {
+          display: inline-block !important;
+          filter: blur(${p.s.prefs.screenshotBgBlur}px) !important;
+          opacity: ${0.1 * p.s.prefs.screenshotBgOpacity} !important;
+          background-color: ${e.theme.bodyBg} !important;
+          background-image: url('${currentWallpaper.data}') !important;
+          background-size: cover !important;
+          z-index: -12;
         }
-      } else {
-        style.innerHTML += `
-          #bgImg {
-            display: none;
-            filter: blur(${p.s.prefs.screenshotBgBlur}px) !important;
-            opacity: 1;
-            background-color: ${e.theme.bodyBg} !important;
-            background-image: none !important;
-            z-index: -12 !important;
-          }
-        `;
-        stateUpdate.currentWallpaper = null;
+      `;
+      if (e.currentWallpaper) {
+        stateUpdate.currentWallpaper = e.currentWallpaper;
       }
+    } else if (currentWallpaper !== undefined) {
+      style.innerHTML += `
+        #bgImg {
+          display: none;
+          filter: blur(${p.s.prefs.screenshotBgBlur}px) !important;
+          opacity: 1;
+          background-color: ${e.theme.bodyBg} !important;
+          background-image: none !important;
+          z-index: -12 !important;
+        }
+      `;
+      stateUpdate.currentWallpaper = null;
     }
+
     if (e.wallpapers) {
       stateUpdate.wallpapers = e.wallpapers;
     }
+
     state.set(stateUpdate, true);
   }
   updateTabState = (e, opt, sU=null) => {

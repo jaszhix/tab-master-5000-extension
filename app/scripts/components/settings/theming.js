@@ -217,9 +217,7 @@ class Theming extends React.Component {
   }
   handleUpdateTheme = () => {
     themeStore.update(this.state.selectedTheme.id);
-    this.setState({
-      boldUpdate: false
-    });
+    this.setState({boldUpdate: false});
   }
   handleRemoveTheme = (id) => {
     ReactTooltip.hide();

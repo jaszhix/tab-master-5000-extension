@@ -619,12 +619,12 @@ const themeStore = initStore({
   },
   selectTheme: (id) => {
     let state = themeStore.get();
-    console.log('themeStore selectTheme: ', id);
     let standard = id >= 9000;
     let findFn = theme => theme.id === id;
     let refTheme = standard ? find(state.standardThemes, findFn) : find(state.savedThemes, findFn);
     let theme = refTheme.theme;
     let currentWallpaper = state.currentWallpaper;
+
     if (refTheme.id !== 9000 && refTheme.id !== 9001) {
       currentWallpaper = find(state.wallpapers, wallpaper => wallpaper.id === refTheme.wallpaper);
     } else {
@@ -647,8 +647,8 @@ const themeStore = initStore({
     });
   },
   selectWallpaper: (themeId, wpId, setPrefs = false) => {
-    console.log('selectWallpaper', themeId, wpId);
-    let refWallpaper;
+    let refWallpaper, themeCollectionKey, refTheme;
+
     if (wpId && wpId > 0) {
       setPrefs = true;
       refWallpaper = find(themeStore.wallpapers, wallpaper => wallpaper.id === wpId);
@@ -658,8 +658,6 @@ const themeStore = initStore({
 
     themeStore.currentWallpaper = refWallpaper;
 
-    let themeCollectionKey;
-    let refTheme;
     if (themeId <= 9000) {
       themeCollectionKey = 'savedThemes';
       refTheme = findIndex(themeStore.savedThemes, theme => theme.id === themeId);
@@ -667,18 +665,23 @@ const themeStore = initStore({
       themeCollectionKey = 'standardThemes';
       refTheme = findIndex(themeStore.standardThemes, theme => theme.id === themeId);
     }
+
     if (refTheme < 0) {
       return;
     }
+
     if (refWallpaper && refWallpaper.data) {
       themeStore[themeCollectionKey][refTheme].wallpaper = refWallpaper.id;
     } else {
       themeStore[themeCollectionKey][refTheme].wallpaper = -1;
     }
+
     themeStore.set({currentWallpaper: refWallpaper});
+
     if (setPrefs) {
       msgStore.setPrefs({wallpaper: wpId});
     }
+
     themeStore.update(themeId);
   },
   update: (id) => {
