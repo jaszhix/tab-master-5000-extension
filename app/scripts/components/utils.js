@@ -120,8 +120,6 @@ const Loading = function(props) {
     return <div>Error! <button className="ntg-btn" onClick={props.retry}>Retry</button></div>;
   } else if (props.timedOut) {
     return <div>Taking a long time... <button className="ntg-btn" onClick={props.retry}>Retry</button></div>;
-  } else if (props.pastDelay) {
-    return <div>Loading...</div>;
   } else {
     return null;
   }
