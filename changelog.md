@@ -1,5 +1,13 @@
 #### Release Notes
 
+##### v2.9.0 / *7-5-19*
+
+* Updated dependencies.
+* Fixed a bug causing false-positive duplicate tab indication.
+* Fixed a bug causing the background to not reset when switching to a theme with no wallpaper.
+* Removed unused `all_urls` permission.
+* Switched to Sentry.io for error tracking, when enabled in settings.
+
 ##### v2.8.0 / *9-2-18*
 
 *   Added an experimental feature that allows sorting tabs by most used. Currently the tracking doesn't persist after Chrome is closed, but that is planned to be added in a future update.
