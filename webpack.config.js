@@ -1,4 +1,4 @@
-const fs = require('fs');
+const fs = require('fs-extra');
 const path = require('path');
 const webpack = require('webpack');
 const autoprefixer = require('autoprefixer');
@@ -23,14 +23,18 @@ const publicPath = PROD ? '/' : 'http://127.0.0.1:8009/app/scripts/';
 
 const CONTENT_BASE = SKIP_MINIFY ? 'sources' : 'dist';
 const WORKDIR = PROD ? CONTENT_BASE : 'app';
+const manifestPath = `./${WORKDIR}/manifest.json`;
+
 console.log(`ENTRY:`, ENTRY || 'app');
 console.log(`NODE_ENV:`, NODE_ENV);
 console.log(`BUILD ENV:`, DEV_ENV);
 console.log(`SKIP MINIFICATION:`, SKIP_MINIFY);
 console.log(`WORKDIR:`, WORKDIR);
 console.log(`========================================`);
+
+fs.ensureFileSync(manifestPath);
 fs.createReadStream(`./app/manifest_${DEV_ENV}${DEV_ENV === 'chrome' && ENV === 'development' ? '.dev' : ''}.json`)
-  .pipe(fs.createWriteStream(`./${WORKDIR}/manifest.json`));
+  .pipe(fs.createWriteStream(manifestPath));
 
 const postcssPlugins = () => {
   let processors = [
