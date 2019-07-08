@@ -6,26 +6,26 @@ import state from './state';
 import {msgStore, utilityStore, setAlert} from './main';
 
 let sessionsStore = {
-  convertV1(_item){
-    for (let i = 0, len = _item.sessionData.length; i < len; i++) {
-      let session = {
-        timeStamp: _item.sessionData[i].timeStamp,
-        tabs: [_item.sessionData[i].tabs],
-        label: _item.sessionData[i].label,
+  convertV1(sessions) {
+    for (let i = 0, len = sessions.length; i < len; i++) {
+      sessions[i] = {
+        timeStamp: sessions[i].timeStamp,
+        tabs: [sessions[i].tabs],
+        label: sessions[i].label,
         id: uuid.v4()
       };
-      _item.sessionData[i] = session;
     }
-    return _item;
+
+    return sessions;
   },
-  restore(session){
+  restore(session) {
     // Opens a new chrome window with the selected tabs object.
     console.log('session.tabs: ', session.tabs);
     for (let i = 0, len = session.tabs.length; i < len; i++) {
       this.restoreWindow(session, i);
     }
   },
-  restoreWindow(session, windowIndex, chromeVersion = state.chromeVersion){
+  restoreWindow(session, windowIndex, chromeVersion = state.chromeVersion) {
     // Opens a new chrome window with the selected tabs object.
     console.log('session.tabs: ', session);
     let options = {};
@@ -34,7 +34,7 @@ let sessionsStore = {
       options.focused = true;
     }
     state.set({windowRestored: true});
-    chrome.windows.create(options, (Window)=>{
+    chrome.windows.create(options, (Window) => {
       console.log('restored session:', Window);
       let tabs = _.orderBy(session.tabs[windowIndex], ['pinned', 'index'], ['desc', 'asc']);
       for (let z = 0, len = tabs.length; z < len; z++) {
@@ -43,9 +43,9 @@ let sessionsStore = {
       chrome.runtime.sendMessage(chrome.runtime.id, {method: 'restoreWindow', windowId: Window.id, tabs: tabs});
     });
   },
-  exportSessions(_sessions){
+  exportSessions(_sessions) {
     // Stringify sessionData and export as JSON.
-    this.cleanSessions(_sessions, (sessions)=>{
+    this.cleanSessions(_sessions, (sessions) => {
       let json = JSON.stringify(sessions);
       let filename = `TM5K-Sessions-${Date.now()}.json`;
       let blob = new Blob([json], {type: 'application/json;charset=utf-8'});
@@ -57,45 +57,49 @@ let sessionsStore = {
       });
     });
   },
-  importSessions(sessions, e){
+  importSessions(sessions, e) {
     // Load the JSON file, parse it, and set it to state.
-    let reader = new FileReader();
-    reader.onload = (e)=> {
-      let json = JSON.parse(reader.result);
-      let _sessions = {};
-      if (typeof json[0].tabs !== 'undefined' && _.isArray(json[0].tabs)) {
-        if (typeof json[0].sync !== 'undefined') {
-          _sessions.sessionData = json;
-          chrome.storage.local.remove('sessionData');
-          chrome.storage.local.remove('sessions');
-          _sessions = this.convertV1(_sessions);
-          sessions = _.cloneDeep(_sessions.sessionData);
-          chrome.storage.local.set({sessions: _sessions.sessionData});
-        } else {
-          _sessions.sessions = json;
-          chrome.storage.local.remove('sessions');
-          sessions = _.cloneDeep(_sessions.sessions);
-          chrome.storage.local.set(_sessions);
-        }
-        let s = state.get();
-        state.set({sessions: sessions, sessionTabs: this.flatten(sessions, s.tabs, s.windowId)});
-        setAlert({
-          text: `Successfully imported ${sessions.length} sessions.`,
-          tag: 'alert-success',
-          open: true
-        });
-        console.log('sessions imported: ', sessions);
-      } else {
+    const data = {};
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      const json = JSON.parse(reader.result);
+
+      if (!Array.isArray(json) || !json[0] || !json[0].tabs || !Array.isArray(json[0].tabs)) {
         setAlert({
           text: 'Please import a valid session file.',
           tag: 'alert-danger',
           open: true
         });
+        return;
       }
+
+      // Migrate from V1 schema if necessary
+      if (json[0].sync) json = this.convertV1(json);
+
+      sessions = data.sessions = _.orderBy(
+        filter(_.uniqBy(sessions.concat(json), 'id'), (session) => {
+          return typeof session.timeStamp === 'number';
+        }), 'desc', 'timeStamp'
+      );
+
+      chrome.storage.local.remove('sessions');
+      chrome.storage.local.set(data);
+
+      state.set({
+        sessions,
+        sessionTabs: this.flatten(sessions, state.tabs, state.windowId)
+      });
+
+      setAlert({
+        text: `Successfully imported ${sessions.length} sessions.`,
+        tag: 'alert-success',
+        open: true
+      });
     };
     reader.readAsText(e.target.files[0], 'UTF-8');
   },
-  flatten(sessions, tabs, windowId){
+  flatten(sessions, tabs, windowId) {
     if (sessions) {
       let allTabs = [];
       let openTab = 0;
@@ -131,7 +135,7 @@ let sessionsStore = {
       msgStore.setPrefs({mode: 'tabs'});
     }
   },
-  v2RemoveTab(sessions, session, _window, tab, sessionTabs, sortOrder){
+  v2RemoveTab(sessions, session, _window, tab, sessionTabs, sortOrder) {
     let stateUpdate = {};
     if (sessionTabs) {
       let refSessionTab = findIndex(_.orderBy(sessionTabs, sortOrder), _tab => _tab.id === sessions[session].tabs[_window][tab].id);
@@ -157,7 +161,7 @@ let sessionsStore = {
       console.log('session window removed', sessions);
     });
   },
-  v2Remove(sessions, session){
+  v2Remove(sessions, session) {
     let refSession = findIndex(sessions, _session => _session.id === session.id);
     _.pullAt(sessions, refSession);
     state.set({sessions: sessions});
@@ -166,16 +170,16 @@ let sessionsStore = {
     });
     ReactTooltip.hide();
   },
-  v2Update(sessions, session){
+  v2Update(sessions, session) {
     let refSession = findIndex(sessions, _session => _session.id === session.id);
     sessions[refSession] = session;
     state.set({sessions: sessions});
     chrome.storage.local.set({sessions: sessions});
   },
-  cleanSessions(sessions, cb){
-    each(sessions, (session, sKey)=>{
-      each(session.tabs, (Window, wKey)=>{
-        each(Window, (Tab, tKey)=>{
+  cleanSessions(sessions, cb) {
+    each(sessions, (session, sKey) => {
+      each(session.tabs, (Window, wKey) => {
+        each(Window, (Tab, tKey) => {
           if (Tab.favIconUrl !== undefined && Tab.favIconUrl && Tab.favIconUrl.indexOf('data') !== -1) {
             sessions[sKey].tabs[wKey][tKey].favIconUrl = '';
           }
@@ -185,12 +189,12 @@ let sessionsStore = {
     chrome.storage.local.set({sessions: sessions});
     cb(sessions);
   },
-  v2Save(opt){
+  v2Save(opt) {
     opt.tabs = filter(opt.tabs, function(Window) {
       return Window && Window.length > 0;
     });
-    each(opt.tabs, (Window, wKey)=>{
-      each(Window, (Tab, tKey)=>{
+    each(opt.tabs, (Window, wKey) => {
+      each(Window, (Tab, tKey) => {
         if (Tab.favIconUrl !== undefined && Tab.favIconUrl && Tab.favIconUrl.indexOf('data') !== -1) {
           opt.tabs[wKey][tKey].favIconUrl = '';
         }
@@ -203,7 +207,7 @@ let sessionsStore = {
       id: uuid.v4()
     };
     let sessions;
-    chrome.storage.local.get('sessions', (item)=>{
+    chrome.storage.local.get('sessions', (item) => {
       if (!item.sessions) {
         sessions = {sessions: []};
         sessions.sessions.push(session);
