@@ -50,7 +50,7 @@ class Sessions extends React.Component {
     this.modalBody.addEventListener('scroll', this.onModalBodyScroll);
     p.modal.footer = (
       <div>
-        <Btn onClick={() => sessionsStore.exportSessions(p.sessions)} className="ntg-setting-btn" icon="database-export">{utils.t('export')}</Btn>
+        <Btn onClick={() => sessionsStore.exportSessions(state.sessions)} className="ntg-setting-btn" icon="database-export">{utils.t('export')}</Btn>
         <Btn onClick={this.triggerInput} className="ntg-setting-btn" icon="database-insert">{utils.t('import')}</Btn>
         <Btn onClick={() => sessionsStore.v2Save({tabs: p.allTabs, label: s.sessionLabelValue})} className="ntg-setting-btn pull-right" icon="floppy-disk">{utils.t('saveSession')}</Btn>
       </div>
@@ -421,7 +421,7 @@ class Sessions extends React.Component {
 
           <input
           type="file"
-          onChange={(e)=>sessionsStore.importSessions(p.sessions, e)}
+          onChange={(e) => sessionsStore.importSessions(state.sessions, e)}
           accept=".json"
           ref={this.getFileInputRef}
           style={style.hiddenInput} />
