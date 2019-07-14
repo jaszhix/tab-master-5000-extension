@@ -32,7 +32,7 @@ Tab Master 5K replaces your New Tab page with a full-featured tabs, history, boo
 - Add websites you do not want to view to a comma separated blacklist in Settings -> Preferences. Websites added to the blacklist will have their tabs closed under any circumstance.
 
 ### Contributing
-- Install the project dependencies with ```yarn``` or ```npm install```.
+- Install the project dependencies ```npm install```.
 - Start the development environment with ```npm run dev-chrome``` for Chrome or ```npm run dev-firefox``` for Firefox.
 - Load the ```app``` directory as an unpackaged extension.
 - To build for production, run ```npm run build-chrome``` for Chrome, or ```npm run build-firefox``` for Firefox.
