@@ -1,5 +1,12 @@
 #### Release Notes
 
+##### v2.9.1 / *7-13-19*
+
+* Updated dependencies.
+* Fixed a bug causing existing sessions to be overwritten when importing sessions from a JSON file.
+* Fixed the sessions list not reflecting the latest state during imports and exports.
+* Fixed a build failure when the `dist` directory doesn't exist.
+
 ##### v2.9.0 / *7-5-19*
 
 * Updated dependencies.

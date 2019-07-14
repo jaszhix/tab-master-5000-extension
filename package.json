@@ -1,6 +1,6 @@
 {
   "name": "tab-master-5000",
-  "version": "2.9.0",
+  "version": "2.9.1",
   "description": "Tab Master 5000",
   "repository": {
     "type": "git",
@@ -15,7 +15,7 @@
     "build-chrome": "cross-env NODE_ENV=production DEV_ENV=chrome npm run build-all",
     "build-firefox": "cross-env NODE_ENV=production DEV_ENV=firefox npm run build-all",
     "build-sources": "cross-env NODE_ENV=production SKIP_MINIFY=true npm run build-firefox",
-    "sentry-new-release": "sentry-cli releases -o jason-hicks new -p tm5k 2.9.0"
+    "sentry-new-release": "sentry-cli releases -o jason-hicks new -p tm5k 2.9.1"
   },
   "homepage": "https://chrome.google.com/webstore/detail/tab-master-5000-tab-swiss/mippmhcfjhliihkkdobllhpdnmmciaim",
   "keywords": [
