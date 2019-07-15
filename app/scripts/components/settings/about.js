@@ -1,6 +1,5 @@
 import React from 'react';
 import tc from 'tinycolor2';
-import moment from 'moment';
 
 import state from '../stores/state';
 import {map} from '../utils';
@@ -9,29 +8,43 @@ import {utilityStore} from '../stores/main';
 
 import {Btn, Col, Row, Link} from '../bootstrap';
 
-import changelog from 'html-loader!markdown-loader!../../../../changelog.md';
-import license from 'html-loader!markdown-loader!../../../../COPYING';
-
 const containerStyle = {marginTop: '49px'};
 
 class Contribute extends React.Component {
   constructor(props) {
     super(props);
+
+    this.state = {
+      content: null
+    };
   }
-  render() {
-    let contributeFile;
+
+  componentDidMount() {
+    let promise;
     let locale = chrome.i18n.getUILanguage();
+
     if (locale === 'es') {
-      contributeFile = require('html-loader!markdown-loader!../../../../contribute_es.md').default;
+      promise = import(/* webpackChunkName: "contribute_es" */ 'html-loader!markdown-loader!../../../../contribute_es.md');
     } else {
-      contributeFile = require('html-loader!markdown-loader!../../../../contribute.md').default;
+      promise = import(/* webpackChunkName: "contribute_en" */ 'html-loader!markdown-loader!../../../../contribute.md');
     }
-    if (this.props.chromeVersion === 1) {
-      contributeFile = contributeFile
-        .replace(/Chrome Web Store/g, 'Add-ons website')
-        .replace(/Chrome/g, 'Firefox');
-    }
-    function createMarkup() {return {__html: contributeFile};}
+
+    promise
+      .then((module) => {
+        let __html = module.default;
+
+        if (this.props.chromeVersion === 1) {
+          __html = __html
+            .replace(/Chrome Web Store/g, 'Add-ons website')
+            .replace(/Chrome/g, 'Firefox');
+        }
+
+        this.setState({content: {__html}})
+      })
+      .catch((e) => console.log(e))
+  };
+
+  render() {
     return (
       <div style={containerStyle}>
         <Col size="2" className="ntg-release">
@@ -50,7 +63,7 @@ class Contribute extends React.Component {
         <Col size="1" />
         <Col size="9" className="ntg-release">
           <h4>{utils.t('contributeHeader')}</h4>
-          <div dangerouslySetInnerHTML={createMarkup()} />
+          {this.state.content ? <div dangerouslySetInnerHTML={this.state.content} /> : null}
           <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
             <input type="hidden" name="cmd" value="_s-xclick" />
             <input type="hidden" name="hosted_button_id" value="HDU6KR5LLBYUU" />
@@ -76,17 +89,28 @@ class Contribute extends React.Component {
 class License extends React.Component {
   constructor(props) {
     super(props);
+
+    this.state = {
+      content: null
+    };
   }
+
+  componentDidMount() {
+    import(/* webpackChunkName: "copying" */ 'html-loader!markdown-loader!../../../../COPYING')
+      .then((module) => {
+        this.setState({content: {__html: module.default}})
+      })
+      .catch((e) => console.log(e))
+  };
+
   render() {
-    function createMarkup() {return {__html: license};}
+    if (!this.state.content) return null;
+
     return (
       <div style={containerStyle}>
         <Col size="1" />
         <Col size="10" className="ntg-release">
-          <p>The MIT License (MIT)</p>
-
-          <p>{`Copyright © ${moment(Date.now()).format('YYYY')} Jason Hicks and Contributors`}</p>
-          <div dangerouslySetInnerHTML={createMarkup()} />
+          <div dangerouslySetInnerHTML={this.state.content} />
         </Col>
         <Col size="1" />
       </div>
@@ -97,21 +121,37 @@ class License extends React.Component {
 class Support extends React.Component {
   constructor(props) {
     super(props);
+
+    this.state = {
+      content: null
+    };
   }
-  render() {
-    let supportFile;
+
+  componentDidMount() {
+    let promise;
     let locale = chrome.i18n.getUILanguage();
+
     if (locale === 'es') {
-      supportFile = require('html-loader!markdown-loader!../../../../support_es.md').default;
+      promise = import(/* webpackChunkName: "support_es" */ 'html-loader!markdown-loader!../../../../support_es.md');
     } else {
-      supportFile = require('html-loader!markdown-loader!../../../../support.md').default;
+      promise = import(/* webpackChunkName: "support_en" */ 'html-loader!markdown-loader!../../../../support.md');
     }
-    function createMarkup() {return {__html: supportFile};}
+
+    promise
+      .then((module) => {
+        this.setState({content: {__html: module.default}})
+      })
+      .catch((e) => console.log(e))
+  };
+
+  render() {
+    if (!this.state.content) return null;
+
     return (
       <div style={containerStyle}>
         <Col size="1" />
         <Col size="10" className="ntg-release">
-          <div dangerouslySetInnerHTML={createMarkup()} />
+          <div dangerouslySetInnerHTML={this.state.content} />
         </Col>
         <Col size="1" />
       </div>
@@ -124,32 +164,43 @@ class Attribution extends React.Component {
     super(props);
 
     this.state = {
-      dependencies: null
+      dependencies: null,
     };
   }
+
   componentDidMount() {
-    let deps = require('../../../../package.json');
-    let state = [];
-    for (let key in deps.devDependencies) {
-      let version = deps.devDependencies[key];
-      if (deps.devDependencies[key].indexOf('^') > -1) {
-        version = version.split('^')[1];
-      }
-      state.push(`${key} ${version}`);
-    }
-    this.setState({dependencies: state});
+    import(/* webpackChunkName: "packageJSON" */ '../../../../package.json')
+      .then((module) => {
+        let deps = module.default;
+        let state = [];
+
+        for (let key in deps.devDependencies) {
+          let version = deps.devDependencies[key];
+
+          if (deps.devDependencies[key].indexOf('^') > -1) {
+            version = version.split('^')[1];
+          }
+
+          state.push(`${key} ${version}`);
+        }
+
+        this.setState({dependencies: state});
+      })
+      .catch((e) => console.log(e));
   }
+
   render() {
-    let s = this.state;
-    if (!s.dependencies) {
-      return null;
-    }
-    let slice2 = Math.ceil(s.dependencies.length / 3);
-    let slice3 = Math.round(s.dependencies.length * 0.66);
-    let list1 = s.dependencies.slice(0, slice2);
-    let list2 = s.dependencies.slice(slice2, slice3);
-    let list3 = s.dependencies.slice(slice3, s.dependencies.length);
+    let {dependencies} = this.state;
+
+    if (!dependencies) return null;
+
+    let slice2 = Math.ceil(dependencies.length / 3);
+    let slice3 = Math.round(dependencies.length * 0.66);
+    let list1 = dependencies.slice(0, slice2);
+    let list2 = dependencies.slice(slice2, slice3);
+    let list3 = dependencies.slice(slice3, dependencies.length);
     let list = [list1, list2, list3];
+
     return (
       <div style={containerStyle}>
         <h3 className="content-divider" style={{fontSize: '19px'}}>{utils.t('attributionHeader')}</h3>
@@ -184,19 +235,32 @@ class Attribution extends React.Component {
 class ReleaseNotes extends React.Component {
   constructor(props) {
     super(props);
+
+    this.state = {
+      content: null
+    };
   }
+
+  componentDidMount() {
+    import(/* webpackChunkName: "changelog" */ 'html-loader!markdown-loader!../../../../changelog.md')
+      .then((module) => {
+        this.setState({content: {__html: module.default}})
+      })
+      .catch((e) => console.log(e))
+  };
+
   render() {
-    function createMarkup() {return {__html: changelog};}
-    let p = this.props;
+    let {tm5kLogo} = this.props;
+
     return (
       <div>
-        <img className="ntg-about" style={{top: '20px'}} src={p.tm5kLogo} />
+        <img className="ntg-about" style={{top: '20px'}} src={tm5kLogo} />
         <Link href="https://eff.org" target="_blank">
           <img style={{position: 'absolute', top: '50px', right:'8%', height: '120px', opacity: '0.7'}} src="../../images/eff-member-badge-2019.png" />
         </Link>
         <Col size="1" />
         <Col size="10" className="ntg-release">
-          <div dangerouslySetInnerHTML={createMarkup()} />
+          {this.state.content ? <div dangerouslySetInnerHTML={this.state.content} /> : null}
         </Col>
         <Col size="1" className="ntg-cc" />
       </div>
@@ -248,6 +312,7 @@ class About extends React.Component {
     let p = this.props;
     let s = this.state;
     let tm5kLogo = `../../images/icon-128${tc(p.theme.settingsBg).isDark() ? '-light' : ''}.png`
+
     return (
       <div>
         <Row className="ntg-tabs">

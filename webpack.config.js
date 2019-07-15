@@ -138,7 +138,8 @@ const config = {
   module: {
     rules: [
       // we pass the output from babel loader to react-hot loader
-      { test: /\.(js|jsx)$/,
+      {
+        test: /\.(js|jsx)$/,
         exclude: /node_modules(?!\/rc-color-picker)/,
         use: [
           {loader: 'lodash-loader'},
