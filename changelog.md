@@ -1,5 +1,9 @@
 #### Release Notes
 
+##### v2.9.2 / *7-14-19*
+
+* Fixed support documentation not rendering in the About modal.
+
 ##### v2.9.1 / *7-13-19*
 
 * Updated dependencies.
