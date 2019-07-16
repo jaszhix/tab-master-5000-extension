@@ -1,3 +1,5 @@
+const fs = require('fs-extra');
+const {execSync} = require('child_process');
 const gulp = require('gulp');
 const webpack = require('webpack');
 const webpackStream = require('webpack-stream');
@@ -8,10 +10,19 @@ const zip = require('gulp-zip');
 const rename = require('gulp-rename');
 const config = require('./webpack.config');
 
-const PROD = process.env.NODE_ENV === 'production';
-const SKIP_MINIFY = JSON.parse(process.env.SKIP_MINIFY || 'false');
+const {NODE_ENV, DEV_ENV} = process.env;
+let {COMMIT_HASH, SKIP_MINIFY} = process.env;
+
+const PROD = NODE_ENV === 'production';
+SKIP_MINIFY = JSON.parse(SKIP_MINIFY || 'false');
 const CONTENT_BASE = SKIP_MINIFY ? 'sources' : 'dist';
 const WORKDIR = PROD ? CONTENT_BASE : 'app';
+
+if (!COMMIT_HASH) {
+  process.env.COMMIT_HASH = COMMIT_HASH = execSync('git log --pretty=format:\'%h\' -n 1');
+}
+
+fs.ensureDirSync('./releases');
 
 gulp.task('build-bg', function() {
   config.entry = './app/scripts/bg/bg.js';
@@ -29,7 +40,7 @@ gulp.task('build', gulp.series('build-bg', function() {
 
 gulp.task('backup-source-maps', function() {
   return gulp.src(`./${WORKDIR}/scripts/*.map`)
-    .pipe(gulp.dest(`./source_maps/${process.env.DEV_ENV}/${WORKDIR}/`));
+    .pipe(gulp.dest(`./source_maps/${DEV_ENV}/${WORKDIR}/`));
 });
 
 gulp.task('clean', function() {
@@ -87,7 +98,7 @@ gulp.task('package', gulp.series('backup-source-maps', function() {
     ]);
   }
   return gulp.src(`./${WORKDIR}/**/**/*`)
-    .pipe(zip(`../tm5k-${WORKDIR}-${process.env.DEV_ENV}-${Date.now()}.zip`))
+    .pipe(zip(`../releases/tm5k-${WORKDIR}-${DEV_ENV}-${process.env.COMMIT_HASH}.zip`))
     .pipe(gulp.dest(`./${WORKDIR}/`));
 }));
 

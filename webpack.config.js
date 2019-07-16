@@ -14,7 +14,7 @@ const aliases = Object.assign({
   underscore: 'lodash'
 }, require('lodash-loader').createLodashAliases());
 
-const {DEV_ENV, NODE_ENV, BUNDLE_ENTRY} = process.env;
+const {COMMIT_HASH, DEV_ENV, NODE_ENV, BUNDLE_ENTRY} = process.env;
 const ENV = NODE_ENV || 'development';
 const PROD = ENV === 'production';
 const ENTRY = BUNDLE_ENTRY;
@@ -25,6 +25,7 @@ const CONTENT_BASE = SKIP_MINIFY ? 'sources' : 'dist';
 const WORKDIR = PROD ? CONTENT_BASE : 'app';
 const manifestPath = `./${WORKDIR}/manifest.json`;
 
+console.log(`COMMIT HASH:`, COMMIT_HASH);
 console.log(`ENTRY:`, ENTRY || 'app');
 console.log(`NODE_ENV:`, NODE_ENV);
 console.log(`BUILD ENV:`, DEV_ENV);

@@ -1,22 +1,9 @@
-/untitled.sublime-project
-/untitled.sublime-workspace
-/Gulp Results
 /node_modules
-.sublime-gulp.cache
-sublime-gulp.log
 /dist
 app/scripts/app.js
 app/scripts/background.js
 app/scripts/content.js
-/app/scripts/components/priv.js
-/old-tile.js
-/tm5k.sublime-project
-/tm5k.sublime-workspace
 /jsconfig.json
-/app/images/promo_small_1400_560.fw.png
-/app/images/promo_small_440_280.fw.png
-/app/images/promo_small_920_680.fw.png
-/.moznotes
 /scripts/bundleReport.html
 /app/scripts/main.css
 /app/scripts/main.css.map
@@ -36,4 +23,6 @@ source_maps/
 /yarn-error.log
 /tm5k.code-workspace
 .sentryclirc
+releases
+logs
 tm5k-dist*

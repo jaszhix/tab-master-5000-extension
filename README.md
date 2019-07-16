@@ -36,3 +36,10 @@ Tab Master 5K replaces your New Tab page with a full-featured tabs, history, boo
 - Start the development environment with ```npm run dev-chrome``` for Chrome or ```npm run dev-firefox``` for Firefox.
 - Load the ```app``` directory as an unpackaged extension.
 - To build for production, run ```npm run build-chrome``` for Chrome, or ```npm run build-firefox``` for Firefox.
+
+### Building with Docker
+For compliance with Mozilla's [source code policy](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/Source_Code_Submission), an effort has been made to make the end result of the extension build process reproducible across different environments.
+
+- Ensure Docker is installed and the daemon is running.
+- Run `./docker-build.sh <command>`. This will build the container if needed and run the `command` arguments.
+  - E.g. `./docker-build.sh npm run build-firefox`
