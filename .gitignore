@@ -36,3 +36,4 @@ source_maps/
 /yarn-error.log
 /tm5k.code-workspace
 .sentryclirc
+tm5k-dist*

@@ -87,7 +87,7 @@ gulp.task('package', gulp.series('backup-source-maps', function() {
     ]);
   }
   return gulp.src(`./${WORKDIR}/**/**/*`)
-    .pipe(zip(`tm5k-${WORKDIR}-${Date.now()}.zip`))
+    .pipe(zip(`../tm5k-${WORKDIR}-${process.env.DEV_ENV}-${Date.now()}.zip`))
     .pipe(gulp.dest(`./${WORKDIR}/`));
 }));
 
