@@ -13,7 +13,7 @@
   },
   "options_ui": {
     "browser_style": true,
-    "open_in_tab": false,
+    "open_in_tab": true,
     "page": "options.html"
   },
   "default_locale": "en",
