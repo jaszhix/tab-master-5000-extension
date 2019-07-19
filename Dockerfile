@@ -1,7 +1,7 @@
 FROM ubuntu:18.04
 
 # Install Node
-RUN apt-get update --fix-missing && apt-get install -y apt-transport-https curl gnupg
+RUN apt-get update --fix-missing && apt-get install -y apt-transport-https curl gnupg git
 RUN curl -s https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add -
 RUN echo 'deb https://deb.nodesource.com/node_10.x bionic main' > /etc/apt/sources.list.d/nodesource.list
 RUN apt-get update --fix-missing && apt-get install -y nodejs
