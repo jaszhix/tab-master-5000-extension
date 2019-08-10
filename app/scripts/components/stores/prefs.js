@@ -14,7 +14,6 @@ let prefsStore = initStore({
     animations: true,
     duplicate: true,
     screenshot: false,
-    screenshotChrome: true,
     screenshotBg: false,
     screenshotBgBlur: 5,
     screenshotBgOpacity: 5,

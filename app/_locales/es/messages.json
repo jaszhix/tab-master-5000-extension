@@ -365,12 +365,6 @@
   "screenshotDiskUsageTip": {
     "message": "Si observa problemas de rendimiento, puede borrar el caché de captura de pantalla de forma ocasional. Las capturas de pantalla de más de tres días comenzarán a purgarse una vez que la caché alcance los 50 MB."
   },
-  "screenshotChrome": {
-    "message": "Capturar capturas de pantalla mediante la API de Chrome"
-  },
-  "screenshotChromeTip": {
-    "message": "De forma predeterminada, TM5K utilizará Chrome para capturar capturas de pantalla. La API de Chrome es más rápida y captura cualquier sitio web, pero puede afectar el rendimiento general de Chrome más. Deshabilite esta opción para utilizar sólo el método de lienzo. Después de inhabilitar, necesitará reiniciar Chrome."
-  },
   "screenshotBg": {
     "message": "Habilitar capturas de pantalla en el fondo en hover"
   },

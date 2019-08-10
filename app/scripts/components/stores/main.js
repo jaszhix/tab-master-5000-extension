@@ -65,23 +65,54 @@ export var utilityStore = {
       console.log('Tab created from utilityStore.createTab: ', t);
     });
   },
-  handleMode(mode, stateUpdate = {}, init = false){
-    let currentMode = state.get().prefs.mode;
-    if (mode === 'apps' || mode === 'extensions') {
-      msgStore.queryExtensions();
-    } else if (mode === 'bookmarks') {
-      msgStore.queryBookmarks(init);
-    } else if (mode === 'history') {
-      msgStore.queryHistory(init);
-    } else {
-      if (mode === 'sessions') {
-        msgStore.getSessions();
-      }
-      msgStore.getTabs();
-    }
+  _handleMode(mode, stateUpdate = {}, init = false){
     _.assignIn(stateUpdate, {modeKey: mode === 'sessions' ? 'sessionTabs' : mode});
     state.set(stateUpdate);
     msgStore.setPrefs({mode: mode});
+  },
+  handleMode(mode, stateUpdate = {}, init = false) {
+    switch (mode) {
+      case 'bookmarks':
+        chrome.permissions.request({
+          permissions: ['bookmarks'],
+          origins: ['<all_urls>']
+        }, (granted) => {
+          if (!granted) return;
+
+          msgStore.queryBookmarks(init);
+          this._handleMode(mode, stateUpdate, init);
+        });
+        return;
+      case 'history':
+        chrome.permissions.request({
+          permissions: ['history'],
+          origins: ['<all_urls>']
+        }, (granted) => {
+          if (!granted) return;
+
+          msgStore.queryHistory(init);
+          this._handleMode(mode, stateUpdate, init);
+        });
+        return;
+      case 'apps':
+      case 'extensions':
+        chrome.permissions.request({
+          permissions: ['management'],
+          origins: ['<all_urls>']
+        }, (granted) => {
+          if (!granted) return;
+
+          msgStore.queryExtensions();
+          this._handleMode(mode, stateUpdate, init);
+        });
+        return;
+      case 'sessions':
+        msgStore.getSessions();
+      default:
+        msgStore.getTabs();
+    }
+
+    this._handleMode(mode, stateUpdate, init);
   },
   now(){
     return new Date(Date.now()).getTime();

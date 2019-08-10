@@ -291,17 +291,29 @@ class Preferences extends React.Component {
     this.setState({hover: opt});
   }
   handleClick = (opt) => {
-    let p = this.props;
-    let obj = {};
-    obj[opt] = !p.prefs[opt];
-    state.set({prefs: obj});
+    const {prefs} = this.props;
+    const obj = {};
 
+    obj[opt] = !prefs[opt];
+
+    state.set({prefs: obj});
     msgStore.setPrefs(obj);
-    if (opt === 'screenshot') {
-      _.delay(()=>chrome.runtime.reload(), 500);
-    } else if (opt === 'errorTelemetry') {
+
+    if (opt === 'errorTelemetry') {
       window.location.reload();
     }
+  }
+  handleScreenshotPref = (opt) => {
+    chrome.permissions.request({
+      permissions: ['tabCapture', 'activeTab'],
+      origins: ['<all_urls>']
+    }, (granted) => {
+      if (!granted) return;
+
+      this.handleClick(opt);
+
+      setTimeout(chrome.runtime.reload, 500);
+    });
   }
   handleSlide = (e, opt) => {
     let obj = {};
@@ -315,7 +327,7 @@ class Preferences extends React.Component {
     msgStore.setPrefs({autoDiscardTime: output * 3600000});
   }
   handleScreenshotClear = () => {
-    chrome.storage.local.remove('screenshots', ()=>{
+    chrome.storage.local.remove('screenshots', () => {
       this.buildFooter();
       state.set({screenshotClear: true, screenshots: []});
     });
@@ -410,7 +422,7 @@ class Preferences extends React.Component {
                 placeholder={utils.t('time')}
                 value={`${p.prefs.autoDiscardTime < 1800000 ? '15' : p.prefs.autoDiscardTime < 3600000 ? '30' : autoDiscardTimeHourDivided} ${p.prefs.autoDiscardTime < 3600000 ? utils.t('minutes') : utils.t('hour')}${autoDiscardTimeHourDivided > 1 && p.prefs.autoDiscardTime >= 3600000 ? utils.t('s') : ''}`}
                 onChange={this.handleAutoDiscardTime}>
-                  {map(autoDiscardTimeOptions, (option, x)=>{
+                  {map(autoDiscardTimeOptions, (option, x) => {
                     return <option key={x}>{`${option} ${x >= 2 ? utils.t('hour') : utils.t('minute')}${option > 1 ? utils.t('s') : ''}`}</option>;
                   })}
                 </select>
@@ -436,28 +448,18 @@ class Preferences extends React.Component {
             <Toggle
             theme={p.theme}
             onMouseEnter={() => this.handleToggle('screenshot')}
-            onClick={() => this.handleClick('screenshot')}
+            onClick={() => this.handleScreenshotPref('screenshot')}
             on={p.prefs.screenshot} label={utils.t('screenshot')}
             data-tip={utils.t('screenshotTip')}>
               {p.prefs.screenshot ?
-                <div>
-                  <Toggle
-                  theme={p.theme}
-                  onMouseEnter={() => this.handleToggle('screenshotChrome')}
-                  onClick={() => this.handleClick('screenshotChrome')}
-                  on={p.prefs.screenshotChrome}
-                  child={true}
-                  label={utils.t('screenshotChrome')}
-                  data-tip={utils.t('screenshotChromeTip')} />
-                  <Toggle
-                  theme={p.theme}
-                  onMouseEnter={() => this.handleToggle('screenshotBg')}
-                  onClick={() => this.handleClick('screenshotBg')}
-                  on={p.prefs.screenshotBg}
-                  child={true}
-                  label={utils.t('screenshotBg')}
-                  data-tip={utils.t('screenshotBgTip')} />
-                </div>
+                <Toggle
+                theme={p.theme}
+                onMouseEnter={() => this.handleToggle('screenshotBg')}
+                onClick={() => this.handleClick('screenshotBg')}
+                on={p.prefs.screenshotBg}
+                child={true}
+                label={utils.t('screenshotBg')}
+                data-tip={utils.t('screenshotBgTip')} />
               : null}
             </Toggle>
             <Toggle

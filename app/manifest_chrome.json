@@ -28,18 +28,12 @@
   },
   "offline_enabled": true,
   "permissions": [
-    "activeTab",
     "tabs",
     "http://*/*",
     "https://*/*",
     "storage",
     "unlimitedStorage",
-    "idle",
-    "system.memory",
-    "tabCapture",
-    "management",
-    "bookmarks",
-    "history",
     "downloads"
-  ]
+  ],
+  "optional_permissions": ["tabCapture", "activeTab", "bookmarks", "history", "management", "<all_urls>"]
 }

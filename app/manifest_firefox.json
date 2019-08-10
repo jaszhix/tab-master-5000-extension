@@ -31,18 +31,14 @@
     "default_title": "__MSG_appName__"
   },
   "permissions": [
-    "activeTab",
     "tabs",
     "http://*/*",
     "https://*/*",
     "storage",
     "unlimitedStorage",
-    "idle",
-    "management",
-    "bookmarks",
-    "history",
     "downloads"
   ],
+  "optional_permissions": ["tabCapture", "activeTab", "bookmarks", "history", "management", "<all_urls>"],
   "applications": {
     "gecko": {
       "id": "tm5k@tabmaster.org"

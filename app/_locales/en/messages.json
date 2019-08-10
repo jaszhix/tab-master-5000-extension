@@ -367,12 +367,6 @@
   "screenshotDiskUsageTip": {
     "message": "If you notice performance issues, clearing the screenshot cache occassionally can help. Screenshots older than three days will start being purged once the cache reaches 50MB."
   },
-  "screenshotChrome": {
-    "message": "Capture screenshots using the Chrome API"
-  },
-  "screenshotChromeTip": {
-    "message": "By default, TM5K will use Chrome to capture screenshots. The Chrome API is faster and captures any website, but can impact the overall performance of Chrome more. Disable this to use the canvas method only. After disabling, you will need to restart Chrome."
-  },
   "screenshotBg": {
     "message": "Enable screenshots in the background on hover"
   },

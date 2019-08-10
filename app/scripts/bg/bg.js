@@ -71,7 +71,6 @@ let syncSession = (sessions, prefs, windows=null) => {
     }
     sessions[refSession].tabs = allTabs;
     sessions[refSession].timeStamp = new Date(Date.now());
-    sessions[refSession] = sessions[refSession];
     chrome.storage.local.set({sessions});
   }
 };
@@ -111,22 +110,31 @@ let createScreenshot = (t, refWindow, refTab, run=0) => {
       t.image = null;
       return;
     }
-    tryFn(() => {
-      _.delay(() => {
-        chrome.tabs.captureVisibleTab({format: 'jpeg', quality: 10}, (image)=> {
-          if (image) {
-            resolve(image);
-          } else {
-            ++run;
-            if (run <= 1) {
-              _.delay(()=>createScreenshot(t, refWindow, refTab, run), 500);
+    chrome.permissions.request({
+      permissions: ['tabCapture', 'activeTab'],
+      origins: ['<all_urls>']
+    }, (granted) => {
+      if (!granted) {
+        console.log('NOT GRANTED')
+        return;
+      }
+      tryFn(() => {
+        setTimeout(() => {
+          chrome.tabs.captureVisibleTab({format: 'jpeg', quality: 10}, (image)=> {
+            if (image) {
+              resolve(image);
             } else {
-              reject(null);
+              ++run;
+              if (run <= 1) {
+                setTimeout(() => createScreenshot(t, refWindow, refTab, run), 500);
+              } else {
+                reject(null);
+              }
             }
-          }
-        });
-      }, 500);
-    }, () => reject());
+          });
+        }, 500);
+      }, reject);
+    });
   });
   capture.then((image) => {
     let resize = new Promise((resolve) => {
@@ -232,7 +240,10 @@ class Bg {
       sessions: [],
       screenshots: [],
       actions: [],
-      chromeVersion: version
+      chromeVersion: version,
+      bookmarksListenersAttached: false,
+      historyListenersAttached: false,
+      managementListenersAttached: false,
     });
     if (process.env.NODE_ENV === 'development') {
       this.state.connect('*', (partial) => {
@@ -248,6 +259,17 @@ class Bg {
     let s = this.state;
 
     console.log('prefsChange', s);
+
+    if (e.mode === 'bookmarks' && !this.state.bookmarksListenersAttached) {
+      this.attachBookmarksListeners();
+      this.state.set({bookmarksListenersAttached: true});
+    } else if (e.mode === 'history' && !this.state.historyListenersAttached) {
+      this.attachHistoryListeners();
+      this.state.set({historyListenersAttached: true});
+    } else if ((e.mode === 'apps' || e.mode === 'extensions') && !this.state.managementListenersAttached) {
+      this.attachManagementListeners();
+      this.state.set({managementListenersAttached: true});
+    }
 
     s.prefs = e;
     this.state.set({prefs: s.prefs});
@@ -281,9 +303,9 @@ class Bg {
     App state
     */
     if (eventState.onStartup) {
-      _.defer(() => {
+      setTimeout(() => {
         sendMsg({e: eventState.onStartup, type: 'startup', action: true});
-      });
+      }, 0);
     }
     if (eventState.onInstalled) {
       if (eventState.onInstalled.reason === 'update' || eventState.onInstalled.reason === 'install') {
@@ -322,9 +344,7 @@ class Bg {
     */
     chrome.windows.onCreated.addListener((Window) => {
       chrome.tabs.query({windowId: Window.id}, (tabs) => {
-        _.assignIn(Window, {
-          tabs: tabs
-        });
+        Object.assign(Window, {tabs});
         this.state.windows.push(Window);
         this.state.set({windows: this.state.windows}, true);
         sendMsg({windows: this.state.windows, windowId: Window.id});
@@ -336,7 +356,7 @@ class Bg {
     chrome.windows.onRemoved.addListener((windowId) => {
       let refWindow = findIndex(this.state.windows, win => win.windowId === windowId);
       if (refWindow !== -1) {
-        _.pullAt(this.state.windows, refWindow);
+        this.state.windows.splice(refWindow, 1);
         this.state.set({windows: this.state.windows}, true);
         sendMsg({windows: this.state.windows, windowId});
       }
@@ -397,67 +417,59 @@ class Bg {
       console.log('onDetached: ', e, info);
       this.removeSingleItem(e, info.oldWindowId);
     });
-    /*
-    Bookmarks created
-    */
+    this.attachMessageListener(s);
+    this.state.set({init: false, blacklist: s.blacklist});
+  }
+  attachBookmarksListeners = () => {
+    // Bookmarks created
     chrome.bookmarks.onCreated.addListener((e, info) => {
       eventState.bookmarksOnCreated = e;
       this.queryBookmarks();
     });
-    /*
-    Bookmarks removed
-    */
+    // Bookmarks removed
     chrome.bookmarks.onRemoved.addListener((e, info) => {
       eventState.bookmarksOnRemoved = e;
       this.queryBookmarks();
     });
-    /*
-    Bookmarks changed
-    */
+    // Bookmarks changed
     chrome.bookmarks.onChanged.addListener((e, info) => {
       eventState.bookmarksOnChanged = e;
       this.queryBookmarks();
     });
-    /*
-    Bookmarks moved
-    */
+    // Bookmarks moved
     chrome.bookmarks.onMoved.addListener((e, info) => {
       eventState.bookmarksOnMoved = e;
       this.queryBookmarks();
     });
-    /*
-    History visited
-    */
+  }
+  attachHistoryListeners = () => {
+    // History visited
     chrome.history.onVisited.addListener((e, info) => {
       eventState.historyOnVisited = e;
       console.log(`e: `, e, info);
       this.queryHistory();
     });
-    /*
-    History removed
-    */
+    // History removed
     chrome.history.onVisitRemoved.addListener((e, info) => {
       eventState.historyOnVisitRemoved = e;
       this.queryHistory();
     });
-    /*
-    App/ext enabled
-    */
+  }
+  attachManagementListeners = () => {
+    // App/ext enabled
     chrome.management.onEnabled.addListener((details) => {
       eventState.onEnabled = details;
       this.queryExtensions();
     });
-    this.attachMessageListener(s);
-    this.state.set({init: false, blacklist: s.blacklist});
   }
   handleNewTabsOnInit = (instances, i = 0) => {
     let [active, windowId] = instances[i];
-    _.delay(() => {
+    setTimeout(() => {
       chrome.tabs.create({active, windowId}, (tab) => {
         if (instances[i + 1] != null) {
           this.handleNewTabsOnInit(instances, i + 1);
         } else {
-          _.delay(() => {
+          setTimeout(() => {
             if (eventState.onInstalled.reason === 'install') {
               sendMsg({e: eventState.onInstalled, type: 'appState', action: 'installed'});
             } else if (eventState.onInstalled.reason === 'update') {
@@ -569,7 +581,7 @@ class Bg {
     let blacklisted = [];
     for (let i = 0, len = tabs.length; i < len; i++) {
       let urlMatch = tabs[i].url.match(DOMAIN_REGEX);
-      _.assign(tabs[i], {
+      Object.assign(tabs[i], {
         timeStamp: new Date(Date.now()).getTime(),
         domain: urlMatch ? urlMatch[1] : tabs[i].url.split('/')[2],
       });
@@ -588,7 +600,7 @@ class Bg {
       }
       this.state.newTabs.push(firstNewTab);
     } else {
-      this.state.newTabs = _.concat(this.state.newTabs, blacklisted);
+      this.state.newTabs = this.state.newTabs.concat(blacklisted);
     }
     this.state.set({newTabs: _.uniqBy(this.state.newTabs, 'id')});
     return tabs;
@@ -706,7 +718,7 @@ class Bg {
       if (lastAction !== undefined) {
         let refAction = findIndex(this.state.actions, action => action.id === lastAction.id);
         if (refAction !== -1) {
-          _.pullAt(this.state.actions, refAction);
+          this.state.actions.splice(refAction, 1);
         }
       }
     };
@@ -777,7 +789,7 @@ class Bg {
     }
     const tab = windows[refWindow].tabs[refTab];
     // Update timestamp for auto-discard feature's accuracy.
-    _.assignIn(tab, {
+    Object.assign(tab, {
       timeStamp: new Date(Date.now()).getTime()
     });
 
@@ -787,7 +799,7 @@ class Bg {
     }
 
     this.state.set({windows}, true);
-    if (prefs && prefs.screenshot && prefs.screenshotChrome) {
+    if (prefs && prefs.screenshot) {
       createScreenshotThrottled(this, refWindow, refTab);
     }
   }
@@ -801,11 +813,11 @@ class Bg {
     if (chromeVersion === 1
       && e.url === 'about:blank'
       && recursion === 0) {
-      _.defer(() => {
+      setTimeout(() => {
         this.getSingleTab(e.id).then((tab) => {
           this.createSingleItem(tab, windowId, 1);
         }).catch((e) => console.log(e));
-      });
+      }, 0);
       return;
     }
     let refWindow = findIndex(windows, win => win.id === windowId);
@@ -862,7 +874,7 @@ class Bg {
           && !isNewTab(windows[refWindow].tabs[refExistingTab].url)
           && newTabs.length > 1)
           || refExistingTab === -1) {
-          _.pullAt(newTabs, refNewTab);
+          newTabs.splice(refNewTab, 1);
           this.state.set({newTabs}, true);
         } else {
           chrome.tabs.update(newTabs[refNewTab].id, {active: true}, () => {
@@ -884,7 +896,7 @@ class Bg {
     // Check if this is a new tab, and clean up newTabs state.
     let refNewTab = findIndex(this.state.newTabs, tab => tab === e);
     if (refNewTab !== -1) {
-      _.pullAt(this.state.newTabs, refNewTab);
+      this.state.newTabs.splice(refNewTab, 1);
       this.state.set({newTabs: this.state.newTabs}, true);
     }
 
@@ -895,7 +907,7 @@ class Bg {
         this.state.removed.shift();
       }
       this.state.removed.push(this.state.windows[refWindow].tabs[refTab]);
-      _.pullAt(this.state.windows[refWindow].tabs, refTab);
+      this.state.windows[refWindow].tabs.splice(refTab, 1);
 
       this.state.windows[refWindow].tabs = _.orderBy(_.uniqBy(this.state.windows[refWindow].tabs, 'id'), ['pinned'], ['desc']);
       this.state.set({
@@ -911,7 +923,7 @@ class Bg {
     console.log('removeSingleWindow', id);
     let refWindow = findIndex(this.state.windows, win => win.id === id);
     if (refWindow !== -1) {
-      _.pullAt(this.state.windows, refWindow);
+      this.state.windows.splice(refWindow, 1);
       this.state.set({windows: this.state.windows}, true);
       sendMsg({windows: this.state.windows, windowId: id});
     }
@@ -938,7 +950,7 @@ class Bg {
       }
 
       setActionThrottled(this, 'update', this.state.windows[refWindow].tabs[refTab], e);
-      _.assignIn(e, {
+      Object.assign(e, {
         timeStamp: new Date(Date.now()).getTime()
       });
 
