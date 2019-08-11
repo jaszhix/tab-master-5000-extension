@@ -112,31 +112,22 @@ let createScreenshot = (t, refWindow, refTab, run=0) => {
       t.image = null;
       return;
     }
-    chrome.permissions.request({
-      permissions: ['activeTab'],
-      origins: ['<all_urls>']
-    }, (granted) => {
-      if (!granted) {
-        console.log('NOT GRANTED')
-        return;
-      }
-      tryFn(() => {
-        setTimeout(() => {
-          chrome.tabs.captureVisibleTab({format: 'jpeg', quality: 10}, (image)=> {
-            if (image) {
-              resolve(image);
+    tryFn(() => {
+      setTimeout(() => {
+        chrome.tabs.captureVisibleTab({format: 'jpeg', quality: 10}, (image)=> {
+          if (image) {
+            resolve(image);
+          } else {
+            ++run;
+            if (run <= 1) {
+              setTimeout(() => createScreenshot(t, refWindow, refTab, run), 500);
             } else {
-              ++run;
-              if (run <= 1) {
-                setTimeout(() => createScreenshot(t, refWindow, refTab, run), 500);
-              } else {
-                reject(null);
-              }
+              reject(null);
             }
-          });
-        }, 500);
-      }, reject);
-    });
+          }
+        });
+      }, 500);
+    }, reject);
   });
   capture.then((image) => {
     let resize = new Promise((resolve) => {
@@ -423,6 +414,9 @@ class Bg {
     this.state.set({init: false, blacklist: s.blacklist});
   }
   attachBookmarksListeners = () => {
+    if (!chrome.bookmarks) {
+      return;
+    }
     // Bookmarks created
     chrome.bookmarks.onCreated.addListener((e, info) => {
       eventState.bookmarksOnCreated = e;
@@ -445,6 +439,9 @@ class Bg {
     });
   }
   attachHistoryListeners = () => {
+    if (!chrome.history) {
+      return;
+    }
     // History visited
     chrome.history.onVisited.addListener((e, info) => {
       eventState.historyOnVisited = e;
@@ -458,6 +455,9 @@ class Bg {
     });
   }
   attachManagementListeners = () => {
+    if (!chrome.management) {
+      return;
+    }
     // App/ext enabled
     chrome.management.onEnabled.addListener((details) => {
       eventState.onEnabled = details;
@@ -620,6 +620,11 @@ class Bg {
     });
   }
   queryBookmarks = (windowId = null) => {
+    if (!chrome.bookmarks) {
+      sendMsg({bookmarks: [], windowId, noPermissions: 'bookmarks'});
+      return;
+    }
+
     chrome.bookmarks.getTree((bookmarks) => {
       this.state.set({bookmarks}, true);
       if (!windowId) {
@@ -629,6 +634,11 @@ class Bg {
     });
   }
   queryHistory = (windowId = null) => {
+    if (!chrome.history) {
+      sendMsg({history: [], windowId, noPermissions: 'history'});
+      return;
+    }
+
     let now = Date.now();
     chrome.history.search({
       text: '',
@@ -644,6 +654,11 @@ class Bg {
     });
   }
   queryExtensions = (windowId = null) => {
+    if (!chrome.management) {
+      sendMsg({extensions: [], windowId, noPermissions: 'management'});
+      return;
+    }
+
     chrome.management.getAll((extensions) => {
       let msgToSend = {extensions};
       if (windowId) {

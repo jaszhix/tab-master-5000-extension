@@ -69,6 +69,9 @@ export class SidebarMenu extends React.Component {
       : state.direction === 'desc' ? 'asc' : 'desc'
     }, true);
   }
+  handleMode = (mode) => {
+    utilityStore.handleMode(mode, {} /* stateUpdate */, false /* init */, true /* userGesture */);
+  }
   render = () => {
     let p = this.props;
     let s = this.state;
@@ -197,7 +200,7 @@ export class SidebarMenu extends React.Component {
                                         style={lgBtnStyle}
                                         icon={option.icon}
                                         label={option.label}
-                                        onClick={() => utilityStore.handleMode(option.key)}
+                                        onClick={() => this.handleMode(option.key)}
                                         onMouseEnter={() => this.setState({lgBtnHover: option.label})} />
                                       );
                                     } else {

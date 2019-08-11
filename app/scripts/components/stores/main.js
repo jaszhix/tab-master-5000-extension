@@ -70,41 +70,67 @@ export var utilityStore = {
     state.set(stateUpdate);
     msgStore.setPrefs({mode: mode});
   },
-  handleMode(mode, stateUpdate = {}, init = false) {
+  handleMode(mode, stateUpdate = {}, init = false, userGesture = false) {
+    if (!mode) mode = state.prefs.mode || 'tabs';
+
     switch (mode) {
       case 'bookmarks':
-        chrome.permissions.request({
-          permissions: ['bookmarks'],
-          origins: ['<all_urls>']
-        }, (granted) => {
-          if (!granted) return;
+        // Chrome only allows interacting with the chrome.permissions* API with a user gesture,
+        // including the function that calls back with a boolean if we have a permission.
+        // This makes it difficult to handle extension reloads, where TM5K likes to load
+        // a new tab page if one was already open, to restore it. For now we can assume
+        // the only way a user will get stuck in a mode requiring permissions without the permission,
+        // is if they are modifying state directly in devtools.
+        if (userGesture) {
+          chrome.permissions.request({
+            permissions: ['bookmarks'],
+            origins: ['<all_urls>']
+          }, (granted) => {
+            if (!granted) return;
 
-          msgStore.queryBookmarks(init);
-          this._handleMode(mode, stateUpdate, init);
-        });
+            msgStore.queryBookmarks(init);
+            this._handleMode(mode, stateUpdate, init);
+          });
+          return;
+        }
+
+        msgStore.queryBookmarks(init);
+        this._handleMode(mode, stateUpdate, init);
         return;
       case 'history':
-        chrome.permissions.request({
-          permissions: ['history'],
-          origins: ['<all_urls>']
-        }, (granted) => {
-          if (!granted) return;
+        if (userGesture) {
+          chrome.permissions.request({
+            permissions: ['history'],
+            origins: ['<all_urls>']
+          }, (granted) => {
+            if (!granted) return;
 
-          msgStore.queryHistory(init);
-          this._handleMode(mode, stateUpdate, init);
-        });
+            msgStore.queryHistory(init);
+            this._handleMode(mode, stateUpdate, init);
+          });
+          return;
+        }
+
+        msgStore.queryHistory(init);
+        this._handleMode(mode, stateUpdate, init);
         return;
       case 'apps':
       case 'extensions':
-        chrome.permissions.request({
-          permissions: ['management'],
-          origins: ['<all_urls>']
-        }, (granted) => {
-          if (!granted) return;
+        if (userGesture) {
+          chrome.permissions.request({
+            permissions: ['management'],
+            origins: ['<all_urls>']
+          }, (granted) => {
+            if (!granted) return;
 
-          msgStore.queryExtensions();
-          this._handleMode(mode, stateUpdate, init);
-        });
+            msgStore.queryExtensions(init);
+            this._handleMode(mode, stateUpdate, init);
+          });
+          return;
+        }
+
+        msgStore.queryExtensions(init);
+        this._handleMode(mode, stateUpdate, init);
         return;
       case 'sessions':
         msgStore.getSessions();
@@ -216,6 +242,12 @@ const handleMessage = function(s, msg, sender, sendResponse) {
     return;
   }
   console.log('msg: ', msg, 'sender: ', sender);
+
+  if (msg.noPermissions) {
+    state.set({modeKey: 'tabs'});
+    return;
+  }
+
   if (msg.hasOwnProperty('windows')
     || (msg.bookmarks && s.prefs.mode === 'bookmarks')
     || (msg.history && s.prefs.mode === 'history')
