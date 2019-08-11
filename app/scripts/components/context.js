@@ -208,8 +208,17 @@ class ContextMenu extends React.Component {
     if (isSelectedItems) {
       addContextMenuItems();
     } else {
-      chrome.bookmarks.search(p.context.id.url, (bk)=>{
-        addContextMenuItems(bk.length > 0, bk);
+      chrome.permissions.contains({
+        permissions: ['bookmarks'],
+      }, (granted) => {
+        if (!granted) {
+          addContextMenuItems();
+          return;
+        }
+
+        chrome.bookmarks.search(p.context.id.url, (bk) => {
+          addContextMenuItems(bk.length > 0, bk);
+        });
       });
     }
   }
@@ -262,11 +271,18 @@ class ContextMenu extends React.Component {
       || _.first(_.words(opt)) === 'OPEN') {
       utils.app(p.context.id, opt);
     } else if (opt === 'toggleBookmark') {
-      if (hasBookmark) {
-        chrome.bookmarks.remove(bk[0].id, (bk)=>console.log(bk));
-      } else {
-        chrome.bookmarks.create({title: p.context.id.title, url: p.context.id.url}, (bk)=>console.log(bk));
-      }
+      chrome.permissions.request({
+        permissions: ['bookmarks'],
+        origins: ['<all_urls>']
+      }, (granted) => {
+        if (!granted) return;
+
+        if (hasBookmark) {
+          chrome.bookmarks.remove(bk[0].id, (bk)=>console.log(bk));
+        } else {
+          chrome.bookmarks.create({title: p.context.id.title, url: p.context.id.url}, (bk)=>console.log(bk));
+        }
+      });
     }
     this.handleClickOutside();
   }

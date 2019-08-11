@@ -1,7 +1,7 @@
 {
   "name": "__MSG_appName__",
   "short_name": "TM5K",
-  "version": "2.9.5",
+  "version": "2.9.6",
   "manifest_version": 2,
   "description": "__MSG_appDesc__",
   "icons": {
@@ -35,6 +35,6 @@
     "unlimitedStorage",
     "downloads"
   ],
-  "optional_permissions": ["tabCapture", "activeTab", "bookmarks", "history", "management", "<all_urls>"],
+  "optional_permissions": ["activeTab", "bookmarks", "history", "management", "<all_urls>"],
   "content_security_policy": "script-src http://127.0.0.1:8009 'self' 'unsafe-eval'; object-src http://127.0.0.1:8009 'self'"
 }
