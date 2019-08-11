@@ -1,5 +1,17 @@
 #### Release Notes
 
+##### v2.9.6 / *8-11-19*
+
+* Fixed tab screenshot capture functionality.
+* Made several permissions TM5K needs for certain modes optional until needed. These include:
+  - `tabCapture`
+  - `activeTab`
+  - `bookmarks`
+  - `history`
+  - `management`
+  - `<all_urls>` origin
+* Maintenance: migrated to tested versions of internal libraries.
+
 ##### v2.9.2 / *7-14-19*
 
 * Fixed support documentation not rendering in the About modal.
