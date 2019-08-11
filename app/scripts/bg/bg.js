@@ -575,6 +575,8 @@ class Bg {
         this.undoAction(this.state.windows[refWindow].tabs, this.state.chromeVersion);
       } else if (msg.method === 'getActions') {
         sendResponse({actions: this.state.actions, windowId: sender.tab.windowId});
+      } else if (msg.method === 'setPermissions') {
+        prefsStore.setPermissions(msg.permissions);
       }
       return true;
     });

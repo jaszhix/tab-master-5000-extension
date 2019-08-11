@@ -78,9 +78,8 @@ export var utilityStore = {
         // Chrome only allows interacting with the chrome.permissions* API with a user gesture,
         // including the function that calls back with a boolean if we have a permission.
         // This makes it difficult to handle extension reloads, where TM5K likes to load
-        // a new tab page if one was already open, to restore it. For now we can assume
-        // the only way a user will get stuck in a mode requiring permissions without the permission,
-        // is if they are modifying state directly in devtools.
+        // a new tab page if one was already open, to restore it. For now TM5K tracks permissions
+        // granted manually, and resets prefs based on those values any time prefs are updated.
         if (userGesture) {
           chrome.permissions.request({
             permissions: ['bookmarks'],
@@ -88,6 +87,7 @@ export var utilityStore = {
           }, (granted) => {
             if (!granted) return;
 
+            msgStore.setPermissions({bookmarks: true});
             msgStore.queryBookmarks(init);
             this._handleMode(mode, stateUpdate, init);
           });
@@ -105,6 +105,7 @@ export var utilityStore = {
           }, (granted) => {
             if (!granted) return;
 
+            msgStore.setPermissions({history: true});
             msgStore.queryHistory(init);
             this._handleMode(mode, stateUpdate, init);
           });
@@ -123,6 +124,7 @@ export var utilityStore = {
           }, (granted) => {
             if (!granted) return;
 
+            msgStore.setPermissions({management: true});
             msgStore.queryExtensions(init);
             this._handleMode(mode, stateUpdate, init);
           });
@@ -286,7 +288,7 @@ export var msgStore = {
       handleMessage(s, msg, sender, sendResponse);
     });
   },
-  setPrefs(obj){
+  setPrefs(obj) {
     state.set({prefs: obj}, true);
     chrome.runtime.sendMessage(chrome.runtime.id, {method: 'setPrefs', obj: obj}, (response) => {
       if (response && response.prefs) {
@@ -294,7 +296,7 @@ export var msgStore = {
       }
     });
   },
-  getPrefs(){
+  getPrefs() {
     return new Promise((resolve) => {
       chrome.runtime.sendMessage(chrome.runtime.id, {method: 'prefs'}, (response) => {
         if (response && response.prefs) {
@@ -302,6 +304,9 @@ export var msgStore = {
         }
       });
     });
+  },
+  setPermissions(permissions) {
+    chrome.runtime.sendMessage(chrome.runtime.id, {method: 'setPermissions', permissions});
   },
   getWindowId() {
     return new Promise((resolve) => {

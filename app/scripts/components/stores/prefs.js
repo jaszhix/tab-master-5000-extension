@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import initStore from '@jaszhix/state';
-import {each} from '@jaszhix/utils';
+import {each, tryFn} from '@jaszhix/utils';
 
 let prefsStore = initStore({
   prefs: {},
@@ -39,7 +39,13 @@ let prefsStore = initStore({
     allTabs: false,
     resetSearchOnClick: true,
     tablePadding: 5,
-    errorTelemetry: false
+    errorTelemetry: false,
+  },
+  permissions: {
+    screenshot: false,
+    bookmarks: false,
+    history: false,
+    management: false,
   },
   init: function() {
     let getPrefs = new Promise((resolve, reject)=>{
@@ -52,6 +58,7 @@ let prefsStore = initStore({
               reject(chrome.extension.lastError);
             } else {
               prefsStore.prefs = prefsStore.defaultPrefs;
+              prefsStore.syncPermissions();
               prefsStore.setPrefs(prefsStore.prefs);
               console.log('init prefs: ', prefsStore.prefs);
             }
@@ -69,14 +76,53 @@ let prefsStore = initStore({
         }
       });
 
+      prefsStore.syncPermissions();
+
       console.log('load prefs: ', prefs, prefsStore.prefs);
       prefsStore.set({prefs: prefsStore.prefs}, true);
     }).catch((err)=>{
       console.log('chrome.extension.lastError: ', err);
     });
   },
+  syncPermissions() {
+    // With cloud syncing, the extension settings could be restored and the user might get
+    // stuck in a view mode we haven't asked permission for yet. Resolve this by tracking
+    // all permissions granted, and resetting prefs accordingly (handled in checkPermissions).
+    let permissions = localStorage.getItem('tm5kPermissionsTracking');
+
+    if (!permissions) {
+      localStorage.setItem('tm5kPermissionsTracking', JSON.stringify(prefsStore.permissions));
+    } else {
+      permissions = tryFn(
+        () => JSON.parse(permissions),
+        () => prefsStore.permissions
+      );
+
+      prefsStore.permissions = permissions;
+    }
+  },
+  checkPermissions(prefs) {
+    const {permissions} = prefsStore;
+
+    if (!permissions.screenshot && prefs.screenshot) {
+      prefs.screenshot = false;
+    }
+
+    if ((!permissions.bookmarks && prefs.mode === 'bookmarks')
+      || (!permissions.history && prefs.mode === 'history')
+      || (!permissions.management && (prefs.mode === 'apps' || prefs.mode === 'extensions'))) {
+      prefs.mode = 'tabs';
+    }
+  },
+  setPermissions(obj) {
+    _.merge(prefsStore.permissions, obj);
+    localStorage.setItem('tm5kPermissionsTracking', JSON.stringify(prefsStore.permissions));
+  },
   setPrefs(obj) {
+    prefsStore.checkPermissions(obj);
+
     _.merge(prefsStore.prefs, obj);
+
     prefsStore.set({prefs: prefsStore.prefs}, true);
     let themePrefs = {
       wallpaper: prefsStore.prefs.wallpaper,

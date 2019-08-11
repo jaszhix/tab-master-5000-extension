@@ -310,6 +310,7 @@ class Preferences extends React.Component {
     }, (granted) => {
       if (!granted) return;
 
+      msgStore.setPermissions({screenshot: true});
       this.handleClick(opt);
 
       setTimeout(chrome.runtime.reload, 500);
