@@ -4,7 +4,6 @@
 
 * Fixed tab screenshot capture functionality.
 * Made several permissions TM5K needs for certain modes optional until needed. These include:
-  - `tabCapture`
   - `activeTab`
   - `bookmarks`
   - `history`

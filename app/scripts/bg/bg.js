@@ -113,7 +113,7 @@ let createScreenshot = (t, refWindow, refTab, run=0) => {
       return;
     }
     chrome.permissions.request({
-      permissions: ['tabCapture', 'activeTab'],
+      permissions: ['activeTab'],
       origins: ['<all_urls>']
     }, (granted) => {
       if (!granted) {

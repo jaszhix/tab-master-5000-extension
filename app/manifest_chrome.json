@@ -35,5 +35,5 @@
     "unlimitedStorage",
     "downloads"
   ],
-  "optional_permissions": ["tabCapture", "activeTab", "bookmarks", "history", "management", "<all_urls>"]
+  "optional_permissions": ["activeTab", "bookmarks", "history", "management", "<all_urls>"]
 }

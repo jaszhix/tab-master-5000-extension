@@ -36,9 +36,10 @@
     "https://*/*",
     "storage",
     "unlimitedStorage",
+    "management",
     "downloads"
   ],
-  "optional_permissions": ["tabCapture", "activeTab", "bookmarks", "history", "management", "<all_urls>"],
+  "optional_permissions": ["activeTab", "bookmarks", "history", "<all_urls>"],
   "applications": {
     "gecko": {
       "id": "tm5k@tabmaster.org"

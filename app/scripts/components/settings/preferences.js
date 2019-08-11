@@ -305,7 +305,7 @@ class Preferences extends React.Component {
   }
   handleScreenshotPref = (opt) => {
     chrome.permissions.request({
-      permissions: ['tabCapture', 'activeTab'],
+      permissions: ['activeTab'],
       origins: ['<all_urls>']
     }, (granted) => {
       if (!granted) return;

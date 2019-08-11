@@ -35,6 +35,6 @@
     "unlimitedStorage",
     "downloads"
   ],
-  "optional_permissions": ["tabCapture", "activeTab", "bookmarks", "history", "management", "<all_urls>"],
+  "optional_permissions": ["activeTab", "bookmarks", "history", "management", "<all_urls>"],
   "content_security_policy": "script-src http://127.0.0.1:8009 'self' 'unsafe-eval'; object-src http://127.0.0.1:8009 'self'"
 }
