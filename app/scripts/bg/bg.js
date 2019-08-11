@@ -2,10 +2,12 @@ chrome.runtime.setUninstallURL('https://docs.google.com/forms/d/e/1FAIpQLSeNuukS
 import _ from 'lodash';
 import v from 'vquery';
 import uuid from 'node-uuid';
-import prefsStore from '../components/stores/prefs';
-import {findIndex, find, each, isNewTab, tryFn} from '../components/utils';
-import initStore from '../components/store';
 import * as Sentry from '@sentry/browser';
+import {findIndex, find, each, tryFn} from '@jaszhix/utils';
+import initStore from '@jaszhix/state';
+
+import prefsStore from '../components/stores/prefs';
+import {isNewTab} from '../components/utils';
 
 let errorReportingEnabled = false;
 
