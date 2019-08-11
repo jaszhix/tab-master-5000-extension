@@ -3,11 +3,12 @@ import {StyleSheet, css} from 'aphrodite';
 import _ from 'lodash';
 import tc from 'tinycolor2';
 import v from 'vquery'
+import {map, each} from '@jaszhix/utils';
 import Slider from 'rc-slider';
 import ReactTooltip from 'react-tooltip';
+
 import * as utils from '../stores/tileUtils';
 import state from '../stores/state';
-import {map, each} from '../utils'
 import {msgStore, getBlackList, setBlackList, isValidDomain, faviconStore, getBytesInUse} from '../stores/main';
 
 import {Btn, Col, Row} from '../bootstrap';
@@ -296,7 +297,6 @@ class Preferences extends React.Component {
 
     obj[opt] = !prefs[opt];
 
-    state.set({prefs: obj});
     msgStore.setPrefs(obj);
 
     if (opt === 'errorTelemetry') {

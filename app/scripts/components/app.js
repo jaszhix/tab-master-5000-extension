@@ -3,10 +3,11 @@ import '../../styles/app.scss';
 import React from 'react';
 import {render} from 'react-dom';
 import {AppContainer} from 'react-hot-loader';
+import v from 'vquery';
+import {tryFn} from '@jaszhix/utils';
+
 import App from './root';
 import ErrorBoundary from './errorBoundary';
-import v from 'vquery';
-import {tryFn} from './utils';
 
 let Sentry = null;
 

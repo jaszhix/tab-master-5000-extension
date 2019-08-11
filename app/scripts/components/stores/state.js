@@ -1,4 +1,4 @@
-import initStore from '../store';
+import initStore from '@jaszhix/state';
 
 const state = initStore({
   // Core

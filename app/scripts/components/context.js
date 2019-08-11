@@ -1,12 +1,12 @@
 import React from 'react';
 import _ from 'lodash';
 import copyToClipboard from 'copy-to-clipboard';
+import {filter} from '@jaszhix/utils';
 
 import {Context} from './bootstrap';
 import state from './stores/state';
 import {msgStore} from './stores/main';
 import * as utils from './stores/tileUtils';
-import {filter} from './utils';
 
 class ContextMenu extends React.Component {
   constructor(props) {

@@ -1,10 +1,10 @@
 import _ from 'lodash';
 import v from 'vquery';
 import mouseTrap from 'mousetrap';
+import {find, tryFn, each, filter} from '@jaszhix/utils';
 
 import sessionsStore from './sessions';
 import state from './state';
-import {find, tryFn, each, filter} from '../utils';
 
 const DOMAIN_REGEX = /^(?!:\/\/)([a-zA-Z0-9]+\.)?[a-zA-Z0-9][a-zA-Z0-9-]+\.[a-zA-Z]{2,6}?$/i;
 

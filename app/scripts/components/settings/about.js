@@ -1,8 +1,8 @@
 import React from 'react';
 import tc from 'tinycolor2';
+import {map} from '@jaszhix/utils';
 
 import state from '../stores/state';
-import {map} from '../utils';
 import * as utils from '../stores/tileUtils';
 import {utilityStore} from '../stores/main';
 

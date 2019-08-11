@@ -2,12 +2,13 @@ import React from 'react';
 import {StyleSheet, css} from 'aphrodite';
 import _ from 'lodash';
 import v from 'vquery';
+import {each, map, tryFn} from '@jaszhix/utils';
 
 import state from './stores/state';
 import {msgStore} from './stores/main';
 import themeStore from './stores/theme';
 
-import {map, whichToShow, tryFn, isNewTab, each, AsyncComponent} from './utils';
+import {whichToShow, isNewTab, AsyncComponent} from './utils';
 
 let Tile = AsyncComponent({
   loader: () => import(/* webpackChunkName: "tile" */ './tile')

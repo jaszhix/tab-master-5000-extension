@@ -1,8 +1,9 @@
 import _ from 'lodash';
+import initStore from '@jaszhix/state';
+import {findIndex, find, tryFn, filter} from '@jaszhix/utils';
+
 import state from './state';
 import {utilityStore, setAlert, msgStore} from './main';
-import initStore from '../store';
-import {findIndex, find, tryFn, filter} from '../utils';
 
 const now = Date.now();
 

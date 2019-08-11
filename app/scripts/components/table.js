@@ -5,7 +5,9 @@ import _ from 'lodash';
 import v from 'vquery';
 import mouseTrap from 'mousetrap';
 import tc from 'tinycolor2';
-import {findIndex, map, each, filter, isNewTab, unref} from './utils'
+import {findIndex, map, each, filter} from '@jaszhix/utils';
+
+import {isNewTab, unref} from './utils';
 import state from './stores/state';
 import {setAlert} from './stores/main';
 import themeStore from './stores/theme';

@@ -1,6 +1,6 @@
 import _ from 'lodash';
-import initStore from '../store';
-import {each} from '../utils';
+import initStore from '@jaszhix/state';
+import {each} from '@jaszhix/utils';
 
 let prefsStore = initStore({
   prefs: {},

@@ -6,7 +6,8 @@ import ReactTooltip from 'react-tooltip';
 import state from './stores/state';
 import themeStore from './stores/theme';
 import tc from 'tinycolor2';
-import {map} from './utils';
+import {map} from '@jaszhix/utils';
+
 import {utilityStore, msgStore} from './stores/main';
 import * as utils from './stores/tileUtils';
 import {Btn} from './bootstrap';

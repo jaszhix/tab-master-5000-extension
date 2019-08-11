@@ -1,6 +1,4 @@
 import React from 'react';
-import ReactTooltip from 'react-tooltip';
-
 import state from './stores/state';
 import * as utils from './stores/tileUtils';
 import {Btn, Col, Row} from './bootstrap';

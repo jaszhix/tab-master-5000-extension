@@ -1,7 +1,9 @@
 import Fuse from 'fuse.js';
 import uuid from 'node-uuid';
-import {each, find, findIndex, filter, map, includes, tryFn, isNewTab} from './utils';
 import _ from 'lodash';
+import {each, find, findIndex, filter, map, tryFn} from '@jaszhix/utils';
+
+import {includes, isNewTab} from './utils';
 
 const defaultFavicon = '../images/file_paper_blank_document.png';
 

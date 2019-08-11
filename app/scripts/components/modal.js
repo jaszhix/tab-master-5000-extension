@@ -4,10 +4,10 @@ import tc from 'tinycolor2';
 import onClickOutside from 'react-onclickoutside';
 import ReactTooltip from 'react-tooltip';
 import {StyleSheet, css} from 'aphrodite';
+import {findIndex} from '@jaszhix/utils';
 
 import Settings from './settings';
 import {msgStore} from './stores/main';
-import {findIndex} from './utils';
 import state from './stores/state';
 import * as utils from './stores/tileUtils';
 

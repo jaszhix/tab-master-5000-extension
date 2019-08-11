@@ -2,13 +2,14 @@ import React from 'react';
 import {StyleSheet, css} from 'aphrodite';
 import _ from 'lodash';
 import moment from 'moment';
+import {findIndex} from '@jaszhix/utils';
 
 import state from './stores/state';
 import themeStore from './stores/theme';
 
 import {Panel} from './bootstrap';
 import style from './style';
-import {findIndex, tryFn, unref} from './utils';
+import {unref} from './utils';
 import * as utils from './stores/tileUtils';
 
 const styles = StyleSheet.create({

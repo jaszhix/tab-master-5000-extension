@@ -5,9 +5,9 @@ import tc from 'tinycolor2';
 
 import ColorPicker from 'rc-color-picker';
 import ReactTooltip from 'react-tooltip';
+import {find, map, filter} from '@jaszhix/utils';
 
 import * as utils from '../stores/tileUtils';
-import {find, map, filter} from '../utils';
 import state from '../stores/state';
 import themeStore from '../stores/theme';
 

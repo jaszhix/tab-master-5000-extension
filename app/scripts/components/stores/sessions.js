@@ -1,7 +1,8 @@
 import _ from 'lodash';
 import uuid from 'node-uuid';
 import ReactTooltip from 'react-tooltip';
-import {each, findIndex, filter} from '../utils';
+import {each, findIndex, filter} from '@jaszhix/utils';
+
 import state from './state';
 import {msgStore, utilityStore, setAlert} from './main';
 

@@ -4,8 +4,9 @@ import {StyleSheet, css} from 'aphrodite';
 import _ from 'lodash';
 import onClickOutside from 'react-onclickoutside';
 import ReactTooltip from 'react-tooltip';
+import {tryFn} from '@jaszhix/utils';
+
 import themeStore from './stores/theme';
-import {tryFn} from './utils';
 
 export class Btn extends React.Component {
   constructor(props) {

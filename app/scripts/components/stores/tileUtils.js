@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import Fuse from 'fuse.js';
-import {each, findIndex, filter, tryFn, map} from '../utils';
+import {each, findIndex, filter, tryFn, map} from '@jaszhix/utils';
+
 import state from './state';
 import {utilityStore} from './main';
 import sessionsStore from './sessions';

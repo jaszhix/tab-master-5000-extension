@@ -3,9 +3,10 @@ import {css} from 'aphrodite';
 import moment from 'moment';
 import _ from 'lodash';
 import ReactTooltip from 'react-tooltip';
+import {each, find, map, filter} from '@jaszhix/utils';
 
 import * as utils from '../stores/tileUtils';
-import {each, find, map, filter, isNewTab} from '../utils';
+import {isNewTab} from '../utils';
 import state from '../stores/state';
 import {msgStore, utilityStore} from '../stores/main';
 import sessionsStore from '../stores/sessions';

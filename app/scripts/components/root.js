@@ -11,10 +11,12 @@ import tc from 'tinycolor2';
 import React from 'react';
 import _ from 'lodash';
 import ReactTooltip from 'react-tooltip';
+import {each, filter, tryFn} from '@jaszhix/utils';
+
 import {keyboardStore, utilityStore, msgStore, faviconStore} from './stores/main';
 import themeStore from './stores/theme';
 import * as utils from './stores/tileUtils';
-import {each, filter, tryFn, AsyncComponent} from './utils';
+import {AsyncComponent} from './utils';
 import Sidebar from './sidebar';
 import ItemsContainer from './itemsContainer';
 import Alert from './alert';
