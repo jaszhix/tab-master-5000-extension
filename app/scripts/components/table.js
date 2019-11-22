@@ -12,6 +12,7 @@ import state from './stores/state';
 import {setAlert} from './stores/main';
 import themeStore from './stores/theme';
 import * as utils from './stores/tileUtils';
+import {domainRegex} from './constants';
 
 const styles = StyleSheet.create({
   favicon: {width: '16px', height: '16px'},
@@ -255,21 +256,19 @@ class Table extends React.Component {
   componentDidMount = () => {
     this.connections = [
       state.connect(
-        ['tabs', 'history', 'sessionTabs', 'bookmarks', 'apps', 'extensions', 'searchCache', 'modeKey'],
-        () => this.buildTable(this.props)
+        ['tabs', 'history', 'sessionTabs', 'bookmarks', 'apps', 'extensions', 'searchCache', 'search', 'modeKey'],
+        this.buildTable
       ),
       state.connect({
-        selectAllFromDomain: (domain) => this.selectAllFromDomain(domain),
-        invertSelection: () => this.invertSelection(),
         deselectSelection: () => this.setState({selectedItems: []})
+        selectAllFromDomain: this.selectAllFromDomain,
+        invertSelection: this.invertSelection,
       })
     ];
 
-    let p = this.props;
-    this.buildTable(p);
-    mouseTrap.bind('del', () => {
-      this.removeSelectedItems();
-    });
+    this.buildTable();
+
+    mouseTrap.bind('del', this.removeSelectedItems);
   }
   componentWillUnmount = () => {
     this.willUnmount = true;
@@ -278,43 +277,59 @@ class Table extends React.Component {
     });
     unref(this);
   }
-  buildTable = (p) => {
-    if (this.willUnmount) {
-      return;
-    }
-    let rows = [];
+  buildTable = () => {
+    if (this.willUnmount) return;
 
-    for (let i = 0, len = p.s[p.s.modeKey].length; i < len; i++) {
-      let row = p.s[p.s.modeKey][i];
+    const {prefs} = state;
+    let rows = [];
+    let columns = ['title', 'domain'];
+
+    for (let i = 0, len = state[state.modeKey].length; i < len; i++) {
+      let row = state[state.modeKey][i];
+      let urlMatch;
+
       if (row === undefined || !row || row.url === undefined || !row.url) {
         continue;
       }
-      let urlMatch = row.url.match(/^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:/\n]+)/im);
+
+      urlMatch = row.url.match(domainRegex);
       row.domain = urlMatch ? urlMatch[1] : false;
       rows.push(row);
     }
-    let columns = ['title', 'domain'];
-    if (p.s.prefs.mode === 'bookmarks') {
-      columns = columns.concat(['folder', 'dateAdded']);
-    } else if (p.s.prefs.mode === 'tabs') {
-      columns = columns.concat(['pinned', 'mutedInfo']);
-      if (p.s.prefs.trackMostUsed) {
-        columns.push('count');
-      }
-    } else if (p.s.prefs.mode === 'sessions') {
-      columns = columns.concat(['session']);
-    } else if (p.s.prefs.mode === 'history') {
-      columns = columns.concat(['lastVisitTime', 'visitCount', 'typedCount']);
-    } else if (p.s.prefs.mode === 'apps' || p.s.prefs.mode === 'extensions') {
-      columns[0] = 'name';
-      if (p.s.prefs.mode === 'apps') {
-        columns = columns.concat(['launchType']);
-      } else {
-        _.pullAt(columns, 1);
-      }
-      columns = columns.concat(['enabled', 'offlineEnabled', 'version']);
+
+    switch (prefs.mode) {
+      case 'bookmarks':
+        columns = columns.concat(['folder', 'dateAdded']);
+        break;
+      case 'tabs':
+        columns = columns.concat(['pinned', 'mutedInfo']);
+
+        if (prefs.trackMostUsed) {
+          columns.push('count');
+        }
+        break;
+      case 'sessions':
+        columns = columns.concat(['session']);
+        break;
+      case 'history':
+        columns = columns.concat(['lastVisitTime', 'visitCount', 'typedCount']);
+        break;
+      case 'apps':
+      case 'extensions':
+        columns[0] = 'name';
+
+        if (prefs.mode === 'apps') {
+          columns = columns.concat(['launchType']);
+        } else {
+          columns.splice(1, 1);
+        }
+
+        columns = columns.concat(['enabled', 'offlineEnabled', 'version']);
+        break;
     }
+
     this.setState({columns, rows});
+
     console.log('buildTable: ', this.state);
   }
   handleColumnClick = (column) => {
@@ -390,17 +405,22 @@ class Table extends React.Component {
   }
   selectAllFromDomain = (domain) => {
     let {rows, selectedItems, shiftRange} = this.state;
+
     let selected = filter(rows, (row) => {
       return row.url.indexOf(domain) > -1;
     });
+
     if (!selected || selected.length === 0) {
       return;
     }
+
     each(selected, (row) => {
       let rowIndex = findIndex(rows, _row => _row.id === row.id);
       selectedItems.push(rowIndex);
     });
+
     shiftRange = selectedItems[0];
+
     this.setState({selectedItems, shiftRange});
   }
   invertSelection = () => {

@@ -8,10 +8,9 @@ import initStore from '@jaszhix/state';
 
 import prefsStore from '../components/stores/prefs';
 import {isNewTab} from '../components/utils';
+import {domainRegex} from '../components/constants';
 
 let errorReportingEnabled = false;
-
-const DOMAIN_REGEX = /^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:/\n]+)/im;
 
 const eventState = {
   onStartup: null,
@@ -584,7 +583,7 @@ class Bg {
   formatTabs = (prefs, tabs) => {
     let blacklisted = [];
     for (let i = 0, len = tabs.length; i < len; i++) {
-      let urlMatch = tabs[i].url.match(DOMAIN_REGEX);
+      let urlMatch = tabs[i].url.match(domainRegex);
       Object.assign(tabs[i], {
         timeStamp: new Date(Date.now()).getTime(),
         domain: urlMatch ? urlMatch[1] : tabs[i].url.split('/')[2],
@@ -852,7 +851,7 @@ class Bg {
       }
     }
 
-    let urlMatch = e.url.match(DOMAIN_REGEX);
+    let urlMatch = e.url.match(domainRegex);
     e.domain = urlMatch ? urlMatch[1] : e.url.split('/')[2];
     if (prefs.trackMostUsed && e.count == null) {
       e.count = 0;
@@ -958,7 +957,7 @@ class Bg {
         return;
       }
 
-      let urlMatch = e.url.match(DOMAIN_REGEX);
+      let urlMatch = e.url.match(domainRegex);
       e.domain = urlMatch ? urlMatch[1] : e.url.split('/')[2];
 
       for (let i = 0, len = this.state.blacklist.length; i < len; i++) {

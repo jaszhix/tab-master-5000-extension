@@ -69,7 +69,6 @@ const state = initStore({
   allTabs: null,
   newTabs: null,
   duplicateTabs: [],
-  domainRegEx: /^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:/\n]+)/im,
   bookmarks: [],
   history: [],
   apps: [],
@@ -81,4 +80,5 @@ const state = initStore({
 });
 
 window.state = state;
+
 export default state;
