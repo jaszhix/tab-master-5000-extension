@@ -462,21 +462,28 @@ class Table extends React.Component {
   }
   handleContext = (e, row) => {
     e.preventDefault();
-    let s = this.state;
-    let p = this.props;
-    if (!p.s.prefs.context) {
-      return;
-    }
-    if (p.s.context.id && p.s.context.id.id === row.id) {
+
+    const {rows, selectedItems} = this.state;
+    const {prefs, context} = this.props.s;
+    let rowIndex;
+
+    if (!prefs.context) return;
+
+    if (context.id && context.id.id === row.id) {
       state.set({context: {value: false, id: null}});
       return;
     }
-    if (s.selectedItems.length > 0) {
-      let rows = [];
-      for (let z = 0, len = s.selectedItems.length; z < len; z++) {
-        rows.push(s.rows[s.selectedItems[z]]);
+
+    rowIndex = findIndex(rows, (item) => item.id === row.id);
+
+    if (selectedItems.length > 0 && selectedItems.indexOf(rowIndex) > -1) {
+      let selectedRows = [];
+
+      for (let z = 0, len = selectedItems.length; z < len; z++) {
+        selectedRows.push(rows[selectedItems[z]]);
       }
-      state.set({context: {value: true, id: rows.length > 1 ? rows : rows[0]}});
+
+      state.set({context: {value: true, id: selectedRows.length > 1 ? selectedRows : selectedRows[0]}});
     } else {
       state.set({context: {value: true, id: row}});
     }
