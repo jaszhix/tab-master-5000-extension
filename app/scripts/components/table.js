@@ -1,4 +1,5 @@
 import React from 'react';
+import onClickOutside from 'react-onclickoutside';
 import moment from 'moment';
 import {StyleSheet, css} from 'aphrodite';
 import _ from 'lodash';
@@ -260,9 +261,9 @@ class Table extends React.Component {
         this.buildTable
       ),
       state.connect({
-        deselectSelection: () => this.setState({selectedItems: []})
         selectAllFromDomain: this.selectAllFromDomain,
         invertSelection: this.invertSelection,
+        deselectSelection: this.handleClickOutside,
       })
     ];
 
@@ -276,6 +277,9 @@ class Table extends React.Component {
       state.disconnect(connection);
     });
     unref(this);
+  }
+  handleClickOutside = () => {
+    if (this.state.selectedItems.length) this.setState({selectedItems: []});
   }
   buildTable = () => {
     if (this.willUnmount) return;
@@ -443,7 +447,7 @@ class Table extends React.Component {
 
   }
   handleActivation = (i) => {
-    if (window.cursor.keys.ctrl) {
+    if (window.cursor.keys.ctrl || window.cursor.keys.shift) {
       return;
     }
     utils.activateTab(this.state.rows[i]);
@@ -575,5 +579,7 @@ class Table extends React.Component {
     }
   }
 }
+
+Table = onClickOutside(Table);
 
 export default Table;
