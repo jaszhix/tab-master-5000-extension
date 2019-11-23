@@ -92,10 +92,12 @@ let scssLoaders = [
     loader: 'sass-loader',
     options: {
       sourceMap: true,
-      includePaths: [
-        path.join(__dirname, 'node_modules')
-      ],
-      outputStyle: PROD ? 'compressed' : 'expanded'
+      sassOptions: {
+        outputStyle: PROD ? 'compressed' : 'expanded',
+        includePaths: [
+          path.join(__dirname, 'node_modules')
+        ],
+      }
     }
   }
 ];
