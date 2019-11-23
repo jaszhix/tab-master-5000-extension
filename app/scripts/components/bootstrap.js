@@ -376,7 +376,8 @@ export class Context extends React.Component {
               return (
                 <li key={i}>
                   <a
-                  style={{cursor: 'pointer', color: p.theme.bodyText}}
+                  className="Context__menuItemLink"
+                  style={{color: p.theme.bodyText}}
                   onClick={option.onClick}>
                     <i style={{color: p.theme.bodyText}} className={option.icon} />
                     {option.label}

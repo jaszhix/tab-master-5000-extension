@@ -321,7 +321,6 @@ div.row.ntg-tile-row-top > div.col-xs-3 > div > i {
   height: auto;
 }
 .ntg-session-text {
-  transition: color 0.05s ease-in;
   font-size: 14px;
   padding-left: 8px;
   overflow: hidden;
@@ -546,4 +545,9 @@ tr.placeholder:before {
   transform-origin: 70% 70%;
   animation-iteration-count: infinite;
   animation-timing-function: linear;
+}
+
+.Context__menuItemLink {
+  cursor: pointer;
+  transition: unset !important;
 }

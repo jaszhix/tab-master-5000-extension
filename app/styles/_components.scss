@@ -86,17 +86,6 @@ a.badge,
   -o-transition: border-color ease-in-out 0.02s;
   transition: border-color ease-in-out 0.02s;
 }
-.table tr,
-.table th,
-.table td,
-.htContextMenu td,
-.sidebar-user-material-menu > a,
-.navbar-nav > .active > a:after,
-.ranges ul li {
-  -webkit-transition: background-color ease-in-out 0.02s;
-  -o-transition: background-color ease-in-out 0.02s;
-  transition: background-color ease-in-out 0.02s;
-}
 .sidebar-user-material-menu > a > .caret {
   -webkit-transition: -webkit-transform ease-in-out 0.02s;
   -o-transition: -webkit-transform ease-in-out 0.02s;
