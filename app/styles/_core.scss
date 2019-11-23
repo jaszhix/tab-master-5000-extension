@@ -3709,9 +3709,6 @@ select[multiple].input-group-xs > .input-group-btn > .btn {
   .navbar-inverse .navbar-nav .open .dropdown-menu .form-control,
   .navbar-inverse .navbar-nav .open .dropdown-menu .form-control-feedback,
   .navbar-inverse .navbar-nav .open .dropdown-menu .input-group-addon,
-  .navbar-inverse .navbar-nav .open .dropdown-menu .select2-selection__placeholder {
-    color: #fff;
-  }
   .navbar-inverse .navbar-nav .open .dropdown-menu .form-control {
     border-bottom-color: rgba(255, 255, 255, 0.3);
   }
@@ -3726,15 +3723,6 @@ select[multiple].input-group-xs > .input-group-btn > .btn {
     color: #fff;
   }
   .navbar-inverse .navbar-nav .open .dropdown-menu .form-control:focus {
-    border-bottom-color: #fff;
-    -webkit-box-shadow: 0 1px 0 #fff;
-    box-shadow: 0 1px 0 #fff;
-  }
-  .navbar-inverse .navbar-nav .open .dropdown-menu .select2-selection--single:not([class*=bg-]):not([class*=border-]) {
-    border-bottom-color: rgba(255, 255, 255, 0.3);
-  }
-  .navbar-inverse .navbar-nav .open .dropdown-menu .select2-container--focus .select2-selection--single:not([class*=bg-]):not([class*=border-]),
-  .navbar-inverse .navbar-nav .open .dropdown-menu .select2-container--open .select2-selection--single:not([class*=bg-]):not([class*=border-]) {
     border-bottom-color: #fff;
     -webkit-box-shadow: 0 1px 0 #fff;
     box-shadow: 0 1px 0 #fff;
@@ -4360,9 +4348,6 @@ ul.dropdown-menu .dropdown-content-heading:first-child {
   .navbar .form-group:not(.has-feedback),
   .navbar .input-group-btn {
     position: static;
-  }
-  .navbar .select2-container {
-    width: 100%!important;
   }
   .navbar-fixed-bottom .btn-group .dropdown-menu,
   .navbar-fixed-bottom .dropdown .dropdown-menu,
@@ -6096,9 +6081,7 @@ h6.panel-title,
 }
 .panel-footer .form-control,
 .panel-footer .selectboxit-btn,
-.panel-footer .multiselect.btn-default,
-.panel-footer .bootstrap-select .btn-default,
-.panel-footer .select2-selection--single:not([class*=bg-]):not([class*=border-]) {
+.panel-footer .multiselect.btn-default {
   border-bottom-color: transparent!important;
   -webkit-box-shadow: none !important;
   box-shadow: none !important;
