@@ -143,53 +143,103 @@ class Theming extends React.Component {
     }
     return stateUpdate;
   }
+  componentDidMount() {
+    this.handleFooterButtons();
+  }
   componentDidUpdate = (pP, pS) =>  {
     ReactTooltip.rebuild();
     if (!_.isEqual(this.state, pS)) {
-      this.handleFooterButtons(this.props);
+      this.handleFooterButtons();
     }
   }
   triggerRefClick = (ref) => {
     this[ref].click();
   }
-  handleFooterButtons = (p) => {
-    let s = this.state;
+  getButtonStyle = (colorGroup) => {
+    return {fontWeight: colorGroup === this.state.colorGroup ? '600' : '400'}
+  }
+  handleFooterButtons = () => {
+    const {collapse, modal, wallpaper, prefs} = this.props;
+    const {leftTab, rightTab, isNewTheme, boldUpdate, savedThemes} = this.state;
     let update = false;
     let newThemeLabel, newThemeIcon = 'floppy-disk';
-    if (s.leftTab === 'tm5k') {
-      newThemeLabel = p.collapse ? utils.t('copy') : utils.t('copyTheme');
+
+    if (leftTab === 'tm5k') {
+      newThemeLabel = collapse ? utils.t('copy') : utils.t('copyTheme');
       newThemeIcon = 'copy3';
-    } else if (s.isNewTheme) {
-      newThemeLabel = p.collapse ? utils.t('save') : utils.t('saveTheme');
+    } else if (isNewTheme) {
+      newThemeLabel = collapse ? utils.t('save') : utils.t('saveTheme');
     } else {
       update = true;
-      newThemeLabel = p.collapse ? utils.t('update') : utils.t('updateTheme');
+      newThemeLabel = collapse ? utils.t('update') : utils.t('updateTheme');
     }
-    const getButtonStyle = (colorGroup) => {
-      return {fontWeight: colorGroup === this.state.colorGroup ? '600' : '400'}
-    };
-    p.modal.footer = (
+
+    modal.footer = (
       <div>
         <Btn
         onClick={!update ? () => this.handleSaveTheme() : () => this.handleUpdateTheme()}
-        style={{fontWeight: s.boldUpdate ? '600' : '400'}}
+        style={{fontWeight: boldUpdate ? '600' : '400'}}
         icon={newThemeIcon}
         className="ntg-setting-btn">
           {newThemeLabel}
         </Btn>
-        <Btn onClick={this.handleNewTheme} icon="color-sampler" className="ntg-setting-btn" >{`${utils.t('new')} ${p.collapse ? utils.t('theme') : ''}`}</Btn>
-        {s.savedThemes.length > 0 ?
-        <Btn onClick={() => themeStore.export()} className="ntg-setting-btn" icon="database-export">{utils.t('export')}</Btn> : null}
-        <Btn onClick={() => this.triggerRefClick('importRef')} className="ntg-setting-btn" icon="database-insert">{utils.t('import')}</Btn>
-        {s.rightTab === 'wallpaper' ?
-        <Btn onClick={() => this.triggerRefClick('wallpaperRef')} className="ntg-setting-btn" icon="file-picture">{utils.t('importWallpaper')}</Btn> : null}
-        {s.rightTab === 'color' ? <Btn onClick={() => this.setState({colorGroup: 'general'})} style={getButtonStyle('general')} className="ntg-setting-btn">{utils.t('bodyHeaderAndFields')}</Btn> : null}
-        {s.rightTab === 'color' ? <Btn onClick={() => this.setState({colorGroup: 'buttons'})} style={getButtonStyle('buttons')} className="ntg-setting-btn">{utils.t('buttons')}</Btn> : null}
-        {s.rightTab === 'color' ? <Btn onClick={() => this.setState({colorGroup: 'tiles'})} style={getButtonStyle('tiles')} className="ntg-setting-btn">{utils.t('tiles')}</Btn> : null}
-        {p.wallpaper && p.wallpaper.data !== -1 && p.wallpaper.id < 9000 && s.rightTab === 'wallpaper' ? <Btn onClick={() => themeStore.removeWallpaper(p.prefs.wallpaper)} className="ntg-setting-btn pull-right">{utils.t('remove')}</Btn> : null}
+        <Btn
+        onClick={this.handleNewTheme}
+        icon="color-sampler"
+        className="ntg-setting-btn">
+          {`${utils.t('new')} ${collapse ? utils.t('theme') : ''}`}
+        </Btn>
+        {savedThemes.length > 0 ?
+        <Btn
+        onClick={() => themeStore.export()}
+        className="ntg-setting-btn"
+        icon="database-export">
+          {utils.t('export')}
+        </Btn> : null}
+        <Btn
+        onClick={() => this.triggerRefClick('importRef')}
+        className="ntg-setting-btn"
+        icon="database-insert">
+          {utils.t('import')}
+        </Btn>
+        {rightTab === 'wallpaper' ?
+        <Btn
+        onClick={() => this.triggerRefClick('wallpaperRef')}
+        className="ntg-setting-btn"
+        icon="file-picture">
+          {utils.t('importWallpaper')}
+        </Btn> : null}
+        {rightTab === 'color' ?
+        <Btn
+        onClick={() => this.setState({colorGroup: 'general'})}
+        style={this.getButtonStyle('general')}
+        className="ntg-setting-btn">
+          {utils.t('bodyHeaderAndFields')}
+        </Btn> : null}
+        {rightTab === 'color' ?
+        <Btn
+        onClick={() => this.setState({colorGroup: 'buttons'})}
+        style={this.getButtonStyle('buttons')}
+        className="ntg-setting-btn">
+          {utils.t('buttons')}
+        </Btn> : null}
+        {rightTab === 'color' ?
+        <Btn
+        onClick={() => this.setState({colorGroup: 'tiles'})}
+        style={this.getButtonStyle('tiles')}
+        className="ntg-setting-btn">
+          {utils.t('tiles')}
+        </Btn> : null}
+        {wallpaper && wallpaper.data !== -1 && wallpaper.id < 9000 && rightTab === 'wallpaper' ?
+        <Btn
+        onClick={() => themeStore.removeWallpaper(prefs.wallpaper)}
+        className="ntg-setting-btn pull-right">
+          {utils.t('remove')}
+        </Btn> : null}
       </div>
     );
-    state.set({modal: p.modal}, true);
+
+    state.set({modal}, true);
   }
   handleSelectTheme = (theme) => {
     this.setState({
