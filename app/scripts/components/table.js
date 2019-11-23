@@ -257,7 +257,7 @@ class Table extends React.Component {
   componentDidMount = () => {
     this.connections = [
       state.connect(
-        ['tabs', 'history', 'sessionTabs', 'bookmarks', 'apps', 'extensions', 'searchCache', 'search', 'modeKey'],
+        ['tabs', 'history', 'sessionTabs', 'bookmarks', 'apps', 'extensions', 'searchCache', 'prefs'],
         this.buildTable
       ),
       state.connect({
@@ -292,9 +292,7 @@ class Table extends React.Component {
       let row = state[state.modeKey][i];
       let urlMatch;
 
-      if (row === undefined || !row || row.url === undefined || !row.url) {
-        continue;
-      }
+      if (!row || !row.url) continue;
 
       urlMatch = row.url.match(domainRegex);
       row.domain = urlMatch ? urlMatch[1] : false;
