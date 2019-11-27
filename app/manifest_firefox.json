@@ -32,8 +32,6 @@
   },
   "permissions": [
     "tabs",
-    "http://*/*",
-    "https://*/*",
     "storage",
     "unlimitedStorage",
     "management",

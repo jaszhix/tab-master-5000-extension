@@ -1,7 +1,7 @@
 {
   "name": "__MSG_appName__",
   "short_name": "TM5K",
-  "version": "2.9.6",
+  "version": "2.9.7",
   "manifest_version": 2,
   "description": "__MSG_appDesc__",
   "icons": {
@@ -29,8 +29,6 @@
   "offline_enabled": true,
   "permissions": [
     "tabs",
-    "http://*/*",
-    "https://*/*",
     "storage",
     "unlimitedStorage",
     "downloads"

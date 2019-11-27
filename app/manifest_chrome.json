@@ -29,8 +29,6 @@
   "offline_enabled": true,
   "permissions": [
     "tabs",
-    "http://*/*",
-    "https://*/*",
     "storage",
     "unlimitedStorage",
     "downloads"
