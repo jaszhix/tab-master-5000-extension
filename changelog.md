@@ -1,5 +1,16 @@
 #### Release Notes
 
+##### v2.9.7 / *11-27-19*
+
+* Various bug fixes and tweaks for the table view:
+  - Fixed tab data and headers not rendering correctly when switching from the Sessions view mode.
+  - Clicking outside of the table view now resets row selections.
+  - Fixed holding shift and clicking a row not selecting a range of rows, and activating a tab instead.
+  - Fixed the context menu not reflecting a non-selected result when selections are activated.
+* Removed some unnecessary CSS transitions for table row and context menu item hover styles.
+* Cleaned up unused styles in the CSS.
+* Upgraded dependencies.
+
 ##### v2.9.6 / *8-11-19*
 
 * Fixed tab screenshot capture functionality.
