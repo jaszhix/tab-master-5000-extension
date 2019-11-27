@@ -10,6 +10,7 @@
 * Removed some unnecessary CSS transitions for table row and context menu item hover styles.
 * Cleaned up unused styles in the CSS.
 * Upgraded dependencies.
+* Removed usage of broad host permissions in the manifest file, left over from when TM5K used content scripts.
 
 ##### v2.9.6 / *8-11-19*
 
