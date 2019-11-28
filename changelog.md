@@ -3,6 +3,7 @@
 ##### v2.9.7 / *11-27-19*
 
 * Various bug fixes and tweaks for the table view:
+  - Fixed table row results not resetting when clearing the search field.
   - Fixed tab data and headers not rendering correctly when switching from the Sessions view mode.
   - Clicking outside of the table view now resets row selections.
   - Fixed holding shift and clicking a row not selecting a range of rows, and activating a tab instead.
