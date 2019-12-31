@@ -27,13 +27,13 @@ fs.ensureDirSync('./releases');
 gulp.task('build-bg', function() {
   config.entry = './app/scripts/bg/bg.js';
   config.output.filename = 'background.js';
-  return gulp.src('./app/scripts/background.js')
+  return gulp.src('./app/scripts/background.js', {allowEmpty: true})
     .pipe(webpackStream(config, webpack))
     .pipe(gulp.dest('./app/scripts/'));
 });
 
 gulp.task('build', gulp.series('build-bg', function() {
-  return gulp.src('./app/scripts/components/app.js')
+  return gulp.src('./app/scripts/components/app.js', {allowEmpty: true})
     .pipe(webpackStream(config))
     .pipe(gulp.dest('./app/scripts/'));
 }));

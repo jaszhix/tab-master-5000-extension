@@ -40,19 +40,23 @@ fs.createReadStream(`./app/manifest_${DEV_ENV}${DEV_ENV === 'chrome' && ENV === 
 const postcssPlugins = () => {
   let processors = [
     autoprefixer({
-      browsers: [
+      overrideBrowserslist: [
         'ff >= 52',
         'chrome >= 58',
         'opera >= 23'
       ]
     })
   ];
-  processors.push(cssnano({
-    safe: true,
-    discardComments: {
-      removeAll: true
-    }
-  }));
+
+  processors.push(
+    cssnano({
+      safe: true,
+      discardComments: {
+        removeAll: true
+      }
+    })
+  );
+
   return processors;
 }
 
