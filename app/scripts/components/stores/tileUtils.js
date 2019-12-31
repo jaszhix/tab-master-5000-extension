@@ -127,13 +127,16 @@ export const closeAllTabs = (tab) => {
 };
 
 export const closeAllItems = ({tab = null, left = false, right = false}) => {
-  let items = state.get(state.modeKey);
+  let items = state.get(state.modeKey).slice();
+
   for (let i = 0, len = items.length; i < len; i++) {
     if (!items[i] || (tab && (left && tab.index <= i || right && tab.index >= i || isNewTab(tab.url)))) {
       continue;
     }
+
     closeTab(items[i])
   }
+
   state.set({search: '', searchCache: []});
 };
 

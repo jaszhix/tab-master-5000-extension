@@ -67,7 +67,6 @@ const state = initStore({
   tileCache: [],
   tabs: [],
   allTabs: null,
-  newTabs: null,
   duplicateTabs: [],
   bookmarks: [],
   history: [],
