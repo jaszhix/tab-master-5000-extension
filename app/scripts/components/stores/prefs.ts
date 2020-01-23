@@ -2,7 +2,7 @@ import _ from 'lodash';
 import initStore from '@jaszhix/state';
 import {each, tryFn} from '@jaszhix/utils';
 
-let prefsStore = initStore({
+let prefsStore: PreferencesStore = initStore({
   prefs: {},
   defaultPrefs: {
     autoDiscard: false,
@@ -66,7 +66,7 @@ let prefsStore = initStore({
         });
       });
     });
-    getPrefs.then((prefs)=>{
+    getPrefs.then((prefs: PreferencesState)=>{
       prefsStore.prefs = prefs;
 
       // Migrate
@@ -88,13 +88,14 @@ let prefsStore = initStore({
     // With cloud syncing, the extension settings could be restored and the user might get
     // stuck in a view mode we haven't asked permission for yet. Resolve this by tracking
     // all permissions granted, and resetting prefs accordingly (handled in checkPermissions).
-    let permissions = localStorage.getItem('tm5kPermissionsTracking');
+    let permissions: PermissionsState;
+    let json = localStorage.getItem('tm5kPermissionsTracking');
 
-    if (!permissions) {
+    if (!json) {
       localStorage.setItem('tm5kPermissionsTracking', JSON.stringify(prefsStore.permissions));
     } else {
       permissions = tryFn(
-        () => JSON.parse(permissions),
+        () => JSON.parse(json),
         () => prefsStore.permissions
       );
 

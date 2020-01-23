@@ -4,13 +4,15 @@ import * as utils from './stores/tileUtils';
 import {Btn, Col, Row} from './bootstrap';
 import Loading from './loading';
 
-class Search extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-  preventSubmit = (e) => {
-    e.preventDefault();
-  }
+const {version} = chrome.runtime.getManifest();
+
+interface SearchProps {
+  s: GlobalState;
+  theme: Theme;
+  topLoad: boolean;
+}
+
+class Search extends React.Component<SearchProps> {
   handleSearch = (e) => {
     state.set({search: e.target.value});
   }
@@ -41,12 +43,12 @@ class Search extends React.Component {
   }
   render = () => {
     let p = this.props;
-    const headerStyle = {
+    const headerStyle: React.CSSProperties = {
       backgroundColor: p.theme.headerBg,
       position: 'fixed',
       top: '0px',
       width: '100%',
-      zIndex: '500',
+      zIndex: 500,
       boxShadow: `${p.theme.tileShadow} 1px 1px 3px -1px`,
       maxHeight: '52px'
     };
@@ -61,8 +63,8 @@ class Search extends React.Component {
             <div style={{display: 'flex', width: '100%', paddingLeft: '0px', paddingRight: '0px'}}>
               <Btn
               onClick={this.handleSidebar}
-              onMouseEnter={()=>state.set({disableSidebarClickOutside: true})}
-              onMouseLeave={()=>state.set({disableSidebarClickOutside: false})}
+              onMouseEnter={() => state.set({disableSidebarClickOutside: true})}
+              onMouseLeave={() => state.set({disableSidebarClickOutside: false})}
               style={{marginRight: '0px', padding: '9px 12px 7px 12px'}}
               className="ntg-top-btn"
               icon="menu7"
@@ -73,7 +75,7 @@ class Search extends React.Component {
               className="form-control search-tabs"
               placeholder={`${utils.t('search')} ${utils.t(p.s.prefs.mode)}...`}
               onChange={this.handleSearch}
-              onKeyDown={(e)=>this.handleEnter(e)} />
+              onKeyDown={(e) => this.handleEnter(e)} />
             </div>
           </Col>
           <Col size={p.s.width <= 825 ? p.s.width <= 630 ? p.s.width <= 514 ? '2' : '4' : '6' : '8'} style={{float: 'right'}}>
@@ -85,7 +87,7 @@ class Search extends React.Component {
             </span> : null}
             {p.s.topNavButton === 'newVersion' ?
             <Btn
-            onClick={()=>this.handleTopNavButtonClick(()=>chrome.runtime.reload())}
+            onClick={() => this.handleTopNavButtonClick(()=>chrome.runtime.reload())}
             style={topNavButtonStyle}
             className="ntg-sort-btn pull-right"
             fa="rocket"
@@ -95,15 +97,15 @@ class Search extends React.Component {
             </Btn> : null}
             {p.s.topNavButton === 'versionUpdate' ?
             <Btn
-            onClick={()=>this.handleTopNavButtonClick(()=>this.openAbout())}
+            onClick={() => this.handleTopNavButtonClick(() => this.openAbout())}
             style={topNavButtonStyle} className="ntg-sort-btn pull-right"
             icon="info3" data-place="bottom"
-            data-tip={p.s.width <= 841 ? `${utils.t('updatedTo')} ${utilityStore.get_manifest().version}` : null}>
-              {p.s.width <= 841 ? '' : `${utils.t('updatedTo')} ${utilityStore.get_manifest().version}`}
+            data-tip={p.s.width <= 841 ? `${utils.t('updatedTo')} ${version}` : null}>
+              {p.s.width <= 841 ? '' : `${utils.t('updatedTo')} ${version}`}
             </Btn> : null}
             {p.s.topNavButton === 'installed' ?
             <Btn
-            onClick={()=>this.handleTopNavButtonClick(()=>this.openAbout())}
+            onClick={() => this.handleTopNavButtonClick(() => this.openAbout())}
             style={topNavButtonStyle}
             className="ntg-sort-btn pull-right"
             fa="thumbs-o-up"

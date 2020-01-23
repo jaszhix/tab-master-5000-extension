@@ -1,7 +1,12 @@
 import React from 'react';
 import state from './stores/state';
 
-class Alert extends React.Component {
+interface AlertProps {
+  alert: AlertState;
+  enabled: boolean;
+}
+
+class Alert extends React.Component<AlertProps> {
   handleToggle = () => {
     state.set({alert: {open: !this.props.alert.open}});
   }
@@ -9,7 +14,7 @@ class Alert extends React.Component {
     return (
       <div
       style={{
-        zIndex: '9999',
+        zIndex: 9999,
         position: 'fixed',
         bottom: '0px',
         right: '2%',

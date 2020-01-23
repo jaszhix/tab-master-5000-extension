@@ -7,18 +7,36 @@ import {StyleSheet, css} from 'aphrodite';
 import {findIndex} from '@jaszhix/utils';
 
 import Settings from './settings';
-import {msgStore} from './stores/main';
+import {setPrefs, queryTabs} from './stores/main';
 import state from './stores/state';
 import * as utils from './stores/tileUtils';
 
 import {Tabs} from './bootstrap';
 
-let mount = false;
+interface ModalDefaultProps {
+  clickOutside: boolean;
+  onClose: () => void;
+  onMaximize: React.MouseEventHandler;
+  heightOffset?: number;
+  height: number;
+  size: string;
+  header: string;
+  headerComponent: React.ReactElement;
+  footerComponent: React.ReactElement;
+  maximized: boolean;
+  animations: boolean;
+  bodyStyle: React.CSSProperties;
+  dialogStyle: React.CSSProperties;
+  headerStyle: React.CSSProperties;
+  contentStyle: React.CSSProperties;
+  maximizeBtnStyle: React.CSSProperties;
+  closeBtnStyle: React.CSSProperties;
+  footerStyle: React.CSSProperties;
+  settings: string;
 
-export class ModalDefault extends React.Component {
-  constructor(props) {
-    super(props);
-  }
+}
+
+export class ModalDefault extends React.Component<ModalDefaultProps> {
   handleClickOutside = () => {
     if (this.props.clickOutside) {
       this.props.onClose();
@@ -69,10 +87,33 @@ export class ModalDefault extends React.Component {
     );
   }
 }
-
+// @ts-ignore
 ModalDefault = onClickOutside(ModalDefault);
 
-class ModalHandler extends React.Component {
+interface ModalHandlerProps {
+  prefs: PreferencesState;
+  theme: Theme;
+  width: number;
+  height: number;
+  settings: string;
+  modal: ModalState;
+  colorPickerOpen: boolean;
+  sessions: SessionState[];
+  tabs: ChromeTab[];
+  allTabs: ChromeTab[][];
+  favicons: FaviconState[];
+  collapse: boolean;
+  savedThemes: ThemeState[];
+  wallpaper: Wallpaper;
+  wallpapers: Wallpaper[];
+  chromeVersion: number;
+}
+
+interface ModalHandlerState {
+  maximized: boolean;
+}
+
+class ModalHandler extends React.Component<ModalHandlerProps, ModalHandlerState> {
   static defaultProps = {
     onClose: ()=>{return;},
     header: '',
@@ -89,14 +130,8 @@ class ModalHandler extends React.Component {
       maximized: false
     }
   }
-  componentDidMount = () => {
-    mount = true;
-  }
-  componentWillUnmount = () => {
-    mount = false;
-  }
   handleClose = () => {
-    msgStore.queryTabs();
+    queryTabs();
     state.set({
       modal: {state: false},
       settings: 'preferences',
@@ -104,7 +139,7 @@ class ModalHandler extends React.Component {
     });
   }
   handleMaximize = () => {
-    msgStore.setPrefs({settingsMax: !this.props.prefs.settingsMax});
+    setPrefs({settingsMax: !this.props.prefs.settingsMax} as PreferencesState);
   }
   render = () => {
     let p = this.props;
@@ -123,7 +158,7 @@ class ModalHandler extends React.Component {
       top: p.settings === 'theming' ? p.height > 1300 ? '60%' : p.height > 1000 ? '55%' : p.height > 900 ? '45%' : '35%' : '0',
     };
     let dialogStyle = {
-      zIndex: '50',
+      zIndex: 50,
       opacity: p.settings === 'theming' ? '0.95' : '1',
       transition: p.prefs.animations ? 'opacity 0.2s, top 0.2s, width 0.2s' : 'initial',
       width: maximized ? `${p.width}px` : p.width > 949 ? '949px' : '85%',

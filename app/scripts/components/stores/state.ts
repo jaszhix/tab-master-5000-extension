@@ -1,6 +1,6 @@
 import initStore from '@jaszhix/state';
 
-const state = initStore({
+const state: GlobalState = initStore({
   // Core
   init: false,
   prefs: {},
@@ -10,13 +10,6 @@ const state = initStore({
   actions: [],
   windowRestored: false,
   isOptions: document.querySelector('#options'),
-  // Single item states
-  move: null,
-  update: null,
-  updateType: null,
-  massUpdate: null,
-  remove: null,
-  create: null,
   screenshotClear: false,
   // UI
   search: '',
@@ -58,11 +51,6 @@ const state = initStore({
   // Chrome data
   chromeVersion: 0,
   windowId: null,
-  reQuery: {
-    state: null,
-    type: null,
-    id: null
-  },
   searchCache: [],
   tileCache: [],
   tabs: [],

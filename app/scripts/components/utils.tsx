@@ -1,7 +1,7 @@
 import React from 'react';
 import Loadable from 'react-loadable';
 
-export const includes = function (arr, val, index) {
+export const includes = function (arr: any[], val: any, index: number): boolean {
   for (let i = 0 | index; i < arr.length; i++) {
     if (arr[i] === val) {
       return true;
@@ -10,8 +10,8 @@ export const includes = function (arr, val, index) {
   return false;
 }
 
-export const merge = function() {
-  let [result, ...extenders] = Array.from(arguments);
+export const merge = function(): object {
+  let [result, ...extenders]: any[] = Array.from(arguments);
   for (let i = 0, len = extenders.length; i < len; i++) {
     let keys = Object.keys(extenders[i]);
     for (let z = 0, len = keys.length; z < len; z++) {
@@ -21,18 +21,18 @@ export const merge = function() {
   return result;
 }
 
-export const whichToShow = function({outerHeight, itemHeight, scrollTop, columns}) {
+export const whichToShow = function({outerHeight, itemHeight, scrollTop, columns}): VisibleRange {
   let start = Math.floor(scrollTop / itemHeight);
   let heightOffset = scrollTop % itemHeight;
   let length = Math.ceil((outerHeight + heightOffset) / itemHeight) * columns;
 
   return {
-    start: start,
-    length: length,
+    start,
+    length,
   }
 }
 
-export const unref = function(object) {
+export const unref = function(object: object) {
   setTimeout(() => {
     let keys = Object.keys(object);
     for (let i = 0; i < keys.length; i++) {
@@ -41,13 +41,19 @@ export const unref = function(object) {
   }, 0);
 };
 
-export const isNewTab = function(url) {
+export const isNewTab = function(url: string): boolean {
   return (url && (url.indexOf('chrome://newtab/') > -1
     || url.substr(-11) === 'newtab.html'
     || url.substr(-11) === 'ewtab.html#'))
+};
+
+interface LoadingProps {
+  error: Error;
+  timedOut: boolean;
+  retry: () => void;
 }
 
-const Loading = function(props) {
+const Loading = function(props: LoadingProps): React.ReactElement {
   if (props.error) {
     return <div>Error! <button className="ntg-btn" onClick={props.retry}>Retry</button></div>;
   } else if (props.timedOut) {
@@ -57,7 +63,7 @@ const Loading = function(props) {
   }
 };
 
-export const AsyncComponent = function(opts) {
+export const AsyncComponent = function(opts: Loadable.Options<unknown, object>): Loadable.LoadableComponent {
   return Loadable(Object.assign({
     loading: Loading,
     delay: 200,

@@ -33,7 +33,27 @@ const formatDate = function(date) {
     .replace(/a min/, '1 min');
 };
 
-class Row extends React.Component {
+interface RowProps {
+  s: GlobalState;
+  row: ChromeTab;
+  onDragStart: React.DragEventHandler;
+  onDragEnd: (e: React.DragEvent, i?: number) => void;
+  onDragOver: React.DragEventHandler;
+  onClick: (e: React.MouseEvent) => void;
+  onContextMenu: (e: React.MouseEvent, row: ChromeTab) => void;
+  onActivate: React.MouseEventHandler;
+  handleBooleanClick: (column: SortKey) => void;
+  className: string;
+  style?: React.CSSProperties;
+  draggable: boolean;
+  columns: SortKey[];
+  dynamicStyles: any;
+}
+
+class Row extends React.Component<RowProps> {
+  ref: HTMLElement;
+
+
   constructor(props) {
     super(props);
     this.state = {
@@ -52,7 +72,7 @@ class Row extends React.Component {
   }
   render = () => {
     let p = this.props;
-    let textOverflow = {
+    let textOverflow: React.CSSProperties = {
       whiteSpace: 'nowrap',
       width: `${p.s.width <= 1186 ? p.s.width / 3 : p.s.width <= 1015 ? p.s.width / 6 : p.s.width / 2}px`,
       overflow: 'hidden',
@@ -174,10 +194,23 @@ class Row extends React.Component {
   }
 }
 
-class TableHeader extends React.Component {
-  constructor(props) {
-    super(props);
-  }
+interface TableHeaderProps {
+  isFloating: boolean;
+  showFloatingTableHeader?: boolean;
+  headerBg?: string;
+  darkBtnText?: string;
+  columns: SortKey[];
+  order: SortKey;
+  direction: GlobalState['direction'];
+  dynamicStyles: any; // TBD
+  mode: ViewMode;
+  handleColumnClick: (column: SortKey) => void;
+}
+
+class TableHeader extends React.Component<TableHeaderProps> {
+  ref: HTMLElement;
+  willUnmount: boolean;
+
   componentDidMount = () => {
     if (!this.props.isFloating || this.willUnmount) {
       return;
@@ -202,7 +235,7 @@ class TableHeader extends React.Component {
     this.willUnmount = true;
     unref(this);
   }
-  getRef = (ref) => {
+  getRef = (ref: HTMLElement) => {
     if (!this.props.isFloating || !ref) {
       return;
     }
@@ -228,8 +261,8 @@ class TableHeader extends React.Component {
               key={i}
               id={this.props.isFloating ? `header-${column}` : ''}
               className={css(this.props.dynamicStyles.columnCommon) + ` sorting${this.props.order === column ? '_'+this.props.direction : ''}`}
-              rowSpan="1"
-              colSpan="1"
+              rowSpan={1}
+              colSpan={1}
               onClick={() => this.props.handleColumnClick(column)}>
                 {_.upperFirst(columnLabel.replace(/([A-Z])/g, ' $1'))}
               </th>
@@ -241,7 +274,28 @@ class TableHeader extends React.Component {
   }
 }
 
-class Table extends React.Component {
+interface TableProps {
+  s: GlobalState;
+  showFloatingTableHeader: boolean;
+  range: VisibleRange;
+  onDragEnd: (e: React.DragEvent, i: number) => void;
+  onDragStart: (e: React.DragEvent, i: number) => void;
+  onDragOver: (e: React.DragEvent, i: number) => void;
+}
+
+interface TableState {
+  columns?: SortKey[];
+  rows?: ChromeTab[];
+  rowHover?: number;
+  muteInit?: boolean;
+  selectedItems?: number[];
+  shiftRange?: number;
+}
+
+class Table extends React.Component<TableProps, TableState> {
+  connections: number[];
+  willUnmount: boolean;
+
   constructor(props) {
     super(props);
 
@@ -285,11 +339,11 @@ class Table extends React.Component {
     if (this.willUnmount) return;
 
     const {prefs} = state;
-    let rows = [];
-    let columns = ['title', 'domain'];
+    let rows: ChromeTab[] = [];
+    let columns: SortKey[] = ['title', 'domain'];
 
     for (let i = 0, len = state[state.modeKey].length; i < len; i++) {
-      let row = state[state.modeKey][i];
+      let row = state[state.modeKey][i] as ChromeTab;
       let urlMatch;
 
       if (!row || !row.url) continue;
@@ -360,50 +414,51 @@ class Table extends React.Component {
     }
   }
   handleSelect = (i) => {
-    let s = this.state;
+    let {shiftRange, selectedItems, rows} = this.state;
     let p = this.props;
+
     if (window.cursor.keys.ctrl) {
-      if (s.selectedItems.indexOf(i) !== -1) {
-        _.pull(s.selectedItems, i);
+      if (selectedItems.indexOf(i) !== -1) {
+        selectedItems.splice(i, 1);
       } else {
-        if (s.selectedItems.length === 0) {
-          s.shiftRange = i;
+        if (selectedItems.length === 0) {
+          shiftRange = i;
           setAlert({
             text: `Press the delete key to remove selected ${p.s.prefs.mode}.`,
             tag: 'alert-success',
             open: true
-          });
+          } as AlertState);
         }
-        s.selectedItems.push(i);
+        selectedItems.push(i);
       }
     } else if (window.cursor.keys.shift) {
-      if (!s.shiftRange) {
-        s.selectedItems.push(i);
+      if (!shiftRange) {
+        selectedItems.push(i);
         this.setState({shiftRange: i});
         return;
       } else {
-        let rows = _.clone(s.rows);
-        if (i < s.shiftRange) {
+        rows = _.clone(rows);
+        if (i < shiftRange) {
           let i_cache = i;
-          i = s.shiftRange;
-          s.shiftRange = i_cache;
+          i = shiftRange;
+          shiftRange = i_cache;
         }
-        let range = _.slice(rows, s.shiftRange, i);
+        let range = _.slice(rows, shiftRange, i);
         for (let z = 0, len = range.length; z < len; z++) {
-          let refRow = findIndex(s.rows, row => row.id === range[z].id);
-          if (s.selectedItems.indexOf(refRow) !== -1 && refRow !== s.shiftRange && refRow !== i) {
-            _.pull(s.selectedItems, refRow);
+          let refRow = findIndex(rows, row => row.id === range[z].id);
+          if (selectedItems.indexOf(refRow) !== -1 && refRow !== shiftRange && refRow !== i) {
+            selectedItems.splice(refRow, 1);
           } else {
-            s.selectedItems.push(refRow);
+            selectedItems.push(refRow);
           }
         }
 
       }
     } else {
-      s.selectedItems = [];
-      s.shiftRange = null;
+      selectedItems = [];
+      shiftRange = null;
     }
-    this.setState({selectedItems: s.selectedItems, shiftRange: s.shiftRange});
+    this.setState({selectedItems, shiftRange});
   }
   selectAllFromDomain = (domain) => {
     let {rows, selectedItems, shiftRange} = this.state;
@@ -490,7 +545,7 @@ class Table extends React.Component {
     let s = this.state;
     let p = this.props;
     if (s.columns && s.rows) {
-      const dynamicStyles = StyleSheet.create({
+      const dynamicStyles: any = StyleSheet.create({
         columnCommon: {padding: `${p.s.prefs.tablePadding}px ${p.s.prefs.tablePadding + 8}px`},
         titleColumn: {maxWidth: p.s.width <= 950 ? '300px' : p.s.width <= 1015 ? '400px' : '700px', userSelect: 'none', cursor: 'pointer'},
         faviconContainer: {paddingRight: `${p.s.prefs.tablePadding + 8}px`},
@@ -515,7 +570,6 @@ class Table extends React.Component {
             order={p.s.sort}
             direction={p.s.direction}
             handleColumnClick={this.handleColumnClick}
-            width={p.s.width}
             isFloating={false}
             showFloatingTableHeader={this.props.showFloatingTableHeader} />
             <tbody onMouseLeave={() => this.setState({rowHover: -1})}>
@@ -571,8 +625,6 @@ class Table extends React.Component {
             order={p.s.sort}
             direction={p.s.direction}
             handleColumnClick={this.handleColumnClick}
-            width={p.s.width}
-            lightBtnText={p.s.theme.lightBtnText}
             darkBtnText={p.s.theme.darkBtnText}
             headerBg={p.s.theme.headerBg}
             isFloating={true} />
@@ -584,7 +636,7 @@ class Table extends React.Component {
     }
   }
 }
-
+// @ts-ignore
 Table = onClickOutside(Table);
 
 export default Table;

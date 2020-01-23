@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "esModuleInterop": true,
+    "module": "commonjs",
+    "noEmit": true,
+    "allowJs": false,
+    "resolveJsonModule": true,
+    "declaration": false,
+    "jsx": "react",
+    "baseUrl": "./app/scripts/components",
+    "typeRoots" : [
+      "./node_modules/@types",
+      "./types"
+    ]
+  },
+  "include": [
+    "**app/scripts/components/**/*.ts",
+    "**app/scripts/components/**/*.tsx"
+  ],
+  "exclude": [
+    "dist",
+    "releases",
+    "source_maps"
+  ]
+}

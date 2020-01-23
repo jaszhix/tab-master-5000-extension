@@ -4,13 +4,20 @@ import {map} from '@jaszhix/utils';
 
 import state from '../stores/state';
 import * as utils from '../stores/tileUtils';
-import {utilityStore} from '../stores/main';
 
 import {Btn, Col, Row, Link} from '../bootstrap';
 
-const containerStyle = {marginTop: '49px'};
+const containerStyle: React.CSSProperties = {marginTop: '49px'};
 
-class Contribute extends React.Component {
+interface ContributeProps {
+  chromeVersion: number;
+}
+
+interface ContributeState {
+  content: {__html: string}
+}
+
+class Contribute extends React.Component<ContributeProps, ContributeState> {
   constructor(props) {
     super(props);
 
@@ -24,8 +31,10 @@ class Contribute extends React.Component {
     let locale = chrome.i18n.getUILanguage();
 
     if (locale === 'es') {
+      // @ts-ignore
       promise = import(/* webpackChunkName: "contribute_es" */ 'html-loader!markdown-loader!../../../../contribute_es.md');
     } else {
+      // @ts-ignore
       promise = import(/* webpackChunkName: "contribute_en" */ 'html-loader!markdown-loader!../../../../contribute.md');
     }
 
@@ -77,7 +86,7 @@ class Contribute extends React.Component {
               <option value="3 -">$25.00 USD</option>
             </select>
             <input type="hidden" name="currency_code" value="USD" />
-            <Btn className="ntg-top-btn" name="submit">PayPal</Btn>
+            <Btn className="ntg-top-btn">PayPal</Btn>
           </form>
         </Col>
 
@@ -86,7 +95,13 @@ class Contribute extends React.Component {
   }
 }
 
-class License extends React.Component {
+interface LicenseProps {}
+
+interface LicenseState {
+  content: {__html: string}
+}
+
+class License extends React.Component<LicenseProps, LicenseState> {
   constructor(props) {
     super(props);
 
@@ -96,6 +111,7 @@ class License extends React.Component {
   }
 
   componentDidMount() {
+    // @ts-ignore
     import(/* webpackChunkName: "copying" */ 'html-loader!markdown-loader!../../../../COPYING')
       .then((module) => {
         this.setState({content: {__html: module.default}})
@@ -118,7 +134,13 @@ class License extends React.Component {
   }
 }
 
-class Support extends React.Component {
+interface SupportProps {}
+
+interface SupportState {
+  content: {__html: string}
+}
+
+class Support extends React.Component<SupportProps, SupportState> {
   constructor(props) {
     super(props);
 
@@ -132,8 +154,10 @@ class Support extends React.Component {
     let locale = chrome.i18n.getUILanguage();
 
     if (locale === 'es') {
+      // @ts-ignore
       promise = import(/* webpackChunkName: "support_es" */ 'html-loader!markdown-loader!../../../../support_es.md');
     } else {
+      // @ts-ignore
       promise = import(/* webpackChunkName: "support_en" */ 'html-loader!markdown-loader!../../../../support.md');
     }
 
@@ -159,12 +183,18 @@ class Support extends React.Component {
   }
 }
 
-class Attribution extends React.Component {
+interface AttributionProps {}
+
+interface AttributionState {
+  dependencies: string[];
+}
+
+class Attribution extends React.Component<AttributionProps, AttributionState> {
   constructor(props) {
     super(props);
 
     this.state = {
-      dependencies: null,
+      dependencies: [],
     };
   }
 
@@ -232,7 +262,15 @@ class Attribution extends React.Component {
   }
 }
 
-class ReleaseNotes extends React.Component {
+interface ReleaseNotesProps {
+  tm5kLogo: string;
+}
+
+interface ReleaseNotesState {
+  content: {__html: string};
+}
+
+class ReleaseNotes extends React.Component<ReleaseNotesProps, ReleaseNotesState> {
   constructor(props) {
     super(props);
 
@@ -242,6 +280,7 @@ class ReleaseNotes extends React.Component {
   }
 
   componentDidMount() {
+    // @ts-ignore
     import(/* webpackChunkName: "changelog" */ 'html-loader!markdown-loader!../../../../changelog.md')
       .then((module) => {
         this.setState({content: {__html: module.default}})
@@ -268,11 +307,21 @@ class ReleaseNotes extends React.Component {
   }
 }
 
-const tabUlStyle = {borderBottom: 'initial', position: 'absolute', zIndex: '9999', userSelect: 'none'};
-const tabLiStyle = {padding: '0px'};
-const tabLinkStyle = {padding: '5px 7.5px'};
+const tabUlStyle: React.CSSProperties = {borderBottom: 'initial', position: 'absolute', zIndex: 9999, userSelect: 'none'};
+const tabLiStyle: React.CSSProperties = {padding: '0px'};
+const tabLinkStyle: React.CSSProperties = {padding: '5px 7.5px'};
 
-class About extends React.Component {
+interface AboutProps {
+  theme: Theme;
+  modal: ModalState;
+  chromeVersion: number;
+}
+
+interface AboutState {
+  tab: string;
+}
+
+class About extends React.Component<AboutProps, AboutState> {
   constructor(props) {
     super(props);
 
@@ -280,26 +329,26 @@ class About extends React.Component {
       tab: 'release'
     };
   }
-  componentWillMount() {
+  componentDidMount() {
     let p = this.props;
     p.modal.footer = (
       <div>
         <Btn
-        onClick={() => utilityStore.createTab('https://github.com/jaszhix/tab-master-5000-extension')}
+        onClick={() => chrome.tabs.create({url: 'https://github.com/jaszhix/tab-master-5000-extension'})}
         className="ntg-setting-btn"
         icon="github">
           Github
         </Btn>
         {this.props.chromeVersion > 1 ?
           <Btn
-          onClick={() => utilityStore.createTab('https://chrome.google.com/webstore/detail/tab-master-5000-tab-swiss/mippmhcfjhliihkkdobllhpdnmmciaim')}
+          onClick={() => chrome.tabs.create({url: 'https://chrome.google.com/webstore/detail/tab-master-5000-tab-swiss/mippmhcfjhliihkkdobllhpdnmmciaim'})}
           className="ntg-setting-btn"
           icon="chrome">
             Chrome Web Store
           </Btn>
           :
           <Btn
-          onClick={() => utilityStore.createTab('https://addons.mozilla.org/en-US/firefox/addon/tab-master-5000/')}
+          onClick={() => chrome.tabs.create({url: 'https://addons.mozilla.org/en-US/firefox/addon/tab-master-5000/'})}
           className="ntg-setting-btn"
           icon="firefox">
             Firefox Add-ons

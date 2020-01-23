@@ -1,13 +1,15 @@
-const fs = require('fs-extra');
-const path = require('path');
-const webpack = require('webpack');
-const autoprefixer = require('autoprefixer');
-const cssnano = require('cssnano');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
-const LodashModuleReplacementPlugin = require('lodash-webpack-plugin');
-const SizePlugin = require('size-plugin');
-const SentryWebpackPlugin = require('@sentry/webpack-plugin');
+import fs from 'fs-extra';
+import path from 'path';
+import webpack from 'webpack';
+import autoprefixer from 'autoprefixer';
+import cssnano from 'cssnano';
+import ExtractTextPlugin from 'extract-text-webpack-plugin';
+import {BundleAnalyzerPlugin} from 'webpack-bundle-analyzer';
+import LodashModuleReplacementPlugin from 'lodash-webpack-plugin';
+import SizePlugin from 'size-plugin';
+import SentryWebpackPlugin from '@sentry/webpack-plugin';
+
+const babelConfig = JSON.parse(fs.readFileSync('./.babelrc'));
 
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const aliases = Object.assign({
@@ -109,6 +111,7 @@ let scssLoaders = [
 if (!PROD) {
   cssLoaders = ['style-loader'].concat(cssLoaders);
   scssLoaders = ['style-loader'].concat(scssLoaders);
+  babelConfig.plugins.push('react-hot-loader/babel');
 }
 
 const config = {
@@ -116,12 +119,12 @@ const config = {
   context: path.resolve(__dirname),
   entry: PROD ? [
     '@babel/polyfill',
-    'app.js'
+    'app.tsx'
   ] : [
     'react-hot-loader/patch',
     'webpack-dev-server/client?http://127.0.0.1:8009',
     'webpack/hot/only-dev-server',
-    'app.js',
+    'app.tsx',
   ],
   output: {
     path: path.resolve(__dirname, `${CONTENT_BASE}/scripts`),
@@ -144,13 +147,27 @@ const config = {
   ],
   module: {
     rules: [
-      // we pass the output from babel loader to react-hot loader
       {
-        test: /\.(js|jsx)$/,
+        test: /\.worker\.ts$/,
+        use: {
+          loader: 'worker-loader',
+          options: {
+            name: '[name].js',
+            publicPath: PROD ? '/scripts/' : publicPath
+          }
+        }
+      },
+      {
+        test: /\.(js|jsx|mjs|ts|tsx)$/,
         exclude: /node_modules(?!\/rc-color-picker)/,
         use: [
-          {loader: 'lodash-loader'},
-          {loader: 'babel-loader'}
+          {
+            loader: 'lodash-loader'
+          },
+          {
+            loader: 'babel-loader',
+            options: babelConfig
+          }
         ],
       },
       {
@@ -175,16 +192,6 @@ const config = {
         test: /\.(png|jpg|gif)$/,
         loader: 'file-loader?name=[name].[ext]'
       },
-      {
-        test: /\.worker\.js$/,
-        use: {
-          loader: 'worker-loader',
-          options: {
-            name: PROD ? '[name].js' : '[hash].worker.js',
-            publicPath: PROD ? '/scripts/' : publicPath
-          }
-        }
-      }
     ],
   },
   devtool: PROD ? 'source-map' : 'inline-source-map',
@@ -196,7 +203,7 @@ const config = {
       'node_modules',
        path.join(__dirname, 'app/scripts/components')
     ],
-    extensions: ['.js', '.jsx'],
+    extensions: ['.js', '.jsx', '.tsx', '.ts', '.json'],
     alias: aliases
   },
   devServer: {
@@ -213,15 +220,14 @@ const config = {
 
 if (PROD && ENTRY) {
   if (ENTRY === 'app') {
-    config.entry = './app/scripts/components/app.js';
+    config.entry = './app/scripts/components/app.tsx';
     config.output.filename = 'app.js';
     config.plugins.push(new ExtractTextPlugin({filename: 'main.css', allChunks: false}));
   } else if (ENTRY === 'bg') {
-    config.entry = './app/scripts/bg/bg.js';
+    config.entry = './app/scripts/bg/bg.ts';
     config.output.filename = 'background.js';
   } else {
-    config.entry = './app/scripts/content/content.js';
-    config.output.filename = 'content.js';
+    throw new Error('Invalid entrypoint.');
   }
 
   config.entry = ['@babel/polyfill', config.entry];

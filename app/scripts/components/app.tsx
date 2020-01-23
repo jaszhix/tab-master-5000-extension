@@ -1,3 +1,5 @@
+/// <reference path="../../../types/index.d.ts" />
+
 console.time('init');
 import '../../styles/app.scss';
 import React from 'react';
@@ -8,6 +10,7 @@ import {tryFn} from '@jaszhix/utils';
 
 import App from './root';
 import ErrorBoundary from './errorBoundary';
+import {getChromeVersion} from './stores/main';
 
 let Sentry = null;
 
@@ -37,12 +40,10 @@ const loadPrefs = ()=>{
   chrome.runtime.sendMessage(chrome.runtime.id, {method: 'prefs'}, (response)=>{
     if (!response) return;
 
-    const chromeVersion = utilityStore.chromeVersion();
-
     const next = () => {
-      const stateUpdate = {
+      let stateUpdate: GlobalState = {
         prefs: response.prefs,
-        chromeVersion
+        chromeVersion: getChromeVersion()
       };
 
       console.log('Prefs loaded: ', response);

@@ -5,14 +5,33 @@ import {filter} from '@jaszhix/utils';
 
 import {Context} from './bootstrap';
 import state from './stores/state';
-import {msgStore} from './stores/main';
+import {undoAction} from './stores/main';
 import * as utils from './stores/tileUtils';
 
-class ContextMenu extends React.Component {
+interface ContextMenuProps {
+  context: ContextState;
+  actions: ActionRecord[];
+  prefs: PreferencesState;
+  theme: Theme;
+  duplicateTabs: string[];
+  tabs: ChromeTab[];
+}
+
+interface ContextMenuState {
+  openTab: number;
+  actions: ActionRecord[];
+  inViewport: boolean;
+}
+
+class ContextMenu extends React.Component<ContextMenuProps, ContextMenuState> {
+  shouldDeselect: boolean;
+  containerStyle: React.CSSProperties;
+
   constructor(props) {
     super(props);
 
     this.state = {
+      openTab: 0,
       actions: this.props.actions,
       inViewport: true
     }
@@ -46,13 +65,13 @@ class ContextMenu extends React.Component {
     let s = this.state;
 
     let isSelectedItems = Array.isArray(p.context.id);
-    let addContextMenuItems = (hasBookmark, bk)=>{
+    let addContextMenuItems = (hasBookmark?, bk?)=>{
       let hasMute = p.chromeVersion >= 46 || p.chromeVersion === 1;
       let close = p.prefs.mode !== 'apps' && p.prefs.mode !== 'tabs' && !s.openTab ? utils.t('remove') : utils.t('close');
       let notBookmarksHistorySessAppsExt = p.prefs.mode !== 'bookmarks' && p.prefs.mode !== 'history' && p.prefs.mode !== 'sessions' && p.prefs.mode !== 'apps' && p.prefs.mode !== 'extensions';
       let notAppsExt = p.prefs.mode !== 'apps' && p.prefs.mode !== 'extensions';
       let actionsStatus = this.getStatus('actions');
-      let contextOptions = [
+      let contextOptions: ContextOption[] = [
         {
           argument: notAppsExt,
           onClick: () => this.handleMenuOption(p, 'close'),
@@ -166,6 +185,7 @@ class ContextMenu extends React.Component {
           divider: null
         },
       ];
+
       if (!isSelectedItems && p.prefs.mode === 'apps' && p.context.id.enabled) {
         filter(p.context.id.availableLaunchTypes, (launchType)=>{
           if (launchType !== p.context.id.launchType) {
@@ -180,6 +200,7 @@ class ContextMenu extends React.Component {
           }
         });
       }
+
       if (p.prefs.mode === 'apps' || p.prefs.mode === 'extensions') {
         let appToggleOptions = [
           {
@@ -199,6 +220,7 @@ class ContextMenu extends React.Component {
         ];
         contextOptions = _.concat(contextOptions, appToggleOptions);
       }
+
       p.context.options = contextOptions;
       state.set({
         context: p.context,
@@ -239,7 +261,7 @@ class ContextMenu extends React.Component {
       return;
     }
     if (opt === 'actions') {
-      msgStore.undoAction();
+      undoAction();
     } else if (opt === 'close') {
       utils.closeTab(p.context.id);
     } else if (opt === 'closeAll') {
@@ -295,7 +317,7 @@ class ContextMenu extends React.Component {
     if (opt === 'muted') {
       return p.context.id.mutedInfo.muted;
     } else if (opt === 'duplicate') {
-      let duplicateTabs = filter(p.tabs, tab => tab.url === p.context.id.url);
+      let duplicateTabs: ChromeTab[] = filter(p.tabs, tab => tab.url === p.context.id.url);
       return _.includes(p.duplicateTabs, p.context.id.url) && p.context.id.id !== _.first(duplicateTabs).id;
     } else if (opt === 'actions') {
       let lastAction = _.last(p.actions);

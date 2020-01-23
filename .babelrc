@@ -1,6 +1,18 @@
 {
-  "presets": ["@babel/preset-env", "@babel/preset-react"],
+  "presets": [
+    ["@babel/preset-env", {
+      "targets": {
+        "node": 12,
+        "chrome": 79
+      },
+      "useBuiltIns": "usage",
+      "corejs": 3
+    }],
+    "@babel/preset-typescript",
+    "@babel/preset-react"
+  ],
   "plugins": [
+    "lodash",
     "@babel/plugin-proposal-class-properties",
     "@babel/plugin-transform-classes",
     "@babel/plugin-syntax-dynamic-import"

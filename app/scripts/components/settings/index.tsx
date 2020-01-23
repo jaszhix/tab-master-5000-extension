@@ -5,24 +5,39 @@ import {Row, Container} from '../bootstrap';
 
 let Preferences = AsyncComponent({
   loader: () => import(/* webpackChunkName: "preferences" */ './preferences')
-});
+} as LoadableExport.Options<unknown, object>);
 let Sessions = AsyncComponent({
   loader: () => import(/* webpackChunkName: "sessions" */ './sessions')
-});
+} as LoadableExport.Options<unknown, object>);
 let Theming = AsyncComponent({
   loader: () => import(/* webpackChunkName: "theming" */ './theming')
-});
+} as LoadableExport.Options<unknown, object>);
 let About = AsyncComponent({
   loader: () => import(/* webpackChunkName: "about" */ './about')
-});
+} as LoadableExport.Options<unknown, object>);
 
-class Settings extends React.Component {
+interface SettingsProps {
+  settings: string;
+  modal: ModalState;
+  sessions: SessionState[];
+  tabs: ChromeTab[];
+  allTabs: ChromeTab[][];
+  prefs: PreferencesState;
+  favicons: FaviconState[];
+  theme: Theme;
+  savedThemes: ThemeState[];
+  wallpaper: Wallpaper;
+  wallpapers: Wallpaper[];
+  collapse: boolean;
+  height: number;
+  chromeVersion: number;
+}
+
+class Settings extends React.Component<SettingsProps> {
   static defaultProps = {
     collapse: true
   };
-  constructor(props) {
-    super(props);
-  }
+
   componentDidMount = () => {
     state.set({sidebar: false});
   }
@@ -48,7 +63,8 @@ class Settings extends React.Component {
           {p.settings === 'preferences' ?
           <Preferences
           modal={p.modal}
-          prefs={p.prefs} tabs={p.tabs}
+          prefs={p.prefs}
+          tabs={p.tabs}
           theme={p.theme}
           chromeVersion={p.chromeVersion} /> : null}
           {p.settings === 'theming' ?

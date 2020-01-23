@@ -3,11 +3,11 @@ import initStore from '@jaszhix/state';
 import {findIndex, find, tryFn, filter} from '@jaszhix/utils';
 
 import state from './state';
-import {utilityStore, setAlert, msgStore} from './main';
+import {setAlert, setPrefs} from './main';
 
 const now = Date.now();
 
-const defaultTheme = {
+const defaultTheme: Theme = {
   textFieldsBg: 'rgba(255, 255, 255, 1)',
   textFieldsPlaceholder: 'rgba(163, 162, 162, 1)',
   textFieldsText: 'rgba(85, 85, 85, 1)',
@@ -43,7 +43,7 @@ const defaultTheme = {
   tileMoveHover: 'rgba(0, 0, 0, 1)',
   tileButtonBg: 'rgba(255, 255, 255, 1)'
 };
-const chromesque = {
+const chromesque: Theme = {
   textFieldsBg: 'rgba(255, 255, 255, 0.93)',
   textFieldsPlaceholder: 'rgba(225, 230, 232, 0.71)',
   textFieldsText: 'rgba(225, 230, 232, 1)',
@@ -79,7 +79,7 @@ const chromesque = {
   tileMoveHover: 'rgba(150, 150, 150, 1)',
   tileButtonBg: 'rgba(255, 255, 255, 1)'
 };
-const mellowDark = {
+const mellowDark: Theme = {
   bodyBg: 'rgba(40, 41, 35, 0.91)',
   bodyText: 'rgba(239, 245, 223, 1)',
   darkBtnBg: 'rgba(64, 66, 59, 0.78)',
@@ -115,7 +115,7 @@ const mellowDark = {
   tileX: 'rgba(239, 245, 223, 0.86)',
   tileXHover: 'rgba(224, 230, 209, 0.83)'
 };
-const pastelSummer = {
+const pastelSummer: Theme = {
   bodyBg: 'rgba(163, 87, 78, 0.06)',
   bodyText: 'rgba(56, 32, 32, 1)',
   darkBtnBg: 'rgba(179, 139, 137, 1)',
@@ -151,7 +151,7 @@ const pastelSummer = {
   tileX: 'rgba(56, 32, 32, 1)',
   tileXHover: 'rgba(56, 32, 32, 1)'
 };
-const leafy = {
+const leafy: Theme = {
   textFieldsBg: 'rgba(167, 189, 108, 0.36)',
   textFieldsPlaceholder: 'rgba(198, 224, 177, 0.63)',
   textFieldsText: 'rgba(39, 51, 28, 1)',
@@ -187,7 +187,7 @@ const leafy = {
   tileMoveHover: 'rgba(51, 66, 37, 1)',
   tileButtonBg: 'rgba(255, 255, 255, 1)'
 };
-const midnightPurple = {
+const midnightPurple: Theme = {
   bodyBg: 'rgba(34, 50, 66, 0.97)',
   bodyText: 'rgba(245, 245, 245, 1)',
   darkBtnBg: 'rgba(98, 79, 107, 0.77)',
@@ -223,7 +223,7 @@ const midnightPurple = {
   tileX: 'rgba(235, 235, 242, 1)',
   tileXHover: 'rgba(235, 235, 242, 1)'
 };
-const mintYDark = {
+const mintYDark: Theme = {
   bodyBg: "rgba(56, 56, 56, 0.75)",
   bodyText: "rgba(207, 209, 209, 1)",
   darkBtnBg: "rgba(129, 153, 103, 0.57)",
@@ -259,7 +259,7 @@ const mintYDark = {
   tileX: "rgba(124, 128, 110, 1)",
   tileXHover: "rgba(124, 128, 110, 1)"
 };
-const redmondFlat = {
+const redmondFlat: Theme = {
   bodyBg: 'rgba(5, 178, 252, 0.99)',
   bodyText: 'rgba(51, 51, 51, 1)',
   darkBtnBg: 'rgba(0, 5, 10, 0.99)',
@@ -296,7 +296,7 @@ const redmondFlat = {
   tileXHover: 'rgba(75, 74, 69, 0.99)'
 };
 
-const highRise = {
+const highRise: Theme = {
   bodyBg: 'rgba(67, 125, 161, 0.75)',
   bodyText: 'rgba(255, 255, 255, 1)',
   darkBtnBg: 'rgba(67, 125, 161, 0.38)',
@@ -333,7 +333,7 @@ const highRise = {
   tileXHover: 'rgba(225, 230, 232, 1)'
 };
 
-const themeStore = initStore({
+const themeStore: ThemeStore = initStore({
   standardWallpapers: [
     {
       data: '../../../images/wallpaper1.jpg',
@@ -458,7 +458,7 @@ const themeStore = initStore({
     console.log('init.prefs.theme', prefs.theme);
     themeStore.getSavedThemes().then((themes) => {
       themeStore.getWallpapers().then((wallpapers) => {
-        let refTheme;
+        let refTheme: ThemeState = null;
         let selectThemeIsCustom = false;
         if (themes && themes.themes !== undefined) {
           if (prefs.theme >= 9000) {
@@ -477,7 +477,7 @@ const themeStore = initStore({
           if (!refTheme) {
             // Occurs when the theme cache is empty, but prefs is pointing to a theme id < 9000 (non-default)
             refTheme = themeStore.standardThemes[1];
-            msgStore.setPrefs({theme: 9001, wallpaper: null});
+            setPrefs({theme: 9001, wallpaper: null});
           }
           themeStore.theme = _.cloneDeep(refTheme.theme);
           themeStore.savedThemes = [];
@@ -492,7 +492,7 @@ const themeStore = initStore({
         if (typeof wallpapers.wallpapers !== 'undefined') {
           themeStore.wallpapers = _.concat(wallpapers.wallpapers, themeStore.standardWallpapers);
           tryFn(() => {
-            let lastSavedWallpaper = _.last(wallpapers.wallpapers);
+            let lastSavedWallpaper: Wallpaper = _.last(wallpapers.wallpapers);
             if (typeof lastSavedWallpaper !== 'undefined' && typeof lastSavedWallpaper.id !== 'undefined' && lastSavedWallpaper) {
               themeStore.wallpaperId = _.last(wallpapers.wallpapers).id;
             } else {
@@ -532,9 +532,9 @@ const themeStore = initStore({
       });
     });
   },
-  getWallpapers: ()=> {
+  getWallpapers: (): Promise<WallpaperObject> => {
     return new Promise((resolve) => {
-      chrome.storage.local.get('wallpapers', (wp) => {
+      chrome.storage.local.get('wallpapers', (wp: WallpaperObject) => {
         if (wp) {
           resolve(wp);
         } else {
@@ -590,7 +590,7 @@ const themeStore = initStore({
     if (existingTheme > -1) {
       return themeStore.save();
     }
-    let newTheme = {
+    let newTheme: ThemeState = {
       id: newThemeId,
       created: now,
       modified: now,
@@ -601,8 +601,8 @@ const themeStore = initStore({
     themeStore.savedThemes.push(newTheme);
     console.log('newTheme: ', newTheme);
     console.log('themeStore savedThemes: ', themeStore.savedThemes);
-    chrome.storage.local.set({themes: themeStore.savedThemes}, (t) => {
-      console.log('themeStore theme saved: ', t);
+    chrome.storage.local.set({themes: themeStore.savedThemes}, () => {
+      console.log('themeStore theme saved');
       setAlert({
         text: `Successfully saved new theme.`,
         tag: 'alert-success',
@@ -637,7 +637,7 @@ const themeStore = initStore({
       currentWallpaper
     }, true);
 
-    msgStore.setPrefs({
+    setPrefs({
       theme: id,
       wallpaper: refTheme.wallpaper
     });
@@ -680,7 +680,7 @@ const themeStore = initStore({
     themeStore.set({currentWallpaper: refWallpaper});
 
     if (setPrefs) {
-      msgStore.setPrefs({wallpaper: wpId});
+      setPrefs({wallpaper: wpId});
     }
 
     themeStore.update(themeId);
@@ -690,7 +690,7 @@ const themeStore = initStore({
       let refTheme = findIndex(themeStore.savedThemes, theme => theme.id === id);
       _.merge(themeStore.savedThemes[refTheme], {
         theme: themeStore.theme,
-        modified: utilityStore.now(),
+        modified: Date.now(),
       });
       chrome.storage.local.set({themes: themeStore.savedThemes}, () => {
         console.log('themeStore theme updated: ', id);
@@ -708,7 +708,7 @@ const themeStore = initStore({
     if (_.isEqual(refTheme.theme, state.theme)) {
       themeStore.theme = themeStore.standardThemes[0].theme;
       themeStore.currentWallpaper = {data: -1};
-      msgStore.setPrefs({theme: 9000, wallpaper: -1});
+      setPrefs({theme: 9000, wallpaper: -1});
     }
     themeStore.savedThemes = _.without(themeStore.savedThemes, refTheme);
     chrome.storage.local.set({themes: themeStore.savedThemes});
@@ -719,7 +719,7 @@ const themeStore = initStore({
     themeStore.wallpapers = _.without(themeStore.wallpapers, _.remove(themeStore.wallpapers, refWallpaper));
     themeStore.currentWallpaper = {data: -1};
     chrome.storage.local.set({wallpapers: themeStore.wallpapers});
-    msgStore.setPrefs({wallpaper: null});
+    setPrefs({wallpaper: null});
     themeStore.setTriggers();
   },
   label: (id, label) => {
@@ -744,7 +744,7 @@ const themeStore = initStore({
     if (e.target.files[0].name.split('-')[1] === 'Themes') {
       let reader = new FileReader();
         reader.onload = () => {
-          let themeImport = _.cloneDeep(JSON.parse(reader.result));
+          let themeImport = _.cloneDeep(JSON.parse(<string>reader.result));
           if (typeof themeImport[0].theme !== 'undefined') {
             themeStore.savedThemes = themeImport;
             chrome.storage.local.set({themes: themeStore.savedThemes}, () => {
@@ -794,7 +794,7 @@ const themeStore = initStore({
           themeStore.selectWallpaper(id, newWallpaper.id);
         }
       };
-      sourceImage.src = reader.result;
+      sourceImage.src = <string>reader.result;
     };
     reader.readAsDataURL(e.target.files[0]);
   },

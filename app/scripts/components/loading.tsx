@@ -7,7 +7,11 @@ const styles = StyleSheet.create({
   errorLink: {color: 'rgba(34, 82, 144, 0.9)'}
 });
 
-class Loading extends React.Component {
+interface LoadingProps {
+  top?: boolean;
+}
+
+class Loading extends React.Component<LoadingProps> {
   render() {
     return (
       <div>

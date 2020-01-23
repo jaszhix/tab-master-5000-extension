@@ -2,7 +2,16 @@ import React from 'react';
 
 let Sentry;
 
-class ErrorBoundary extends React.Component {
+interface ErrorBoundaryProps {
+  Sentry: NodeModule;
+}
+
+interface ErrorBoundaryState {
+  error: Error;
+  eventId: string;
+}
+
+class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
   static defaultProps = {
     Sentry: null
   };

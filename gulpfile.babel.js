@@ -25,7 +25,7 @@ if (!COMMIT_HASH) {
 fs.ensureDirSync('./releases');
 
 gulp.task('build-bg', function() {
-  config.entry = './app/scripts/bg/bg.js';
+  config.entry = './app/scripts/bg/bg.ts';
   config.output.filename = 'background.js';
   return gulp.src('./app/scripts/background.js', {allowEmpty: true})
     .pipe(webpackStream(config, webpack))
@@ -33,7 +33,7 @@ gulp.task('build-bg', function() {
 });
 
 gulp.task('build', gulp.series('build-bg', function() {
-  return gulp.src('./app/scripts/components/app.js', {allowEmpty: true})
+  return gulp.src('./app/scripts/components/app.tsx', {allowEmpty: true})
     .pipe(webpackStream(config))
     .pipe(gulp.dest('./app/scripts/'));
 }));
@@ -105,7 +105,7 @@ gulp.task('package', gulp.series('backup-source-maps', function() {
 gulp.task('dist', gulp.series('copy', 'copyChunks', 'htmlmin', 'imgmin', 'package', (done) => done()));
 
 gulp.task('watch', function(done) {
-  const glob = './app/scripts/bg/*.{js,jsx,es6}';
+  const glob = './app/scripts/bg/*.{ts}';
   gulp.watch(glob)
     .on('change', gulp.parallel('build-bg'));
   done();

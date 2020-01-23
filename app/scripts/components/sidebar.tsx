@@ -1,3 +1,5 @@
+/// <reference path="../../../node_modules/aphrodite/typings/index.d.ts" />
+
 import React from 'react';
 import {StyleSheet, css} from 'aphrodite';
 import _ from 'lodash';
@@ -8,9 +10,11 @@ import themeStore from './stores/theme';
 import tc from 'tinycolor2';
 import {map} from '@jaszhix/utils';
 
-import {utilityStore, msgStore} from './stores/main';
+import {handleMode, setPrefs} from './stores/main';
 import * as utils from './stores/tileUtils';
 import {Btn} from './bootstrap';
+
+import {StyleDeclaration} from 'aphrodite'
 
 onClickOutside.prototype.getInstance = function getInstance() {
   if (!WrappedComponent.prototype.isReactComponent) {
@@ -23,7 +27,16 @@ onClickOutside.prototype.getInstance = function getInstance() {
   return ref.getInstance ? ref.getInstance() : ref;
 };
 
-class LargeBtn extends React.Component {
+interface LargeBtnProps {
+  style: React.CSSProperties;
+  onClick: React.MouseEventHandler;
+  onMouseEnter: React.MouseEventHandler;
+  onMouseLeave?: React.MouseEventHandler;
+  label: string;
+  icon: string;
+}
+
+class LargeBtn extends React.Component<LargeBtnProps> {
   constructor(props) {
     super(props);
   }
@@ -44,7 +57,26 @@ class LargeBtn extends React.Component {
   }
 }
 
-export class SidebarMenu extends React.Component {
+interface SidebarMenuProps {
+  sessionsExist?: boolean;
+  prefs?: PreferencesState;
+  theme?: Theme;
+  allTabs?: ChromeTab[][];
+  labels?: any;
+  keys?: string[];
+  sort?: string;
+  direction?: string;
+  chromeVersion?: number;
+}
+
+interface SidebarMenuState {
+  sidebarTab: string;
+  lgBtnHover: string;
+  viewMode: boolean;
+  sortBy: boolean;
+}
+
+export class SidebarMenu extends React.Component<SidebarMenuProps, SidebarMenuState> {
   constructor(props) {
     super(props);
 
@@ -56,9 +88,9 @@ export class SidebarMenu extends React.Component {
     }
   }
   handleFormat = () => {
-    let prefsUpdate = {format: this.props.prefs.format === 'tile' ? 'table' : 'tile'};
+    let prefsUpdate = {format: this.props.prefs.format === 'tile' ? 'table' : 'tile'} as PreferencesState;
     state.set({prefs: _.assignIn(this.props.prefs, prefsUpdate)});
-    _.defer(() => msgStore.setPrefs(prefsUpdate));
+    _.defer(() => setPrefs(prefsUpdate));
     ReactTooltip.hide();
   }
   handleSortOption = (key) => {
@@ -68,9 +100,6 @@ export class SidebarMenu extends React.Component {
       : state.sort !== key ? state.direction
       : state.direction === 'desc' ? 'asc' : 'desc'
     }, true);
-  }
-  handleMode = (mode) => {
-    utilityStore.handleMode(mode, {} /* stateUpdate */, false /* init */, true /* userGesture */);
   }
   render = () => {
     let p = this.props;
@@ -169,7 +198,7 @@ export class SidebarMenu extends React.Component {
                 <div className="sidebar-category">
                   <div
                   className={css(dynamicStyles.categoryContainer) + ` category-title ${p.prefs.showViewMode ? '' : 'category-collapsed'}`}
-                  onClick={() => msgStore.setPrefs({showViewMode: !p.prefs.showViewMode})}>
+                  onClick={() => setPrefs({showViewMode: !p.prefs.showViewMode} as PreferencesState)}>
                     <span>{utils.t('viewMode')}</span>
                     <ul className="icons-list">
                       <li>
@@ -200,7 +229,7 @@ export class SidebarMenu extends React.Component {
                                         style={lgBtnStyle}
                                         icon={option.icon}
                                         label={option.label}
-                                        onClick={() => this.handleMode(option.key)}
+                                        onClick={() => handleMode(option.key, {}, false, true)}
                                         onMouseEnter={() => this.setState({lgBtnHover: option.label})} />
                                       );
                                     } else {
@@ -219,7 +248,7 @@ export class SidebarMenu extends React.Component {
                 <div className="sidebar-category">
                   <div
                   className={css(dynamicStyles.categoryTitleContainer) + ` category-title ${p.prefs.sort ? '' : 'category-collapsed'}`}
-                  onClick={() => msgStore.setPrefs({sort: !p.prefs.sort})}>
+                  onClick={() => setPrefs({sort: !p.prefs.sort} as PreferencesState)}>
                     <span>{utils.t('sortBy')}</span>
                     <ul className="icons-list">
                       <li>
@@ -267,13 +296,34 @@ export class SidebarMenu extends React.Component {
   }
 }
 
-class Sidebar extends React.Component {
+interface SidebarProps {
+  enabled?: boolean;
+  disableSidebarClickOutside?: boolean;
+  sessionsExist?: boolean;
+  prefs?: PreferencesState;
+  theme?: Theme;
+  allTabs?: ChromeTab[][];
+  labels?: any;
+  keys?: string[];
+  sort?: string;
+  direction?: string;
+  chromeVersion?: number;
+}
+
+interface SidebarState {
+  enabled: boolean;
+}
+
+class Sidebar extends React.Component<SidebarProps, SidebarState> {
+  connectId: number;
+
   constructor(props) {
     super(props);
 
     this.state = {
       enabled: false
-    }
+    };
+
     this.connectId = state.connect({
       sidebar: ({sidebar}) => {
         ReactTooltip.rebuild();
@@ -300,11 +350,11 @@ class Sidebar extends React.Component {
     }
   }
   handleSort = () => {
-    msgStore.setPrefs({sort: !this.props.prefs.sort});
+    setPrefs({sort: !this.props.prefs.sort} as PreferencesState);
   }
   render = () => {
     let p = this.props;
-    const dynamicStyles = StyleSheet.create({
+    const dynamicStyles: any = StyleSheet.create({
       container: {
         width: '280px',
         maxWidth: '280px',
@@ -317,7 +367,7 @@ class Sidebar extends React.Component {
         backgroundColor: themeStore.opacify(p.theme.headerBg, 0.9),
         transition: p.prefs.animations ? 'left 0.225s, opacity 0.2s' : 'initial'
       }
-    });
+    } as StyleDeclaration);
     return (
       <div className={css(dynamicStyles.container) + ' side-div'}>
         {this.state.enabled ?
@@ -335,7 +385,7 @@ class Sidebar extends React.Component {
     );
   }
 }
-
+// @ts-ignore
 Sidebar = onClickOutside(Sidebar);
 
 export default Sidebar;

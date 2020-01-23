@@ -18,7 +18,42 @@ const styles = StyleSheet.create({
   mediaLeftImage: {width: '16px', height: '16px'}
 });
 
-class Tile extends React.Component {
+interface TileProps {
+  tab: ChromeTab & ChromeExtensionInfo;
+  prefs: PreferencesState;
+  context: ContextState;
+  theme: Theme;
+  i: number;
+  folder: string;
+  onDragStart: (e: React.DragEvent, i: number) => void;
+  onDragEnd: React.DragEventHandler;
+  onDragOver: React.DragEventHandler;
+  wallpaper: Wallpaper;
+  chromeVersion: number;
+  tileLetterTopPos: number;
+}
+
+interface TileState {
+  hover?: boolean;
+  xHover?: boolean;
+  pHover?: boolean;
+  mHover?: boolean;
+  stHover?: boolean;
+  render?: boolean;
+  close?: boolean;
+  pinning?: boolean;
+  dataUrl?: string;
+  duplicate?: boolean;
+  screenshot?: string;
+  openTab?: boolean;
+  tab?: ChromeTab;
+  i?: number;
+}
+
+class Tile extends React.Component<TileProps, TileState> {
+  connectId: number;
+  panelRef: HTMLElement;
+
   constructor(props) {
     super(props);
 
@@ -33,7 +68,6 @@ class Tile extends React.Component {
       pinning: false,
       dataUrl: null,
       duplicate: false,
-      drag: null,
       screenshot: null,
       openTab: false,
       tab: this.props.tab,
@@ -150,8 +184,8 @@ class Tile extends React.Component {
     this.props.onDragStart(e, this.props.i);
     _.defer(() => this.setState({render: false}));
   }
-  handleDragEnd = () => {
-    this.props.onDragEnd();
+  handleDragEnd = (e) => {
+    this.props.onDragEnd(e);
     this.setState({render: true});
   }
   getPanelRef = (ref) => {
@@ -198,7 +232,7 @@ class Tile extends React.Component {
       transition: p.prefs.animations ? 'opacity 0.2s, white-space 0.1s' : 'initial'
     };
 
-    const dynamicStyles = StyleSheet.create({
+    const dynamicStyles: any = StyleSheet.create({
       ST1: Object.assign({
         top: `${p.prefs.tabSizeHeight - 40}px`,
         cursor: p.prefs.mode === 'sessions' || p.prefs.mode === 'bookmarks' ? 'default' : 'initial'
@@ -207,6 +241,7 @@ class Tile extends React.Component {
         top: `${p.prefs.tabSizeHeight - 55}px`,
         cursor: p.prefs.mode === 'sessions' || p.prefs.mode === 'bookmarks' ? 'pointer' : 'default'
       }, subTitleStyle),
+      // @ts-ignore
       panelContainer: {
         position: 'relative',
         display: s.render ? 'block' : 'none',
@@ -228,6 +263,7 @@ class Tile extends React.Component {
         animationDuration: s.duplicate ? '5s' : '0.2s',
         cursor: 'pointer'
       },
+      // @ts-ignore
       panelBody: {
         height: s.hover ? `18px` : `${p.prefs.tabSizeHeight - 40}px`,
         width: p.prefs.tabSizeHeight+80,
@@ -243,6 +279,7 @@ class Tile extends React.Component {
         zIndex: s.hover ? '2' : '1',
         cursor: 'pointer'
       },
+      // @ts-ignore
       panelFooter: {
         backgroundColor: s.hover ? p.theme.tileBgHover : p.theme.tileBg,
         borderBottomRightRadius: '2px',
@@ -275,6 +312,7 @@ class Tile extends React.Component {
         transition: p.prefs.animations ? 'white-space 0.1s' : 'initial',
         color: themeStore.opacify(p.theme.tileText, 0.8)
       },
+      // @ts-ignore
       panelHeading: {
         width: `${p.prefs.tabSizeHeight + 80}px`,
         padding: '0px',
@@ -285,6 +323,7 @@ class Tile extends React.Component {
         transition: p.prefs.animations ? 'opacity 0.2s, background-color 0.1s' : 'initial',
         cursor: 'default'
       },
+      // @ts-ignore
       titleContainer: {
         color: p.theme.tileText,
         fontSize: '70px',
@@ -305,6 +344,7 @@ class Tile extends React.Component {
         cursor: 'pointer',
         position: 'relative'
       },
+      // @ts-ignore
       muteIcon: {
         color: s.mHover ? p.tab.audible ? p.theme.tileMuteAudibleHover : p.theme.tileMuteHover : p.tab.audible ? p.theme.tileMuteAudible : p.theme.tileMute,
         opacity: s.hover || p.tab.mutedInfo.muted || p.tab.audible ? '1' : '0',
@@ -312,6 +352,7 @@ class Tile extends React.Component {
         right: '2px',
         fontSize: '13.5px'
       },
+      // @ts-ignore
       pinIcon: {
         color: s.pHover ? p.theme.tilePinHover : p.theme.tilePin,
         opacity: s.hover || p.tab.pinned ? '1' : '0',
@@ -319,6 +360,7 @@ class Tile extends React.Component {
         right: '2px',
         fontSize: '12px'
       },
+      // @ts-ignore
       closeIcon: {
         color: s.xHover ? p.theme.tileXHover : p.theme.tileX,
         opacity: s.hover ? '1' : '0',
@@ -326,6 +368,7 @@ class Tile extends React.Component {
         right: isTab ? 'initial' : '0px',
         fontSize: isTab ? '16px' : '12px'
       },
+      // @ts-ignore
       offlineEnabledIcon: {
         color: s.pHover ? p.theme.tilePinHover : p.theme.tilePin,
         opacity: p.tab.offlineEnabled ? '1' : '0',
@@ -333,6 +376,7 @@ class Tile extends React.Component {
         right: '2px',
         fontSize: '12px'
       },
+      // @ts-ignore
       homepageIcon: {
         color: s.xHover ? p.theme.tileXHover : p.theme.tileX,
         opacity: s.hover ? '1' : '0',
@@ -492,4 +536,3 @@ class Tile extends React.Component {
 }
 
 export default Tile;
-

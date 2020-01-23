@@ -46,7 +46,7 @@ const checkDuplicateTabs = function(stateUpdate){
   return stateUpdate;
 }
 
-let defaults = (iteration, windowId) => {
+let defaults = (iteration, windowId = -1) => {
   return {
     mutedInfo: {muted: false},
     audible: false,
@@ -81,7 +81,7 @@ const sort = (state, data) => {
   return result;
 };
 
-const checkFavicons = (state, tabs, stateUpdate = {}) => {
+const checkFavicons = (state, tabs, stateUpdate: GlobalState = {}) => {
   let ignoredCount = filter(tabs, function(tab) {
     return tab.favIconUrl === defaultFavicon
   }).length;
@@ -106,6 +106,7 @@ const checkFavicons = (state, tabs, stateUpdate = {}) => {
   });
 
   each(matched, function(match, i) {
+    // @ts-ignore
     postMessage({msg: 'setFavicon', args: [match, matched.length - ignoredCount, unmatchedCount++]});
   });
 
@@ -117,6 +118,7 @@ const checkFavicons = (state, tabs, stateUpdate = {}) => {
     sort: stateUpdate.sort,
     direction: stateUpdate.direction
   }, tabs);
+  // @ts-ignore
   postMessage({stateUpdate});
 };
 
@@ -136,15 +138,17 @@ const searchChange = (query, items) => {
     });
     _items = map(_.orderBy(itemsSearch.search(query.toLowerCase()), 'score'), item => item.item);
   }, () => _items = items);
-
+  // @ts-ignore
   postMessage({stateUpdate: {searchCache: _items, modeKey: 'searchCache'}});
 };
 
 const processHistory = function(s, msg) {
   let {history} = msg;
-  let tabs = _.flatten(s.allTabs);
+  let tabs: ChromeHistoryItem[] = _.flatten(s.allTabs);
+
   for (let i = 0, len = history.length; i < len; i++) {
     history[i] = _.assignIn(history[i], _.cloneDeep(defaults(i, s.windowId)));
+
     for (let y = 0, _len = tabs.length; y < _len; y++) {
       if (history[i].url === tabs[y].url) {
         history[i] = _.assignIn(_.cloneDeep(tabs[y]), history[i]);
@@ -160,8 +164,9 @@ const processBookmarks = function(s, msg) {
   let {bookmarks} = msg;
   let _bookmarks = [];
   let folders = [];
-  let tabs = _.flatten(s.allTabs);
+  let tabs: ChromeBookmarkTreeNode[] = _.flatten(s.allTabs);
   let iter = -1;
+
   let addBookmarkChildren = (bookmarkLevel, title='')=> {
     bookmarkLevel.folder = title;
     iter++;
@@ -181,11 +186,15 @@ const processBookmarks = function(s, msg) {
       }
     }
   };
+
   addBookmarkChildren(bookmarks[0]);
   _bookmarks = _.uniqBy(_bookmarks, 'id')
+
   const findOpenTab = url => tab => tab.url === url;
+
   for (let i = 0, len = _bookmarks.length; i < len; i++) {
     let refOpenTab = findIndex(tabs, findOpenTab(_bookmarks[i].url));
+
     if (refOpenTab > -1) {
       _bookmarks[i] = _.merge(_.cloneDeep(tabs[refOpenTab]), _bookmarks[i]);
       _bookmarks[i].openTab = tabs[refOpenTab].id;
@@ -199,13 +208,14 @@ const processBookmarks = function(s, msg) {
   checkFavicons(s, _bookmarks, {direction: 'desc', sort: 'dateAdded'});
 };
 
-const processAppExtension = function(s, msg) {
+const processAppExtension = function(s, msg: {extensions: ChromeExtensionInfo[]}) {
   let {extensions} = msg;
   let isApp = s.prefs.mode === 'apps';
-  extensions = filter(extensions, app => app.isApp === isApp);
-  if (!extensions) {
-    return;
-  }
+
+  extensions = filter(extensions, (app) => app.isApp === isApp);
+
+  if (!extensions) return;
+
   for (let i = 0, len = extensions.length; i < len; i++) {
     _.assign(extensions[i], {
       favIconUrl: extensions[i].icons ? filterFavicons(_.last(extensions[i].icons).url, _.last(extensions[i].icons).url) : '../images/IDR_EXTENSIONS_FAVICON@2x.png',
@@ -213,16 +223,20 @@ const processAppExtension = function(s, msg) {
       url: isApp ? extensions[i].appLaunchUrl : extensions[i].optionsUrl,
       title: extensions[i].name
     });
+
     extensions[i] = _.assignIn(defaults(i), extensions[i]);
   }
-  let stateUpdate = isApp ? {apps: extensions} : {extensions};
+
+  let stateUpdate: GlobalState = isApp ? {apps: extensions} : {extensions};
   stateUpdate.direction = 'asc';
   stateUpdate.sort = 'index';
+  // @ts-ignore
   postMessage({stateUpdate});
 };
 
 const processSessionTabs = function(sessions, tabs, windowId) {
   if (!sessions) {
+    // @ts-ignore
     postMessage({setPrefs: {mode: 'tabs'}});
     return;
   }
@@ -257,7 +271,7 @@ const processSessionTabs = function(sessions, tabs, windowId) {
 }
 
 const processWindows = function(s, msg) {
-  let stateUpdate = {
+  let stateUpdate: GlobalState = {
     allTabs: map(msg.windows, function(win) {
       return win.tabs;
     }),
@@ -301,6 +315,7 @@ const processWindows = function(s, msg) {
     }
     stateUpdate.sessionTabs = processSessionTabs(s.sessions, _.flatten(stateUpdate.allTabs), s.windowId);
   } else {
+    // @ts-ignore
     postMessage({msg: 'handleMode', mode: s.prefs.mode, stateUpdate, init: msg.init});
     return;
   }
@@ -311,6 +326,7 @@ const processWindows = function(s, msg) {
     });
     checkFavicons(s, stateUpdate[stateUpdate.modeKey], stateUpdate);
   } else {
+    // @ts-ignore
     postMessage({stateUpdate});
   }
 };
@@ -329,6 +345,9 @@ onmessage = function(e) {
   } else if (e.data.msg.sort) {
     let stateUpdate = {};
     stateUpdate[e.data.msg.modeKey] = sort(e.data.msg, e.data.msg.data);
+    // @ts-ignore
     postMessage({stateUpdate, force: true});
   }
 }
+
+export default {} as typeof Worker & {new (): Worker};

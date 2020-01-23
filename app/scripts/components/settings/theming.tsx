@@ -1,10 +1,11 @@
 import React from 'react';
-import {StyleSheet, css} from 'aphrodite';
+import {css} from 'aphrodite';
 import _ from 'lodash';
 import tc from 'tinycolor2';
 
 import ColorPicker from 'rc-color-picker';
 import ReactTooltip from 'react-tooltip';
+import v from 'vquery';
 import {find, map, filter} from '@jaszhix/utils';
 
 import * as utils from '../stores/tileUtils';
@@ -15,7 +16,7 @@ import {Btn, Col, Row} from '../bootstrap';
 import style from '../style';
 import styles from './styles';
 
-const convertColor = function(color) {
+const convertColor = function(color: string) {
   if (color.indexOf('#') !== -1) {
     return {color: color};
   } else if (color.indexOf('a') !== -1) {
@@ -23,7 +24,7 @@ const convertColor = function(color) {
     let r = arr[0].split('rgba(')[1];
     let g = arr[1];
     let b = arr[2];
-    let alpha = arr[3].split(')')[0];
+    let alpha = parseInt(arr[3].split(')')[0]);
     return {
       alpha: alpha * 100,
       color: tc({r: r, g: g, b: b}).toHexString()
@@ -31,7 +32,20 @@ const convertColor = function(color) {
   }
 }
 
-class ColorPickerContainer extends React.Component {
+interface ColorPickerContainerProps {
+  themeKey: string;
+  onChange: () => void;
+  hoverBg: string;
+  label: string;
+}
+
+interface ColorPickerContainerState {
+  alpha: number;
+  color: string;
+  hover: boolean;
+}
+
+class ColorPickerContainer extends React.Component<ColorPickerContainerProps, ColorPickerContainerState> {
   static defaultProps = {
     color: '#FFFFFF'
   };
@@ -62,7 +76,7 @@ class ColorPickerContainer extends React.Component {
     let p = this.props;
     return (
       <Row onMouseEnter={() => this.setState({hover: true})} onMouseLeave={() => this.setState({hover: false})} style={{cursor: 'pointer', backgroundColor: s.hover ? p.hoverBg : 'initial', height: '26px', paddingTop: '3px'}}>
-        <Row onMouseEnter={p.onMouseEnter}>
+        <Row>
           <span>
             <ColorPicker
             animation="slide-up"
@@ -84,8 +98,43 @@ class ColorPickerContainer extends React.Component {
   }
 }
 
-const buttonIconStyle = {fontSize: '14px', position: 'relative', top: '0px'};
-class Theming extends React.Component {
+const buttonIconStyle: React.CSSProperties = {fontSize: '14px', position: 'relative', top: '0px'};
+
+interface ThemingProps {
+  theme: Theme;
+  modal: ModalState;
+  wallpaper: Wallpaper;
+  wallpapers: Wallpaper[];
+  prefs: PreferencesState;
+  collapse: boolean;
+}
+
+interface ThemingState {
+  savedThemes?: ThemeState[];
+  selectedTheme?: ThemeState;
+  themeHover?: number;
+  themeLabel?: number;
+  themeLabelValue?: string;
+  leftTab?: 'custom' | 'tm5k';
+  rightTab?: 'color' | 'wallpaper';
+  isNewTheme?: boolean;
+  showCustomButtons?: boolean;
+  selectedWallpaper?: boolean;
+  boldUpdate?: boolean;
+  colorGroup?: 'general' | 'buttons' | 'tiles';
+}
+
+interface ThemingProps {
+  savedThemes: ThemeState[];
+
+}
+
+class Theming extends React.Component<ThemingProps, ThemingState> {
+  standardThemes: ThemeState[];
+  themeNameEditInputRef: HTMLInputElement;
+  importRef: HTMLElement;
+  wallpaperRef: HTMLElement;
+
   constructor(props) {
     super(props);
 
@@ -117,13 +166,13 @@ class Theming extends React.Component {
     }
     Object.assign(this.state, {
       selectedTheme: refTheme,
-      isNewTheme: isNewTheme,
-      showCustomButtons: showCustomButtons
+      isNewTheme,
+      showCustomButtons,
     });
   }
   static getDerivedStateFromProps = (nP, pS) => {
     let refTheme;
-    let stateUpdate = {};
+    let stateUpdate: ThemingState = {};
     if (nP.prefs.theme < 9000 || (pS.leftTab === 'custom' && pS.isNewTheme)) {
       refTheme = find(nP.savedThemes, theme => theme.id === nP.prefs.theme);
       stateUpdate.showCustomButtons = true;
@@ -155,8 +204,8 @@ class Theming extends React.Component {
   triggerRefClick = (ref) => {
     this[ref].click();
   }
-  getButtonStyle = (colorGroup) => {
-    return {fontWeight: colorGroup === this.state.colorGroup ? '600' : '400'}
+  getButtonStyle = (colorGroup): React.CSSProperties => {
+    return {fontWeight: colorGroup === this.state.colorGroup ? 600 : 400}
   }
   handleFooterButtons = () => {
     const {collapse, modal, wallpaper, prefs} = this.props;
@@ -178,7 +227,7 @@ class Theming extends React.Component {
       <div>
         <Btn
         onClick={!update ? () => this.handleSaveTheme() : () => this.handleUpdateTheme()}
-        style={{fontWeight: boldUpdate ? '600' : '400'}}
+        style={{fontWeight: boldUpdate ? 600 : 400}}
         icon={newThemeIcon}
         className="ntg-setting-btn">
           {newThemeLabel}
@@ -255,7 +304,7 @@ class Theming extends React.Component {
     themeStore.newTheme();
   }
   handleSaveTheme = () => {
-    let stateUpdate = {
+    let stateUpdate: ThemingState = {
       isNewTheme: false,
       rightTab: 'color'
     };
@@ -334,7 +383,7 @@ class Theming extends React.Component {
       <div className="theming">
         <input type="file" onChange={(e)=>themeStore.import(e)} accept=".json" ref={this.getImportRef} style={style.hiddenInput} />
         <input type="file" onChange={(e)=>themeStore.importWallpaper(e, s.selectedTheme.id)} accept=".jpg,.jpeg,.png" ref={this.getWallpaperRef} style={style.hiddenInput} />
-        <Col size="3" className="ntg-tabs" style={{borderBottom: 'initial', position: 'fixed', zIndex: '9999', marginTop: '-20px', height: '50px', backgroundColor: p.theme.settingsBg, width: '235px'}}>
+        <Col size="3" className="ntg-tabs" style={{borderBottom: 'initial', position: 'fixed', zIndex: 9999, marginTop: '-20px', height: '50px', backgroundColor: p.theme.settingsBg, width: '235px'}}>
           <div role="tabpanel" className={css(styles.tabPanelStyle)}>
             <ul className="nav nav-tabs">
               <li className={css(styles.noPaddingStyle) + ` ${s.leftTab === 'custom' ? 'active' : ''}`}>
@@ -369,7 +418,7 @@ class Theming extends React.Component {
                         width: 'auto',
                         display: 'inline',
                         cursor: p.prefs.theme !== theme.id ? 'pointer' : 'initial',
-                        fontWeight: p.prefs.theme === theme.id ? '600' : 'initial',
+                        fontWeight: p.prefs.theme === theme.id ? 600 : 'initial',
                         color: p.prefs.theme === theme.id ? p.theme.darkBtnText : p.theme.bodyText,
                       }}
                       onClick={s.themeLabel !== i && theme.id !== p.prefs.theme ? () => this.handleSelectTheme(theme) : null}>
@@ -430,7 +479,7 @@ class Theming extends React.Component {
                         width: 'auto',
                         display: 'inline',
                         cursor: p.prefs.theme !== theme.id ? 'pointer' : null,
-                        fontWeight: p.prefs.theme === theme.id ? '600' : 'initial',
+                        fontWeight: p.prefs.theme === theme.id ? 600 : 'initial',
                         color: p.prefs.theme === theme.id ? p.theme.darkBtnText : p.theme.bodyText
                       }}
                       onClick={() => this.handleSelectTheme(theme)}>
@@ -446,7 +495,7 @@ class Theming extends React.Component {
         <Row>
           <Col size="3" />
           <Col className={css(styles.colorPickerTabContainerStyle) + ' pickerCont'} size="9">
-            <div className="ntg-tabs" style={{borderBottom: 'initial', position: 'fixed', zIndex: '9999', marginTop: '-28px', height: '50px', backgroundColor: p.theme.settingsBg}}>
+            <div className="ntg-tabs" style={{borderBottom: 'initial', position: 'fixed', zIndex: 9999, marginTop: '-28px', height: '50px', backgroundColor: p.theme.settingsBg}}>
               <div role="tabpanel" className={css(styles.tabPanelStyle)}>
                 <ul className="nav nav-tabs">
                   <li className={css(styles.noPaddingStyle) + ` ${s.rightTab === 'color' ? 'active' : ''}`}>
@@ -489,7 +538,7 @@ class Theming extends React.Component {
               <Col
               size="12"
               className={css(styles.wallpaperColumnStyle)}>
-                {p.wallpapers.length > 0 ? map(_.uniqBy(_.orderBy(p.wallpapers, ['desc'], ['created']), 'id'), (wp, i) => {
+                {p.wallpapers.length > 0 ? map(_.uniqBy(_.orderBy(p.wallpapers, ['created'], ['desc']), 'id'), (wp, i) => {
                   let selectedWallpaper = p.wallpaper && wp.id === p.wallpaper.id;
                   return (
                     <div

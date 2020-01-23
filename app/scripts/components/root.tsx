@@ -2,7 +2,7 @@ import moment from 'moment';
 moment.locale(chrome.i18n.getUILanguage());
 import state from './stores/state';
 if (!state.isOptions) {
-  let startupP = document.querySelector('.startup-text-wrapper > .startup-p');
+  let startupP: HTMLElement = document.querySelector('.startup-text-wrapper > .startup-p');
   if (startupP) startupP.innerText = moment().format('h:mm A');
 }
 import v from 'vquery';
@@ -11,9 +11,10 @@ import tc from 'tinycolor2';
 import React from 'react';
 import _ from 'lodash';
 import ReactTooltip from 'react-tooltip';
+import mouseTrap from 'mousetrap';
 import {each, filter, tryFn} from '@jaszhix/utils';
 
-import {keyboardStore, utilityStore, msgStore, faviconStore} from './stores/main';
+import {setKeyBindings, handleMode, getWindowId, getSessions, getTabs, getScreenshots, getActions, setPrefs, setFavicon} from './stores/main';
 import themeStore from './stores/theme';
 import * as utils from './stores/tileUtils';
 import {AsyncComponent} from './utils';
@@ -22,18 +23,18 @@ import ItemsContainer from './itemsContainer';
 import Alert from './alert';
 import Loading from './loading';
 import Search from './search';
-import tmWorker from './main.worker.js';
+import tmWorker from './main.worker';
 import {tabSortKeys, extensionSortKeys, sessionSortKeys, historySortKeys, bookmarkSortKeys} from './constants';
 
 let Preferences = AsyncComponent({
   loader: () => import(/* webpackChunkName: "preferences" */ './settings/preferences')
-});
+} as LoadableExport.Options<unknown, object>);
 let ContextMenu = AsyncComponent({
   loader: () => import(/* webpackChunkName: "context" */ './context')
-});
+} as LoadableExport.Options<unknown, object>);
 let ModalHandler = AsyncComponent({
   loader: () => import(/* webpackChunkName: "modal" */ './modal')
-});
+} as LoadableExport.Options<unknown, object>);
 
 window.tmWorker = new tmWorker();
 window.tmWorker.onmessage = (e) => {
@@ -44,11 +45,11 @@ window.tmWorker.onmessage = (e) => {
       state.set({favicons: e.data.favicons});
     });
   } else if (e.data.setPrefs) {
-    msgStore.setPrefs(e.data.setPrefs);
+    setPrefs(e.data.setPrefs);
   } else if (e.data.msg === 'handleMode') {
-    utilityStore.handleMode(e.data.mode, e.data.stateUpdate, e.data.init);
+    handleMode(e.data.mode, e.data.stateUpdate, e.data.init);
   } else if (e.data.msg === 'setFavicon') {
-    faviconStore.set_favicon(...e.data.args);
+    setFavicon(e.data.args[0]);
   } else if (e.data.stateUpdate) {
     let init = state.get('init');
     if (!init) {
@@ -64,7 +65,22 @@ if (module.hot) {
   module.hot.accept();
 }
 
-class Root extends React.Component {
+interface RootProps {
+  s: GlobalState;
+}
+
+interface RootState {
+  init: boolean;
+  grid: boolean;
+  window: boolean;
+  screenshots: any[];
+}
+
+class Root extends React.Component<RootProps, RootState> {
+  connections: number[];
+  direction: string;
+  sort: string;
+
   constructor(props) {
     super(props);
 
@@ -100,7 +116,7 @@ class Root extends React.Component {
       state.connect({
         search: (partial) => {
           if (!partial.search) {
-            utilityStore.handleMode(this.props.s.prefs.mode);
+            handleMode(this.props.s.prefs.mode);
             return;
           }
           let modeKey = this.props.s.prefs.mode === 'sessions' ? 'sessionTabs' : this.props.s.prefs.mode;
@@ -121,11 +137,12 @@ class Root extends React.Component {
           state.set(this.updateTabState(partial.folder, 'folder', partial));
         },
         applyTabOrder: (partial) => {
-          if (!partial.applyTabOrder) {
-            return;
-          }
-          for (let i = 0, len = this.props.s.tabs.length; i < len; i++) {
-            chrome.tabs.move(this.props.s.tabs[i].id, {index: i});
+          if (!partial.applyTabOrder) return;
+
+          const {tabs}: GlobalState = this.props.s;
+
+          for (let i = 0, len = tabs.length; i < len; i++) {
+            chrome.tabs.move(tabs[i].id, {index: i});
           }
           state.set({applyTabOrder: false});
 
@@ -145,23 +162,20 @@ class Root extends React.Component {
     each(connections, connection => state.disconnect(connection));
   }
   init = (p) => {
-    msgStore.getWindowId().then(() => {
-      msgStore.getSessions();
-      msgStore.getTabs(true);
+    getWindowId().then(() => {
+      getSessions();
+      getTabs(true);
       if (p.s.prefs.screenshot) {
-        msgStore.getScreenshots().then((screenshots)=>{
+        getScreenshots().then((screenshots)=>{
           state.set({screenshots: screenshots});
         });
       }
       if (p.s.prefs.actions) {
-        msgStore.getActions().then((actions)=>{
+        getActions().then((actions)=>{
           state.set({actions: actions});
         });
       }
     });
-  }
-  chromeAppChange = (e) => {
-    this.setState({apps: e});
   }
   themeChange = (e) => {
     if (state.isOptions && state.chromeVersion === 1) {
@@ -183,7 +197,7 @@ class Root extends React.Component {
       });
     }
     let p = this.props;
-    let stateUpdate = {};
+    let stateUpdate: GlobalState = {};
     let currentWallpaper = e.currentWallpaper || e.hoverWallpaper;
     let style = v('#theme-style-el').n;
 
@@ -450,7 +464,7 @@ class Root extends React.Component {
   updateTabState = (e, opt, sU=null) => {
     let p = this.props;
     console.log('updateTabState: ', e);
-    let stateUpdate = {};
+    let stateUpdate: GlobalState = {};
     if (opt === 'folder') {
       if (e) {
         stateUpdate[p.s.modeKey] = filter(p.s[p.s.modeKey], function(item) {
@@ -461,6 +475,7 @@ class Root extends React.Component {
         });
         stateUpdate.tileCache = p.s[p.s.modeKey];
       } else {
+        // @ts-ignore
         stateUpdate[p.s.modeKey] = p.s.tileCache;
         stateUpdate.tileCache = null;
       }
@@ -481,7 +496,7 @@ class Root extends React.Component {
       }
     }
     if (p.s.prefs.mode !== 'tabs' && p.s.prefs.mode !== 'sessions') {
-      utilityStore.handleMode(p.s.prefs.mode);
+      handleMode(p.s.prefs.mode);
     }
   }
   render = () => {
@@ -492,7 +507,7 @@ class Root extends React.Component {
     }
     if (p.s.theme && p.s.prefs) {
       let keys = [];
-      let labels = {};
+      let labels: any = {};
       if (p.s.prefs.mode === 'bookmarks') {
         keys = bookmarkSortKeys;
         labels = {
@@ -598,9 +613,6 @@ class Root extends React.Component {
             keys={keys}
             sort={p.s.sort}
             direction={p.s.direction}
-            width={p.s.width}
-            collapse={p.s.collapse}
-            search={p.s.search}
             theme={p.s.theme}
             disableSidebarClickOutside={p.s.disableSidebarClickOutside}
             chromeVersion={p.s.chromeVersion} />
@@ -612,7 +624,6 @@ class Root extends React.Component {
             }}>
               <Search
               s={p.s}
-              event={s.event}
               topLoad={p.s.topLoad}
               theme={p.s.theme}  />
               <div style={{
@@ -626,12 +637,10 @@ class Root extends React.Component {
                 {s.grid && p.s[p.s.modeKey] ?
                 <ItemsContainer
                 s={p.s}
-                keys={keys}
-                labels={labels}
                 init={s.init}
                 theme={p.s.theme}
                 wallpaper={p.s.currentWallpaper} />
-                : <Loading sessions={p.s.sessions}  />}
+                : <Loading />}
               </div>
               {p.s.modal && !p.s.modal.state && p.s.prefs.tooltip ?
               <ReactTooltip
@@ -651,7 +660,13 @@ class Root extends React.Component {
   }
 }
 
-class App extends React.Component {
+interface AppProps {
+  stateUpdate: GlobalState;
+}
+
+class App extends React.Component<AppProps, GlobalState> {
+  connectId: number;
+
   constructor(props) {
     super(props);
     this.state = state
@@ -680,12 +695,12 @@ class App extends React.Component {
   }
   setKeyboardShortcuts = (e) => {
     if (e.prefs.keyboardShortcuts) {
-      keyboardStore.set(e);
+      setKeyBindings(e);
     } else {
-      keyboardStore.reset();
+      mouseTrap.reset()
     }
   }
-  onWindowResize = (e, _stateUpdate) => {
+  onWindowResize = (e: UIEvent, _stateUpdate?) => {
     let s = this.state;
     let stateUpdate = {
       collapse: window.innerWidth >= 1565,
@@ -698,8 +713,8 @@ class App extends React.Component {
     }
     state.set(stateUpdate);
     if (s.prefs && (s.prefs.screenshotBg || s.prefs.screenshot)) {
-      document.getElementById('bgImg').style.width = window.innerWidth + 30;
-      document.getElementById('bgImg').style.height = window.innerHeight + 5;
+      document.getElementById('bgImg').style.width = `${window.innerWidth + 30}px`;
+      document.getElementById('bgImg').style.height = `${window.innerHeight + 5}px`;
     }
     v('#bgImg').css({
       width: window.innerWidth + 30,

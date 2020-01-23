@@ -8,7 +8,34 @@ import {tryFn} from '@jaszhix/utils';
 
 import themeStore from './stores/theme';
 
-export class Btn extends React.Component {
+interface BtnProps {
+  onMouseEnter?: (e?: React.MouseEvent | Element) => void;
+  onMouseLeave?: (e?: React.MouseEvent | Element) => void;
+  onClick?: (e?: React.MouseEvent | Element) => void;
+  style?: React.CSSProperties;
+  faStyle?: React.CSSProperties;
+  className?: string;
+  id?: string;
+  fa?: string;
+  icon?: string;
+  noIconPadding?: boolean;
+}
+
+interface BtnState {
+  theme: Theme;
+  hover: boolean;
+}
+
+export class Btn extends React.Component<BtnProps, BtnState> {
+  connectId: number;
+  ref: HTMLElement;
+
+  static defaultProps = {
+    style: {},
+    faStyle: {},
+    noIconPadding: false
+  };
+
   constructor(props) {
     super(props);
 
@@ -38,16 +65,16 @@ export class Btn extends React.Component {
       _.defer(()=>ReactTooltip.rebuild());
     }
   }
-  handleHoverIn = () => {
+  handleHoverIn = (e) => {
     this.setState({hover: true});
     if (this.props.onMouseEnter) {
-      this.props.onMouseEnter();
+      this.props.onMouseEnter(e);
     }
   }
-  handleHoverOut = () => {
+  handleHoverOut = (e) => {
     this.setState({hover: false});
     if (this.props.onMouseLeave) {
-      this.props.onMouseLeave();
+      this.props.onMouseLeave(e);
     }
   }
   getRef = (ref) => {
@@ -107,13 +134,19 @@ export class Btn extends React.Component {
   }
 }
 
-Btn.defaultProps = {
-  style: {},
-  faStyle: {},
-  noIconPadding: false
-};
+interface ColProps {
+  onContextMenu?: React.MouseEventHandler;
+  onDragEnter?: React.DragEventHandler;
+  onMouseEnter?: React.MouseEventHandler;
+  onMouseLeave?: React.MouseEventHandler;
+  onClick?: React.MouseEventHandler;
+  style?: React.CSSProperties;
+  className?: string;
+  id?: string;
+  size?: string;
+}
 
-export class Col extends React.Component {
+export class Col extends React.Component<ColProps> {
   static propTypes = {
     size: PropTypes.string.isRequired
   };
@@ -139,7 +172,19 @@ export class Col extends React.Component {
   }
 }
 
-export class Row extends React.Component {
+interface RowProps {
+  onContextMenu?: React.MouseEventHandler;
+  onDragEnter?: React.DragEventHandler;
+  onMouseEnter?: React.MouseEventHandler;
+  onMouseLeave?: React.MouseEventHandler;
+  onClick?: React.MouseEventHandler;
+  style?: React.CSSProperties;
+  className?: string;
+  id?: string;
+  fluid?: boolean;
+}
+
+export class Row extends React.Component<RowProps> {
   static propTypes = {
     fluid: PropTypes.bool,
   };
@@ -168,8 +213,13 @@ export class Row extends React.Component {
   }
 }
 
-export class Link extends React.Component {
+type AnchorProps = React.DetailedHTMLProps<React.AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>;
+
+export class Link extends React.Component<AnchorProps> {
+  adjustedProps: AnchorProps;
+
   constructor(props) {
+
     super(props);
 
     this.adjustedProps = Object.assign({}, this.props);
@@ -185,18 +235,30 @@ export class Link extends React.Component {
   }
 }
 
-export class Container extends React.Component {
+interface ContainerProps {
+  onContextMenu?: React.MouseEventHandler;
+  onDragEnter?: React.DragEventHandler;
+  onMouseEnter?: React.MouseEventHandler;
+  onMouseLeave?: React.MouseEventHandler;
+  onClick?: React.MouseEventHandler;
+  style?: React.CSSProperties;
+  className?: string;
+  id?: string;
+  fluid?: boolean;
+}
+
+export class Container extends React.Component<ContainerProps> {
   static propTypes = {
     fluid: PropTypes.bool
   };
+
   static defaultProps = {
     fluid: false
   };
-  constructor(props) {
-    super(props);
-  }
+
   render = () => {
     let p = this.props;
+
     return (
       <div
       data-tip={p['data-tip'] ? `<div style="max-width: 350px;">${p['data-tip']}</div>` : null}
@@ -212,10 +274,42 @@ export class Container extends React.Component {
   }
 }
 
-export class Panel extends React.Component {
-  constructor(props) {
-    super(props);
-  }
+interface PanelProps {
+  className?: string;
+  headingStyle?: string;
+  footerStyle?: string;
+  bodyStyle?: string;
+  style?: React.CSSProperties;
+  header?: React.ReactElement;
+  footerLeft?: React.ReactElement;
+  footerRight?: React.ReactElement;
+  noBody?: boolean;
+  type?: 'flat' | 'default';
+  content?: boolean;
+  draggable?: boolean;
+  onDragEnd?: (e: React.DragEvent, i?: number) => void;
+  onDragStart?: (e: React.DragEvent, i?: number) => void;
+  onDragOver?: (e: React.DragEvent, i?: number) => void;
+  onMouseEnter?: React.MouseEventHandler;
+  onMouseLeave?: React.MouseEventHandler;
+  onContextMenu?: React.MouseEventHandler;
+  onBodyClick?: () => void;
+  onFooterClick?: () => void;
+}
+
+export class Panel extends React.Component<PanelProps> {
+  static defaultProps = {
+    className: null,
+    style: null,
+    bodyStyle: null,
+    header: null,
+    footerLeft: null,
+    footerRight: null,
+    noBody: false,
+    type: 'flat',
+    content: false
+  };
+
   render = () => {
     let p = this.props;
     let defaultStyle = {};
@@ -242,7 +336,7 @@ export class Panel extends React.Component {
         </div> : null}
 
         {!p.noBody ?
-        <div className={p.bodyStyle + ' panel-body'} onClick={p.onBodyClick}>
+        <div className={`${p.bodyStyle} panel-body"`} onClick={p.onBodyClick}>
           {p.children}
         </div> : null}
         {p.noBody ? p.children : null}
@@ -261,19 +355,31 @@ export class Panel extends React.Component {
   }
 }
 
-Panel.defaultProps = {
-  className: null,
-  style: null,
-  bodyStyle: null,
-  header: null,
-  footerLeft: null,
-  footerRight: null,
-  noBody: false,
-  type: 'flat',
-  content: false
-};
+interface TabsOption {
+  label: string;
+  key: React.Key;
+}
 
-export class Tabs extends React.Component {
+interface TabsProps {
+  initActiveOption?: number;
+  options?: TabsOption[];
+  onClick: (option: TabsOption) => void;
+  style?: React.CSSProperties;
+  tabStyle?: React.CSSProperties;
+  settings?: string;
+  borderTopColor?: string;
+  borderLeftRightColor?: string;
+}
+
+interface TabsState {
+  active: number;
+}
+
+export class Tabs extends React.Component<TabsProps, TabsState> {
+  static defaultProps = {
+    options: []
+  };
+
   constructor(props) {
     super(props);
 
@@ -296,7 +402,7 @@ export class Tabs extends React.Component {
         <ul className="nav nav-tabs nav-tabs-highlight nav-justified">
           {p.options.map((option, i)=>{
             let active = option.label.toLowerCase() === p.settings;
-            let tabStyle = {
+            let tabStyle: React.CSSProperties = {
               cursor: 'pointer',
               borderTopColor: active ? p.borderTopColor : 'rgba(255, 255, 255, 0)',
               borderBottomColor: active ? 'rgba(255, 255, 255, 0)' : p.borderTopColor,
@@ -306,7 +412,7 @@ export class Tabs extends React.Component {
             tabStyle = _.assignIn(tabStyle, _.cloneDeep(p.tabStyle));
             return (
               <li key={i} className={s.active === i ? 'active' : ''}>
-                <a style={tabStyle} data-toggle="tab" className="legitRipple" onClick={()=>this.handleTabClick(option, i)}>{option.label}</a>
+                <a style={tabStyle} data-toggle="tab" className="legitRipple" onClick={() => this.handleTabClick(option, i)}>{option.label}</a>
               </li>
             );
           })}
@@ -321,19 +427,25 @@ export class Tabs extends React.Component {
   }
 }
 
-Tabs.defaultProps = {
-  options: []
-};
+interface ContextProps {
+  onClickOutside: () => void;
+  theme: Theme;
+  animations: boolean;
+  options: ContextState['options'];
+}
 
-export class Context extends React.Component {
-  constructor(props) {
-    super(props);
-  }
+export class Context extends React.Component<ContextProps> {
+  static defaultProps = {
+    options: null
+  };
+
   handleClickOutside = () => {
     this.props.onClickOutside();
   }
+
   render = () => {
     let p = this.props;
+
     return (
       <ul
       className="dropdown-menu dropdown-menu-xs"
@@ -362,8 +474,8 @@ export class Context extends React.Component {
                     style={{
                       left: '8px',
                       backgroundColor: option.switch ? p.theme.darkBtnBg : 'rgba(255, 255, 255, 0)',
-                      borderColor: option.switch ? p.theme.textFieldBorder : p.theme.darkBtnBg,
-                      boxShadow: `${option.switch ? p.theme.textFieldBorder : p.theme.darkBtnBg} 0px 0px 0px 8px inset`,
+                      borderColor: option.switch ? p.theme.textFieldsBorder : p.theme.darkBtnBg,
+                      boxShadow: `${option.switch ? p.theme.textFieldsBorder : p.theme.darkBtnBg} 0px 0px 0px 8px inset`,
                       transition: p.animations ? 'border 0.4s, box-shadow 0.4s, background-color 1.2s' : 'initial',
                     }}>
                       <small style={{left: option.switch ? '14px' : '0px', transition: p.animations ? 'background-color 0.4s, left 0.2s' : 'initial', backgroundColor: option.switch ? p.theme.darkBtnText : p.theme.bodyText}} />
@@ -393,9 +505,5 @@ export class Context extends React.Component {
     );
   }
 }
-
-Context.defaultProps = {
-  options: null
-};
-
+// @ts-ignore
 Context = onClickOutside(Context);

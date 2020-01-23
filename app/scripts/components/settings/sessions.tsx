@@ -3,26 +3,55 @@ import {css} from 'aphrodite';
 import moment from 'moment';
 import _ from 'lodash';
 import ReactTooltip from 'react-tooltip';
+import v from 'vquery';
 import {each, find, map, filter} from '@jaszhix/utils';
 
 import * as utils from '../stores/tileUtils';
 import {isNewTab} from '../utils';
 import state from '../stores/state';
-import {msgStore, utilityStore} from '../stores/main';
-import sessionsStore from '../stores/sessions';
+import {removeSingleWindow, setPrefs} from '../stores/main';
+import {exportSessions, saveSession, updateSession, removeSession, removeSessionTab, restore, removeWindow, restoreWindow, importSessions} from '../stores/sessions';
 
 import {Btn, Col, Row} from '../bootstrap';
 import style from '../style';
 import styles from './styles';
 
-const buttonIconStyle = {fontSize: '14px', position: 'relative', top: '0px'};
-const sessionButtonIconStyle = {fontSize: '18px', position: 'relative', top: '0px'};
-const sessionHoverButtonIconStyle = {fontSize: '13px', position: 'relative', top: '0px'};
+const buttonIconStyle: React.CSSProperties = {fontSize: '14px', position: 'relative', top: '0px'};
+const sessionButtonIconStyle: React.CSSProperties = {fontSize: '18px', position: 'relative', top: '0px'};
+const sessionHoverButtonIconStyle: React.CSSProperties = {fontSize: '13px', position: 'relative', top: '0px'};
 
-class Sessions extends React.Component {
+interface SessionsProps {
+  prefs: PreferencesState;
+  theme: Theme;
+  modal: ModalState;
+  allTabs: ChromeTab[][];
+  sessions: SessionState[];
+  chromeVersion: number;
+}
+
+interface SessionsState {
+  sessionHover?: number;
+  selectedSessionTabHover?: number;
+  windowHover?: number;
+  currentSessionHover?: number;
+  currentSessionTabHover?: number;
+  expandedSession?: number;
+  labelSession?: number;
+  sessionLabelValue?: string;
+  searchField?: number;
+  search?: string;
+  selectedCurrentSessionWindow?: number;
+  selectedSavedSessionWindow?: number;
+}
+
+class Sessions extends React.Component<SessionsProps, SessionsState> {
+  modalBody: HTMLElement;
+  fileInputRef: HTMLInputElement;
+
   static defaultProps = {
     collapse: true
   };
+
   constructor(props) {
     super(props);
     this.state = {
@@ -32,7 +61,7 @@ class Sessions extends React.Component {
       currentSessionHover: -1,
       currentSessionTabHover: -1,
       expandedSession: null,
-      labelSession: null,
+      labelSession: -1,
       sessionLabelValue: '',
       searchField: null,
       search: '',
@@ -47,13 +76,12 @@ class Sessions extends React.Component {
     let p = this.props;
     let s = this.state;
     this.modalBody = v('.modal-body').n;
-    this.onModalBodyScroll = () => v('#currentSession').css({top: this.modalBody.scrollTop});
     this.modalBody.addEventListener('scroll', this.onModalBodyScroll);
     p.modal.footer = (
       <div>
-        <Btn onClick={() => sessionsStore.exportSessions(state.sessions)} className="ntg-setting-btn" icon="database-export">{utils.t('export')}</Btn>
+        <Btn onClick={() => exportSessions(state.sessions)} className="ntg-setting-btn" icon="database-export">{utils.t('export')}</Btn>
         <Btn onClick={this.triggerInput} className="ntg-setting-btn" icon="database-insert">{utils.t('import')}</Btn>
-        <Btn onClick={() => sessionsStore.v2Save({tabs: p.allTabs, label: s.sessionLabelValue})} className="ntg-setting-btn pull-right" icon="floppy-disk">{utils.t('saveSession')}</Btn>
+        <Btn onClick={() => saveSession({tabs: p.allTabs, label: s.sessionLabelValue})} className="ntg-setting-btn pull-right" icon="floppy-disk">{utils.t('saveSession')}</Btn>
       </div>
     );
     state.set({modal: p.modal}, true);
@@ -65,6 +93,9 @@ class Sessions extends React.Component {
   componentWillUnmount = () => {
     this.modalBody.removeEventListener('scroll', this.onModalBodyScroll);
   }
+
+  onModalBodyScroll = () => v('#currentSession').css({top: this.modalBody.scrollTop})
+
   handleSessionsState = (partial) => {
     const replaceFavicon = (tab) => {
       if (!tab) {
@@ -87,12 +118,12 @@ class Sessions extends React.Component {
     });
     state.set({sessions: this.props.sessions, allTabs: this.props.allTabs});
   }
-  labelSession = (session) => {
+  labelSession = (session: SessionState) => {
     session.label = this.state.sessionLabelValue;
-    sessionsStore.v2Update(this.props.sessions, session);
+    updateSession(this.props.sessions, session);
 
     this.setState({
-      labelSession: '',
+      labelSession: -1,
       sessionLabelValue: ''
     });
   }
@@ -141,20 +172,20 @@ class Sessions extends React.Component {
   }
   handleCurrentSessionCloseTab = (id, refWindow, refTab) => {
     chrome.tabs.remove(id);
-    _.pullAt(this.props.allTabs[refWindow], refTab);
+    this.props.allTabs[refWindow].splice(refTab, 1);
     state.set({allTabs: this.props.allTabs});
     ReactTooltip.hide();
   }
   handleCurrentSessionCloseWindow = (id, refWindow) => {
     chrome.windows.remove(id);
-    msgStore.removeSingleWindow(id);
+    removeSingleWindow(id);
     _.pullAt(this.props.allTabs, refWindow);
     state.set({allTabs: this.props.allTabs});
     ReactTooltip.hide();
   }
   handleRemoveSession = (session) => {
     this.setState({expandedSession: -1, selectedSavedSessionWindow: -1});
-    sessionsStore.v2Remove(this.props.sessions, session);
+    removeSession(this.props.sessions, session);
   }
   getFileInputRef = (ref) => {
     this.fileInputRef = ref;
@@ -212,12 +243,14 @@ class Sessions extends React.Component {
                     height += 41;
                   }
                 }
+                // @ts-ignore
                 if (ref.height && height === ref.height) {
                   return;
                 }
                 v(`#ntg-session-row-${i}`).css({
                   height: `${height}px`
                 });
+                // @ts-ignore
                 ref.height = height;
               }}
               onMouseEnter={() => this.handleSessionHoverIn(i)}
@@ -234,12 +267,12 @@ class Sessions extends React.Component {
                 <Row>
                   <div className={css(styles.sessionTitleContainerStyle)}>
                     <div
-                    onClick={(e)=>this.expandSelectedSession(i, e)}
+                    onClick={() => this.expandSelectedSession(i)}
                     className="ntg-session-text"
                     style={{
                       paddingBottom: s.expandedSession === i ? '5px' : 'initial',
                       cursor: 'pointer',
-                      fontWeight: s.expandedSession === i ? '600' : '400'
+                      fontWeight: s.expandedSession === i ? 600 : 400
                     }}>
                       {p.prefs.syncedSession === session.id ?
                       <span
@@ -263,7 +296,7 @@ class Sessions extends React.Component {
                     noIconPadding={true}
                     data-tip={utils.t('removeSession')} />
                     <Btn
-                    onClick={() => sessionsStore.restore(session)}
+                    onClick={() => restore(session)}
                     className="ntg-session-btn"
                     icon="folder-open2"
                     faStyle={buttonIconStyle}
@@ -271,10 +304,10 @@ class Sessions extends React.Component {
                     data-tip={utils.t('restoreSession')} />
                     {p.prefs.sessionsSync ?
                     <Btn
-                    onClick={() => msgStore.setPrefs({syncedSession: p.prefs.syncedSession === session.id ? null : session.id})}
+                    onClick={() => setPrefs({syncedSession: p.prefs.syncedSession === session.id ? null : session.id} as PreferencesState)}
                     className="ntg-session-btn"
                     icon="sync"
-                    faStyle={{fontWeight: p.prefs.syncedSession === session.id ? '600' : 'initial', position: 'relative', top: '0px'}}
+                    faStyle={{fontWeight: p.prefs.syncedSession === session.id ? 600 : 'initial', position: 'relative', top: '0px'}}
                     noIconPadding={true}
                     data-tip={p.prefs.syncedSession === session.id ? utils.t('desynchronizeSession') : utils.t('synchronizeSession')} /> : null}
                     <Btn
@@ -363,7 +396,7 @@ class Sessions extends React.Component {
                         <div className={css(styles.sessionItemContainerStyle)}>
                           {s.windowHover === w ?
                           <Btn
-                          onClick={() => sessionsStore.removeWindow(p.sessions, i, w)}
+                          onClick={() => removeWindow(p.sessions, i, w)}
                           className="ntg-session-btn"
                           icon="cross"
                           faStyle={buttonIconStyle}
@@ -371,7 +404,7 @@ class Sessions extends React.Component {
                           data-tip={utils.t('removeWindow')} /> : null}
                           {s.windowHover === w ?
                           <Btn
-                          onClick={() => sessionsStore.restoreWindow(session, w, p.chromeVersion)}
+                          onClick={() => restoreWindow(session, w, p.chromeVersion)}
                           className="ntg-session-btn"
                           icon="folder-open2"
                           faStyle={buttonIconStyle}
@@ -392,7 +425,7 @@ class Sessions extends React.Component {
                             key={x}
                             style={{backgroundColor: s.selectedSessionTabHover === x ? p.theme.settingsItemHover : 'initial', maxHeight: '20px'}}>
                               <Col size="11" className={css(styles.noPaddingStyle)}>
-                                <span title={t.title} onClick={() => utilityStore.createTab(t.url)} className={css(styles.cursorPointerStyle, styles.noWrap)}>
+                                <span title={t.title} onClick={() => chrome.tabs.create({url: t.url})} className={css(styles.cursorPointerStyle, styles.noWrap)}>
                                   <img className="ntg-small-favicon" style={{position: 'relative', top: '-1px'}} src={t.favIconUrl} />
                                   {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {t.title}
                                 </span>
@@ -400,7 +433,7 @@ class Sessions extends React.Component {
                               <Col size="1" className={css(styles.noPaddingStyle)}>
                                 {s.selectedSessionTabHover === x ?
                                 <Btn
-                                onClick={() => sessionsStore.v2RemoveTab(p.sessions, i, w, x)}
+                                onClick={() => removeSessionTab(p.sessions, i, w, x)}
                                 className={css(styles.sessionCloseButtonStyle) + ' ntg-session-btn'}
                                 icon="cross"
                                 faStyle={sessionButtonIconStyle}
@@ -422,7 +455,7 @@ class Sessions extends React.Component {
 
           <input
           type="file"
-          onChange={(e) => sessionsStore.importSessions(state.sessions, e)}
+          onChange={(e) => importSessions(state.sessions, e)}
           accept=".json"
           ref={this.getFileInputRef}
           style={style.hiddenInput} />
@@ -431,7 +464,7 @@ class Sessions extends React.Component {
         size={currentSessionSelected || p.prefs.settingsMax ? '6' : '3'}
         className="session-col"
         id="currentSession"
-        style={{postion: 'absolute', right: '0px', transition: p.prefs.animations ? 'width 0.15s' : 'initial'}}
+        style={{postion: 'absolute', right: '0px', transition: p.prefs.animations ? 'width 0.15s' : 'initial'} as React.CSSProperties}
         onMouseLeave={() => this.setState({currentSessionHover: -1})}>
           <h4>{utils.t('currentSession')}</h4>
           {p.allTabs ? map(state.allTabs, (_window, w) => {
@@ -450,20 +483,22 @@ class Sessions extends React.Component {
                 if (!ref || !p.prefs.animations) {
                   return;
                 }
-                _.defer(() => {
+                setTimeout(() => {
                   let height = 30;
-                if (s.selectedCurrentSessionWindow === w) {
-                  let len = windowLength * 20;
-                  height += len > 400 ? 400 : len;
-                }
-                if (ref.height && ref.height === height) {
-                  return;
-                }
-                v(`#ntg-session-row-2-${w}`).css({
-                  height: `${height}px`
-                });
-                ref.height = height;
-                });
+                  if (s.selectedCurrentSessionWindow === w) {
+                    let len = windowLength * 20;
+                    height += len > 400 ? 400 : len;
+                  }
+                  // @ts-ignore
+                  if (ref.height && ref.height === height) {
+                    return;
+                  }
+                  v(`#ntg-session-row-2-${w}`).css({
+                    height: `${height}px`
+                  });
+                  // @ts-ignore
+                  ref.height = height;
+                }, 0);
               }}
               className="ntg-session-row"
               id={`ntg-session-row-2-${w}`}
@@ -476,7 +511,7 @@ class Sessions extends React.Component {
               onMouseLeave={() => this.setState({currentSessionTabHover: -1})}>
                 <Row
                 style={{
-                  fontWeight: s.selectedCurrentSessionWindow === w ? '600' : '400',
+                  fontWeight: s.selectedCurrentSessionWindow === w ? 600 : 400,
                   paddingBottom: s.selectedCurrentSessionWindow === w  ? '1px' : 'initial'
                 }}>
                   <span

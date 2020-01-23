@@ -5,19 +5,47 @@ import v from 'vquery';
 import {each, map, tryFn} from '@jaszhix/utils';
 
 import state from './stores/state';
-import {msgStore} from './stores/main';
+import {queryTabs} from './stores/main';
 import themeStore from './stores/theme';
 
 import {whichToShow, isNewTab, AsyncComponent} from './utils';
 
 let Tile = AsyncComponent({
   loader: () => import(/* webpackChunkName: "tile" */ './tile')
-});
+} as LoadableExport.Options<unknown, object>);
 let Table = AsyncComponent({
   loader: () => import(/* webpackChunkName: "table" */ './table')
-});
+} as LoadableExport.Options<unknown, object>);
 
-class ItemsContainer extends React.Component {
+interface ItemsContainerProps {
+  s: GlobalState;
+  theme: Theme;
+  init: boolean;
+  wallpaper: Wallpaper;
+}
+
+interface ItemContainerState {
+  theme: Theme;
+  hover: boolean;
+  showFloatingTableHeader: boolean;
+  range: VisibleRange;
+}
+
+class ItemsContainer extends React.Component<ItemsContainerProps, ItemContainerState> {
+  ref: HTMLElement;
+  placeholder: HTMLElement;
+  dragged: DragState;
+  over: DragState;
+  connections: number[];
+  format: PreferencesState['format'];
+  modeKey: GlobalState['modeKey'];
+  scrollTimeout: NodeJS.Timeout;
+  scrollTop: number;
+  height: number;
+  nodePlacement: 'after' | 'before';
+  _setViewableRange: (node: HTMLElement) => void;
+
+
   constructor(props) {
     super(props);
     this.state = {
@@ -59,7 +87,7 @@ class ItemsContainer extends React.Component {
         window.addEventListener('scroll', this.handleScroll);
         this.setViewableRange(this.ref);
       } else {
-        _.delay(() => checkRemote(), 500);
+        setTimeout(checkNode, 500);
       }
     };
     checkNode();
@@ -89,7 +117,7 @@ class ItemsContainer extends React.Component {
       this.scrollTop = document.body.scrollTop;
     }
   }
-  setViewableRange = (node) => {
+  setViewableRange = (node: HTMLElement) => {
     if (!node) {
       return;
     }
@@ -120,7 +148,7 @@ class ItemsContainer extends React.Component {
     if (node.clientHeight > 0) {
       this.height = node.clientHeight;
     }
-    let range = whichToShow(config);
+    let range: VisibleRange = whichToShow(config);
     let startOffset = Math.ceil(columns / 3);
     range.start -= startOffset;
     range.length += columns + startOffset;
@@ -168,7 +196,7 @@ class ItemsContainer extends React.Component {
     }
     let index = p.s.tabs[end].index;
     chrome.tabs.move(p.s.tabs[start].id, {index}, () =>{
-      msgStore.queryTabs();
+      queryTabs();
       _.defer(() => {
         tryFn(() => this.dragged.el.parentNode.removeChild(this.placeholder));
         state.set({dragging: false});

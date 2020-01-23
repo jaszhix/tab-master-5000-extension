@@ -9,7 +9,7 @@ import ReactTooltip from 'react-tooltip';
 
 import * as utils from '../stores/tileUtils';
 import state from '../stores/state';
-import {msgStore, getBlackList, setBlackList, isValidDomain, faviconStore, getBytesInUse} from '../stores/main';
+import {setPermissions, setPrefs, getBlackList, setBlackList, isValidDomain, getBytesInUse} from '../stores/main';
 
 import {Btn, Col, Row} from '../bootstrap';
 
@@ -22,7 +22,24 @@ const styles = StyleSheet.create({
   cursorPointer: {cursor: 'pointer'}
 });
 
-class Slide extends React.Component {
+interface SlideProps {
+  className: string;
+  label: string;
+  hoverBg: string;
+  defaultValue: number;
+  value: number;
+  min: number;
+  max: number;
+  onMouseEnter: React.MouseEventHandler;
+  onChange: (value?: number) => void;
+
+}
+
+interface SlideState {
+  hover: boolean;
+}
+
+class Slide extends React.Component<SlideProps, SlideState> {
   constructor(props) {
     super(props);
 
@@ -50,7 +67,20 @@ class Slide extends React.Component {
   }
 }
 
-class Toggle extends React.Component {
+interface ToggleProps {
+  theme: Theme;
+  onMouseEnter: React.MouseEventHandler;
+  onClick: React.MouseEventHandler;
+  child?: boolean;
+  on: boolean;
+  label: string;
+}
+
+interface ToggleState {
+  hover: boolean;
+}
+
+class Toggle extends React.Component<ToggleProps, ToggleState> {
   constructor(props) {
     super(props);
 
@@ -80,8 +110,8 @@ class Toggle extends React.Component {
               style={{
                 left: '8px',
                 backgroundColor: p.on ? p.theme.darkBtnBg : 'rgba(255, 255, 255, 0)',
-                borderColor: p.on ? p.theme.textFieldBorder : p.theme.darkBtnBg,
-                boxShadow: `${p.on ? p.theme.textFieldBorder : p.theme.darkBtnBg} 0px 0px 0px 8px inset`,
+                borderColor: p.on ? p.theme.textFieldsBorder : p.theme.darkBtnBg,
+                boxShadow: `${p.on ? p.theme.textFieldsBorder : p.theme.darkBtnBg} 0px 0px 0px 8px inset`,
                 transition: 'border 0.4s, box-shadow 0.4s, background-color 1.2s',
               }}>
                 <small style={{left: p.on ? '14px' : '0px', transition: 'background-color 0.4s, left 0.2s', backgroundColor: p.on ? p.theme.darkBtnText : p.theme.bodyText}} />
@@ -98,14 +128,24 @@ class Toggle extends React.Component {
   }
 }
 
-class Blacklist extends React.Component {
+interface BlacklistProps {
+  dynamicStyles: any;
+}
+
+interface BlacklistState {
+  blacklistValue: string;
+  blacklistNeedsSave: boolean;
+  formatErrorStr: string;
+}
+
+class Blacklist extends React.Component<BlacklistProps, BlacklistState> {
   constructor(props) {
     super(props);
 
     this.state = {
       blacklistValue: '',
       blacklistNeedsSave: false,
-      formatError: null
+      formatErrorStr: ''
     }
   }
   componentDidMount = () => {
@@ -129,12 +169,12 @@ class Blacklist extends React.Component {
   blacklistSubmit = () => {
     let blacklistStr = this.state.blacklistValue || '';
     if (typeof blacklistStr !== 'string') {
-      blacklistStr = blacklistStr.toString();
+      blacklistStr = (blacklistStr as unknown).toString();
     }
     if (!blacklistStr || !blacklistStr.trim()) {
       setBlackList([]);
       this.setState({
-        formatErrorStr: false,
+        formatErrorStr: '',
         blacklistValue: '',
       });
       return;
@@ -185,7 +225,6 @@ class Blacklist extends React.Component {
       <Col size="12" className={css(styles.blacklistColumn)}>
         <Btn
         onClick={this.blacklistSubmit}
-        disabled={!s.blacklistNeedsSave}
         className={css(styles.blacklistSaveButton) + ' ntg-setting-btn'}
         icon="floppy-disk">
           {utils.t('save')}
@@ -197,18 +236,35 @@ class Blacklist extends React.Component {
         placeholder={utils.t('blacklistPlaceholder')}
         id="input"
         className={css(p.dynamicStyles.blacklistTextarea) + ' form-control blacklist session-field'}
-        rows="3" />
+        rows={3} />
       </Col>
     );
   }
 }
 
-class Preferences extends React.Component {
+interface PreferencesComponentProps {
+  prefs: PreferencesState;
+  theme: Theme;
+  chromeVersion: number;
+  options: boolean;
+  modal: ModalState;
+}
+
+interface PreferencesComponentState {
+  hover?: string;
+  faviconsBytesInUse?: number;
+  screenshotsBytesInUse?: number;
+  aboutAddonsOpen?: boolean;
+}
+
+class Preferences extends React.Component<PreferencesComponentProps, PreferencesComponentState> {
+  connectId: number;
+
   constructor(props) {
     super(props);
 
     this.state = {
-      hover: null,
+      hover: 'null',
       faviconsBytesInUse: 0,
       screenshotsBytesInUse: 0,
       aboutAddonsOpen: false
@@ -227,14 +283,14 @@ class Preferences extends React.Component {
   }
   buildFooter = () => {
     getBytesInUse('favicons').then((bytes) => {
-      this.setState({faviconsBytesInUse: bytes});
+      this.setState({faviconsBytesInUse: bytes} as PreferencesComponentState);
       if (this.props.prefs.screenshot) {
         return getBytesInUse('screenshots');
       }
       return Promise.resolve(0);
     }).then((bytes) => {
       console.log({bytes})
-      if (bytes) this.setState({screenshotsBytesInUse: bytes});
+      if (bytes) this.setState({screenshotsBytesInUse: bytes} as PreferencesComponentState);
       let p = this.props;
       if (p.options) {
         v('#options').remove();
@@ -273,7 +329,7 @@ class Preferences extends React.Component {
       state.set({modal: p.modal}, true);
     }).catch((e) => console.log(e));
   }
-  checkAddonTab = (partial) => {
+  checkAddonTab = (partial?) => {
     let aboutAddonsOpen = false
     each(partial ? partial.allTabs : state.allTabs, (win) => {
       each(win, (tab) => {
@@ -297,7 +353,7 @@ class Preferences extends React.Component {
 
     obj[opt] = !prefs[opt];
 
-    msgStore.setPrefs(obj);
+    setPrefs(obj as PreferencesState);
 
     if (opt === 'errorTelemetry') {
       window.location.reload();
@@ -310,7 +366,7 @@ class Preferences extends React.Component {
     }, (granted) => {
       if (!granted) return;
 
-      msgStore.setPermissions({screenshot: true});
+      setPermissions({screenshot: true} as PermissionsState);
       this.handleClick(opt);
 
       setTimeout(chrome.runtime.reload, 500);
@@ -319,13 +375,13 @@ class Preferences extends React.Component {
   handleSlide = (e, opt) => {
     let obj = {};
     obj[opt] = e;
-    msgStore.setPrefs(obj);
+    setPrefs(obj as PreferencesState);
   }
   handleAutoDiscardTime = (e) => {
     let discardTime = parseInt(e.target.value.split(' ')[0]);
     let isMinute = e.target.value.indexOf('Minute') !== -1;
     let output = isMinute && discardTime === 30 ? 0.5 : isMinute && discardTime === 15 ? 0.25 : discardTime;
-    msgStore.setPrefs({autoDiscardTime: output * 3600000});
+    setPrefs({autoDiscardTime: output * 3600000} as PreferencesState);
   }
   handleScreenshotClear = () => {
     chrome.storage.local.remove('screenshots', () => {
@@ -334,7 +390,7 @@ class Preferences extends React.Component {
     });
   }
   handleFaviconClear = () => {
-    faviconStore.clear();
+    chrome.storage.local.remove('favicons');
     this.buildFooter();
   }
   render = () => {
@@ -419,7 +475,7 @@ class Preferences extends React.Component {
               <div>
                 {`${utils.t('autoDiscardClearTime')}:`}
                 <select
-                className={css(styles.autoDiscardSelect) + ' form-control'}
+                className={/* css(styles.autoDiscardSelect) + */ ' form-control'}
                 placeholder={utils.t('time')}
                 value={`${p.prefs.autoDiscardTime < 1800000 ? '15' : p.prefs.autoDiscardTime < 3600000 ? '30' : autoDiscardTimeHourDivided} ${p.prefs.autoDiscardTime < 3600000 ? utils.t('minutes') : utils.t('hour')}${autoDiscardTimeHourDivided > 1 && p.prefs.autoDiscardTime >= 3600000 ? utils.t('s') : ''}`}
                 onChange={this.handleAutoDiscardTime}>
@@ -519,8 +575,6 @@ class Preferences extends React.Component {
                 value={p.prefs.tabSizeHeight}
                 onChange={(e) => this.handleSlide(e, 'tabSizeHeight')}
                 onMouseEnter={() => this.handleToggle('tabSizeHeight')}
-                step={20}
-                dots={true}
                 hoverBg={p.theme.settingsItemHover}
                 data-tip={utils.t('tabSizeHeightTip')} />
                 <Slide
@@ -532,8 +586,6 @@ class Preferences extends React.Component {
                 value={p.prefs.tablePadding}
                 onChange={(e) => this.handleSlide(e, 'tablePadding')}
                 onMouseEnter={() => this.handleToggle('tablePadding')}
-                step={1}
-                dots={true}
                 hoverBg={p.theme.settingsItemHover}
                 data-tip={utils.t('tablePaddingTip')} />
               </div>  : null}
@@ -587,7 +639,7 @@ class Preferences extends React.Component {
             on={p.prefs.blacklist}
             label={utils.t('blacklist')}
             data-tip={utils.t('blacklistTip')}>
-              {p.prefs.blacklist ? <Blacklist theme={p.theme} dynamicStyles={dynamicStyles} /> : null}
+              {p.prefs.blacklist ? <Blacklist dynamicStyles={dynamicStyles} /> : null}
             </Toggle>
           </Col>
         </Row>
