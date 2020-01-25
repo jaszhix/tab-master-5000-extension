@@ -101,6 +101,7 @@ class ColorPickerContainer extends React.Component<ColorPickerContainerProps, Co
 const buttonIconStyle: React.CSSProperties = {fontSize: '14px', position: 'relative', top: '0px'};
 
 interface ThemingProps {
+  savedThemes: ThemeState[];
   theme: Theme;
   modal: ModalState;
   wallpaper: Wallpaper;
@@ -122,11 +123,6 @@ interface ThemingState {
   selectedWallpaper?: boolean;
   boldUpdate?: boolean;
   colorGroup?: 'general' | 'buttons' | 'tiles';
-}
-
-interface ThemingProps {
-  savedThemes: ThemeState[];
-
 }
 
 class Theming extends React.Component<ThemingProps, ThemingState> {
