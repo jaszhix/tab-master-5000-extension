@@ -7,11 +7,11 @@ import ExtractTextPlugin from 'extract-text-webpack-plugin';
 import {BundleAnalyzerPlugin} from 'webpack-bundle-analyzer';
 import LodashModuleReplacementPlugin from 'lodash-webpack-plugin';
 import SizePlugin from 'size-plugin';
+import TerserPlugin from 'terser-webpack-plugin';
 import SentryWebpackPlugin from '@sentry/webpack-plugin';
 
 const babelConfig = JSON.parse(fs.readFileSync('./.babelrc'));
 
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const aliases = Object.assign({
   underscore: 'lodash'
 }, require('lodash-loader').createLodashAliases());
@@ -234,7 +234,32 @@ if (PROD && ENTRY) {
   config.devtool = 'hidden-source-map';
   if (!SKIP_MINIFY) {
     config.optimization = {
-      minimize: false,
+      minimize: true,
+      minimizer: [
+        new TerserPlugin({
+          parallel: true,
+          sourceMap: true,
+          terserOptions: {
+            ecma: undefined,
+            warnings: false,
+            parse: {},
+            compress: {
+              drop_console: true,
+              drop_debugger: true,
+            },
+            sourceMap: true,
+            mangle: false,
+            module: false,
+            output: null,
+            toplevel: false,
+            nameCache: null,
+            ie8: false,
+            keep_classnames: true,
+            keep_fnames: true,
+            safari10: false,
+          },
+        }),
+      ],
       splitChunks: {
         chunks: 'async',
         minSize: 30000,
@@ -256,25 +281,6 @@ if (PROD && ENTRY) {
         }
       }
     };
-    config.plugins.push(
-      new UglifyJsPlugin({
-        sourceMap: true,
-        uglifyOptions: {
-          ecma: 8,
-          mangle: false,
-          compress: {
-            warnings: false,
-            drop_console: true,
-            drop_debugger: true,
-            dead_code: true,
-            unused: true,
-          },
-          output: {
-            comments: false
-          }
-        },
-      }),
-    );
 
     if (fs.existsSync('./.sentryclirc')) {
       config.plugins.push(
