@@ -5,4 +5,3 @@ export const historySortKeys = ['openTab', 'url', 'title', 'lastVisitTime', 'vis
 export const bookmarkSortKeys = ['openTab', 'url', 'title', 'dateAdded', 'folder', 'index'];
 
 export const domainRegex = /^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:/\n]+)/im;
-export const sanitizeRegex = /[^a-z0-9]/gi;

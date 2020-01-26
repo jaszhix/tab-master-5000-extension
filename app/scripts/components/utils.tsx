@@ -1,6 +1,7 @@
 import React from 'react';
 import Loadable from 'react-loadable';
-import {sanitizeRegex} from './constants';
+
+const sanitizeRegex = /[^a-z0-9]/gi;
 
 export const includes = function (arr: any[], val: any, index: number): boolean {
   for (let i = 0 | index; i < arr.length; i++) {
