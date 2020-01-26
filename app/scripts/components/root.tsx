@@ -16,7 +16,6 @@ import {each, filter, tryFn} from '@jaszhix/utils';
 
 import {setKeyBindings, handleMode, getWindowId, getSessions, getTabs, getScreenshots, getActions, setPrefs, setFavicon} from './stores/main';
 import themeStore from './stores/theme';
-import * as utils from './stores/tileUtils';
 import {AsyncComponent} from './utils';
 import Sidebar from './sidebar';
 import ItemsContainer from './itemsContainer';
@@ -26,15 +25,19 @@ import Search from './search';
 import tmWorker from './main.worker';
 import {sidebarSortOptions} from './constants';
 
+import {PreferencesComponentProps, PreferencesComponentState} from './settings/preferences'; // eslint-disable-line no-unused-vars
+import {ContextMenuProps, ContextMenuState} from './context'; // eslint-disable-line no-unused-vars
+import {ModalHandlerProps, ModalHandlerState} from './modal'; // eslint-disable-line no-unused-vars
+
 let Preferences = AsyncComponent({
   loader: () => import(/* webpackChunkName: "preferences" */ './settings/preferences')
-} as LoadableExport.Options<unknown, object>);
+} as LoadableExport.Options<unknown, object>) as React.ComponentClass<PreferencesComponentProps, PreferencesComponentState>;
 let ContextMenu = AsyncComponent({
   loader: () => import(/* webpackChunkName: "context" */ './context')
-} as LoadableExport.Options<unknown, object>);
+} as LoadableExport.Options<unknown, object>) as React.ComponentClass<ContextMenuProps, ContextMenuState>;
 let ModalHandler = AsyncComponent({
   loader: () => import(/* webpackChunkName: "modal" */ './modal')
-} as LoadableExport.Options<unknown, object>);
+} as LoadableExport.Options<unknown, object>) as React.ComponentClass<ModalHandlerProps, ModalHandlerState>;
 
 window.tmWorker = new tmWorker();
 window.tmWorker.onmessage = (e) => {
@@ -512,22 +515,16 @@ class Root extends React.Component<RootProps, RootState> {
         {p.s.isOptions ?
         <Preferences
         options={true}
-        settingsMax={true}
         prefs={p.s.prefs}
-        tabs={p.s.tabs}
         theme={p.s.theme} />
         :
         <div>
           {p.s.context.value ?
           <ContextMenu
-          mode={p.s.prefs.mode}
-          modeKey={p.s.modeKey}
           actions={p.s.actions}
-          search={p.s.search}
-          tabs={p.s[p.s.prefs.mode]}
+          tabs={p.s[p.s.prefs.mode] as TabCollection}
           prefs={p.s.prefs}
           context={p.s.context}
-          chromeVersion={p.s.chromeVersion}
           duplicateTabs={p.s.duplicateTabs}
           theme={p.s.theme} /> : null}
           {p.s.modal ?
