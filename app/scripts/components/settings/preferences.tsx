@@ -242,15 +242,15 @@ class Blacklist extends React.Component<BlacklistProps, BlacklistState> {
   }
 }
 
-interface PreferencesComponentProps {
+export interface PreferencesComponentProps {
   prefs: PreferencesState;
   theme: Theme;
-  chromeVersion: number;
-  options: boolean;
-  modal: ModalState;
+  chromeVersion?: number;
+  options?: boolean;
+  modal?: ModalState;
 }
 
-interface PreferencesComponentState {
+export interface PreferencesComponentState {
   hover?: string;
   faviconsBytesInUse?: number;
   screenshotsBytesInUse?: number;
@@ -259,6 +259,10 @@ interface PreferencesComponentState {
 
 class Preferences extends React.Component<PreferencesComponentProps, PreferencesComponentState> {
   connectId: number;
+
+  static defaultProps = {
+    options: false,
+  }
 
   constructor(props) {
     super(props);

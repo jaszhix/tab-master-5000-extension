@@ -75,7 +75,7 @@ const Loading = function(props: LoadingProps): React.ReactElement {
   }
 };
 
-export const AsyncComponent = function(opts: Loadable.Options<unknown, object>): Loadable.LoadableComponent {
+export const AsyncComponent = function(opts: Loadable.Options<unknown, any>) {
   return Loadable(Object.assign({
     loading: Loading,
     delay: 200,

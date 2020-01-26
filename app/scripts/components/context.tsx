@@ -8,16 +8,16 @@ import state from './stores/state';
 import {undoAction} from './stores/main';
 import * as utils from './stores/tileUtils';
 
-interface ContextMenuProps {
+export interface ContextMenuProps {
   context: ContextState;
   actions: ActionRecord[];
   prefs: PreferencesState;
   theme: Theme;
   duplicateTabs: string[];
-  tabs: ChromeTab[];
+  tabs: TabCollection;
 }
 
-interface ContextMenuState {
+export interface ContextMenuState {
   openTab: number;
   actions: ActionRecord[];
   inViewport: boolean;

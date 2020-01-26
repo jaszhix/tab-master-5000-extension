@@ -311,13 +311,13 @@ const tabUlStyle: React.CSSProperties = {borderBottom: 'initial', position: 'abs
 const tabLiStyle: React.CSSProperties = {padding: '0px'};
 const tabLinkStyle: React.CSSProperties = {padding: '5px 7.5px'};
 
-interface AboutProps {
+export interface AboutProps {
   theme: Theme;
   modal: ModalState;
   chromeVersion: number;
 }
 
-interface AboutState {
+export interface AboutState {
   tab: string;
 }
 

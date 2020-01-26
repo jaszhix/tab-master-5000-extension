@@ -274,7 +274,7 @@ class TableHeader extends React.Component<TableHeaderProps> {
   }
 }
 
-interface TableProps {
+export interface TableProps {
   s: GlobalState;
   showFloatingTableHeader: boolean;
   range: VisibleRange;
@@ -283,7 +283,7 @@ interface TableProps {
   onDragOver: (e: React.DragEvent, i: number) => void;
 }
 
-interface TableState {
+export interface TableState {
   columns?: SortKey[];
   rows?: ChromeTab[];
   rowHover?: number;

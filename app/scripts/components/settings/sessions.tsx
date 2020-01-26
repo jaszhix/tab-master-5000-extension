@@ -20,7 +20,7 @@ const buttonIconStyle: React.CSSProperties = {fontSize: '14px', position: 'relat
 const sessionButtonIconStyle: React.CSSProperties = {fontSize: '18px', position: 'relative', top: '0px'};
 const sessionHoverButtonIconStyle: React.CSSProperties = {fontSize: '13px', position: 'relative', top: '0px'};
 
-interface SessionsProps {
+export interface SessionsProps {
   prefs: PreferencesState;
   theme: Theme;
   modal: ModalState;
@@ -29,7 +29,7 @@ interface SessionsProps {
   chromeVersion: number;
 }
 
-interface SessionsState {
+export interface SessionsState {
   sessionHover?: number;
   selectedSessionTabHover?: number;
   windowHover?: number;

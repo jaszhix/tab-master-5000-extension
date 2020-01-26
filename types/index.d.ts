@@ -75,6 +75,20 @@ type SortKey = 'index' | 'url' | 'title' | 'timeStamp' | 'sTimeStamp' | 'openTab
   | 'lastVisitTime' | 'visitCount' | 'typedCount' | 'launchType' | 'enabled'
   | 'offlineEnabled' | 'version' | 'name';
 
+declare interface SidebarSortOption {
+  keys: string[];
+  labels: any;
+}
+
+declare interface SidebarSortOptions {
+  bookmarks: SidebarSortOption;
+  history: SidebarSortOption;
+  sessions: SidebarSortOption;
+  extensions: SidebarSortOption;
+  apps: SidebarSortOption;
+  tabs: SidebarSortOption;
+}
+
 declare interface SessionState {
   timeStamp: number;
   tabs: ChromeTab[][];

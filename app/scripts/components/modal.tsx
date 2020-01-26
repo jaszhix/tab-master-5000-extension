@@ -13,7 +13,7 @@ import * as utils from './stores/tileUtils';
 
 import {Tabs} from './bootstrap';
 
-interface ModalDefaultProps {
+export interface ModalDefaultProps {
   clickOutside: boolean;
   onClose: () => void;
   onMaximize: React.MouseEventHandler;
@@ -90,7 +90,7 @@ export class ModalDefault extends React.Component<ModalDefaultProps> {
 // @ts-ignore
 ModalDefault = onClickOutside(ModalDefault);
 
-interface ModalHandlerProps {
+export interface ModalHandlerProps {
   prefs: PreferencesState;
   theme: Theme;
   width: number;
@@ -109,7 +109,7 @@ interface ModalHandlerProps {
   chromeVersion: number;
 }
 
-interface ModalHandlerState {
+export interface ModalHandlerState {
   maximized: boolean;
 }
 

@@ -10,12 +10,15 @@ import themeStore from './stores/theme';
 
 import {whichToShow, isNewTab, AsyncComponent} from './utils';
 
+import {TileProps, TileState} from './tile'; // eslint-disable-line no-unused-vars
+import {TableProps, TableState} from './table'; // eslint-disable-line no-unused-vars
+
 let Tile = AsyncComponent({
   loader: () => import(/* webpackChunkName: "tile" */ './tile')
-} as LoadableExport.Options<unknown, object>);
+} as LoadableExport.Options<unknown, object>) as React.ComponentClass<TileProps, TileState>;
 let Table = AsyncComponent({
   loader: () => import(/* webpackChunkName: "table" */ './table')
-} as LoadableExport.Options<unknown, object>);
+} as LoadableExport.Options<unknown, object>) as React.ComponentClass<TableProps, TableState>;
 
 interface ItemsContainerProps {
   s: GlobalState;
@@ -269,32 +272,14 @@ class ItemsContainer extends React.Component<ItemsContainerProps, ItemContainerS
               onDragStart={(e) => this.dragStart(e, i)}
               onDragOver={(e) => this.dragOver(e, i)}
               prefs={p.s.prefs}
-              tabs={p.s.tabs}
-              duplicateTabs={p.s.duplicateTabs}
-              bookmarks={p.s.bookmarks}
-              history={p.s.history}
-              sessions={p.s.sessions}
-              sessionTabs={p.s.sessionTabs}
-              apps={p.s.apps}
-              extensions={p.s.extensions}
-              modeKey={p.s.modeKey}
               i={i}
               tab={tab}
-              tileLimit={p.s.tileLimit}
-              init={p.init}
-              screenshots={p.s.screenshots}
               theme={p.theme}
               wallpaper={p.wallpaper}
-              width={p.s.width}
               context={p.s.context}
               folder={p.s.folder}
-              applyTabOrder={p.s.applyTabOrder}
-              search={p.s.search}
-              sort={p.s.sort}
-              windowId={p.s.windowId}
               chromeVersion={p.s.chromeVersion}
-              tileLetterTopPos={tileLetterTopPos}
-              screenshotClear={p.s.screenshotClear} />
+              tileLetterTopPos={tileLetterTopPos} />
             );
           })
           :
@@ -303,7 +288,6 @@ class ItemsContainer extends React.Component<ItemsContainerProps, ItemContainerS
           onDragEnd={this.dragEnd}
           onDragStart={this.dragStart}
           onDragOver={this.dragOver}
-          theme={p.theme}
           range={this.state.range}
           showFloatingTableHeader={this.state.showFloatingTableHeader} />}
         </div>

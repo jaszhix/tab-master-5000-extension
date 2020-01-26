@@ -18,7 +18,7 @@ const styles = StyleSheet.create({
   mediaLeftImage: {width: '16px', height: '16px'}
 });
 
-interface TileProps {
+export interface TileProps {
   tab: ChromeTab & ChromeExtensionInfo;
   prefs: PreferencesState;
   context: ContextState;
@@ -33,7 +33,7 @@ interface TileProps {
   tileLetterTopPos: number;
 }
 
-interface TileState {
+export interface TileState {
   hover?: boolean;
   xHover?: boolean;
   pHover?: boolean;
