@@ -1,5 +1,6 @@
 import React from 'react';
 import Loadable from 'react-loadable';
+import {sanitizeRegex} from './constants';
 
 export const includes = function (arr: any[], val: any, index: number): boolean {
   for (let i = 0 | index; i < arr.length; i++) {
@@ -52,6 +53,16 @@ interface LoadingProps {
   timedOut: boolean;
   retry: () => void;
 }
+
+export const sanitizeTitle = (str: string): string => {
+  let result = str.replace(sanitizeRegex, '')[0];
+
+  if (result !== undefined) {
+    return result.toUpperCase();
+  } else {
+    return '';
+  }
+};
 
 const Loading = function(props: LoadingProps): React.ReactElement {
   if (props.error) {

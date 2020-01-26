@@ -9,7 +9,7 @@ import themeStore from './stores/theme';
 
 import {Panel} from './bootstrap';
 import style from './style';
-import {unref} from './utils';
+import {unref, sanitizeTitle} from './utils';
 import * as utils from './stores/tileUtils';
 
 const styles = StyleSheet.create({
@@ -194,6 +194,7 @@ class Tile extends React.Component<TileProps, TileState> {
   render = () => {
     let s = this.state;
     let p = this.props;
+
     style.ssIconBg = _.cloneDeep(_.assignIn(style.ssIconBg, {
       backgroundColor: p.theme.tileButtonBg
     }));
@@ -208,17 +209,8 @@ class Tile extends React.Component<TileProps, TileState> {
     let isTab = p.prefs.mode === 'tabs' || openTab;
     let isLoading = p.tab.status === 'loading';
 
-    let sanitize = (str) => {
-      let result = str.replace(/[^a-z0-9]/gi, '')[0];
-      if (result !== undefined) {
-        return result.toUpperCase();
-      } else {
-        return '';
-      }
-    };
-    if (s.hover) {
-      titleFontSize--;
-    }
+    if (s.hover) titleFontSize--;
+
     let subTitleStyle = {
       whiteSpace: 'nowrap',
       position: 'absolute',
@@ -527,7 +519,8 @@ class Tile extends React.Component<TileProps, TileState> {
       onContextMenu={this.handleContextClick}>
         {!p.tab.favIconUrl || (p.tab.domain && p.tab.domain === 'chrome') ?
         <div className={css(dynamicStyles.titleContainer)}>
-          {p.tab.title.length > 0 && p.tab.title ? sanitize(p.tab.title) : p.tab.domain ? sanitize(p.tab.domain) : null}
+          {p.tab.title.length > 0 && p.tab.title ? sanitizeTitle(p.tab.title)
+          : p.tab.domain ? sanitizeTitle(p.tab.domain) : null}
         </div>
         : null}
       </Panel>
