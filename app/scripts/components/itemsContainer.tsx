@@ -82,7 +82,7 @@ class ItemsContainer extends React.Component<ItemsContainerProps, ItemContainerS
     this._setViewableRange = _.throttle(this.setViewableRange, 2000, {leading: true});
   }
   componentDidMount = () => {
-    let checkNode = ()=>{
+    let checkNode = () => {
       if (this.ref) {
         window.addEventListener('scroll', this.handleScroll);
         this.setViewableRange(this.ref);
@@ -195,7 +195,7 @@ class ItemsContainer extends React.Component<ItemsContainerProps, ItemContainerS
       end--;
     }
     let index = p.s.tabs[end].index;
-    chrome.tabs.move(p.s.tabs[start].id, {index}, () =>{
+    chrome.tabs.move(p.s.tabs[start].id, {index}, () => {
       queryTabs();
       _.defer(() => {
         tryFn(() => this.dragged.el.parentNode.removeChild(this.placeholder));

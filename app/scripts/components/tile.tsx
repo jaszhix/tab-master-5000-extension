@@ -208,7 +208,7 @@ class Tile extends React.Component<TileProps, TileState> {
     let isTab = p.prefs.mode === 'tabs' || openTab;
     let isLoading = p.tab.status === 'loading';
 
-    let sanitize = (str) =>{
+    let sanitize = (str) => {
       let result = str.replace(/[^a-z0-9]/gi, '')[0];
       if (result !== undefined) {
         return result.toUpperCase();

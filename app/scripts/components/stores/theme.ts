@@ -768,9 +768,9 @@ const themeStore: ThemeStore = initStore({
   },
   importWallpaper: (e, id) => {
     let reader = new FileReader();
-    reader.onload = ()=> {
+    reader.onload = () => {
       let sourceImage = new Image();
-      sourceImage.onload = ()=> {
+      sourceImage.onload = () => {
         let imgWidth = sourceImage.width / 2;
         let imgHeight = sourceImage.height / 2;
         let canvas = document.createElement("canvas");

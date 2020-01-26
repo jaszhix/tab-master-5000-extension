@@ -357,7 +357,7 @@ export const setFavicon = (tab: ChromeTab) => {
         domain
       });
       s.favicons = _.uniqBy(s.favicons, 'domain');
-      chrome.storage.local.set({favicons: s.favicons}, ()=> {
+      chrome.storage.local.set({favicons: s.favicons}, () => {
         console.log('favicons saved');
         state.set({favicons: s.favicons}, true);
       });

@@ -14,7 +14,7 @@ import {getChromeVersion} from './stores/main';
 
 let Sentry = null;
 
-const renderApp = (stateUpdate)=>{
+const renderApp = (stateUpdate) => {
   render(
     <ErrorBoundary Sentry={Sentry}>
       <App stateUpdate={stateUpdate} />
@@ -23,12 +23,12 @@ const renderApp = (stateUpdate)=>{
   );
 };
 
-const loadFavicons = (cb)=>{
-  chrome.storage.local.get('favicons', (fv)=>{
+const loadFavicons = (cb) => {
+  chrome.storage.local.get('favicons', (fv) => {
     if (fv && fv.favicons) {
       cb(fv.favicons);
     } else {
-      chrome.storage.local.set({favicons: []}, ()=> {
+      chrome.storage.local.set({favicons: []}, () => {
         console.log('Init favicons saved.');
         cb([]);
       });
@@ -36,8 +36,8 @@ const loadFavicons = (cb)=>{
   });
 };
 
-const loadPrefs = ()=>{
-  chrome.runtime.sendMessage(chrome.runtime.id, {method: 'prefs'}, (response)=>{
+const loadPrefs = () => {
+  chrome.runtime.sendMessage(chrome.runtime.id, {method: 'prefs'}, (response) => {
     if (!response) return;
 
     const next = () => {
@@ -48,7 +48,7 @@ const loadPrefs = ()=>{
 
       console.log('Prefs loaded: ', response);
 
-      loadFavicons((fv)=>{
+      loadFavicons((fv) => {
         stateUpdate.favicons = fv;
         renderApp(stateUpdate);
       });
@@ -68,7 +68,7 @@ const loadPrefs = ()=>{
   });
 };
 
-v(document).ready(()=>{
+v(document).ready(() => {
   tryFn(loadPrefs);
 });
 

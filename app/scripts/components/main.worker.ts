@@ -167,7 +167,7 @@ const processBookmarks = function(s, msg) {
   let tabs: ChromeBookmarkTreeNode[] = _.flatten(s.allTabs);
   let iter = -1;
 
-  let addBookmarkChildren = (bookmarkLevel, title='')=> {
+  let addBookmarkChildren = (bookmarkLevel, title='') => {
     bookmarkLevel.folder = title;
     iter++;
     if (!bookmarkLevel.children) {

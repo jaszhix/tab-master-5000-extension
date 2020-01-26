@@ -400,7 +400,7 @@ export class Tabs extends React.Component<TabsProps, TabsState> {
     return (
       <div className="tabbable" style={p.style}>
         <ul className="nav nav-tabs nav-tabs-highlight nav-justified">
-          {p.options.map((option, i)=>{
+          {p.options.map((option, i) => {
             let active = option.label.toLowerCase() === p.settings;
             let tabStyle: React.CSSProperties = {
               cursor: 'pointer',
@@ -460,7 +460,7 @@ export class Context extends React.Component<ContextProps> {
         borderRadius: '1px',
         backgroundColor: p.theme.settingsBg
       }}>
-        {p.options ? p.options.map((option, i)=>{
+        {p.options ? p.options.map((option, i) => {
           if (option.divider) {
             return <li key={i} className="divider" />;
           }

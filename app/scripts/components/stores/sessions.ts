@@ -170,7 +170,7 @@ export const removeSessionTab = (sessions: SessionState[], session, _window, tab
   _.pullAt(sessions[session].tabs[_window], tab);
   stateUpdate.sessions = sessions;
   state.set(stateUpdate, true);
-  chrome.storage.local.set({sessions: sessions}, ()=> {
+  chrome.storage.local.set({sessions: sessions}, () => {
     console.log('session tab removed', sessions);
   });
 };
@@ -187,7 +187,7 @@ export const removeSession = (sessions: SessionState[], session: SessionState) =
   let refSession = findIndex(sessions, _session => _session.id === session.id);
   _.pullAt(sessions, refSession);
   state.set({sessions: sessions});
-  chrome.storage.local.set({sessions: sessions}, ()=> {
+  chrome.storage.local.set({sessions: sessions}, () => {
     console.log('session removed', sessions);
   });
   ReactTooltip.hide();

@@ -65,7 +65,7 @@ class ContextMenu extends React.Component<ContextMenuProps, ContextMenuState> {
     let s = this.state;
 
     let isSelectedItems = Array.isArray(p.context.id);
-    let addContextMenuItems = (hasBookmark?, bk?)=>{
+    let addContextMenuItems = (hasBookmark?, bk?) => {
       let hasMute = p.chromeVersion >= 46 || p.chromeVersion === 1;
       let close = p.prefs.mode !== 'apps' && p.prefs.mode !== 'tabs' && !s.openTab ? utils.t('remove') : utils.t('close');
       let notBookmarksHistorySessAppsExt = p.prefs.mode !== 'bookmarks' && p.prefs.mode !== 'history' && p.prefs.mode !== 'sessions' && p.prefs.mode !== 'apps' && p.prefs.mode !== 'extensions';
@@ -187,7 +187,7 @@ class ContextMenu extends React.Component<ContextMenuProps, ContextMenuState> {
       ];
 
       if (!isSelectedItems && p.prefs.mode === 'apps' && p.context.id.enabled) {
-        filter(p.context.id.availableLaunchTypes, (launchType)=>{
+        filter(p.context.id.availableLaunchTypes, (launchType) => {
           if (launchType !== p.context.id.launchType) {
             let launchOption = {
               argument: true,

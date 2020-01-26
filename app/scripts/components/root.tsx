@@ -40,7 +40,7 @@ window.tmWorker = new tmWorker();
 window.tmWorker.onmessage = (e) => {
   console.log('WORKER: ', e.data);
   if (e.data.favicons) {
-    chrome.storage.local.set({favicons: e.data.favicons}, ()=> {
+    chrome.storage.local.set({favicons: e.data.favicons}, () => {
       console.log('favicons saved');
       state.set({favicons: e.data.favicons});
     });
@@ -166,12 +166,12 @@ class Root extends React.Component<RootProps, RootState> {
       getSessions();
       getTabs(true);
       if (p.s.prefs.screenshot) {
-        getScreenshots().then((screenshots)=>{
+        getScreenshots().then((screenshots) => {
           state.set({screenshots: screenshots});
         });
       }
       if (p.s.prefs.actions) {
-        getActions().then((actions)=>{
+        getActions().then((actions) => {
           state.set({actions: actions});
         });
       }

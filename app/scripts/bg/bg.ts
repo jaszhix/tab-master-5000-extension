@@ -126,7 +126,7 @@ let createScreenshot = (t, refWindow, refTab, run=0) => {
     }
     tryFn(() => {
       setTimeout(() => {
-        chrome.tabs.captureVisibleTab({format: 'jpeg', quality: 10}, (image)=> {
+        chrome.tabs.captureVisibleTab({format: 'jpeg', quality: 10}, (image) => {
           if (image) {
             resolve(image);
           } else {
@@ -510,7 +510,7 @@ class Bg {
       if (msg.method === 'captureTabs') {
         let capture = new Promise((resolve, reject) => {
           tryFn(() => {
-            chrome.tabs.captureVisibleTab({format: 'jpeg', quality: 10}, (image)=> {
+            chrome.tabs.captureVisibleTab({format: 'jpeg', quality: 10}, (image) => {
               if (image) {
                 resolve(image);
               } else {

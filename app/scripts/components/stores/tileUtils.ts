@@ -115,7 +115,7 @@ export const closeAllTabs = (tab: ChromeTab) => {
   let urlPath = tab.url.split('/');
   chrome.tabs.query({
     url: '*://'+urlPath[2]+'/*'
-  }, (tabs: ChromeTab[])=> {
+  }, (tabs: ChromeTab[]) => {
     for (let i = 0, len = tabs.length; i < len; i++) {
       closeTab(tabs[i]);
     }

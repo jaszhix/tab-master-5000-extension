@@ -115,7 +115,7 @@ interface ModalHandlerState {
 
 class ModalHandler extends React.Component<ModalHandlerProps, ModalHandlerState> {
   static defaultProps = {
-    onClose: ()=>{return;},
+    onClose: () => {return;},
     header: '',
     size: null,
     footerComponent: null,

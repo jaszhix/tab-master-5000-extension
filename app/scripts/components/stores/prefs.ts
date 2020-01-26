@@ -48,9 +48,9 @@ let prefsStore: PreferencesStore = initStore({
     management: false,
   },
   init: function() {
-    let getPrefs = new Promise((resolve, reject)=>{
-      chrome.storage.sync.get('preferences', (prefs)=>{
-        chrome.storage.sync.get('themePrefs', (themePrefs)=>{
+    let getPrefs = new Promise((resolve, reject) => {
+      chrome.storage.sync.get('preferences', (prefs) => {
+        chrome.storage.sync.get('themePrefs', (themePrefs) => {
           if (prefs && prefs.preferences && themePrefs && themePrefs.themePrefs) {
             resolve(_.merge(prefs.preferences, themePrefs.themePrefs));
           } else {
@@ -66,7 +66,7 @@ let prefsStore: PreferencesStore = initStore({
         });
       });
     });
-    getPrefs.then((prefs: PreferencesState)=>{
+    getPrefs.then((prefs: PreferencesState) => {
       prefsStore.prefs = prefs;
 
       // Migrate
@@ -80,7 +80,7 @@ let prefsStore: PreferencesStore = initStore({
 
       console.log('load prefs: ', prefs, prefsStore.prefs);
       prefsStore.set({prefs: prefsStore.prefs}, true);
-    }).catch((err)=>{
+    }).catch((err) => {
       console.log('chrome.extension.lastError: ', err);
     });
   },
@@ -136,8 +136,8 @@ let prefsStore: PreferencesStore = initStore({
     delete parsedPrefs.theme;
     delete parsedPrefs.alerts;
     delete parsedPrefs.syncedSession;
-    chrome.storage.sync.set({preferences: parsedPrefs}, ()=> {
-      chrome.storage.sync.set({themePrefs: themePrefs}, ()=> {
+    chrome.storage.sync.set({preferences: parsedPrefs}, () => {
+      chrome.storage.sync.set({themePrefs: themePrefs}, () => {
         console.log('Preferences saved: ', prefsStore.prefs, themePrefs);
       });
     });
