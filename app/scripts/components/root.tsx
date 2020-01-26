@@ -24,7 +24,7 @@ import Alert from './alert';
 import Loading from './loading';
 import Search from './search';
 import tmWorker from './main.worker';
-import {tabSortKeys, extensionSortKeys, sessionSortKeys, historySortKeys, bookmarkSortKeys} from './constants';
+import {sidebarSortOptions} from './constants';
 
 let Preferences = AsyncComponent({
   loader: () => import(/* webpackChunkName: "preferences" */ './settings/preferences')
@@ -502,161 +502,102 @@ class Root extends React.Component<RootProps, RootState> {
   render = () => {
     let s = this.state;
     let p = this.props;
-    if (!p.s.init) {
-      return null;
-    }
-    if (p.s.theme && p.s.prefs) {
-      let keys = [];
-      let labels: any = {};
-      if (p.s.prefs.mode === 'bookmarks') {
-        keys = bookmarkSortKeys;
-        labels = {
-          folder: utils.t('folder'),
-          dateAdded: utils.t('dateAdded'),
-          url: utils.t('website'),
-          title: utils.t('title'),
-          openTab: utils.t('open'),
-          index: utils.t('originalOrder')
-        };
-      } else if (p.s.prefs.mode === 'history') {
-        keys = historySortKeys;
-        labels = {
-          visitCount: utils.t('mostVisited'),
-          lastVisitTime: utils.t('lastVisit'),
-          url: utils.t('website'),
-          title: utils.t('title'),
-          openTab: utils.t('open'),
-          index: utils.t('originalOrder')
-        };
-      } else if (p.s.prefs.mode === 'sessions') {
-        keys = sessionSortKeys;
-        labels = {
-          label: utils.t('label'),
-          sTimeStamp: utils.t('dateAdded'),
-          url: utils.t('website'),
-          title: utils.t('title'),
-          openTab: utils.t('open'),
-          index: utils.t('originalOrder')
-        };
-      } else if (p.s.prefs.mode === 'apps' || p.s.prefs.mode === 'extensions') {
-        keys = extensionSortKeys;
-        labels = {
-          offlineEnabled: utils.t('offlineEnabled'),
-          title: utils.t('title'),
-          index: utils.t('originalOrder')
-        };
-      } else {
-        keys = tabSortKeys.slice();
-        labels = {
-          index: utils.t('tabOrder'),
-          url: utils.t('website'),
-          title: utils.t('title'),
-          timeStamp: utils.t('updated'),
-          count: utils.t('mostUsed')
-        };
 
-        if (!p.s.prefs.trackMostUsed) {
-          delete labels.count;
-          keys.splice(keys.indexOf('count'), 1);
-        }
+    if (!p.s.init || !p.s.theme || !p.s.prefs) return null;
 
-        if ((p.s.chromeVersion >= 46 || p.s.chromeVersion === 1)) {
-          let init = _.initial(keys);
-          init.push('audible');
-          keys = _.union(init, keys);
-          _.assign(labels, {
-            audible: utils.t('audible')
-          });
-        }
-      }
-      return (
-        <div className="container-main">
-        {p.s.isOptions ? <Preferences options={true} settingsMax={true} prefs={p.s.prefs} tabs={p.s.tabs} theme={p.s.theme} />
-          :
-          <div>
-            {p.s.context.value ?
-            <ContextMenu
-            mode={p.s.prefs.mode}
-            modeKey={p.s.modeKey}
-            actions={p.s.actions}
-            search={p.s.search}
-            tabs={p.s[p.s.prefs.mode]}
-            prefs={p.s.prefs}
-            context={p.s.context}
-            chromeVersion={p.s.chromeVersion}
-            duplicateTabs={p.s.duplicateTabs}
-            theme={p.s.theme} /> : null}
-            {p.s.modal ?
-            <ModalHandler
-            modal={p.s.modal}
-            tabs={p.s.tabs}
-            allTabs={p.s.allTabs}
-            sessions={p.s.sessions}
-            prefs={p.s.prefs}
-            favicons={p.s.favicons}
-            collapse={p.s.collapse}
-            theme={p.s.theme}
-            colorPickerOpen={p.s.colorPickerOpen}
-            savedThemes={p.s.savedThemes}
-            wallpaper={p.s.currentWallpaper}
-            wallpapers={p.s.wallpapers}
-            settings={p.s.settings}
-            width={p.s.width}
-            height={p.s.height}
-            chromeVersion={p.s.chromeVersion} /> : null}
-            <Sidebar
-            sessionsExist={p.s.sessions.length > 0}
-            enabled={p.s.sidebar}
-            prefs={p.s.prefs}
-            allTabs={p.s.allTabs}
-            labels={labels}
-            keys={keys}
-            sort={p.s.sort}
-            direction={p.s.direction}
-            theme={p.s.theme}
-            disableSidebarClickOutside={p.s.disableSidebarClickOutside}
-            chromeVersion={p.s.chromeVersion} />
-            <div
-            className="tile-container"
-            style={{
-              filter: p.s.modal && p.s.modal.state && p.s.settings !== 'theming' ? `blur(${p.s.prefs.screenshotBgBlur}px)` : 'initial',
-              transition: 'filter 0.2s'
+    let {labels, keys} = sidebarSortOptions[p.s.prefs.mode];
+
+    return (
+      <div className="container-main">
+        {p.s.isOptions ?
+        <Preferences
+        options={true}
+        settingsMax={true}
+        prefs={p.s.prefs}
+        tabs={p.s.tabs}
+        theme={p.s.theme} />
+        :
+        <div>
+          {p.s.context.value ?
+          <ContextMenu
+          mode={p.s.prefs.mode}
+          modeKey={p.s.modeKey}
+          actions={p.s.actions}
+          search={p.s.search}
+          tabs={p.s[p.s.prefs.mode]}
+          prefs={p.s.prefs}
+          context={p.s.context}
+          chromeVersion={p.s.chromeVersion}
+          duplicateTabs={p.s.duplicateTabs}
+          theme={p.s.theme} /> : null}
+          {p.s.modal ?
+          <ModalHandler
+          modal={p.s.modal}
+          tabs={p.s.tabs}
+          allTabs={p.s.allTabs}
+          sessions={p.s.sessions}
+          prefs={p.s.prefs}
+          favicons={p.s.favicons}
+          collapse={p.s.collapse}
+          theme={p.s.theme}
+          colorPickerOpen={p.s.colorPickerOpen}
+          savedThemes={p.s.savedThemes}
+          wallpaper={p.s.currentWallpaper}
+          wallpapers={p.s.wallpapers}
+          settings={p.s.settings}
+          width={p.s.width}
+          height={p.s.height}
+          chromeVersion={p.s.chromeVersion} /> : null}
+          <Sidebar
+          sessionsExist={p.s.sessions.length > 0}
+          enabled={p.s.sidebar}
+          prefs={p.s.prefs}
+          allTabs={p.s.allTabs}
+          labels={labels}
+          keys={keys}
+          sort={p.s.sort}
+          direction={p.s.direction}
+          theme={p.s.theme}
+          disableSidebarClickOutside={p.s.disableSidebarClickOutside}
+          chromeVersion={p.s.chromeVersion} />
+          <div
+          className="tile-container"
+          style={{
+            filter: p.s.modal && p.s.modal.state && p.s.settings !== 'theming' ? `blur(${p.s.prefs.screenshotBgBlur}px)` : 'initial',
+            transition: 'filter 0.2s'
+          }}>
+            <Search
+            s={p.s}
+            topLoad={p.s.topLoad}
+            theme={p.s.theme}  />
+            <div style={{
+              position: 'absolute',
+              left: p.s.prefs.format === 'tile' ? '5px' : '0px',
+              right: p.s.prefs.format === 'tile' ? '5px' : '0px',
+              margin: '0px auto',
+              width: `${p.s.width}px`,
+              top: p.s.prefs.format === 'tile' ? '57px' : '51px'
             }}>
-              <Search
+              {s.grid && p.s[p.s.modeKey] ?
+              <ItemsContainer
               s={p.s}
-              topLoad={p.s.topLoad}
-              theme={p.s.theme}  />
-              <div style={{
-                position: 'absolute',
-                left: p.s.prefs.format === 'tile' ? '5px' : '0px',
-                right: p.s.prefs.format === 'tile' ? '5px' : '0px',
-                margin: '0px auto',
-                width: `${p.s.width}px`,
-                top: p.s.prefs.format === 'tile' ? '57px' : '51px'
-              }}>
-                {s.grid && p.s[p.s.modeKey] ?
-                <ItemsContainer
-                s={p.s}
-                init={s.init}
-                theme={p.s.theme}
-                wallpaper={p.s.currentWallpaper} />
-                : <Loading />}
-              </div>
-              {p.s.modal && !p.s.modal.state && p.s.prefs.tooltip ?
-              <ReactTooltip
-              effect="solid"
-              place="bottom"
-              multiline={true}
-              html={true}
-              offset={{top: 0, left: 6}} /> : null}
+              init={s.init}
+              theme={p.s.theme}
+              wallpaper={p.s.currentWallpaper} />
+              : <Loading />}
             </div>
-          </div>}
-          {p.s.prefs.alerts ? <Alert enabled={p.s.prefs.alerts} alert={p.s.alert} /> : null}
-        </div>
-      );
-    } else {
-      return null;
-    }
+            {p.s.modal && !p.s.modal.state && p.s.prefs.tooltip ?
+            <ReactTooltip
+            effect="solid"
+            place="bottom"
+            multiline={true}
+            html={true}
+            offset={{top: 0, left: 6}} /> : null}
+          </div>
+        </div>}
+        {p.s.prefs.alerts ? <Alert enabled={p.s.prefs.alerts} alert={p.s.alert} /> : null}
+      </div>
+    );
   }
 }
 
