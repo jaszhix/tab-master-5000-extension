@@ -506,7 +506,7 @@ const themeStore: ThemeStore = initStore({
         } else {
           themeStore.wallpapers = themeStore.standardWallpapers;
         }
-        if (refTheme.id !== 9000 || refTheme.id !== 9001) {
+        if (refTheme.id !== 9000 && refTheme.id !== 9001) {
           themeStore.currentWallpaper = find(themeStore.wallpapers, wallpaper => wallpaper.id === prefs.wallpaper);
         }
 
