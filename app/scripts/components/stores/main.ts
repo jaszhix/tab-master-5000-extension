@@ -54,7 +54,7 @@ export const getChromeVersion = (): number => {
   return version;
 };
 
-export const setPrefs = (obj: PreferencesState) => {
+export const setPrefs = (obj: Partial<PreferencesState>) => {
   state.set({prefs: obj}, true);
   chrome.runtime.sendMessage(chrome.runtime.id, {method: 'setPrefs', obj: obj}, (response) => {
     if (response && response.prefs) {
@@ -386,16 +386,20 @@ export const setFavicon = (tab: ChromeTab) => {
   }
 }
 
-export const setAlert = function(alert: AlertState) {
+export const setAlert = function(alert: Partial<AlertState>) {
   let _alert = state.get('alert');
+
   if (_alert.tag !== 'alert-success' && typeof alert.tag === 'undefined') {
     alert.class = 'alert-success';
   }
+
   state.set({alert});
-  _.delay(() => {
+
+  setTimeout(() => {
     state.set({alert: {class: 'fadeOut'}});
   }, 3000);
-  _.delay(() => {
+
+  setTimeout(() => {
     state.set({alert: {open: false, class: ''}});
   }, 4000);
 };

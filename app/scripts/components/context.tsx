@@ -202,7 +202,7 @@ class ContextMenu extends React.Component<ContextMenuProps, ContextMenuState> {
       }
 
       if (p.prefs.mode === 'apps' || p.prefs.mode === 'extensions') {
-        let appToggleOptions = [
+        let appToggleOptions: ContextOption[] = [
           {
             argument: true,
             onClick: () => this.handleMenuOption(p, 'toggleEnable'),
@@ -218,15 +218,17 @@ class ContextMenu extends React.Component<ContextMenuProps, ContextMenuState> {
             divider: null
           },
         ];
-        contextOptions = _.concat(contextOptions, appToggleOptions);
+        contextOptions = contextOptions.concat(appToggleOptions);
       }
 
       p.context.options = contextOptions;
+
       state.set({
         context: p.context,
         disableSidebarClickOutside: true
       });
     };
+
     if (isSelectedItems) {
       addContextMenuItems();
     } else {

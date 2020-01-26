@@ -304,7 +304,7 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
                     data-tip={utils.t('restoreSession')} />
                     {p.prefs.sessionsSync ?
                     <Btn
-                    onClick={() => setPrefs({syncedSession: p.prefs.syncedSession === session.id ? null : session.id} as PreferencesState)}
+                    onClick={() => setPrefs({syncedSession: p.prefs.syncedSession === session.id ? null : session.id})}
                     className="ntg-session-btn"
                     icon="sync"
                     faStyle={{fontWeight: p.prefs.syncedSession === session.id ? 600 : 'initial', position: 'relative', top: '0px'}}

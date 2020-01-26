@@ -647,7 +647,7 @@ const themeStore: ThemeStore = initStore({
       open: true
     });
   },
-  selectWallpaper: (themeId, wpId, setPrefs = false) => {
+  selectWallpaper: (themeId, wpId, setPrefs = null) => {
     let refWallpaper, themeCollectionKey, refTheme;
 
     if (wpId && wpId > 0) {

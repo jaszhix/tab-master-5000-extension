@@ -181,7 +181,7 @@ declare interface PreferencesState {
   resolutionWarning: boolean;
   syncedSession: boolean;
   theme: number;
-  wallpaper: string | null;
+  wallpaper: string | number | null;
   tooltip: boolean;
   alerts: boolean;
   allTabs: boolean;
@@ -241,9 +241,9 @@ declare interface ModalState {
 }
 
 declare interface ContextOption {
-  switch: boolean;
+  switch?: boolean;
   argument?: boolean;
-  onClick: React.MouseEventHandler;
+  onClick?: React.MouseEventHandler;
   icon?: string;
   label?: string;
   divider?: boolean;

@@ -121,7 +121,7 @@ export const importSessions = (sessions: SessionState[], e) => {
     let json = JSON.parse(<string>reader.result);
 
     if (!Array.isArray(json) || !json[0] || !json[0].tabs || !Array.isArray(json[0].tabs)) {
-      setAlert(<AlertState>{
+      setAlert({
         text: 'Please import a valid session file.',
         tag: 'alert-danger',
         open: true
@@ -146,7 +146,7 @@ export const importSessions = (sessions: SessionState[], e) => {
       sessionTabs: flatten(sessions, state.tabs, state.windowId)
     });
 
-    setAlert(<AlertState>{
+    setAlert({
       text: `Successfully imported ${sessions.length} sessions.`,
       tag: 'alert-success',
       open: true
@@ -230,7 +230,7 @@ export const saveSession = (opt) => {
     state.set({sessions: result});
     chrome.storage.local.set({sessions: result}, () => {
       console.log('session saved');
-      setAlert(<AlertState>{
+      setAlert({
         text: `Successfully saved new session.`,
         tag: 'alert-success',
         open: true

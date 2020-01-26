@@ -139,7 +139,7 @@ class ModalHandler extends React.Component<ModalHandlerProps, ModalHandlerState>
     });
   }
   handleMaximize = () => {
-    setPrefs({settingsMax: !this.props.prefs.settingsMax} as PreferencesState);
+    setPrefs({settingsMax: !this.props.prefs.settingsMax});
   }
   render = () => {
     let p = this.props;

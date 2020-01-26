@@ -198,7 +198,7 @@ export class SidebarMenu extends React.Component<SidebarMenuProps, SidebarMenuSt
                 <div className="sidebar-category">
                   <div
                   className={css(dynamicStyles.categoryContainer) + ` category-title ${p.prefs.showViewMode ? '' : 'category-collapsed'}`}
-                  onClick={() => setPrefs({showViewMode: !p.prefs.showViewMode} as PreferencesState)}>
+                  onClick={() => setPrefs({showViewMode: !p.prefs.showViewMode})}>
                     <span>{utils.t('viewMode')}</span>
                     <ul className="icons-list">
                       <li>
@@ -248,7 +248,7 @@ export class SidebarMenu extends React.Component<SidebarMenuProps, SidebarMenuSt
                 <div className="sidebar-category">
                   <div
                   className={css(dynamicStyles.categoryTitleContainer) + ` category-title ${p.prefs.sort ? '' : 'category-collapsed'}`}
-                  onClick={() => setPrefs({sort: !p.prefs.sort} as PreferencesState)}>
+                  onClick={() => setPrefs({sort: !p.prefs.sort})}>
                     <span>{utils.t('sortBy')}</span>
                     <ul className="icons-list">
                       <li>
@@ -350,7 +350,7 @@ class Sidebar extends React.Component<SidebarProps, SidebarState> {
     }
   }
   handleSort = () => {
-    setPrefs({sort: !this.props.prefs.sort} as PreferencesState);
+    setPrefs({sort: !this.props.prefs.sort});
   }
   render = () => {
     let p = this.props;

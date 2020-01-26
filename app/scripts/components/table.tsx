@@ -427,7 +427,7 @@ class Table extends React.Component<TableProps, TableState> {
             text: `Press the delete key to remove selected ${p.s.prefs.mode}.`,
             tag: 'alert-success',
             open: true
-          } as AlertState);
+          });
         }
         selectedItems.push(i);
       }

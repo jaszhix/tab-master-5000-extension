@@ -381,7 +381,7 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
     let discardTime = parseInt(e.target.value.split(' ')[0]);
     let isMinute = e.target.value.indexOf('Minute') !== -1;
     let output = isMinute && discardTime === 30 ? 0.5 : isMinute && discardTime === 15 ? 0.25 : discardTime;
-    setPrefs({autoDiscardTime: output * 3600000} as PreferencesState);
+    setPrefs({autoDiscardTime: output * 3600000});
   }
   handleScreenshotClear = () => {
     chrome.storage.local.remove('screenshots', () => {
