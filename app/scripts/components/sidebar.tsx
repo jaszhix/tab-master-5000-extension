@@ -14,19 +14,6 @@ import {handleMode, setPrefs} from './stores/main';
 import * as utils from './stores/tileUtils';
 import {Btn} from './bootstrap';
 
-import {StyleDeclaration} from 'aphrodite'
-
-onClickOutside.prototype.getInstance = function getInstance() {
-  if (!WrappedComponent.prototype.isReactComponent) {
-    return this;
-  }
-  let ref = this.instanceRef;
-  if (!ref) {
-    return null;
-  }
-  return ref.getInstance ? ref.getInstance() : ref;
-};
-
 interface LargeBtnProps {
   style: React.CSSProperties;
   onClick: React.MouseEventHandler;
