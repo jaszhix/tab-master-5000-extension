@@ -14,6 +14,8 @@ import {handleMode, setPrefs} from './stores/main';
 import * as utils from './stores/tileUtils';
 import {Btn} from './bootstrap';
 
+import {StyleDeclaration} from 'aphrodite'; // eslint-disable-line no-unused-vars
+
 interface LargeBtnProps {
   style: React.CSSProperties;
   onClick: React.MouseEventHandler;
