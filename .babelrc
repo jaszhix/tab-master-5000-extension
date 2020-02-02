@@ -12,9 +12,13 @@
     "@babel/preset-react"
   ],
   "plugins": [
+    "const-enum",
     "lodash",
     "@babel/plugin-proposal-class-properties",
     "@babel/plugin-transform-classes",
     "@babel/plugin-syntax-dynamic-import"
-  ]
+  ],
+  "parserOpts": {
+    "strictMode": true
+  }
 }

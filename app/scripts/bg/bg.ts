@@ -5,7 +5,7 @@ import v from 'vquery';
 import uuid from 'node-uuid';
 import * as Sentry from '@sentry/browser';
 import {findIndex, find, each, tryFn} from '@jaszhix/utils';
-import initStore from '@jaszhix/state';
+import {init} from '@jaszhix/state';
 
 import prefsStore from '../components/stores/prefs';
 import {isNewTab} from '../components/utils';
@@ -237,7 +237,7 @@ class Bg {
     // TBD
     // @ts-ignore
     tryFn(() => version = parseInt(/Chrome\/([0-9.]+)/.exec(navigator.userAgent)[1].split('.')));
-    this.state = initStore({
+    this.state = <BackgroundState>init({
       eventState: eventState,
       prefs: null,
       init: true,

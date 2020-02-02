@@ -1,6 +1,6 @@
-import initStore from '@jaszhix/state';
+import {init} from '@jaszhix/state';
 
-const state: GlobalState = initStore({
+const state: GlobalState = init({
   // Core
   init: false,
   prefs: {},

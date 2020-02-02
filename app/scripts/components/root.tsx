@@ -200,7 +200,7 @@ class Root extends React.Component<RootProps, RootState> {
       });
     }
     let p = this.props;
-    let stateUpdate: GlobalState = {};
+    let stateUpdate: Partial<GlobalState> = {};
     let currentWallpaper = e.currentWallpaper || e.hoverWallpaper;
     let style = v('#theme-style-el').n;
 
@@ -467,7 +467,7 @@ class Root extends React.Component<RootProps, RootState> {
   updateTabState = (e, opt, sU=null) => {
     let p = this.props;
     console.log('updateTabState: ', e);
-    let stateUpdate: GlobalState = {};
+    let stateUpdate: Partial<GlobalState> = {};
     if (opt === 'folder') {
       if (e) {
         stateUpdate[p.s.modeKey] = filter(p.s[p.s.modeKey], function(item) {

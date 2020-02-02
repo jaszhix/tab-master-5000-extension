@@ -1,7 +1,7 @@
 import React from 'react';
 import _ from 'lodash';
 import copyToClipboard from 'copy-to-clipboard';
-import {filter} from '@jaszhix/utils';
+import {filter, each} from '@jaszhix/utils';
 
 import {Context} from './bootstrap';
 import state from './stores/state';
@@ -187,7 +187,7 @@ class ContextMenu extends React.Component<ContextMenuProps, ContextMenuState> {
       ];
 
       if (!isSelectedItems && p.prefs.mode === 'apps' && p.context.id.enabled) {
-        filter(p.context.id.availableLaunchTypes, (launchType) => {
+        each(p.context.id.availableLaunchTypes, (launchType) => {
           if (launchType !== p.context.id.launchType) {
             let launchOption = {
               argument: true,

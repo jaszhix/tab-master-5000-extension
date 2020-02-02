@@ -2,26 +2,6 @@ type Modify<T, R> = Omit<T, keyof R> & R;
 
 declare type NumberOrString = number | string;
 
-declare interface State extends Object {
-  get?: Function;
-  set?: Function;
-  exclude?: Function;
-  trigger?: Function;
-  connect?: Function;
-  disconnect?: Function;
-  destroy?: Function;
-  [x: string]: any;
-}
-
-declare interface _Listener {
-  keys: string[];
-  id: number;
-  callback: Function
-}
-
-declare type Listener = _Listener;
-declare type DisconnectKey = string[] | number;
-
 declare interface NodeModule {
   hot?: any;
 }
@@ -156,7 +136,7 @@ declare interface WallpaperObject extends Array<Wallpaper> {
   wallpapers?: Wallpaper[];
 }
 
-declare interface ThemeStore extends State {
+declare interface ThemeStore extends State.Data {
   standardWallpapers: Wallpaper[];
   standardThemes: ThemeState[];
   savedThemes: ThemeState[];
@@ -211,7 +191,7 @@ declare interface PermissionsState {
   management: boolean;
 }
 
-declare interface PreferencesStore extends State {
+declare interface PreferencesStore extends State.Data {
   prefs: PreferencesState;
   defaultPrefs: PreferencesState;
   permissions: PermissionsState;
@@ -274,7 +254,7 @@ declare interface DragState {
   i: number;
 }
 
-declare interface GlobalState extends State {
+declare interface GlobalState extends State.Data {
   init?: boolean;
   prefs?: PreferencesState;
   modeKey?: ViewModeKey;
@@ -349,7 +329,7 @@ declare interface EventState {
   historyOnVisitRemoved: chrome.history.RemovedResult;
 }
 
-declare interface BackgroundState extends State {
+declare interface BackgroundState extends State.Data {
   eventState: EventState;
   prefs: PreferencesState;
   init: boolean;

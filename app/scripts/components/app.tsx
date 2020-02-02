@@ -41,7 +41,7 @@ const loadPrefs = () => {
     if (!response) return;
 
     const next = () => {
-      let stateUpdate: GlobalState = {
+      let stateUpdate: Partial<GlobalState> = {
         prefs: response.prefs,
         chromeVersion: getChromeVersion()
       };

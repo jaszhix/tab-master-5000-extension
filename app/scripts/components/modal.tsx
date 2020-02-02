@@ -33,7 +33,6 @@ export interface ModalDefaultProps {
   closeBtnStyle: React.CSSProperties;
   footerStyle: React.CSSProperties;
   settings: string;
-
 }
 
 export class ModalDefault extends React.Component<ModalDefaultProps> {

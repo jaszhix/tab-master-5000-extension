@@ -140,7 +140,7 @@ export const queryHistory = (init = false) => {
 };
 
 export const undoAction = () => {
-  chrome.runtime.sendMessage(chrome.runtime.id, {method: 'undoAction', windowId: state.get().windowId});
+  chrome.runtime.sendMessage(chrome.runtime.id, {method: 'undoAction', windowId: state.get('windowId')});
 };
 
 export const getWindowId = (): Promise<void> => {
@@ -197,7 +197,7 @@ export const removeSingleWindow = (windowId: number) => {
 
 export const init = () => {
   chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-    let s = state.get();
+    let s = state.get('*');
     console.log(`msg.windowId: `, msg.windowId);
     if (msg.windowIdQuery) {
       state.set({windowId: msg.windowIdQuery});
@@ -209,7 +209,7 @@ export const init = () => {
 
 init();
 
-export const handleMode = (mode: ViewMode, stateUpdate: GlobalState = {}, init = false, userGesture = false) => {
+export const handleMode = (mode: ViewMode, stateUpdate: Partial<GlobalState> = {}, init = false, userGesture = false) => {
   if (!mode) mode = state.prefs.mode || 'tabs';
 
   switch (mode) {
@@ -344,7 +344,7 @@ export const setKeyBindings = (s: GlobalState) => {
 };
 
 export const setFavicon = (tab: ChromeTab) => {
-  let s: GlobalState = state.get();
+  let s: GlobalState = state.get('*');
   if (tab.url.indexOf('chrome://') !== -1) {
     return;
   }

@@ -1,8 +1,8 @@
 import _ from 'lodash';
-import initStore from '@jaszhix/state';
+import {init} from '@jaszhix/state';
 import {each, tryFn} from '@jaszhix/utils';
 
-let prefsStore: PreferencesStore = initStore({
+let prefsStore = <PreferencesStore>init({
   prefs: {},
   defaultPrefs: {
     autoDiscard: false,

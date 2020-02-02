@@ -156,7 +156,7 @@ export const importSessions = (sessions: SessionState[], e) => {
 };
 
 export const removeSessionTab = (sessions: SessionState[], session, _window, tab, sessionTabs?, sortOrder?) => {
-  let stateUpdate: GlobalState = {};
+  let stateUpdate: Partial<GlobalState> = {};
   if (sessionTabs) {
     let refSessionTab = findIndex(_.orderBy(sessionTabs, sortOrder), _tab => _tab.id === sessions[session].tabs[_window][tab].id);
     if (sessionTabs.length === 0) {

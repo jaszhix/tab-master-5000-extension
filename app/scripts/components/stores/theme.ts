@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import initStore from '@jaszhix/state';
+import {init} from '@jaszhix/state';
 import {findIndex, find, tryFn, filter} from '@jaszhix/utils';
 
 import state from './state';
@@ -333,7 +333,7 @@ const highRise: Theme = {
   tileXHover: 'rgba(225, 230, 232, 1)'
 };
 
-const themeStore: ThemeStore = initStore({
+const themeStore = <ThemeStore>init({
   standardWallpapers: [
     {
       data: '../../../images/wallpaper1.jpg',
@@ -619,7 +619,7 @@ const themeStore: ThemeStore = initStore({
     themeStore.setTriggers();
   },
   selectTheme: (id) => {
-    let state = themeStore.get();
+    let state = themeStore.get('*');
     let standard = id >= 9000;
     let findFn = theme => theme.id === id;
     let refTheme = standard ? find(state.standardThemes, findFn) : find(state.savedThemes, findFn);

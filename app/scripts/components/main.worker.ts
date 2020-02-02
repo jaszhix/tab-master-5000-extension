@@ -29,7 +29,7 @@ const hasDuplicates = (array) => {
 };
 
 const getDuplicates = (array) => {
-  return filter(array, (x, i, array) => {
+  return filter(array, (x, i) => {
     return includes(array, x, i + 1);
   });
 };
@@ -81,7 +81,7 @@ const sort = (state, data) => {
   return result;
 };
 
-const checkFavicons = (state, tabs, stateUpdate: GlobalState = {}) => {
+const checkFavicons = (state, tabs, stateUpdate: Partial<GlobalState> = {}) => {
   let ignoredCount = filter(tabs, function(tab) {
     return tab.favIconUrl === defaultFavicon
   }).length;
@@ -227,7 +227,7 @@ const processAppExtension = function(s, msg: {extensions: ChromeExtensionInfo[]}
     extensions[i] = _.assignIn(defaults(i), extensions[i]);
   }
 
-  let stateUpdate: GlobalState = isApp ? {apps: extensions} : {extensions};
+  let stateUpdate: Partial<GlobalState> = isApp ? {apps: extensions} : {extensions};
   stateUpdate.direction = 'asc';
   stateUpdate.sort = 'index';
   // @ts-ignore
@@ -271,7 +271,7 @@ const processSessionTabs = function(sessions, tabs, windowId) {
 }
 
 const processWindows = function(s, msg) {
-  let stateUpdate: GlobalState = {
+  let stateUpdate: Partial<GlobalState> = {
     allTabs: map(msg.windows, function(win) {
       return win.tabs;
     }),
