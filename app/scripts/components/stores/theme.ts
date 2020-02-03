@@ -1,4 +1,6 @@
 import _ from 'lodash';
+import tc from 'tinycolor2';
+import v from 'vquery';
 import {init} from '@jaszhix/state';
 import {findIndex, find, tryFn, filter} from '@jaszhix/utils';
 
@@ -223,7 +225,7 @@ const midnightPurple: Theme = {
   tileX: 'rgba(235, 235, 242, 1)',
   tileXHover: 'rgba(235, 235, 242, 1)'
 };
-const mintYDark: Theme = {
+const forestGreen: Theme = {
   bodyBg: "rgba(56, 56, 56, 0.75)",
   bodyText: "rgba(207, 209, 209, 1)",
   darkBtnBg: "rgba(129, 153, 103, 0.57)",
@@ -419,9 +421,9 @@ const themeStore = <ThemeStore>init({
       id: 9006,
       created: -1,
       modified: now,
-      camel: 'mintYDark',
-      label: 'Minty Dark',
-      theme: mintYDark,
+      camel: 'forestGreen',
+      label: 'Forest Green',
+      theme: forestGreen,
       wallpaper: 9004
     },
     {
@@ -825,6 +827,306 @@ const themeStore = <ThemeStore>init({
     }
   },
 });
+
 themeStore.setMergeKeys(['theme']);
-window.themeStore = themeStore;
-export default themeStore;
+
+const onThemeChange = (e) => {
+  if (state.isOptions && state.chromeVersion === 1) {
+    Object.assign(e.theme, {
+      bodyBg: 'rgba(250, 250, 250, 1)',
+      bodyText: 'rgba(34, 36, 38, 1)',
+      settingsBg: 'rgba(250, 250, 250, 1)',
+      settingsItemHover: 'rgba(250, 250, 250, 0)',
+      lightBtnText: 'rgba(34, 36, 38, 1)',
+      lightBtnBg: 'rgba(235, 235, 235, 1)',
+      lightBtnBgHover: 'rgba(215, 215, 219, 1)',
+      darkBtnText: 'rgba(34, 36, 38, 1)',
+      darkBtnBg: 'rgba(235, 235, 235, 1)',
+      textFieldsBg: 'rgba(255, 255, 255, 1)',
+      textFieldsBorder: 'rgba(235, 235, 235, 1)',
+      textFieldsPlaceholder: 'rgba(126, 126, 135, 1)',
+      textFieldsText: 'rgba(34, 36, 38, 1)',
+      tileShadow: 'rgba(0, 0, 0, 0)'
+    });
+  }
+
+  const {prefs, chromeVersion} = state;
+  let stateUpdate: Partial<GlobalState> = {};
+  let currentWallpaper = e.currentWallpaper || e.hoverWallpaper || state.currentWallpaper;
+  let style = v('#theme-style-el').n;
+  let innerHTML = '';
+
+  if (e.savedThemes) {
+    stateUpdate.savedThemes = e.savedThemes;
+  }
+
+  if (!style) return;
+
+  if (e.theme) {
+    let sessionFieldColor = themeStore.balance(e.theme.settingsBg);
+    let vendor = chromeVersion > 1 ? 'webkit' : 'moz';
+    let inputPlaceholder = chromeVersion > 1 ? `${vendor}-input` : vendor;
+    innerHTML = `
+    a, a:focus, a:hover {
+      color: ${themeStore.opacify(e.theme.bodyText, 0.9)};
+    }
+    .form-control::-${inputPlaceholder}-placeholder {
+      color: ${e.theme.textFieldsPlaceholder};
+    }
+    .form-control {
+      color: ${e.theme.textFieldsText};
+      border-bottom-color: ${e.theme.textFieldsBorder};
+      box-shadow: 0 1px 0 ${e.theme.textFieldsBorder};
+    }
+    .form-control:focus {
+      border-bottom-color: ${e.theme.textFieldsBg};
+      box-shadow: 0 1px 0 ${e.theme.textFieldsBg};
+    }
+    .session-field {
+      color: ${sessionFieldColor};
+    }
+    .nav-tabs>li {
+      background-color: ${e.theme.lightBtnBg};
+    }
+    .nav-tabs>li.active {
+      background-color: ${e.theme.settingsBg};
+    }
+    .nav-tabs>li>a, .nav-tabs>li>a:hover, .nav-tabs>li>a:focus {
+      color: ${e.theme.lightBtnText};
+    }
+    .nav-tabs>li.active>a, .nav-tabs>li.active>a:focus {
+      color: ${tc.isReadable(tc(e.theme.darkBtnText).toHexString(), tc(e.theme.settingsBg).toHexString(), {}) ? e.theme.darkBtnText : e.theme.lightBtnText};
+      background-color: ${e.theme.settingsBg};
+    }
+    .nav-tabs>li.active>a:hover {
+      color: ${e.theme.darkBtnText};
+      background-color: ${e.theme.darkBtnBgHover};
+      border: 1px solid ${e.theme.textFieldsBorder};
+    }
+    .nav-tabs>li:hover {
+      background-color: ${e.theme.lightBtnBgHover};
+    }
+    .dropdown-menu>li>a:hover, .dropdown-menu>li>a:focus {
+      background-color: ${e.theme.settingsItemHover};
+    }
+    .dropdown-menu>li>label:hover, .dropdown-menu>li>label:focus {
+      background-color: ${e.theme.settingsItemHover};
+    }
+    .dropdown-menu .divider {
+      background-color: ${e.theme.textFieldsBorder};
+    }
+    .ntg-x {
+      color: ${e.theme.tileX};
+    }
+    .ntg-x-hover {
+      color: ${e.theme.tileXHover};
+    }
+    .ntg-pinned {
+      color: ${e.theme.tilePin};
+    }
+    .ntg-pinned-hover {
+      color: ${e.theme.tilePinHover};
+    }
+    .ntg-mute {
+      color: ${e.theme.tileMute};
+    }
+    .ntg-mute-hover {
+      color: ${e.theme.tileMuteHover};
+    }
+    .ntg-mute-audible {
+      color: ${e.theme.tileMuteAudible};
+    }
+    .ntg-mute-audible-hover {
+      color: ${e.theme.tileMuteAudibleHover};
+    }
+    .ntg-move {
+      color: ${e.theme.tileMove};
+    }
+    .ntg-move-hover {
+      color: ${e.theme.tileMoveHover};
+    }
+    .ntg-session-text {
+      color: ${e.theme.bodyText};
+    }
+    .text-muted.text-size-small {
+      color: ${themeStore.opacify(e.theme.bodyText, 0.9)};
+    }
+    .ntg-folder {
+      text-shadow: 2px 2px ${e.theme.tileTextShadow};
+    }
+    .panel, .modal-content {
+      box-shadow: 0 1px 3px ${e.theme.tileShadow}, 0 1px 2px ${e.theme.tileTextShadow};
+    }
+    .sk-cube-grid .sk-cube {
+      background-color: ${e.theme.darkBtnBg};
+    }
+    .dataTable thead .sorting:before {
+      color: ${e.theme.bodyText};
+    }
+    .dataTable thead .sorting:after {
+      color: ${e.theme.bodyText};
+    }
+    .table>thead {
+      background-color: ${themeStore.opacify(e.theme.headerBg, 0.3)};
+    }
+    .table>thead>tr>th {
+      border-bottom: 1px solid ${e.theme.headerBg};
+    }
+    .table>thead>tr>th, .table>tbody>tr>th, .table>tfoot>tr>th, .table>thead>tr>td, .table>tbody>tr>td, .table>tfoot>tr>td {
+      border-top: 1px solid ${e.theme.darkBtnBg};
+    }
+    body > div.ReactModalPortal > div > div {
+      -${vendor}-transition: ${prefs.animations ? 'background 0.5s ease-in, height 0.2s, width 0.2s, top 0.2s, left 0.2s, right 0.2s, bottom 0.2s' : 'initial'};
+      border: ${e.theme.tileShadow};
+    }
+    body > div.ReactModalPortal > div > div > div > div.row.ntg-tabs > div:nth-child(2) {
+      -${vendor}-transition: ${prefs.animations ? 'background 0.5s ease-in, top 0.2s, left 0.2s' : 'initial'};
+    }
+    .rc-color-picker-panel {
+      background-color: ${e.theme.settingsBg};
+    }
+    .rc-color-picker-panel-inner {
+      background-color: ${e.theme.settingsBg};
+      border: 1px solid ${e.theme.tileShadow};
+      box-shadow: ${e.theme.tileShadow} 1px 1px 3px -1px;
+    }
+    .rc-color-picker-panel-params input {
+      color: ${e.theme.textFieldsText};
+      background-color: ${e.theme.textFieldsBg};
+      border: 0.5px solid ${e.theme.textFieldsBorder};
+    };
+    .rc-slider {
+      background-color: ${themeStore.opacify(e.theme.darkBtnBg, 0.5)};
+    }
+    .rc-slider-step {
+      background: ${themeStore.opacify(e.theme.settingsBg, 0.35)};
+    }
+    .rc-slider-track {
+      background-color: ${themeStore.opacify(e.theme.lightBtnBg, 0.85)};
+    }
+    .rc-slider-handle {
+      background-color: ${themeStore.opacify(e.theme.darkBtnBg, 0.9)};
+      border: solid 2px ${themeStore.opacify(e.theme.lightBtnBg, 0.85)};
+    }
+    .rc-slider-handle:hover {
+      background-color: ${themeStore.opacify(e.theme.darkBtnBgHover, 0.9)};
+      border: solid 2px ${themeStore.opacify(e.theme.lightBtnBgHover, 0.85)};
+    }
+    .__react_component_tooltip {
+      z-index: 9999 !important;
+      opacity: 1 !important;
+      color: ${e.theme.darkBtnText} !important;
+      background-color: ${themeStore.opacify(e.theme.darkBtnBg, 1)} !important;
+    }
+    .__react_component_tooltip.type-dark.place-bottom:after {
+      border-bottom: 6px solid ${themeStore.opacify(e.theme.darkBtnBg, 1)} !important;
+    }
+    .__react_component_tooltip.type-dark.place-top:after {
+      border-top: 6px solid ${themeStore.opacify(e.theme.darkBtnBg, 1)} !important;
+    }
+    .__react_component_tooltip.type-dark.place-right:after {
+      border-right: 6px solid ${themeStore.opacify(e.theme.darkBtnBg, 1)} !important;
+    }
+    #main {
+      -${vendor}-transition: ${prefs.animations ? `-${vendor}-filter 0.2s ease-in` : 'initial'};
+    }
+    .alert-success {
+      color: ${e.theme.tileText};
+      background-color: ${e.theme.tileBgHover};
+      border-color: ${e.theme.tileShadow};
+    }
+    .alert-danger {
+      color: ${e.theme.tileText};
+      background-color: ${e.theme.tileBg};
+      border-color: ${e.theme.tileShadow};
+    }
+    .panel-flat>.panel-heading {
+      background-color: ${e.theme.tileBg};
+    }
+    body {
+      color: ${e.theme.bodyText} !important;
+      background-color: ${e.theme.bodyBg} !important;
+    }
+    `;
+
+    // Firefox options integration
+    if (state.isOptions && state.chromeVersion === 1) {
+      innerHTML += `
+        small {
+          background-color: rgba(235, 235, 235, 1) !important;
+        }
+        .icon-floppy-disk {
+          padding-right: 0px !important;
+        }
+        textarea {
+          color: #222426 !important;
+          background-color: #FFF !important;
+          border: 1px solid #DCDCD7 !important;
+        }
+        textarea:focus {
+          border: 1px solid #0A84FF !important;
+          box-shadow: 0 0px 0 rgba(0, 0, 0, 0) !important;
+        }
+        button {
+          cursor: default !important;
+          background-color: #FBFBFB !important;
+          border: 1px solid #DCDCD7 !important;
+        }
+        button:hover {
+          background-color: #EBEBEB !important;
+          border: 1px solid #DCDCD7 !important;
+        }
+      `;
+    }
+    stateUpdate.theme = e.theme;
+  }
+
+  if (!state.isOptions
+    && currentWallpaper
+    && currentWallpaper.data != null
+    && currentWallpaper.data !== -1) {
+    innerHTML += `
+      #bgImg {
+        display: inline-block !important;
+        filter: blur(${prefs.screenshotBgBlur}px) !important;
+        opacity: ${0.1 * prefs.screenshotBgOpacity} !important;
+        background-color: ${e.theme.bodyBg} !important;
+        background-image: url('${currentWallpaper.data}') !important;
+        background-size: cover !important;
+        z-index: -12;
+      }
+    `;
+    if (e.currentWallpaper) {
+      stateUpdate.currentWallpaper = e.currentWallpaper;
+    }
+  } else if (currentWallpaper !== undefined) {
+    innerHTML += `
+      #bgImg {
+        display: none;
+        filter: blur(${prefs.screenshotBgBlur}px) !important;
+        opacity: 1;
+        background-color: ${e.theme.bodyBg} !important;
+        background-image: none !important;
+        z-index: -12 !important;
+      }
+    `;
+    stateUpdate.currentWallpaper = null;
+  }
+
+  if (innerHTML !== style.innerHTML) {
+    style.innerHTML = innerHTML;
+  }
+
+  if (e.wallpapers) {
+    stateUpdate.wallpapers = e.wallpapers;
+  }
+
+  state.set(stateUpdate, true);
+};
+
+if (process.env.NODE_ENV === 'development') window.themeStore = themeStore;
+
+export {
+  themeStore,
+  onThemeChange,
+};

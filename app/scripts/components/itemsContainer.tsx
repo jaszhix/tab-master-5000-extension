@@ -6,7 +6,7 @@ import {each, map, tryFn} from '@jaszhix/utils';
 
 import state from './stores/state';
 import {queryTabs} from './stores/main';
-import themeStore from './stores/theme';
+import {themeStore} from './stores/theme';
 
 import {whichToShow, isNewTab, AsyncComponent} from './utils';
 

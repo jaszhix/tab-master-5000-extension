@@ -6,7 +6,7 @@ import _ from 'lodash';
 import onClickOutside from 'react-onclickoutside';
 import ReactTooltip from 'react-tooltip';
 import state from './stores/state';
-import themeStore from './stores/theme';
+import {themeStore} from './stores/theme';
 import tc from 'tinycolor2';
 import {map} from '@jaszhix/utils';
 

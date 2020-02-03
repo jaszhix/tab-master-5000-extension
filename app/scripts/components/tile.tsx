@@ -5,7 +5,7 @@ import moment from 'moment';
 import {findIndex} from '@jaszhix/utils';
 
 import state from './stores/state';
-import themeStore from './stores/theme';
+import {themeStore} from './stores/theme';
 
 import {Panel} from './bootstrap';
 import style from './style';

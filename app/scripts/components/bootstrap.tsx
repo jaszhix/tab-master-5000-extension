@@ -6,7 +6,7 @@ import onClickOutside from 'react-onclickoutside';
 import ReactTooltip from 'react-tooltip';
 import {tryFn} from '@jaszhix/utils';
 
-import themeStore from './stores/theme';
+import {themeStore} from './stores/theme';
 
 interface BtnProps {
   onMouseEnter?: (e?: React.MouseEvent | Element) => void;

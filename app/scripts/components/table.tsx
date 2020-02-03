@@ -11,7 +11,7 @@ import {findIndex, map, each, filter} from '@jaszhix/utils';
 import {isNewTab, unref} from './utils';
 import state from './stores/state';
 import {setAlert} from './stores/main';
-import themeStore from './stores/theme';
+import {themeStore} from './stores/theme';
 import * as utils from './stores/tileUtils';
 import {domainRegex} from './constants';
 

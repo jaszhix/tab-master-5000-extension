@@ -10,7 +10,7 @@ import {find, map, filter} from '@jaszhix/utils';
 
 import * as utils from '../stores/tileUtils';
 import state from '../stores/state';
-import themeStore from '../stores/theme';
+import {themeStore} from '../stores/theme';
 
 import {Btn, Col, Row} from '../bootstrap';
 import style from '../style';
