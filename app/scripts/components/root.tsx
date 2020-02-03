@@ -94,7 +94,7 @@ class Root extends React.Component<RootProps, RootState> {
       screenshots: []
     };
     this.connections = [
-      themeStore.connect('*', (e) => this.themeChange(e)),
+      themeStore.connect('*', this.themeChange),
       state.connect(['sort', 'direction'], (partial) => {
         if (!this.props.s.modeKey) {
           return;

@@ -16,20 +16,25 @@ import {Btn, Col, Row} from '../bootstrap';
 import style from '../style';
 import styles from './styles';
 
-const convertColor = function(color: string) {
-  if (color.indexOf('#') !== -1) {
-    return {color: color};
-  } else if (color.indexOf('a') !== -1) {
-    let arr = color.split(', ');
-    let r = arr[0].split('rgba(')[1];
-    let g = arr[1];
-    let b = arr[2];
-    let alpha = parseInt(arr[3].split(')')[0]);
-    return {
-      alpha: alpha * 100,
-      color: tc({r: r, g: g, b: b}).toHexString()
-    }
+const convertColor = function(color) {
+  if (color.indexOf('#') > -1) {
+    return {color};
   }
+
+  let isRGBA = color.indexOf('a') > -1;
+  let splitKey = isRGBA ? 'rgba(' : 'rgb(';
+  let arr = color.split(', ');
+  let r = arr[0].split(splitKey)[1];
+  let g = arr[1];
+  let b = arr[2];
+  let alpha = 100;
+
+  if (isRGBA) alpha = parseFloat(arr[3].split(')')[0]) * 100;
+
+  return {
+    alpha,
+    color: tc({r, g, b}).toHexString()
+  };
 }
 
 interface ColorPickerContainerProps {
@@ -59,16 +64,20 @@ class ColorPickerContainer extends React.Component<ColorPickerContainerProps, Co
       color: '#FFFFFF',
       hover: null
     }
-    _.assignIn(this.state, convertColor(props.color));
+
+    Object.assign(this.state, convertColor(props.color));
   }
   handleColorChange = (color) => {
     let rgb = tc(color.color).setAlpha(color.alpha / 100).toRgbString();
+
     if (color.alpha === 100) {
       rgb = rgb.replace(/rgb/g, 'rgba').replace(/\)/g, ', 1)');
     }
+
     let theme = {};
     theme[this.props.themeKey] = rgb;
     themeStore.set({theme});
+
     this.props.onChange();
   }
   render = () => {
@@ -222,7 +231,7 @@ class Theming extends React.Component<ThemingProps, ThemingState> {
     modal.footer = (
       <div>
         <Btn
-        onClick={!update ? () => this.handleSaveTheme() : () => this.handleUpdateTheme()}
+        onClick={!update ? this.handleSaveTheme : this.handleUpdateTheme}
         style={{fontWeight: boldUpdate ? 600 : 400}}
         icon={newThemeIcon}
         className="ntg-setting-btn">
