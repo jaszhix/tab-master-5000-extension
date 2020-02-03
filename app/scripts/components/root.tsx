@@ -203,6 +203,7 @@ class Root extends React.Component<RootProps, RootState> {
     let stateUpdate: Partial<GlobalState> = {};
     let currentWallpaper = e.currentWallpaper || e.hoverWallpaper || state.currentWallpaper;
     let style = v('#theme-style-el').n;
+    let innerHTML = '';
 
     if (e.savedThemes) {
       stateUpdate.savedThemes = e.savedThemes;
@@ -214,7 +215,7 @@ class Root extends React.Component<RootProps, RootState> {
       let sessionFieldColor = themeStore.balance(e.theme.settingsBg);
       let vendor = p.s.chromeVersion > 1 ? 'webkit' : 'moz';
       let inputPlaceholder = p.s.chromeVersion > 1 ? `${vendor}-input` : vendor;
-      style.innerHTML = `
+      innerHTML = `
       a, a:focus, a:hover {
         color: ${themeStore.opacify(e.theme.bodyText, 0.9)};
       }
@@ -399,7 +400,7 @@ class Root extends React.Component<RootProps, RootState> {
 
       // Firefox options integration
       if (state.isOptions && state.chromeVersion === 1) {
-        style.innerHTML += `
+        innerHTML += `
           small {
             background-color: rgba(235, 235, 235, 1) !important;
           }
@@ -429,8 +430,11 @@ class Root extends React.Component<RootProps, RootState> {
       stateUpdate.theme = e.theme;
     }
 
-    if (currentWallpaper && currentWallpaper.data != null && currentWallpaper.data !== -1 && !state.isOptions) {
-      style.innerHTML += `
+    if (!state.isOptions
+      && currentWallpaper
+      && currentWallpaper.data != null
+      && currentWallpaper.data !== -1) {
+      innerHTML += `
         #bgImg {
           display: inline-block !important;
           filter: blur(${p.s.prefs.screenshotBgBlur}px) !important;
@@ -445,7 +449,7 @@ class Root extends React.Component<RootProps, RootState> {
         stateUpdate.currentWallpaper = e.currentWallpaper;
       }
     } else if (currentWallpaper !== undefined) {
-      style.innerHTML += `
+      innerHTML += `
         #bgImg {
           display: none;
           filter: blur(${p.s.prefs.screenshotBgBlur}px) !important;
@@ -456,6 +460,10 @@ class Root extends React.Component<RootProps, RootState> {
         }
       `;
       stateUpdate.currentWallpaper = null;
+    }
+
+    if (innerHTML !== style.innerHTML) {
+      style.innerHTML = innerHTML;
     }
 
     if (e.wallpapers) {
