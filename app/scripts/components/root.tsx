@@ -201,7 +201,7 @@ class Root extends React.Component<RootProps, RootState> {
     }
     let p = this.props;
     let stateUpdate: Partial<GlobalState> = {};
-    let currentWallpaper = e.currentWallpaper || e.hoverWallpaper;
+    let currentWallpaper = e.currentWallpaper || e.hoverWallpaper || state.currentWallpaper;
     let style = v('#theme-style-el').n;
 
     if (e.savedThemes) {

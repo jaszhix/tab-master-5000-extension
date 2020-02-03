@@ -647,11 +647,11 @@ const themeStore = <ThemeStore>init({
       open: true
     });
   },
-  selectWallpaper: (themeId, wpId, setPrefs = null) => {
+  selectWallpaper: (themeId, wpId, shouldSetPrefs = false) => {
     let refWallpaper, themeCollectionKey, refTheme;
 
     if (wpId && wpId > 0) {
-      setPrefs = true;
+      shouldSetPrefs = true;
       refWallpaper = find(themeStore.wallpapers, wallpaper => wallpaper.id === wpId);
     } else {
       refWallpaper = {data: null};
@@ -679,7 +679,7 @@ const themeStore = <ThemeStore>init({
 
     themeStore.set({currentWallpaper: refWallpaper});
 
-    if (setPrefs) {
+    if (shouldSetPrefs) {
       setPrefs({wallpaper: wpId});
     }
 
