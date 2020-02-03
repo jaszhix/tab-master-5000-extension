@@ -111,7 +111,12 @@ let scssLoaders = [
 if (!PROD) {
   cssLoaders = ['style-loader'].concat(cssLoaders);
   scssLoaders = ['style-loader'].concat(scssLoaders);
+
   babelConfig.plugins.push('react-hot-loader/babel');
+
+  Object.assign(aliases, {
+    'react-dom': '@hot-loader/react-dom',
+  })
 }
 
 const config = {
@@ -119,12 +124,12 @@ const config = {
   context: path.resolve(__dirname),
   entry: PROD ? [
     '@babel/polyfill',
-    'app.tsx'
+    'index.tsx'
   ] : [
-    'react-hot-loader/patch',
+    '@hot-loader/react-dom',
     'webpack-dev-server/client?http://127.0.0.1:8009',
     'webpack/hot/only-dev-server',
-    'app.tsx',
+    'index.tsx',
   ],
   output: {
     path: path.resolve(__dirname, `${CONTENT_BASE}/scripts`),
@@ -171,6 +176,11 @@ const config = {
         ],
       },
       {
+        test: /\.(js|ts|tsx)$/,
+        use: ['source-map-loader'],
+        enforce: 'pre'
+      },
+      {
         test: /\.css$/,
         use: PROD ? ExtractTextPlugin.extract({
           fallback: 'style-loader',
@@ -194,7 +204,7 @@ const config = {
       },
     ],
   },
-  devtool: PROD ? 'source-map' : 'inline-source-map',
+  devtool: 'source-map',
   stats: {
     children: false
   },
@@ -206,21 +216,11 @@ const config = {
     extensions: ['.js', '.jsx', '.tsx', '.ts', '.json'],
     alias: aliases
   },
-  devServer: {
-    port: 8009,
-    hot: true,
-    inline: false,
-    historyApiFallback: true,
-    contentBase: path.join(__dirname, 'dist'),
-    headers: {'Access-Control-Allow-Origin': '*'},
-    disableHostCheck: true,
-    publicPath
-  },
 };
 
 if (PROD && ENTRY) {
   if (ENTRY === 'app') {
-    config.entry = './app/scripts/components/app.tsx';
+    config.entry = './app/scripts/components/index.tsx';
     config.output.filename = 'app.js';
     config.plugins.push(new ExtractTextPlugin({filename: 'main.css', allChunks: false}));
   } else if (ENTRY === 'bg') {
@@ -309,6 +309,17 @@ if (PROD && ENTRY) {
     );
   }
 } else {
+  config.devServer = {
+    port: 8009,
+    hot: true,
+    inline: false,
+    historyApiFallback: true,
+    contentBase: path.join(__dirname, 'dist'),
+    headers: {'Access-Control-Allow-Origin': '*'},
+    disableHostCheck: true,
+    publicPath
+  };
+
   config.plugins.push(
     new webpack.NoEmitOnErrorsPlugin(),
     new webpack.HotModuleReplacementPlugin(),
@@ -318,4 +329,5 @@ if (PROD && ENTRY) {
     new SizePlugin()
   );
 }
-module.exports = config;
+
+export default config;

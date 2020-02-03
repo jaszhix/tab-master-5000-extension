@@ -2,11 +2,11 @@ import React from 'react';
 
 let Sentry;
 
-interface ErrorBoundaryProps {
+export interface ErrorBoundaryProps {
   Sentry: NodeModule;
 }
 
-interface ErrorBoundaryState {
+export interface ErrorBoundaryState {
   error: Error;
   eventId: string;
 }

@@ -1,14 +1,14 @@
-const fs = require('fs-extra');
-const {execSync} = require('child_process');
-const gulp = require('gulp');
-const webpack = require('webpack');
-const webpackStream = require('webpack-stream');
-const imagemin = require('gulp-imagemin');
-const htmlclean = require('gulp-htmlclean');
-const del = require('del');
-const zip = require('gulp-zip');
-const rename = require('gulp-rename');
-const config = require('./webpack.config');
+import fs from 'fs-extra';
+import {execSync} from 'child_process';
+import gulp from 'gulp';
+import webpack from 'webpack';
+import webpackStream from 'webpack-stream';
+import imagemin from 'gulp-imagemin';
+import htmlclean from 'gulp-htmlclean';
+import del from 'del';
+import zip from 'gulp-zip';
+import rename from 'gulp-rename';
+import config from './webpack.config';
 
 const {NODE_ENV, DEV_ENV} = process.env;
 let {COMMIT_HASH, SKIP_MINIFY} = process.env;
