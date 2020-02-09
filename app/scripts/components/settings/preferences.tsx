@@ -584,7 +584,7 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
                 <Slide
                 className="prefs-row-last"
                 label={`${utils.t('tablePadding')}: ${p.prefs.tablePadding}px`}
-                min={0}
+                min={2}
                 max={16}
                 defaultValue={p.prefs.tablePadding}
                 value={p.prefs.tablePadding}
