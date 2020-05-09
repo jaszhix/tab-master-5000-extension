@@ -15,6 +15,7 @@
     "build-chrome": "cross-env NODE_ENV=production DEV_ENV=chrome npm run build-all",
     "build-firefox": "cross-env NODE_ENV=production DEV_ENV=firefox npm run build-all",
     "build-sources": "cross-env NODE_ENV=production SKIP_MINIFY=true npm run build-firefox",
+    "update-types": "typesync && npm install",
     "sentry-new-release": "sentry-cli releases -o jason-hicks new -p tm5k 2.9.1"
   },
   "homepage": "https://chrome.google.com/webstore/detail/tab-master-5000-tab-swiss/mippmhcfjhliihkkdobllhpdnmmciaim",
@@ -50,6 +51,7 @@
     "@sentry/webpack-plugin": "^1.9.3",
     "@types/autoprefixer": "^9.6.1",
     "@types/babel__core": "^7.1.3",
+    "@types/babel__preset-env": "^7.9.0",
     "@types/chrome": "0.0.92",
     "@types/classnames": "^2.2.9",
     "@types/concurrently": "^4.1.0",
@@ -146,6 +148,7 @@
     "tinycolor2": "^1.4.1",
     "ts-node": "^8.6.2",
     "typescript": "^3.7.5",
+    "typesync": "^0.6.1",
     "vquery": "^5.0.1",
     "webpack": "^4.41.5",
     "webpack-bundle-analyzer": "^3.6.0",
