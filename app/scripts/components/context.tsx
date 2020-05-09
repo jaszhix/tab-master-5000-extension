@@ -15,6 +15,7 @@ export interface ContextMenuProps {
   theme: Theme;
   duplicateTabs: string[];
   tabs: TabCollection;
+  chromeVersion: number;
 }
 
 export interface ContextMenuState {
@@ -36,18 +37,21 @@ class ContextMenu extends React.Component<ContextMenuProps, ContextMenuState> {
       inViewport: true
     }
   }
+
   static getDerivedStateFromProps = (nextProps, prevState) => {
     if (!_.isEqual(nextProps.actions, prevState.actions)) {
       return {actions: nextProps.actions}; // TBD
     }
     return null;
   }
+
   componentDidMount = () => {
-    this.handleOptions(this.props);
+    this.handleOptions();
     this.containerStyle = {left: window.cursor.page.x, top: window.cursor.page.y, opacity: 0};
     // TBD
     _.defer(() => this.containerStyle = {left: window.cursor.page.x, top: window.cursor.page.y, opacity: 0})
   }
+
   handleClickOutside = () => {
     let p = this.props;
     p.context.value = false;
@@ -61,137 +65,139 @@ class ContextMenu extends React.Component<ContextMenuProps, ContextMenuState> {
       state.trigger('deselectSelection');
     }
   }
-  handleOptions = (p) => {
-    let s = this.state;
 
-    let isSelectedItems = Array.isArray(p.context.id);
+  handleOptions = () => {
+    let s = this.state;
+    let {context, chromeVersion, prefs} = this.props;
+
+    let isSelectedItems = Array.isArray(context.id);
     let addContextMenuItems = (hasBookmark?, bk?) => {
-      let hasMute = p.chromeVersion >= 46 || p.chromeVersion === 1;
-      let close = p.prefs.mode !== 'apps' && p.prefs.mode !== 'tabs' && !s.openTab ? utils.t('remove') : utils.t('close');
-      let notBookmarksHistorySessAppsExt = p.prefs.mode !== 'bookmarks' && p.prefs.mode !== 'history' && p.prefs.mode !== 'sessions' && p.prefs.mode !== 'apps' && p.prefs.mode !== 'extensions';
-      let notAppsExt = p.prefs.mode !== 'apps' && p.prefs.mode !== 'extensions';
+      let hasMute = chromeVersion >= 46 || chromeVersion === 1;
+      let close = prefs.mode !== 'apps' && prefs.mode !== 'tabs' && !s.openTab ? utils.t('remove') : utils.t('close');
+      let notBookmarksHistorySessAppsExt = prefs.mode !== 'bookmarks' && prefs.mode !== 'history' && prefs.mode !== 'sessions' && prefs.mode !== 'apps' && prefs.mode !== 'extensions';
+      let notAppsExt = prefs.mode !== 'apps' && prefs.mode !== 'extensions';
       let actionsStatus = this.getStatus('actions');
       let contextOptions: ContextOption[] = [
         {
           argument: notAppsExt,
-          onClick: () => this.handleMenuOption(p, 'close'),
-          icon: `icon-${p.prefs.mode !== 'tabs' && !s.openTab ? 'eraser' : 'cross2'}`,
-          label: isSelectedItems ? `${close} ${p.context.id.length} ${p.mode === 'history' ? `${p.mode} ${utils.t('items')}` : p.mode}` : close,
+          onClick: () => this.handleMenuOption('close'),
+          icon: `icon-${prefs.mode !== 'tabs' && !s.openTab ? 'eraser' : 'cross2'}`,
+          label: isSelectedItems ? `${close} ${context.id.length} ${prefs.mode === 'history' ? `${prefs.mode} ${utils.t('items')}` : prefs.mode}` : close,
           divider: null
         },
         {
-          argument: p.prefs.mode === 'tabs',
-          onClick: () => this.handleMenuOption(p, 'closeAll'),
+          argument: prefs.mode === 'tabs',
+          onClick: () => this.handleMenuOption('closeAll'),
           icon: 'icon-stack-cancel',
-          label: `${close} ${utils.t('allFrom')} ${isSelectedItems ? utils.t('selectedDomains') : p.context.id.url.split('/')[2]}`,
+          label: `${close} ${utils.t('allFrom')} ${isSelectedItems ? utils.t('selectedDomains') : context.id.url.split('/')[2]}`,
           divider: null
         },
         {
-          argument: !isSelectedItems && p.prefs.mode === 'tabs',
-          onClick: () => this.handleMenuOption(p, 'allLeft'),
+          argument: !isSelectedItems && prefs.mode === 'tabs',
+          onClick: () => this.handleMenuOption('allLeft'),
           icon: 'icon-arrow-left16',
           label: `${close} ${utils.t('allLeft')}`,
           divider: null
         },
         {
-          argument: !isSelectedItems && p.prefs.mode === 'tabs',
-          onClick: () => this.handleMenuOption(p, 'allRight'),
+          argument: !isSelectedItems && prefs.mode === 'tabs',
+          onClick: () => this.handleMenuOption('allRight'),
           icon: 'icon-arrow-right16',
           label: `${close} ${utils.t('allRight')}`,
           divider: null
         },
         {
           argument: !isSelectedItems && notAppsExt && this.getStatus('duplicate'),
-          onClick: () => this.handleMenuOption(p, 'closeAllDupes'),
+          onClick: () => this.handleMenuOption('closeAllDupes'),
           icon: 'icon-svg',
           label: `${close} ${utils.t('allDuplicates')}`,
           divider: null
         },
         {
           argument: !isSelectedItems && notAppsExt && state.search.length > 0,
-          onClick: () => this.handleMenuOption(p, 'closeSearched'),
+          onClick: () => this.handleMenuOption('closeSearched'),
           icon: 'icon-svg',
           label: `${close} ${utils.t('allSearchResults')}`
         },
         {divider: true},
         {
-          argument: (isSelectedItems && p.prefs.mode === 'tabs') || (notBookmarksHistorySessAppsExt || p.context.id.openTab),
-          onClick: () => this.handleMenuOption(p, 'reload'),
+          argument: (isSelectedItems && prefs.mode === 'tabs') || (notBookmarksHistorySessAppsExt || context.id.openTab),
+          onClick: () => this.handleMenuOption('reload'),
           icon: 'icon-reload-alt',
           label: isSelectedItems ? utils.t('reloadSelected') : utils.t('reload'),
           divider: null
         },
         {
-          argument: (isSelectedItems && p.prefs.mode === 'tabs') || (notBookmarksHistorySessAppsExt || p.context.id.openTab),
-          onClick: () => this.handleMenuOption(p, 'pin'),
+          argument: (isSelectedItems && prefs.mode === 'tabs') || (notBookmarksHistorySessAppsExt || context.id.openTab),
+          onClick: () => this.handleMenuOption('pin'),
           icon: 'icon-pushpin',
-          label: isSelectedItems ? `${utils.t('togglePinningOf')} ${p.context.id.length} ${utils.t('tabs')}` : p.context.id.pinned ? utils.t('unpin') : utils.t('pin'),
+          label: isSelectedItems ? `${utils.t('togglePinningOf')} ${context.id.length} ${utils.t('tabs')}` : context.id.pinned ? utils.t('unpin') : utils.t('pin'),
           divider: null
         },
         {
-          argument: (hasMute && (isSelectedItems && p.prefs.mode === 'tabs') || notBookmarksHistorySessAppsExt || p.context.id.openTab),
-          onClick: () => this.handleMenuOption(p, 'mute'),
-          icon: `icon-${isSelectedItems || p.context.id.mutedInfo.muted ? 'volume-medium' : 'volume-mute'}`,
-          label: isSelectedItems ? `${utils.t('toggleMutingOf')} ${p.context.id.length} tabs` : p.context.id.mutedInfo.muted ? utils.t('unmute') : utils.t('mute'),
+          argument: (hasMute && (isSelectedItems && prefs.mode === 'tabs') || notBookmarksHistorySessAppsExt || context.id.openTab),
+          onClick: () => this.handleMenuOption('mute'),
+          icon: `icon-${isSelectedItems || context.id.mutedInfo.muted ? 'volume-medium' : 'volume-mute'}`,
+          label: isSelectedItems ? `${utils.t('toggleMutingOf')} ${context.id.length} tabs` : context.id.mutedInfo.muted ? utils.t('unmute') : utils.t('mute'),
           divider: null
         },
         {
-          argument: notAppsExt && !isSelectedItems && p.prefs.mode !== 'bookmarks',
-          onClick: () => this.handleMenuOption(p, 'toggleBookmark', 0, hasBookmark, bk),
+          argument: notAppsExt && !isSelectedItems && prefs.mode !== 'bookmarks',
+          onClick: () => this.handleMenuOption('toggleBookmark', 0, hasBookmark, bk),
           icon: 'icon-bookmark4',
           label: `${hasBookmark ? utils.t('removeFrom') : utils.t('addTo')} ${utils.t('bookmarks')}`,
           divider: null
         },
         {
           argument: notAppsExt,
-          onClick: () => this.handleMenuOption(p, 'copyURLToClipboard'),
+          onClick: () => this.handleMenuOption('copyURLToClipboard'),
           icon: 'icon-copy2',
           label: utils.t('copyURLToClipboard'),
           divider: null
         },
         {
-          argument: !isSelectedItems && notAppsExt && p.prefs.format === 'table',
-          onClick: () => this.handleMenuOption(p, 'selectAllFromDomain'),
+          argument: !isSelectedItems && notAppsExt && prefs.format === 'table',
+          onClick: () => this.handleMenuOption('selectAllFromDomain'),
           icon: 'icon-add-to-list',
           label: utils.t('selectAllFromDomain'),
           divider: null
         },
         {
           argument: isSelectedItems,
-          onClick: () => this.handleMenuOption(p, 'invertSelection', 0, null, null, true),
+          onClick: () => this.handleMenuOption('invertSelection', 0, null, null, true),
           icon: 'icon-make-group',
           label: utils.t('invertSelection'),
           divider: null
         },
         {
-          argument: !isSelectedItems && notAppsExt && p.prefs.actions && actionsStatus,
-          onClick: () => this.handleMenuOption(p, 'actions'),
+          argument: !isSelectedItems && notAppsExt && prefs.actions && actionsStatus,
+          onClick: () => this.handleMenuOption('actions'),
           icon: 'icon-undo',
           label: `${utils.t('undo')} ${actionsStatus}`,
           divider: null
         },
         {
-          argument: !isSelectedItems && (p.prefs.mode === 'apps' || p.prefs.mode === 'extensions') && p.context.id.enabled,
-          onClick: () => this.handleMenuOption(p, 'launchApp'),
+          argument: !isSelectedItems && (prefs.mode === 'apps' || prefs.mode === 'extensions') && context.id.enabled,
+          onClick: () => this.handleMenuOption('launchApp'),
           icon: 'icon-play4',
-          label: p.context.id.title,
+          label: context.id.title,
           divider: null
         },
         {
-          argument: !isSelectedItems && p.prefs.mode === 'apps' && p.context.id.enabled,
-          onClick: () => this.handleMenuOption(p, 'createAppShortcut'),
+          argument: !isSelectedItems && prefs.mode === 'apps' && context.id.enabled,
+          onClick: () => this.handleMenuOption('createAppShortcut'),
           icon: 'icon-forward',
-          label: isSelectedItems ? `${utils.t('createShortcutsFor')} ${p.context.id.length} ${p.mode}` : utils.t('createShortcut'),
+          label: isSelectedItems ? `${utils.t('createShortcutsFor')} ${context.id.length} ${prefs.mode}` : utils.t('createShortcut'),
           divider: null
         },
       ];
 
-      if (!isSelectedItems && p.prefs.mode === 'apps' && p.context.id.enabled) {
-        each(p.context.id.availableLaunchTypes, (launchType) => {
-          if (launchType !== p.context.id.launchType) {
+      if (!isSelectedItems && prefs.mode === 'apps' && context.id.enabled) {
+        each(context.id.availableLaunchTypes, (launchType) => {
+          if (launchType !== context.id.launchType) {
             let launchOption = {
               argument: true,
-              onClick: () => this.handleMenuOption(p, launchType),
+              onClick: () => this.handleMenuOption(launchType),
               icon: 'icon-gear',
               label: _.endsWith(launchType, 'SCREEN') ? utils.t('openFullscreen') : _.endsWith(launchType, 'PINNED_TAB') ? utils.t('openAsAPinnedTab') : `${utils.t('openAsA')} ${_.last(_.words(launchType.toLowerCase()))}`,
               divider: null
@@ -201,30 +207,30 @@ class ContextMenu extends React.Component<ContextMenuProps, ContextMenuState> {
         });
       }
 
-      if (p.prefs.mode === 'apps' || p.prefs.mode === 'extensions') {
+      if (prefs.mode === 'apps' || prefs.mode === 'extensions') {
         let appToggleOptions: ContextOption[] = [
           {
             argument: true,
-            onClick: () => this.handleMenuOption(p, 'toggleEnable'),
-            switch: isSelectedItems || p.context.id.enabled,
-            label: isSelectedItems ? `${utils.t('toggle')} ${p.context.id.length} ${p.mode}` : p.context.id.enabled ? utils.t('disable') : utils.t('enable'),
+            onClick: () => this.handleMenuOption('toggleEnable'),
+            switch: isSelectedItems || context.id.enabled,
+            label: isSelectedItems ? `${utils.t('toggle')} ${context.id.length} ${prefs.mode}` : context.id.enabled ? utils.t('disable') : utils.t('enable'),
             divider: null
           },
           {
             argument: true,
-            onClick: () => this.handleMenuOption(p, 'uninstallApp'),
+            onClick: () => this.handleMenuOption('uninstallApp'),
             icon: 'icon-trash',
-            label: `${utils.t('uninstall')}${isSelectedItems ? ' '+p.context.id.length+' '+p.mode : ''}`,
+            label: `${utils.t('uninstall')}${isSelectedItems ? ' ' + context.id.length + ' ' + prefs.mode : ''}`,
             divider: null
           },
         ];
         contextOptions = contextOptions.concat(appToggleOptions);
       }
 
-      p.context.options = contextOptions;
+      context.options = contextOptions;
 
       state.set({
-        context: p.context,
+        context: context,
         disableSidebarClickOutside: true
       });
     };
@@ -240,52 +246,54 @@ class ContextMenu extends React.Component<ContextMenuProps, ContextMenuState> {
           return;
         }
 
-        chrome.bookmarks.search(p.context.id.url, (bk) => {
+        chrome.bookmarks.search(context.id.url, (bk) => {
           addContextMenuItems(bk.length > 0, bk);
         });
       });
     }
   }
-  handleMenuOption = (p, opt, recursion=0, hasBookmark=null, bk=null, selectedManipulation = false) => {
+
+  handleMenuOption = (opt, recursion=0, hasBookmark=null, bk=null, selectedManipulation = false) => {
+    let {context} = this.props;
     // Create wrapper context for utils until component centric logic is revised.
-    let isSelectedItems = Array.isArray(p.context.id);
-    p = recursion === 0 ? this.props : p;
+    let isSelectedItems = Array.isArray(context.id);
 
     if (isSelectedItems && !selectedManipulation) {
       if (opt.indexOf('close') > -1) {
         this.shouldDeselect = true;
       }
-      let selectedItems = p.context.id;
+      let selectedItems = context.id;
       for (let z = 0, len = selectedItems.length; z < len; z++) {
-        p.context.id = selectedItems[z];
-        this.handleMenuOption(p, opt, ++recursion, hasBookmark, bk, true);
+        context.id = selectedItems[z];
+        this.handleMenuOption(opt, ++recursion, hasBookmark, bk, true);
       }
       return;
     }
+
     if (opt === 'actions') {
       undoAction();
     } else if (opt === 'close') {
-      utils.closeTab(p.context.id);
+      utils.closeTab(context.id);
     } else if (opt === 'closeAll') {
-      utils.closeAllTabs(p.context.id);
+      utils.closeAllTabs(context.id);
     } else if (opt === 'allLeft') {
-      utils.closeAllItems({tab: p.context.id, left: true});
+      utils.closeAllItems({tab: context.id, left: true});
     } else if (opt === 'allRight') {
-      utils.closeAllItems({tab: p.context.id, right: true});
+      utils.closeAllItems({tab: context.id, right: true});
     } else if (opt === 'reload') {
-      chrome.tabs.reload(p.context.id.id);
+      chrome.tabs.reload(context.id.id);
     } else if (opt === 'pin') {
-      utils.pin(p.context.id);
+      utils.pin(context.id);
     } else if (opt === 'mute') {
-      utils.mute(p.context.id);
+      utils.mute(context.id);
     } else if (opt === 'copyURLToClipboard') {
-      copyToClipboard(p.context.id.url);
+      copyToClipboard(context.id.url);
     } else if (opt === 'selectAllFromDomain') {
-      state.trigger('selectAllFromDomain', p.context.id.domain);
+      state.trigger('selectAllFromDomain', context.id.domain);
     } else if (opt === 'invertSelection') {
       state.trigger('invertSelection');
     } else if (opt === 'closeAllDupes') {
-      utils.checkDuplicateTabs(p.context.id);
+      utils.checkDuplicateTabs(context.id);
     } else if (opt === 'closeSearched') {
       utils.closeAllItems({tab: null, left: false, right: false});
     } else if (opt === 'uninstallApp'
@@ -293,7 +301,7 @@ class ContextMenu extends React.Component<ContextMenuProps, ContextMenuState> {
       || opt === 'launchApp'
       || opt === 'toggleEnable'
       || _.first(_.words(opt)) === 'OPEN') {
-      utils.app(p.context.id, opt);
+      utils.app(context.id, opt);
     } else if (opt === 'toggleBookmark') {
       chrome.permissions.request({
         permissions: ['bookmarks'],
@@ -304,12 +312,14 @@ class ContextMenu extends React.Component<ContextMenuProps, ContextMenuState> {
         if (hasBookmark) {
           chrome.bookmarks.remove(bk[0].id, (bk)=>console.log(bk));
         } else {
-          chrome.bookmarks.create({title: p.context.id.title, url: p.context.id.url}, (bk)=>console.log(bk));
+          chrome.bookmarks.create({title: context.id.title, url: context.id.url}, (bk)=>console.log(bk));
         }
       });
     }
+
     this.handleClickOutside();
   }
+
   getStatus = (opt) => {
     let p = this.props;
     let isSelectedItems = Array.isArray(p.context.id);
@@ -347,6 +357,7 @@ class ContextMenu extends React.Component<ContextMenuProps, ContextMenuState> {
       return p.context.id.pinned;
     }
   }
+
   getRef = (ref) => {
     if (!ref) {
       return;
@@ -367,6 +378,7 @@ class ContextMenu extends React.Component<ContextMenuProps, ContextMenuState> {
       ref.style.opacity = 1;
     }, 50);
   }
+
   render = () => {
     let p = this.props;
     return (

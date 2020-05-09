@@ -33,7 +33,7 @@ gulp.task('build-bg', function() {
 });
 
 gulp.task('build', gulp.series('build-bg', function() {
-  return gulp.src('./app/scripts/components/app.tsx', {allowEmpty: true})
+  return gulp.src('./app/scripts/components/index.tsx', {allowEmpty: true})
     .pipe(webpackStream(config))
     .pipe(gulp.dest('./app/scripts/'));
 }));

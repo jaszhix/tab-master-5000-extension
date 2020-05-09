@@ -236,7 +236,8 @@ class Root extends React.Component<RootProps, RootState> {
           prefs={p.s.prefs}
           context={p.s.context}
           duplicateTabs={p.s.duplicateTabs}
-          theme={p.s.theme} /> : null}
+          theme={p.s.theme}
+          chromeVersion={p.s.chromeVersion} /> : null}
           {p.s.modal ?
           <ModalHandler
           modal={p.s.modal}
