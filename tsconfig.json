@@ -6,7 +6,6 @@
     "experimentalDecorators": true,
     "esModuleInterop": true,
     "module": "commonjs",
-    "noEmit": true,
     "allowJs": false,
     "resolveJsonModule": true,
     "declaration": false,

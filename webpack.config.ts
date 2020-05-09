@@ -1,4 +1,5 @@
 import fs from 'fs-extra';
+import {execSync} from 'child_process';
 import path from 'path';
 import webpack from 'webpack';
 import autoprefixer from 'autoprefixer';
@@ -10,25 +11,35 @@ import SizePlugin from 'size-plugin';
 import TerserPlugin from 'terser-webpack-plugin';
 import SentryWebpackPlugin from '@sentry/webpack-plugin';
 
-const babelConfig = JSON.parse(fs.readFileSync('./.babelrc'));
+const babelConfig = JSON.parse(fs.readFileSync('./.babelrc').toString());
 
 const aliases = Object.assign({
   underscore: 'lodash'
 }, require('lodash-loader').createLodashAliases());
 
-const {COMMIT_HASH, DEV_ENV, NODE_ENV, BUNDLE_ENTRY} = process.env;
-const ENV = NODE_ENV || 'development';
+type EnvMode = 'development' | 'production'
+
+let {COMMIT_HASH, DEV_ENV, NODE_ENV, BUNDLE_ENTRY} = process.env;
+const ENV: EnvMode = <EnvMode>NODE_ENV || 'development';
 const PROD = ENV === 'production';
 const ENTRY = BUNDLE_ENTRY;
-const SKIP_MINIFY = JSON.parse(process.env.SKIP_MINIFY || 'false');
+const SKIP_MINIFY = JSON.parse(process.env.SKIP_MINIFY || PROD ? 'false' : 'true');
 const publicPath = PROD ? '/' : 'http://127.0.0.1:8009/app/scripts/';
 
 const CONTENT_BASE = SKIP_MINIFY ? 'sources' : 'dist';
 const WORKDIR = PROD ? CONTENT_BASE : 'app';
 const manifestPath = `./${WORKDIR}/manifest.json`;
 
+if (!COMMIT_HASH) {
+  try {
+    COMMIT_HASH = execSync(`git log --pretty=format:%h -n 1 -v ${__dirname}`).toString();
+  } catch (e) {
+    COMMIT_HASH = '<unknown>';
+  }
+}
+
 console.log(`COMMIT HASH:`, COMMIT_HASH);
-console.log(`ENTRY:`, ENTRY || 'app');
+console.log(`ENTRY:`, ENTRY || 'bg');
 console.log(`NODE_ENV:`, NODE_ENV);
 console.log(`BUILD ENV:`, DEV_ENV);
 console.log(`SKIP MINIFICATION:`, SKIP_MINIFY);
@@ -52,17 +63,20 @@ const postcssPlugins = () => {
 
   processors.push(
     cssnano({
-      safe: true,
-      discardComments: {
-        removeAll: true
-      }
+      preset: ['default', {
+        safe: true,
+        discardComments: {
+          removeAll: true
+        }
+      }]
+
     })
   );
 
   return processors;
 }
 
-let cssLoaders = [
+let cssLoaders: webpack.RuleSetUse[] = [
   {
     loader: 'css-loader',
     options: {
@@ -79,7 +93,7 @@ let cssLoaders = [
   },
 ];
 
-let scssLoaders = [
+let scssLoaders: webpack.RuleSetUse[] = [
   {
     loader: 'css-loader',
     options: {
@@ -109,8 +123,8 @@ let scssLoaders = [
 ];
 
 if (!PROD) {
-  cssLoaders = ['style-loader'].concat(cssLoaders);
-  scssLoaders = ['style-loader'].concat(scssLoaders);
+  cssLoaders = [<webpack.RuleSetUse>'style-loader'].concat(cssLoaders);
+  scssLoaders = [<webpack.RuleSetUse>'style-loader'].concat(scssLoaders);
 
   babelConfig.plugins.push('react-hot-loader/babel');
 
@@ -119,7 +133,7 @@ if (!PROD) {
   })
 }
 
-const config = {
+const config: webpack.Configuration = {
   mode: ENV,
   context: path.resolve(__dirname),
   entry: PROD ? [
@@ -150,6 +164,28 @@ const config = {
        }
     })
   ],
+  optimization: {
+    splitChunks: {
+      chunks: 'async',
+      minSize: 30000,
+      minChunks: 2,
+      maxAsyncRequests: 5,
+      maxInitialRequests: 3,
+      name: true,
+      cacheGroups: {
+        default: {
+          minChunks: 2,
+          priority: -20,
+          reuseExistingChunk: true,
+        },
+        vendors: {
+          test: /[\\/]node_modules[\\/]/,
+          priority: -10,
+          chunks: 'all'
+        },
+      }
+    }
+  },
   module: {
     rules: [
       {
@@ -163,7 +199,29 @@ const config = {
         }
       },
       {
-        test: /\.(js|jsx|mjs|ts|tsx)$/,
+        test: /\.(ts|tsx)$/,
+        exclude: /node_modules(?!\/rc-color-picker)/,
+        use: [
+          {
+            loader: 'lodash-loader'
+          },
+          {
+            loader: 'babel-loader',
+            options: babelConfig
+          },
+          {
+            loader: 'ts-loader',
+            options: {
+              compilerOptions: {
+                // Preserve code splitting
+                module: 'esnext'
+              }
+            }
+          },
+        ],
+      },
+      {
+        test: /\.(js|jsx|mjs)$/,
         exclude: /node_modules(?!\/rc-color-picker)/,
         use: [
           {
@@ -182,17 +240,19 @@ const config = {
       },
       {
         test: /\.css$/,
-        use: PROD ? ExtractTextPlugin.extract({
+        use: <webpack.RuleSetUse>
+          (PROD ? ExtractTextPlugin.extract(<any>{
           fallback: 'style-loader',
           use: cssLoaders
-        }) : cssLoaders,
+        }) : cssLoaders),
       },
       {
         test: /\.scss$/,
-        use: PROD ? ExtractTextPlugin.extract({
+        use: <webpack.RuleSetUse>
+          (PROD ? ExtractTextPlugin.extract(<any>{
           fallback: 'style-loader',
           use: scssLoaders
-        }) : scssLoaders,
+        }) : scssLoaders),
       },
       {
         test: /\.(ttf|eot|svg|woff(2)?)(\S+)?$/,
@@ -233,7 +293,7 @@ if (PROD && ENTRY) {
   config.entry = ['@babel/polyfill', config.entry];
   config.devtool = 'hidden-source-map';
   if (!SKIP_MINIFY) {
-    config.optimization = {
+    Object.assign(config.optimization, {
       minimize: true,
       minimizer: [
         new TerserPlugin({
@@ -250,37 +310,16 @@ if (PROD && ENTRY) {
             sourceMap: true,
             mangle: false,
             module: false,
-            output: null,
             toplevel: false,
             nameCache: null,
             ie8: false,
             keep_classnames: true,
             keep_fnames: true,
-            safari10: false,
+            safari10: false
           },
         }),
       ],
-      splitChunks: {
-        chunks: 'async',
-        minSize: 30000,
-        minChunks: 2,
-        maxAsyncRequests: 5,
-        maxInitialRequests: 3,
-        name: true,
-        cacheGroups: {
-          default: {
-            minChunks: 2,
-            priority: -20,
-            reuseExistingChunk: true,
-          },
-          vendors: {
-            test: /[\\/]node_modules[\\/]/,
-            priority: -10,
-            chunks: 'all'
-          }
-        }
-      }
-    };
+    });
 
     if (fs.existsSync('./.sentryclirc')) {
       config.plugins.push(

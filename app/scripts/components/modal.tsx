@@ -44,11 +44,11 @@ export class ModalDefault extends React.Component<ModalDefaultProps> {
   render = () => {
     let p = this.props;
     let heightOffset = p.heightOffset ? p.heightOffset : p.footerComponent ? p.maximized ? 125 : 200 : 140;
-    let bodyStyle = {maxHeight: `${p.height - heightOffset}px`, overflowY: 'auto', transition: p.animations ? 'max-height 0.2s' : 'initial'};
+    let bodyStyle: React.CSSProperties = {maxHeight: `${p.height - heightOffset}px`, overflowY: 'auto', transition: p.animations ? 'max-height 0.2s' : 'initial'};
     bodyStyle = Object.assign(bodyStyle, p.bodyStyle);
     let headerStyle = {paddingTop: '0px'};
     headerStyle = Object.assign(headerStyle, p.headerStyle);
-    const dynamicStyles = StyleSheet.create({
+    const dynamicStyles = (StyleSheet as StyleSheetStatic).create({
       dialogStyle: p.dialogStyle,
       contentStyle: p.contentStyle,
       headerStyle,
@@ -78,9 +78,9 @@ export class ModalDefault extends React.Component<ModalDefaultProps> {
           </div>
 
           {p.footerComponent ?
-          <div className={css(dynamicStyles.footerStyle) + ' modal-footer'}>
-            {p.footerComponent}
-          </div> : null}
+            <div className={css(dynamicStyles.footerStyle) + ' modal-footer'}>
+              {p.footerComponent}
+            </div> : null}
         </div>
       </div>
     );
@@ -228,11 +228,11 @@ class ModalHandler extends React.Component<ModalHandlerProps, ModalHandlerState>
           height={p.height}
           chromeVersion={p.chromeVersion} />
           {p.prefs.tooltip ?
-          <ReactTooltip
-          effect="solid"
-          place="top"
-          multiline={true}
-          html={true} /> : null}
+            <ReactTooltip
+            effect="solid"
+            place="top"
+            multiline={true}
+            html={true} /> : null}
         </ModalDefault>
         <div
         className="modal-backdrop"

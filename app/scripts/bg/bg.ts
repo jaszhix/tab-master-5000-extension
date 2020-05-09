@@ -1035,7 +1035,7 @@ class Bg {
         this.state.windows[refWindow].tabs = _.orderBy(this.state.windows[refWindow].tabs, ['pinned'], ['desc']);
       }
       each(this.state.windows[refWindow].tabs, (tab, i) => {
-        this.state.windows[refWindow].tabs[i].index = i + 1;
+        this.state.windows[refWindow].tabs[i].index = <number>i + 1;
       });
       this.state.set({windows: this.state.windows}, true);
       synchronizeSession(this.state.sessions, this.state.prefs, this.state.windows);

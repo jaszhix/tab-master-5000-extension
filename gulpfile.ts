@@ -1,7 +1,6 @@
 import fs from 'fs-extra';
 import {execSync} from 'child_process';
 import gulp from 'gulp';
-import webpack from 'webpack';
 import webpackStream from 'webpack-stream';
 import imagemin from 'gulp-imagemin';
 import htmlclean from 'gulp-htmlclean';
@@ -19,7 +18,7 @@ const CONTENT_BASE = SKIP_MINIFY ? 'sources' : 'dist';
 const WORKDIR = PROD ? CONTENT_BASE : 'app';
 
 if (!COMMIT_HASH) {
-  process.env.COMMIT_HASH = COMMIT_HASH = execSync('git log --pretty=format:\'%h\' -n 1');
+  process.env.COMMIT_HASH = COMMIT_HASH = execSync('git log --pretty=format:%h -n 1').toString();
 }
 
 fs.ensureDirSync('./releases');
@@ -28,7 +27,7 @@ gulp.task('build-bg', function() {
   config.entry = './app/scripts/bg/bg.ts';
   config.output.filename = 'background.js';
   return gulp.src('./app/scripts/background.js', {allowEmpty: true})
-    .pipe(webpackStream(config, webpack))
+    .pipe(webpackStream(config))
     .pipe(gulp.dest('./app/scripts/'));
 });
 
@@ -77,10 +76,11 @@ gulp.task('htmlmin', function() {
 
 gulp.task('imgmin', function() {
   return gulp.src(`./${WORKDIR}/images/*.{png,jpg,gif}`)
-    .pipe(imagemin({
-      optimizationLevel: 7,
-      interlaced: true
-    }))
+    .pipe(imagemin([
+      imagemin.gifsicle({interlaced: true, optimizationLevel: 7}),
+      imagemin.mozjpeg({quality: 70, progressive: false}),
+      imagemin.optipng({optimizationLevel: 7}),
+    ]))
     .pipe(gulp.dest(`./${WORKDIR}/images`));
 });
 

@@ -244,12 +244,12 @@ class Theming extends React.Component<ThemingProps, ThemingState> {
           {`${utils.t('new')} ${collapse ? utils.t('theme') : ''}`}
         </Btn>
         {savedThemes.length > 0 ?
-        <Btn
-        onClick={() => themeStore.export()}
-        className="ntg-setting-btn"
-        icon="database-export">
-          {utils.t('export')}
-        </Btn> : null}
+          <Btn
+          onClick={() => themeStore.export()}
+          className="ntg-setting-btn"
+          icon="database-export">
+            {utils.t('export')}
+          </Btn> : null}
         <Btn
         onClick={() => this.triggerRefClick('importRef')}
         className="ntg-setting-btn"
@@ -257,39 +257,39 @@ class Theming extends React.Component<ThemingProps, ThemingState> {
           {utils.t('import')}
         </Btn>
         {rightTab === 'wallpaper' ?
-        <Btn
-        onClick={() => this.triggerRefClick('wallpaperRef')}
-        className="ntg-setting-btn"
-        icon="file-picture">
-          {utils.t('importWallpaper')}
-        </Btn> : null}
+          <Btn
+          onClick={() => this.triggerRefClick('wallpaperRef')}
+          className="ntg-setting-btn"
+          icon="file-picture">
+            {utils.t('importWallpaper')}
+          </Btn> : null}
         {rightTab === 'color' ?
-        <Btn
-        onClick={() => this.setState({colorGroup: 'general'})}
-        style={this.getButtonStyle('general')}
-        className="ntg-setting-btn">
-          {utils.t('bodyHeaderAndFields')}
-        </Btn> : null}
+          <Btn
+          onClick={() => this.setState({colorGroup: 'general'})}
+          style={this.getButtonStyle('general')}
+          className="ntg-setting-btn">
+            {utils.t('bodyHeaderAndFields')}
+          </Btn> : null}
         {rightTab === 'color' ?
-        <Btn
-        onClick={() => this.setState({colorGroup: 'buttons'})}
-        style={this.getButtonStyle('buttons')}
-        className="ntg-setting-btn">
-          {utils.t('buttons')}
-        </Btn> : null}
+          <Btn
+          onClick={() => this.setState({colorGroup: 'buttons'})}
+          style={this.getButtonStyle('buttons')}
+          className="ntg-setting-btn">
+            {utils.t('buttons')}
+          </Btn> : null}
         {rightTab === 'color' ?
-        <Btn
-        onClick={() => this.setState({colorGroup: 'tiles'})}
-        style={this.getButtonStyle('tiles')}
-        className="ntg-setting-btn">
-          {utils.t('tiles')}
-        </Btn> : null}
+          <Btn
+          onClick={() => this.setState({colorGroup: 'tiles'})}
+          style={this.getButtonStyle('tiles')}
+          className="ntg-setting-btn">
+            {utils.t('tiles')}
+          </Btn> : null}
         {wallpaper && wallpaper.data !== -1 && wallpaper.id < 9000 && rightTab === 'wallpaper' ?
-        <Btn
-        onClick={() => themeStore.removeWallpaper(prefs.wallpaper)}
-        className="ntg-setting-btn pull-right">
-          {utils.t('remove')}
-        </Btn> : null}
+          <Btn
+          onClick={() => themeStore.removeWallpaper(prefs.wallpaper)}
+          className="ntg-setting-btn pull-right">
+            {utils.t('remove')}
+          </Btn> : null}
       </div>
     );
 
@@ -374,6 +374,11 @@ class Theming extends React.Component<ThemingProps, ThemingState> {
     this.wallpaperRef = ref;
   }
   getThemeNameEditInputRef = ref => this.themeNameEditInputRef = ref
+
+  hideTooltip = () => {
+    ReactTooltip.hide();
+  }
+
   render = () => {
     let p = this.props;
     let s = this.state;
@@ -402,8 +407,8 @@ class Theming extends React.Component<ThemingProps, ThemingState> {
           <Row>
             <Col size="12" className={css(styles.themeContainerStyle)} onMouseLeave={() => this.setState({themeHover: -1})}>
               {s.leftTab === 'custom' ?
-              <Row>
-                {s.savedThemes.length > 0 ? map(s.savedThemes, (theme, i) => {
+                <Row>
+                  {s.savedThemes.length > 0 ? map(s.savedThemes, (theme, i) => {
                   return (
                     <Row
                     key={i}
@@ -428,22 +433,22 @@ class Theming extends React.Component<ThemingProps, ThemingState> {
                       }}
                       onClick={s.themeLabel !== i && theme.id !== p.prefs.theme ? () => this.handleSelectTheme(theme) : null}>
                         {s.themeLabel === i ?
-                        <input
-                        ref={this.getThemeNameEditInputRef}
-                        type="text"
-                        value={s.themeLabelValue}
-                        className="form-control"
-                        style={{position: 'absolute', display: 'inline', height: '27px', width: '66%', top: `${i * 27}px`, left: '17px'}}
-                        placeholder={theme.label !== 'Custom Theme' ? theme.label : `${utils.t('label')}...`}
-                        onChange={(e)=>this.setState({themeLabelValue: e.target.value})}
-                        onKeyDown={(e)=>this.handleEnter(e, theme.id)} />
+                          <input
+                          ref={this.getThemeNameEditInputRef}
+                          type="text"
+                          value={s.themeLabelValue}
+                          className="form-control"
+                          style={{position: 'absolute', display: 'inline', height: '27px', width: '66%', top: `${i * 27}px`, left: '17px'}}
+                          placeholder={theme.label !== 'Custom Theme' ? theme.label : `${utils.t('label')}...`}
+                          onChange={(e)=>this.setState({themeLabelValue: e.target.value})}
+                          onKeyDown={(e)=>this.handleEnter(e, theme.id)} />
                         : theme.label}
                       </div>
                       <div className={css(styles.themeNameEditButtonContainerStyle)}>
                         {s.themeHover === i ?
                           <Btn
                           onClick={() => this.handleRemoveTheme(theme.id)}
-                          onMouseLeave={ReactTooltip.hide}
+                          onMouseLeave={this.hideTooltip}
                           className="ntg-session-btn"
                           faStyle={buttonIconStyle}
                           icon="trash" noIconPadding={true}
@@ -451,7 +456,7 @@ class Theming extends React.Component<ThemingProps, ThemingState> {
                         {s.themeHover === i ?
                           <Btn
                           onClick={() => this.handleToggleThemeNameEditInput(i)}
-                          onMouseLeave={ReactTooltip.hide}
+                          onMouseLeave={this.hideTooltip}
                           className="ntg-session-btn"
                           faStyle={buttonIconStyle}
                           icon={s.themeLabel === i ? 'cross' : 'pencil'}
@@ -461,10 +466,10 @@ class Theming extends React.Component<ThemingProps, ThemingState> {
                     </Row>
                   );
                 }) : null}
-              </Row> : null}
+                </Row> : null}
               {s.leftTab === 'tm5k' ?
-              <Row>
-                {map(this.standardThemes, (theme, i) => {
+                <Row>
+                  {map(this.standardThemes, (theme, i) => {
                   return (
                     <Row
                     key={i}
@@ -493,7 +498,7 @@ class Theming extends React.Component<ThemingProps, ThemingState> {
                     </Row>
                   );
                 })}
-              </Row> : null}
+                </Row> : null}
             </Col>
           </Row>
         </Col>
@@ -507,15 +512,15 @@ class Theming extends React.Component<ThemingProps, ThemingState> {
                     <a className={css(styles.tabLinkStyle)} onClick={() => this.setState({rightTab: 'color'})}>{utils.t('colorScheme')}</a>
                   </li>
                   {!s.isNewTheme && s.leftTab === 'custom' || s.leftTab === 'tm5k' && s.selectedTheme && s.selectedTheme !== undefined && s.selectedTheme.id !== 9000 ?
-                  <li className={css(styles.noPaddingStyle) + ` ${s.rightTab === 'wallpaper' ? 'active' : ''}`}>
-                    <a className={css(styles.tabLinkStyle)} onClick={() => this.setState({rightTab: 'wallpaper'})}>{utils.t('wallpaper')}</a>
-                  </li> : null}
+                    <li className={css(styles.noPaddingStyle) + ` ${s.rightTab === 'wallpaper' ? 'active' : ''}`}>
+                      <a className={css(styles.tabLinkStyle)} onClick={() => this.setState({rightTab: 'wallpaper'})}>{utils.t('wallpaper')}</a>
+                    </li> : null}
                 </ul>
               </div>
             </div>
             {s.rightTab === 'color' ?
-            <Row className={css(styles.colorPickerRowStyle)}>
-              {map(themeFields, (fields, q) => {
+              <Row className={css(styles.colorPickerRowStyle)}>
+                {map(themeFields, (fields, q) => {
                 return (
                   <Col
                   key={q}
@@ -537,13 +542,13 @@ class Theming extends React.Component<ThemingProps, ThemingState> {
                   </Col>
                 );
               })}
-            </Row> : null}
+              </Row> : null}
             {s.rightTab === 'wallpaper' ?
-            <Row fluid={true} className={css(styles.wallpaperRowStyle)}>
-              <Col
-              size="12"
-              className={css(styles.wallpaperColumnStyle)}>
-                {p.wallpapers.length > 0 ? map(_.uniqBy(_.orderBy(p.wallpapers, ['created'], ['desc']), 'id'), (wp, i) => {
+              <Row fluid={true} className={css(styles.wallpaperRowStyle)}>
+                <Col
+                size="12"
+                className={css(styles.wallpaperColumnStyle)}>
+                  {p.wallpapers.length > 0 ? map(_.uniqBy(_.orderBy(p.wallpapers, ['created'], ['desc']), 'id'), (wp, i) => {
                   let selectedWallpaper = p.wallpaper && wp.id === p.wallpaper.id;
                   return (
                     <div
@@ -561,10 +566,10 @@ class Theming extends React.Component<ThemingProps, ThemingState> {
                       margin: '8px',
                       border: selectedWallpaper ? `4px solid ${p.theme.darkBtnBg}` : 'initial',
                       cursor: 'pointer'}}>
-                        {selectedWallpaper ?
-                          <i
-                          className="icon-checkmark3"
-                          style={{
+                      {selectedWallpaper ?
+                        <i
+                        className="icon-checkmark3"
+                        style={{
                             position: 'relative',
                             top: '8px',
                             left: '37.5px',
@@ -572,12 +577,12 @@ class Theming extends React.Component<ThemingProps, ThemingState> {
                             color: '#FFF',
                             textShadow: '1px 2px #000',
                             fontSize: '36px'
-                          }} /> : null}
+                        }} /> : null}
                     </div>
                   );
                 }) : null}
-              </Col>
-            </Row> : null}
+                </Col>
+              </Row> : null}
           </Col>
         </Row>
       </div>

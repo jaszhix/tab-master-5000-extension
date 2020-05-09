@@ -23,7 +23,7 @@ export const setBlackList = function(domainsArr) {
   chrome.storage.sync.set({blacklist: _.uniq(domainsArr)});
 };
 
-export const getBlackList = function(cb) {
+export const getBlackList = function(cb: (blacklist: string[] | string) => void) {
   tryFn(() => {
     chrome.storage.sync.get('blacklist', (bl) => {
       if (bl && bl.blacklist) {

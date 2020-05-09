@@ -7,7 +7,7 @@
     "app/**/**/*.js",
     "test/**/*.ts",
     "types",
-    "webpack.config.js",
-    "gulpfile.babel.js"
+    "webpack.config.ts",
+    "gulpfile.ts"
   ]
 }

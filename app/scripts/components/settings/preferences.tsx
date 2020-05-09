@@ -149,11 +149,11 @@ class Blacklist extends React.Component<BlacklistProps, BlacklistState> {
     }
   }
   componentDidMount = () => {
-    getBlackList((blacklist = '') => {
+    getBlackList((blacklist) => {
       if (blacklist && blacklist.length > 0) {
-        blacklist = blacklist.join(' \n') + ' ';
+        blacklist = (blacklist as string[]).join(' \n') + ' ';
       }
-      this.setState({blacklistValue: blacklist});
+      this.setState({blacklistValue: blacklist as string});
     });
   }
   blacklistFieldChange = (e) => {
@@ -310,13 +310,13 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
             {utils.t('resetTileSize')}
           </Btn>
           {p.prefs.screenshot ?
-          <Btn
-          onClick={this.handleScreenshotClear}
-          className="ntg-setting-btn"
-          icon="trash"
-          faStyle={{paddingRight: '8px'}}>
-            {utils.t('clearScreenshotCache')}
-          </Btn> : null}
+            <Btn
+            onClick={this.handleScreenshotClear}
+            className="ntg-setting-btn"
+            icon="trash"
+            faStyle={{paddingRight: '8px'}}>
+              {utils.t('clearScreenshotCache')}
+            </Btn> : null}
           <Btn
           onClick={this.handleFaviconClear}
           className="ntg-setting-btn"
@@ -423,7 +423,7 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
       <div className="preferences">
         <Row>
           {s.aboutAddonsOpen ?
-          <p className="content-divider">{utils.t('addonsManagerHint')}</p> : null}
+            <p className="content-divider">{utils.t('addonsManagerHint')}</p> : null}
           <Col size="6">
             <Toggle
             theme={p.theme}
@@ -468,27 +468,27 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
             label={`${utils.t('trackMostUsed')} (BETA)`}
             data-tip={utils.t('trackMostUsedTip')} />
             {p.chromeVersion >= 54?
-            <Toggle
-            theme={p.theme}
-            onMouseEnter={() => this.handleToggle('autoDiscard')}
-            onClick={() => this.handleClick('autoDiscard')}
-            on={p.prefs.autoDiscard}
-            label={utils.t('autoDiscard')}
-            data-tip={utils.t('autoDiscardTip')}>
-              {p.prefs.autoDiscard ?
-              <div>
-                {`${utils.t('autoDiscardClearTime')}:`}
-                <select
-                className={/* css(styles.autoDiscardSelect) + */ ' form-control'}
-                placeholder={utils.t('time')}
-                value={`${p.prefs.autoDiscardTime < 1800000 ? '15' : p.prefs.autoDiscardTime < 3600000 ? '30' : autoDiscardTimeHourDivided} ${p.prefs.autoDiscardTime < 3600000 ? utils.t('minutes') : utils.t('hour')}${autoDiscardTimeHourDivided > 1 && p.prefs.autoDiscardTime >= 3600000 ? utils.t('s') : ''}`}
-                onChange={this.handleAutoDiscardTime}>
-                  {map(autoDiscardTimeOptions, (option, x) => {
+              <Toggle
+              theme={p.theme}
+              onMouseEnter={() => this.handleToggle('autoDiscard')}
+              onClick={() => this.handleClick('autoDiscard')}
+              on={p.prefs.autoDiscard}
+              label={utils.t('autoDiscard')}
+              data-tip={utils.t('autoDiscardTip')}>
+                {p.prefs.autoDiscard ?
+                  <div>
+                    {`${utils.t('autoDiscardClearTime')}:`}
+                    <select
+                    className={/* css(styles.autoDiscardSelect) + */ ' form-control'}
+                    placeholder={utils.t('time')}
+                    value={`${p.prefs.autoDiscardTime < 1800000 ? '15' : p.prefs.autoDiscardTime < 3600000 ? '30' : autoDiscardTimeHourDivided} ${p.prefs.autoDiscardTime < 3600000 ? utils.t('minutes') : utils.t('hour')}${autoDiscardTimeHourDivided > 1 && p.prefs.autoDiscardTime >= 3600000 ? utils.t('s') : ''}`}
+                    onChange={this.handleAutoDiscardTime}>
+                      {map(autoDiscardTimeOptions, (option, x) => {
                     return <option key={x}>{`${option} ${x >= 2 ? utils.t('hour') : utils.t('minute')}${option > 1 ? utils.t('s') : ''}`}</option>;
                   })}
-                </select>
-              </div> : null}
-            </Toggle> : null}
+                    </select>
+                  </div> : null}
+              </Toggle> : null}
             <Toggle
             theme={p.theme}
             onMouseEnter={() => this.handleToggle('animations')}
@@ -497,14 +497,14 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
             label={utils.t('animations')}
             data-tip={utils.t('animationsTip')}>
               {p.prefs.animations ?
-              <Toggle
-              theme={p.theme}
-              onMouseEnter={() => this.handleToggle('duplicate')}
-              onClick={() => this.handleClick('duplicate')}
-              on={p.prefs.duplicate}
-              child={true}
-              label={utils.t('duplicate')}
-              data-tip={utils.t('duplicateTip')} /> : null}
+                <Toggle
+                theme={p.theme}
+                onMouseEnter={() => this.handleToggle('duplicate')}
+                onClick={() => this.handleClick('duplicate')}
+                on={p.prefs.duplicate}
+                child={true}
+                label={utils.t('duplicate')}
+                data-tip={utils.t('duplicateTip')} /> : null}
             </Toggle>
             <Toggle
             theme={p.theme}

@@ -80,48 +80,48 @@ class Search extends React.Component<SearchProps> {
           </Col>
           <Col size={p.s.width <= 825 ? p.s.width <= 630 ? p.s.width <= 514 ? '2' : '4' : '6' : '8'} style={{float: 'right'}}>
             {p.s.search.length > 0 ?
-            <span
-            style={{color: p.theme.textFieldsPlaceholder}}
-            className="search-msg ntg-search-google-text">
-              {`${utils.t('pressEnterToSearch')} ${utils.t('google')}`}
-            </span> : null}
+              <span
+              style={{color: p.theme.textFieldsPlaceholder}}
+              className="search-msg ntg-search-google-text">
+                {`${utils.t('pressEnterToSearch')} ${utils.t('google')}`}
+              </span> : null}
             {p.s.topNavButton === 'newVersion' ?
-            <Btn
-            onClick={() => this.handleTopNavButtonClick(()=>chrome.runtime.reload())}
-            style={topNavButtonStyle}
-            className="ntg-sort-btn pull-right"
-            fa="rocket"
-            data-place="bottom"
-            data-tip={p.s.width <= 841 ? utils.t('newVersionAvailable') : null}>
-              {p.s.width <= 841 ? '' : utils.t('newVersionAvailable')}
-            </Btn> : null}
+              <Btn
+              onClick={() => this.handleTopNavButtonClick(()=>chrome.runtime.reload())}
+              style={topNavButtonStyle}
+              className="ntg-sort-btn pull-right"
+              fa="rocket"
+              data-place="bottom"
+              data-tip={p.s.width <= 841 ? utils.t('newVersionAvailable') : null}>
+                {p.s.width <= 841 ? '' : utils.t('newVersionAvailable')}
+              </Btn> : null}
             {p.s.topNavButton === 'versionUpdate' ?
-            <Btn
-            onClick={() => this.handleTopNavButtonClick(() => this.openAbout())}
-            style={topNavButtonStyle} className="ntg-sort-btn pull-right"
-            icon="info3" data-place="bottom"
-            data-tip={p.s.width <= 841 ? `${utils.t('updatedTo')} ${version}` : null}>
-              {p.s.width <= 841 ? '' : `${utils.t('updatedTo')} ${version}`}
-            </Btn> : null}
+              <Btn
+              onClick={() => this.handleTopNavButtonClick(() => this.openAbout())}
+              style={topNavButtonStyle} className="ntg-sort-btn pull-right"
+              icon="info3" data-place="bottom"
+              data-tip={p.s.width <= 841 ? `${utils.t('updatedTo')} ${version}` : null}>
+                {p.s.width <= 841 ? '' : `${utils.t('updatedTo')} ${version}`}
+              </Btn> : null}
             {p.s.topNavButton === 'installed' ?
-            <Btn
-            onClick={() => this.handleTopNavButtonClick(() => this.openAbout())}
-            style={topNavButtonStyle}
-            className="ntg-sort-btn pull-right"
-            fa="thumbs-o-up"
-            data-place="bottom"
-            data-tip={p.s.width <= 841 ? utils.t('thankYouForInstallingTM5K') : null}>
-              {p.s.width <= 841 ? '' : utils.t('thankYouForInstallingTM5K')}
-            </Btn> : null}
+              <Btn
+              onClick={() => this.handleTopNavButtonClick(() => this.openAbout())}
+              style={topNavButtonStyle}
+              className="ntg-sort-btn pull-right"
+              fa="thumbs-o-up"
+              data-place="bottom"
+              data-tip={p.s.width <= 841 ? utils.t('thankYouForInstallingTM5K') : null}>
+                {p.s.width <= 841 ? '' : utils.t('thankYouForInstallingTM5K')}
+              </Btn> : null}
             {p.topLoad ? <Loading top={true} /> : null}
             {p.s.topNavButton === 'dlFavicons' && p.topLoad ?
-            <div>
-              <p
-              className="tm5k-info pull-right"
-              style={{color: p.theme.darkBtnText, textShadow: `2px 2px ${p.theme.darkBtnTextShadow}`, position: 'relative', top: '2px', marginRight: '8px'}}>
-                {p.s.width <= 841 ? '' : utils.t('downloadingAndCachingFavicons')}
-              </p>
-            </div> : null}
+              <div>
+                <p
+                className="tm5k-info pull-right"
+                style={{color: p.theme.darkBtnText, textShadow: `2px 2px ${p.theme.darkBtnTextShadow}`, position: 'relative', top: '2px', marginRight: '8px'}}>
+                  {p.s.width <= 841 ? '' : utils.t('downloadingAndCachingFavicons')}
+                </p>
+              </div> : null}
           </Col>
         </Row>
       </div>
