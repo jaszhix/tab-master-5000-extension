@@ -1,0 +1,9 @@
+- Steven Memel
+- Aleksejs Spiridonovs
+- Alex Dorey
+- Joel Zipkin
+- reset77
+- Martin Lichtblau
+- volcano99
+- [Google](https://google.com)
+- [Mozilla](https://mozilla.org)

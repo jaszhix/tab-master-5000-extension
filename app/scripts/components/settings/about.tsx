@@ -14,7 +14,8 @@ interface ContributeProps {
 }
 
 interface ContributeState {
-  content: {__html: string}
+  contributorsList: {__html: string};
+  contributeContent: {__html: string};
 }
 
 class Contribute extends React.Component<ContributeProps, ContributeState> {
@@ -22,57 +23,63 @@ class Contribute extends React.Component<ContributeProps, ContributeState> {
     super(props);
 
     this.state = {
-      content: null
+      contributorsList: null,
+      contributeContent: null,
     };
   }
 
-  componentDidMount() {
-    let promise;
+  async componentDidMount() {
+    let {chromeVersion} = this.props;
+    let module: NodeModule;
+    let contributorsList: string;
+    let contributeContent: string;
     let locale = chrome.i18n.getUILanguage();
 
-    if (locale === 'es') {
-      // @ts-ignore
-      promise = import(/* webpackChunkName: "contribute_es" */ 'html-loader!markdown-loader!../../../../contribute_es.md');
-    } else {
-      // @ts-ignore
-      promise = import(/* webpackChunkName: "contribute_en" */ 'html-loader!markdown-loader!../../../../contribute.md');
+    // @ts-ignore
+    module = await import(/* webpackChunkName: "contributors" */ 'html-loader!markdown-loader!../../../../contributors.md');
+
+    contributorsList = module.default as string;
+
+    switch (locale) {
+      case 'es':
+        // @ts-ignore
+        module = await import(/* webpackChunkName: "contribute_es" */ 'html-loader!markdown-loader!../../../../contribute_es.md');
+        break;
+      default:
+        // @ts-ignore
+        module = await import(/* webpackChunkName: "contribute_en" */ 'html-loader!markdown-loader!../../../../contribute.md');
+        break;
     }
 
-    promise
-      .then((module) => {
-        let __html = module.default;
+    contributeContent = module.default as string;
 
-        if (this.props.chromeVersion === 1) {
-          __html = __html
-            .replace(/Chrome Web Store/g, 'Add-ons website')
-            .replace(/Chrome/g, 'Firefox');
-        }
+    contributorsList = contributorsList
+      .replace(/">/g, '" target="_blank" rel="noreferrer noopener">');
 
-        this.setState({content: {__html}})
-      })
-      .catch((e) => console.log(e))
+    if (chromeVersion === 1) {
+      contributeContent = contributeContent
+        .replace(/Chrome Web Store/g, 'Add-ons website')
+        .replace(/Chrome/g, 'Firefox');
+    }
+
+    this.setState({
+      contributorsList: {__html: contributorsList},
+      contributeContent: {__html: contributeContent},
+    });
   };
 
   render() {
+    const {contributorsList, contributeContent} = this.state;
+
     return (
       <div style={containerStyle}>
-        <Col size="2" className="ntg-release">
+        <Col size="3" className="ntg-release">
           <h4>{utils.t('specialThanks')}</h4>
-          <ul>
-            <li>Alex Dorey</li>
-            <li>Joel Zipkin</li>
-            <li>reset77</li>
-            <li>Martin Lichtblau</li>
-            <li>volcano99</li>
-            <li><Link href="https://trackjs.com" target="_blank">TrackJS</Link></li>
-            <li><Link href="https://google.com" target="_blank">Google</Link></li>
-            <li><Link href="https://mozilla.org" target="_blank">Mozilla</Link></li>
-          </ul>
+          {contributorsList ? <div dangerouslySetInnerHTML={contributorsList} /> : null}
         </Col>
-        <Col size="1" />
         <Col size="9" className="ntg-release">
           <h4>{utils.t('contributeHeader')}</h4>
-          {this.state.content ? <div dangerouslySetInnerHTML={this.state.content} /> : null}
+          {contributeContent ? <div dangerouslySetInnerHTML={contributeContent} /> : null}
           <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
             <input type="hidden" name="cmd" value="_s-xclick" />
             <input type="hidden" name="hosted_button_id" value="HDU6KR5LLBYUU" />
@@ -235,7 +242,7 @@ class Attribution extends React.Component<AttributionProps, AttributionState> {
       <div style={containerStyle}>
         <h3 className="content-divider" style={{fontSize: '19px'}}>{utils.t('attributionHeader')}</h3>
         <Row>
-        {map(list, (slice, s) => {
+          {map(list, (slice, s) => {
           return (
             <Col key={s} size="4">
               <ul>

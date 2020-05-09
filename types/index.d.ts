@@ -57,6 +57,7 @@ declare global {
 
   interface NodeModule {
     hot?: any;
+    default?: unknown;
   }
 
   interface VisibleRange {
