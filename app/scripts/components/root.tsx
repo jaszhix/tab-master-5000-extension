@@ -1,10 +1,13 @@
 import moment from 'moment';
 moment.locale(chrome.i18n.getUILanguage());
 import state from './stores/state';
+
 if (!state.isOptions) {
   let startupP: HTMLElement = document.querySelector('.startup-text-wrapper > .startup-p');
+
   if (startupP) startupP.innerText = moment().format('h:mm A');
 }
+
 import React from 'react';
 import ReactTooltip from 'react-tooltip';
 import _ from 'lodash';
@@ -37,8 +40,10 @@ let ModalHandler = AsyncComponent({
 } as LoadableExport.Options<unknown, object>) as React.ComponentClass<ModalHandlerProps, ModalHandlerState>;
 
 window.tmWorker = new tmWorker();
+
 window.tmWorker.onmessage = (e) => {
   console.log('WORKER: ', e.data);
+
   if (e.data.favicons) {
     chrome.storage.local.set({favicons: e.data.favicons}, () => {
       console.log('favicons saved');
@@ -52,11 +57,13 @@ window.tmWorker.onmessage = (e) => {
     setFavicon(e.data.args[0]);
   } else if (e.data.stateUpdate) {
     let init = state.get('init');
+
     if (!init) {
       e.data.stateUpdate.init = true;
       v('section').remove();
       console.timeEnd('init');
     }
+
     tryFn(() => state.set(e.data.stateUpdate));
   }
 }
@@ -68,8 +75,6 @@ interface RootProps {
 interface RootState {
   init: boolean;
   grid: boolean;
-  window: boolean;
-  screenshots: any[];
 }
 
 class Root extends React.Component<RootProps, RootState> {
@@ -83,8 +88,6 @@ class Root extends React.Component<RootProps, RootState> {
     this.state = {
       init: true,
       grid: true,
-      window: true,
-      screenshots: []
     };
     this.connections = [
       themeStore.connect('*', onThemeChange),
@@ -92,9 +95,11 @@ class Root extends React.Component<RootProps, RootState> {
         if (!this.props.s.modeKey) {
           return;
         }
+
         if (this.sort === partial.sort && this.direction === partial.direction) {
           return;
         }
+
         this.sort = partial.sort;
         this.direction = partial.direction;
         window.tmWorker.postMessage({
@@ -115,7 +120,9 @@ class Root extends React.Component<RootProps, RootState> {
             handleMode(this.props.s.prefs.mode);
             return;
           }
+
           let modeKey = this.props.s.prefs.mode === 'sessions' ? 'sessionTabs' : this.props.s.prefs.mode;
+
           window.tmWorker.postMessage({
             msg: {
               query: partial.search,
@@ -127,6 +134,7 @@ class Root extends React.Component<RootProps, RootState> {
           if (partial.modeKey === 'searchCache') {
             return;
           }
+
           state.set({search: '', searchCache: []});
         },
         folder: (partial) => {
@@ -140,32 +148,39 @@ class Root extends React.Component<RootProps, RootState> {
           for (let i = 0, len = tabs.length; i < len; i++) {
             chrome.tabs.move(tabs[i].id, {index: i});
           }
+
           state.set({applyTabOrder: false});
 
         }
       })
     ];
   }
+
   componentDidMount = () => {
     // Initialize Reflux listeners.
     themeStore.load(this.props.s.prefs);
     this.init(this.props);
 
   }
+
   componentWillUnmount = () => {
     const [themeStoreConnection, ...connections] = this.connections;
+
     themeStore.disconnect(themeStoreConnection);
     each(connections, connection => state.disconnect(connection));
   }
+
   init = (p) => {
     getWindowId().then(() => {
       getSessions();
       getTabs(true);
+
       if (p.s.prefs.screenshot) {
         getScreenshots().then((screenshots) => {
           state.set({screenshots: screenshots});
         });
       }
+
       if (p.s.prefs.actions) {
         getActions().then((actions) => {
           state.set({actions: actions});
@@ -176,14 +191,17 @@ class Root extends React.Component<RootProps, RootState> {
 
   updateTabState = (e, opt, sU=null) => {
     let p = this.props;
+
     console.log('updateTabState: ', e);
     let stateUpdate: Partial<GlobalState> = {};
+
     if (opt === 'folder') {
       if (e) {
         stateUpdate[p.s.modeKey] = filter(p.s[p.s.modeKey], function(item) {
           if (p.s.prefs.mode === 'bookmarks') {
             return item.folder === e;
           }
+
           return item.originSession === e;
         });
         stateUpdate.tileCache = p.s[p.s.modeKey];
@@ -192,6 +210,7 @@ class Root extends React.Component<RootProps, RootState> {
         stateUpdate[p.s.modeKey] = p.s.tileCache;
         stateUpdate.tileCache = null;
       }
+
       if (sU) {
         _.assignIn(sU, stateUpdate);
         return sU;
@@ -208,10 +227,12 @@ class Root extends React.Component<RootProps, RootState> {
         state.set({tabs: p.s.tabs});
       }
     }
+
     if (p.s.prefs.mode !== 'tabs' && p.s.prefs.mode !== 'sessions') {
       handleMode(p.s.prefs.mode);
     }
   }
+
   render = () => {
     let s = this.state;
     let p = this.props;
@@ -223,86 +244,84 @@ class Root extends React.Component<RootProps, RootState> {
     return (
       <div className="container-main">
         {p.s.isOptions ?
-        <Preferences
-        options={true}
-        prefs={p.s.prefs}
-        theme={p.s.theme} />
+          <Preferences
+            options={true}
+            prefs={p.s.prefs}
+            theme={p.s.theme}
+          />
         :
-        <div>
-          {p.s.context.value ?
-          <ContextMenu
-          actions={p.s.actions}
-          tabs={p.s[p.s.prefs.mode] as TabCollection}
-          prefs={p.s.prefs}
-          context={p.s.context}
-          duplicateTabs={p.s.duplicateTabs}
-          theme={p.s.theme}
-          chromeVersion={p.s.chromeVersion} /> : null}
-          {p.s.modal ?
-          <ModalHandler
-          modal={p.s.modal}
-          tabs={p.s.tabs}
-          allTabs={p.s.allTabs}
-          sessions={p.s.sessions}
-          prefs={p.s.prefs}
-          favicons={p.s.favicons}
-          collapse={p.s.collapse}
-          theme={p.s.theme}
-          colorPickerOpen={p.s.colorPickerOpen}
-          savedThemes={p.s.savedThemes}
-          wallpaper={p.s.currentWallpaper}
-          wallpapers={p.s.wallpapers}
-          settings={p.s.settings}
-          width={p.s.width}
-          height={p.s.height}
-          chromeVersion={p.s.chromeVersion} /> : null}
-          <Sidebar
-          sessionsExist={p.s.sessions.length > 0}
-          enabled={p.s.sidebar}
-          prefs={p.s.prefs}
-          allTabs={p.s.allTabs}
-          labels={labels}
-          keys={keys}
-          sort={p.s.sort}
-          direction={p.s.direction}
-          theme={p.s.theme}
-          disableSidebarClickOutside={p.s.disableSidebarClickOutside}
-          chromeVersion={p.s.chromeVersion} />
-          <div
-          className="tile-container"
-          style={{
-            filter: p.s.modal && p.s.modal.state && p.s.settings !== 'theming' ? `blur(${p.s.prefs.screenshotBgBlur}px)` : 'initial',
-            transition: 'filter 0.2s'
-          }}>
-            <Search
-            s={p.s}
-            topLoad={p.s.topLoad}
-            theme={p.s.theme}  />
-            <div style={{
-              position: 'absolute',
-              left: p.s.prefs.format === 'tile' ? '5px' : '0px',
-              right: p.s.prefs.format === 'tile' ? '5px' : '0px',
-              margin: '0px auto',
-              width: `${p.s.width}px`,
-              top: p.s.prefs.format === 'tile' ? '57px' : '51px'
-            }}>
-              {s.grid && p.s[p.s.modeKey] ?
-              <ItemsContainer
-              s={p.s}
-              init={s.init}
+          <>
+            {p.s.context.value ?
+              <ContextMenu
+                actions={p.s.actions}
+                tabs={p.s[p.s.prefs.mode] as TabCollection}
+                prefs={p.s.prefs}
+                context={p.s.context}
+                duplicateTabs={p.s.duplicateTabs}
+                theme={p.s.theme}
+                chromeVersion={p.s.chromeVersion}
+              /> : null}
+            {p.s.modal ?
+              <ModalHandler
+                modal={p.s.modal}
+                tabs={p.s.tabs}
+                allTabs={p.s.allTabs}
+                sessions={p.s.sessions}
+                prefs={p.s.prefs}
+                favicons={p.s.favicons}
+                collapse={p.s.collapse}
+                theme={p.s.theme}
+                colorPickerOpen={p.s.colorPickerOpen}
+                savedThemes={p.s.savedThemes}
+                wallpaper={p.s.currentWallpaper}
+                wallpapers={p.s.wallpapers}
+                settings={p.s.settings}
+                width={p.s.width}
+                height={p.s.height}
+                chromeVersion={p.s.chromeVersion}
+              /> : null}
+            <Sidebar
+              sessionsExist={p.s.sessions.length > 0}
+              enabled={p.s.sidebar}
+              prefs={p.s.prefs}
+              allTabs={p.s.allTabs}
+              labels={labels}
+              keys={keys}
+              sort={p.s.sort}
+              direction={p.s.direction}
               theme={p.s.theme}
-              wallpaper={p.s.currentWallpaper} />
+              disableSidebarClickOutside={p.s.disableSidebarClickOutside}
+              chromeVersion={p.s.chromeVersion}
+            />
+            <div
+              className="tile-container"
+              style={{
+              filter: p.s.modal && p.s.modal.state && p.s.settings !== 'theming' ? `blur(${p.s.prefs.screenshotBgBlur}px)` : 'initial',
+              transition: 'filter 0.2s'
+              }}>
+              <Search
+                s={p.s}
+                topLoad={p.s.topLoad}
+                theme={p.s.theme}
+              />
+              {s.grid && p.s[p.s.modeKey] ?
+                <ItemsContainer
+                  s={p.s}
+                  init={s.init}
+                  theme={p.s.theme}
+                  wallpaper={p.s.currentWallpaper}
+                />
               : <Loading />}
+              {p.s.modal && !p.s.modal.state && p.s.prefs.tooltip ?
+                <ReactTooltip
+                  effect="solid"
+                  place="bottom"
+                  multiline={true}
+                  html={true}
+                  offset={{top: 0, left: 6}}
+                /> : null}
             </div>
-            {p.s.modal && !p.s.modal.state && p.s.prefs.tooltip ?
-            <ReactTooltip
-            effect="solid"
-            place="bottom"
-            multiline={true}
-            html={true}
-            offset={{top: 0, left: 6}} /> : null}
-          </div>
-        </div>}
+          </>}
         {p.s.prefs.alerts ? <Alert enabled={p.s.prefs.alerts} alert={p.s.alert} /> : null}
       </div>
     );

@@ -7,6 +7,7 @@
 
 body {
   overflow-x: hidden;
+  overflow-y: hidden;
 }
 
 #main {
@@ -406,9 +407,7 @@ div.row.ntg-tile-row-top > div.col-xs-3 > div > i {
 tr.placeholder {
   background: rgb(255, 240, 120);
 }
-tr.placeholder:before {
-  content: 'Drop here';
-}
+
 .table > thead {
   transition: background-color 0.2s;
 }
@@ -416,6 +415,16 @@ tr.placeholder:before {
 .table > thead > th {
   width: auto;
   transition: width 2s;
+}
+
+.datatable-scroll-wrap {
+  overflow-x: hidden;
+}
+
+.placeholder {
+  td {
+    margin-top: 0px;
+  }
 }
 
 .theming,
