@@ -8,7 +8,6 @@ import state from './stores/state';
 import {themeStore} from './stores/theme';
 
 import {Panel} from './bootstrap';
-import style from './style';
 import {unref, sanitizeTitle} from './utils';
 import * as utils from './stores/tileUtils';
 
@@ -194,15 +193,6 @@ class Tile extends React.Component<TileProps, TileState> {
   render = () => {
     let s = this.state;
     let p = this.props;
-
-    style.ssIconBg = _.cloneDeep(_.assignIn(style.ssIconBg, {
-      backgroundColor: p.theme.tileButtonBg
-    }));
-    style.ssPinnedIconBg = _.cloneDeep(_.assignIn(style.ssPinnedIconBg, {
-      color: p.theme.tilePinned,
-      backgroundColor: p.theme.tileButtonBg
-    }));
-
     let titleFontSize = p.tab.title.length >= 115 ? 13 : 14;
     let hasDiscarded = p.chromeVersion >= 54; // should be in parent
     let openTab = p.tab.hasOwnProperty('openTab') && p.tab.openTab;
@@ -233,7 +223,6 @@ class Tile extends React.Component<TileProps, TileState> {
         top: `${p.prefs.tabSizeHeight - 55}px`,
         cursor: p.prefs.mode === 'sessions' || p.prefs.mode === 'bookmarks' ? 'pointer' : 'default'
       }, subTitleStyle) as unknown as CSSProperties,
-
       panelContainer: {
         position: 'relative',
         display: s.render ? 'block' : 'none',
@@ -255,7 +244,6 @@ class Tile extends React.Component<TileProps, TileState> {
         animationDuration: s.duplicate ? '5s' : '0.2s',
         cursor: 'pointer'
       },
-
       panelBody: {
         height: s.hover ? `18px` : `${p.prefs.tabSizeHeight - 40}px`,
         width: p.prefs.tabSizeHeight+80,
@@ -271,7 +259,6 @@ class Tile extends React.Component<TileProps, TileState> {
         zIndex: s.hover ? 2 : 1,
         cursor: 'pointer'
       },
-
       panelFooter: {
         backgroundColor: s.hover ? p.theme.tileBgHover : p.theme.tileBg,
         borderBottomRightRadius: '2px',
@@ -304,7 +291,6 @@ class Tile extends React.Component<TileProps, TileState> {
         transition: p.prefs.animations ? 'white-space 0.1s' : 'initial',
         color: themeStore.opacify(p.theme.tileText, 0.8)
       },
-      // @ts-ignore
       panelHeading: {
         width: `${p.prefs.tabSizeHeight + 80}px`,
         padding: '0px',
@@ -315,7 +301,6 @@ class Tile extends React.Component<TileProps, TileState> {
         transition: p.prefs.animations ? 'opacity 0.2s, background-color 0.1s' : 'initial',
         cursor: 'default'
       },
-      // @ts-ignore
       titleContainer: {
         color: p.theme.tileText,
         fontSize: '70px',
@@ -336,7 +321,6 @@ class Tile extends React.Component<TileProps, TileState> {
         cursor: 'pointer',
         position: 'relative'
       },
-      // @ts-ignore
       muteIcon: {
         color: s.mHover ? p.tab.audible ? p.theme.tileMuteAudibleHover : p.theme.tileMuteHover : p.tab.audible ? p.theme.tileMuteAudible : p.theme.tileMute,
         opacity: s.hover || p.tab.mutedInfo.muted || p.tab.audible ? 1 : 0,
@@ -344,15 +328,13 @@ class Tile extends React.Component<TileProps, TileState> {
         right: '2px',
         fontSize: '13.5px'
       },
-      // @ts-ignore
       pinIcon: {
-        color: s.pHover ? p.theme.tilePinHover : p.theme.tilePin,
+        color: s.pHover ? p.theme.tilePinHover : p.tab.pinned ? p.theme.tilePinned : p.theme.tilePin,
         opacity: s.hover || p.tab.pinned ? 1 : 0,
         top: '2px',
         right: '2px',
         fontSize: '12px'
       },
-      // @ts-ignore
       closeIcon: {
         color: s.xHover ? p.theme.tileXHover : p.theme.tileX,
         opacity: s.hover ? 1 : 0,
@@ -360,7 +342,6 @@ class Tile extends React.Component<TileProps, TileState> {
         right: isTab ? 'initial' : '0px',
         fontSize: isTab ? '16px' : '12px'
       },
-      // @ts-ignore
       offlineEnabledIcon: {
         color: s.pHover ? p.theme.tilePinHover : p.theme.tilePin,
         opacity: p.tab.offlineEnabled ? 1 : 0,
@@ -368,7 +349,6 @@ class Tile extends React.Component<TileProps, TileState> {
         right: '2px',
         fontSize: '12px'
       },
-      // @ts-ignore
       homepageIcon: {
         color: s.xHover ? p.theme.tileXHover : p.theme.tileX,
         opacity: s.hover ? 1 : 0,

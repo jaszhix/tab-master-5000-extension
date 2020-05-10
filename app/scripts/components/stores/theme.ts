@@ -15,7 +15,7 @@ const defaultTheme: Theme = {
   textFieldsText: 'rgba(85, 85, 85, 1)',
   textFieldsBorder: 'rgba(204, 204, 204, 1)',
   settingsBg: 'rgba(255, 255, 255, 1)',
-  settingsItemHover: 'rgba(249, 249, 249, 1)',
+  settingsItemHover: 'rgba(226, 226, 226, 1)',
   headerBg: 'rgba(237, 237, 237, 0.8)',
   bodyBg: 'rgba(255, 255, 255, 0.75)',
   bodyText: 'rgba(51, 51, 51, 1)',
@@ -159,7 +159,7 @@ const leafy: Theme = {
   textFieldsText: 'rgba(39, 51, 28, 1)',
   textFieldsBorder: 'rgba(167, 189, 108, 0.31)',
   settingsBg: 'rgba(158, 189, 134, 1)',
-  settingsItemHover: 'rgba(192, 219, 167, 0.29)',
+  settingsItemHover: 'rgba(185, 212, 164, 0.72)',
   headerBg: 'rgba(58, 92, 32, 0.8)',
   bodyBg: 'rgba(158, 189, 134, 1)',
   bodyText: 'rgba(39, 51, 28, 1)',
@@ -261,41 +261,77 @@ const forestGreen: Theme = {
   tileX: "rgba(124, 128, 110, 1)",
   tileXHover: "rgba(124, 128, 110, 1)"
 };
+const blueOut: Theme = {
+  bodyBg: 'rgba(12, 15, 19, 1)',
+  bodyText: 'rgba(230, 234, 238, 1)',
+  darkBtnBg: 'rgba(15, 36, 51, 1)',
+  darkBtnBgHover: 'rgba(16, 42, 59, 1)',
+  darkBtnText: 'rgba(241, 241, 241, 1)',
+  darkBtnTextShadow: 'rgba(0, 0, 0, 1)',
+  headerBg: 'rgba(0, 0, 0, 1)',
+  lightBtnBg: 'rgba(20, 31, 39, 1)',
+  lightBtnBgHover: 'rgba(24, 37, 48, 1)',
+  lightBtnText: 'rgba(223, 222, 222, 1)',
+  lightBtnTextShadow: 'rgba(0, 0, 0, 1)',
+  settingsBg: 'rgba(7, 11, 14, 1)',
+  settingsItemHover: 'rgba(158, 200, 231, 0.16)',
+  textFieldsBg: 'rgba(63, 76, 87, 1)',
+  textFieldsBorder: 'rgba(50, 62, 73, 1)',
+  textFieldsPlaceholder: 'rgba(156, 184, 209, 0.44)',
+  textFieldsText: 'rgb(255, 255, 255)',
+  tileBg: 'rgba(20, 27, 36, 1)',
+  tileBgHover: 'rgba(39, 48, 63, 1)',
+  tileButtonBg: 'rgba(148, 180, 207, 1)',
+  tileMove: 'rgba(51, 51, 51, 1)',
+  tileMoveHover: 'rgba(0, 0, 0, 1)',
+  tileMute: 'rgba(177, 188, 197, 1)',
+  tileMuteAudible: 'rgba(148, 180, 207, 1)',
+  tileMuteAudibleHover: 'rgba(180, 221, 255, 1)',
+  tileMuteHover: 'rgba(194, 208, 219, 1)',
+  tilePin: 'rgba(177, 188, 197, 1)',
+  tilePinHover: 'rgba(194, 208, 219, 1)',
+  tilePinned: 'rgba(148, 180, 207, 1)',
+  tileShadow: 'rgba(255, 255, 255, 0)',
+  tileText: 'rgba(201, 209, 216, 1)',
+  tileTextShadow: 'rgba(51, 51, 51, 0)',
+  tileX: 'rgba(177, 188, 197, 1)',
+  tileXHover: 'rgba(194, 208, 219, 1)'
+};
 const redmondFlat: Theme = {
-  bodyBg: 'rgba(5, 178, 252, 0.99)',
+  bodyBg: 'rgba(5, 178, 252, 1)',
   bodyText: 'rgba(51, 51, 51, 1)',
-  darkBtnBg: 'rgba(0, 5, 10, 0.99)',
+  darkBtnBg: 'rgba(0, 5, 10, 1)',
   darkBtnBgHover: 'rgba(41, 144, 204, 0.75)',
   darkBtnText: 'rgba(255, 255, 255, 1)',
   darkBtnTextShadow: 'rgba(0, 0, 0, 0)',
-  headerBg: 'rgba(0, 5, 10, 0.99)',
+  headerBg: 'rgba(0, 5, 10, 1)',
   lightBtnBg: 'rgba(255, 255, 255, 1)',
   lightBtnBgHover: 'rgba(250, 250, 250, 0.9)',
   lightBtnText: 'rgba(0, 0, 0, 1)',
   lightBtnTextShadow: 'rgba(255, 255, 255, 0.01)',
   settingsBg: 'rgb(255, 255, 255)',
-  settingsItemHover: 'rgba(250, 250, 250, 0.9)',
+  settingsItemHover: 'rgba(201, 201, 201, 0.52)',
   textFieldsBg: 'rgb(41, 144, 204)',
   textFieldsBorder: 'rgba(255, 255, 252, 0.98)',
   textFieldsPlaceholder: 'rgba(255, 255, 255, 0.85)',
   textFieldsText: 'rgb(255, 255, 255)',
   tileBg: 'rgba(255, 255, 255, 0.97)',
-  tileBgHover: 'rgba(231, 232, 230, 0.99)',
+  tileBgHover: 'rgba(231, 232, 230, 1)',
   tileButtonBg: 'rgb(232, 70, 83)',
   tileMove: 'rgba(51, 51, 51, 1)',
   tileMoveHover: 'rgba(0, 0, 0, 1)',
   tileMute: 'rgb(0, 0, 0)',
-  tileMuteAudible: 'rgba(232, 70, 83, 0.99)',
-  tileMuteAudibleHover: 'rgba(75, 74, 69, 0.99)',
-  tileMuteHover: 'rgba(75, 74, 69, 0.99)',
-  tilePin: 'rgba(0, 0, 0, 0.99)',
-  tilePinHover: 'rgba(75, 74, 69, 0.99)',
-  tilePinned: 'rgba(232, 70, 83, 0.99)',
+  tileMuteAudible: 'rgba(232, 70, 83, 1)',
+  tileMuteAudibleHover: 'rgba(75, 74, 69, 1)',
+  tileMuteHover: 'rgba(75, 74, 69, 1)',
+  tilePin: 'rgba(0, 0, 0, 1)',
+  tilePinHover: 'rgba(75, 74, 69, 1)',
+  tilePinned: 'rgba(232, 70, 83, 1)',
   tileShadow: 'rgba(255, 255, 255, 0.01)',
-  tileText: 'rgba(0, 0, 0, 0.99)',
+  tileText: 'rgba(0, 0, 0, 1)',
   tileTextShadow: 'rgba(51, 51, 51, 0)',
-  tileX: 'rgba(0, 0, 0, 0.99)',
-  tileXHover: 'rgba(75, 74, 69, 0.99)'
+  tileX: 'rgba(0, 0, 0, 1)',
+  tileXHover: 'rgba(75, 74, 69, 1)'
 };
 
 const highRise: Theme = {
@@ -425,6 +461,15 @@ const themeStore = <ThemeStore>init({
       label: 'Forest Green',
       theme: forestGreen,
       wallpaper: 9004
+    },
+    {
+      id: 9009,
+      created: -1,
+      modified: now,
+      camel: 'blueOut',
+      label: 'Blue Out',
+      theme: blueOut,
+      wallpaper: -1
     },
     {
       id: 9007,
@@ -866,7 +911,29 @@ const onThemeChange = (e) => {
     let sessionFieldColor = themeStore.balance(e.theme.settingsBg);
     let vendor = chromeVersion > 1 ? 'webkit' : 'moz';
     let inputPlaceholder = chromeVersion > 1 ? `${vendor}-input` : vendor;
+    let scrollbarHoverColor = tc(e.theme.settingsItemHover).darken(2);
+
     innerHTML = `
+    ::-webkit-scrollbar-track {
+      -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.4);
+      background-color: ${e.theme.settingsBg};
+    }
+    ::-webkit-scrollbar {
+      width: 10px;
+      background-color: ${e.theme.settingsItemHover};
+    }
+    ::-webkit-scrollbar:hover {
+      width: 10px;
+      background-color: ${scrollbarHoverColor};
+    }
+    ::-webkit-scrollbar-thumb {
+      background-color: ${tc(e.theme.settingsItemHover).lighten(10)};
+      border: 1px solid ${e.theme.settingsItemHover};
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background-color: ${scrollbarHoverColor};
+      border: 1px solid ${scrollbarHoverColor};
+    }
     a, a:focus, a:hover {
       color: ${themeStore.opacify(e.theme.bodyText, 0.9)};
     }
