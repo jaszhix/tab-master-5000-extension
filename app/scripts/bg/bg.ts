@@ -1,4 +1,5 @@
 /// <reference path="../../../types/index.d.ts" />
+import {browser} from 'webextension-polyfill-ts';
 chrome.runtime.setUninstallURL('https://docs.google.com/forms/d/e/1FAIpQLSeNuukS1pTpeZgtMgE-xg0o1R-b5br-JdWJE7I2SfXMOdfjUQ/viewform');
 import _ from 'lodash';
 import v from 'vquery';
@@ -344,7 +345,7 @@ class Bg {
     }
   }
 
-  attachListeners = (state) => {
+  attachListeners = async (state) => {
     let s = this.state.init ? state : this.state;
 
     /*
@@ -360,14 +361,14 @@ class Bg {
       if (eventState.onInstalled.reason === 'update' || eventState.onInstalled.reason === 'install') {
         let instances = [];
 
-        chrome.tabs.query({title: 'New Tab'}, (tabs) => {
-          for (let i = 0, len = tabs.length; i < len; i++) {
-            instances.push([tabs[i].active, tabs[i].windowId]);
-            chrome.tabs.remove(tabs[i].id);
-          }
+        let tabs = await browser.tabs.query({title: 'New Tab'});
 
-          this.handleNewTabsOnInit(instances);
-        });
+        for (let i = 0, len = tabs.length; i < len; i++) {
+          instances.push([tabs[i].active, tabs[i].windowId]);
+          await browser.tabs.remove(tabs[i].id);
+        }
+
+        await this.handleNewTabsOnInit(instances);
       }
     }
 
@@ -536,24 +537,20 @@ class Bg {
     });
   }
 
-  handleNewTabsOnInit = (instances, i = 0) => {
-    let [active, windowId] = instances[i];
+  handleNewTabsOnInit = async (instances) => {
+    await browser.storage.local.remove('favicons');
 
-    setTimeout(() => {
-      chrome.tabs.create({active, windowId}, (tab) => {
-        if (instances[i + 1] != null) {
-          this.handleNewTabsOnInit(instances, i + 1);
-        } else {
-          setTimeout(() => {
-            if (eventState.onInstalled.reason === 'install') {
-              sendMsg({e: eventState.onInstalled, type: 'appState', action: 'installed'});
-            } else if (eventState.onInstalled.reason === 'update') {
-              sendMsg({e: eventState.onInstalled, type: 'appState', action: 'versionUpdate'});
-            }
-          }, 1000);
-        }
-      });
-    }, 500);
+    each(instances, async (instance) => {
+      let [active, windowId] = instance;
+
+      await browser.tabs.create({active, windowId});
+    });
+
+    if (eventState.onInstalled.reason === 'install') {
+      sendMsg({e: eventState.onInstalled, type: 'appState', action: 'installed'});
+    } else if (eventState.onInstalled.reason === 'update') {
+      sendMsg({e: eventState.onInstalled, type: 'appState', action: 'versionUpdate'});
+    }
   }
 
   attachMessageListener = (s) => {

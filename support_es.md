@@ -29,3 +29,7 @@ Intente deshabilitar capturas de pantalla, animaciones, sincronización de sesio
 **La extensión se estrelló.**
 
 Esto está relacionado con la API de captura de pantalla. Mientras se están probando las correcciones, se recomienda desactivar la captura de pantalla si esto le está sucediendo.
+
+**Los favicons no se muestran.**
+
+Si esto sucede, reiniciar la extensión debería solucionarlo.

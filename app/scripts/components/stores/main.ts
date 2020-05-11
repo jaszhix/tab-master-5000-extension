@@ -37,11 +37,13 @@ export const getBlackList = function(cb: (blacklist: string[] | string) => void)
 
 export const getBytesInUse = function(item) {
   let chromeVersion = state.get('chromeVersion');
+
   return new Promise((resolve) => {
     if (chromeVersion === 1) {
       resolve(0);
       return;
     }
+
     chrome.storage.local.getBytesInUse(item, (bytes) => {
       resolve(bytes);
     });
@@ -50,6 +52,7 @@ export const getBytesInUse = function(item) {
 
 export const getChromeVersion = (): number => {
   let version = 1;
+
   tryFn(() => version = parseInt(<string><unknown>/Chrome\/([0-9.]+)/.exec(navigator.userAgent)[1].split('.')));
   return version;
 };
@@ -76,6 +79,7 @@ export const setMode = (mode: ViewMode, stateUpdate = {}) => {
 export const focusSearchEntry = () => {
   setTimeout(() => {
     let node = v('#main > div > div:nth-child(1) > div > div.tm-nav.ntg-form > div > div.col-xs-4 > div > input').n;
+
     if (node) {
       node.focus();
     }
@@ -94,6 +98,7 @@ const handleMessage = function(s, msg, sender, sendResponse) {
     || !s.windowId) {
     return;
   }
+
   console.log('msg: ', msg, 'sender: ', sender);
 
   if (msg.noPermissions) {
@@ -108,6 +113,7 @@ const handleMessage = function(s, msg, sender, sendResponse) {
     if (s.modal.state) {
       msg.modalOpen = true;
     }
+
     window.tmWorker.postMessage({state: state.exclude(['modal', 'context', 'isOptions']), msg});
   } else if (msg.hasOwnProperty('sessions')) {
     state.set({sessions: msg.sessions});
@@ -164,6 +170,7 @@ export const getScreenshots = (): Promise<string[]> => {
   return new Promise((resolve, reject) => {
     chrome.runtime.sendMessage(chrome.runtime.id, {method: 'getScreenshots'}, (response) => {
       console.log(response);
+
       if (response && response.screenshots) {
         resolve(response.screenshots);
       } else {
@@ -177,6 +184,7 @@ export const getActions = (): Promise<ActionRecord[]> => {
   return new Promise((resolve, reject) => {
     chrome.runtime.sendMessage(chrome.runtime.id, {method: 'getActions'}, (response) => {
       console.log(response);
+
       if (response && response.actions) {
         console.log(response, '#AA');
         resolve(response.actions);
@@ -198,11 +206,14 @@ export const removeSingleWindow = (windowId: number) => {
 export const init = () => {
   chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     let s = state.get('*');
+
     console.log(`msg.windowId: `, msg.windowId);
+
     if (msg.windowIdQuery) {
       state.set({windowId: msg.windowIdQuery});
       return;
     }
+
     handleMessage(s, msg, sender, sendResponse);
   });
 };
@@ -345,11 +356,14 @@ export const setKeyBindings = (s: GlobalState) => {
 
 export const setFavicon = (tab: ChromeTab) => {
   let s: GlobalState = state.get('*');
+
   if (tab.url.indexOf('chrome://') !== -1) {
     return;
   }
+
   let urlParts = tab.url.split('/')
   let domain = `${urlParts[2]}/${urlParts[3]}`;
+
   if (tab && tab.favIconUrl && !find(s.favicons, fv => fv && fv.domain === domain)) {
     let saveFavicon = (__img) => {
       s.favicons.push({
@@ -363,25 +377,28 @@ export const setFavicon = (tab: ChromeTab) => {
       });
     };
     let sourceImage = new Image();
+
     sourceImage.onerror = (e) => {
-      saveFavicon('../images/file_paper_blank_document.png');
+      console.log(e);
     };
+
     sourceImage.onload = () => {
       let imgWidth = sourceImage.width;
       let imgHeight = sourceImage.height;
       let canvas = document.createElement('canvas');
+
       canvas.width = imgWidth;
       canvas.height = imgHeight;
       canvas.getContext('2d').drawImage(sourceImage, 0, 0, imgWidth, imgHeight);
-      let img = '../images/file_paper_blank_document.png';
+      let img = null;
+
       // Catch rare 'Tainted canvases may not be exported' error message.
       tryFn(() => {
         img = canvas.toDataURL('image/png');
         saveFavicon(img);
-      }, () => {
-        saveFavicon(img)
       });
     };
+
     sourceImage.src = tab.favIconUrl;
   }
 }
@@ -408,6 +425,7 @@ window.cursor = {page: {x: null, y: null}, offset: {x: null, y: null}, keys: {sh
 
 (function(window) {
     document.onmousemove = handleMouseMove;
+
     function handleMouseMove(e) {
       window.cursor = {
         page: {

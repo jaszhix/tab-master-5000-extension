@@ -29,3 +29,7 @@ Try disabling screenshots, animations, session synchronization, or undoing of ta
 **The extension crashed.**
 
 This is related to the screenshot capturing API. While fixes are being tested, it is recommended to disable screenshot capturing if this is happening to you.
+
+**Favicons are not displaying.**
+
+If this happens, restarting the extension should fix it.

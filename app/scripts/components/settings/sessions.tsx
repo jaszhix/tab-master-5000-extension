@@ -104,8 +104,6 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
       let favicon = find(partial.favicons, fv => tab.url.indexOf(fv.domain) > -1);
       if (favicon) {
         tab.favIconUrl = favicon.favIconUrl;
-      } else if (tab.url.indexOf('chrome://') === -1) {
-        tab.favIconUrl = '../images/file_paper_blank_document.png';
       }
     };
     each(this.props.sessions, (session, s) => {

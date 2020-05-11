@@ -151,6 +151,7 @@
     "typescript": "^3.8.3",
     "typesync": "^0.6.1",
     "vquery": "^5.0.1",
+    "webextension-polyfill-ts": "^0.15.0",
     "webpack": "^4.43.0",
     "webpack-bundle-analyzer": "^3.7.0",
     "webpack-cli": "^3.3.11",
