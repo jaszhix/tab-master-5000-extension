@@ -24,9 +24,10 @@ export interface TileProps {
   theme: Theme;
   i: number;
   folder: string;
-  onDragStart: (e: React.DragEvent, i: number) => void;
+  onDragStart: React.DragEventHandler;
   onDragEnd: React.DragEventHandler;
   onDragOver: React.DragEventHandler;
+  draggable: boolean;
   wallpaper: Wallpaper;
   chromeVersion: number;
   tileLetterTopPos: number;
@@ -80,22 +81,27 @@ class Tile extends React.Component<TileProps, TileState> {
       }
     });
   }
+
   componentDidMount = () => {
     this.updateScreenshot();
     utils.checkDuplicateTabs(this.props.tab, (duplicate) => this.setState({duplicate}));
   }
+
   shouldComponentUpdate = (nP, nS) => {
     return (!_.isEqual(this.props, nP) || !_.isEqual(this.state, nS) || state.screenshotClear) && state.settings !== 'sessions';
   }
+
   componentWillUnmount = () => {
     state.disconnect(this.connectId);
     unref(this);
   }
+
   handleDuplicates = () => {
     utils.checkDuplicateTabs(this.props.tab, (duplicate) => {
       if (duplicate !== this.state.duplicate) this.setState({duplicate})
     });
   }
+
   updateScreenshot = () => {
     if (!state.prefs.screenshot) return;
 
@@ -106,24 +112,32 @@ class Tile extends React.Component<TileProps, TileState> {
       this.setState({screenshot: state.screenshots[refSS].data});
     }
   }
+
   filterFolders = (folderName) => {
     let p = this.props;
+
     state.set({folder: p.folder ? false : folderName});
   }
+
   handleClick = () => {
     if (this.state.close) {
       return;
     }
+
     utils.activateTab(this.props.tab);
   }
+
   // Trigger hovers states that will update the inline CSS in style.js.
   handleHoverIn = () => {
     if (state.dragging) {
       return false;
     }
+
     let s = this.state;
     let p = this.props;
+
     this.setState({hover: true});
+
     if (p.prefs.screenshot && p.prefs.screenshotBg) {
       if (s.screenshot && p.prefs.mode !== 'apps') {
         themeStore.trigger('currentWallpaper', {hoverWallpaper: {data: s.screenshot}, theme: p.theme});
@@ -134,62 +148,80 @@ class Tile extends React.Component<TileProps, TileState> {
       }
     }
   }
+
   handleHoverOut = () => {
     this.setState({hover: false});
   }
+
   handleTabCloseHoverIn = () => {
     this.setState({xHover: true});
   }
+
   handleTabCloseHoverOut = () => {
     this.setState({xHover: false});
   }
+
   handlePinHoverIn = () => {
     this.setState({pHover: true});
   }
+
   handlePinHoverOut = () => {
     this.setState({pHover: false});
   }
+
   handleTabMuteHoverIn = () => {
     this.setState({mHover: true});
   }
+
   handleTabMuteHoverOut = () => {
     this.setState({mHover: false});
   }
+
   handleContextClick = (e) => {
     e.preventDefault();
+
     if (!this.props.prefs.context) {
       return;
     }
+
     if (this.props.context.id && this.props.context.id.id === this.props.tab.id) {
       state.set({context: {value: false, id: null}})
     } else {
       state.set({context: {value: true, id: this.props.tab}});
     }
   }
+
   handleCloseTab = () => {
     this.setState({duplicate: false, close: true, screenshot: null});
     utils.closeTab(this.props.tab);
   }
+
   handleMute = () => {
     utils.mute(this.props.tab);
   }
+
   handlePinning = () => {
     if (state.prefs.animations) {
       this.setState({pinning: true});
     }
+
     utils.pin(this.props.tab);
   }
+
   handleDragStart = (e) => {
-    this.props.onDragStart(e, this.props.i);
-    _.defer(() => this.setState({render: false}));
+    this.props.onDragStart(e);
+    setTimeout(() => this.setState({render: false}), 0);
   }
+
   handleDragEnd = (e) => {
     this.props.onDragEnd(e);
     this.setState({render: true});
   }
+
   getPanelRef = (ref) => {
     this.panelRef = ref;
   }
+
   render = () => {
     let s = this.state;
     let p = this.props;
@@ -367,136 +399,144 @@ class Tile extends React.Component<TileProps, TileState> {
         animationDuration: '1s'
       }
     });
+
     return (
       <Panel
-      ref={this.getPanelRef}
-      draggable={p.prefs.mode === 'tabs' && p.prefs.drag}
-      onDragEnd={this.handleDragEnd}
-      onDragStart={this.handleDragStart}
-      onDragOver={p.onDragOver}
-      footerLeft={
-        <div className="metadata-container">
-          <div className={`media-left ${css(styles.mediaLeft)}`}>
-            <img src={p.tab.favIconUrl} className={css(styles.mediaLeftImage)} />
-          </div>
-          <div className="media-left">
-            <div className={css(dynamicStyles.footerTitleContainer)}>
-              <a className={css(dynamicStyles.footerTitleLink)}>
-                {p.tab.title.length > 0 ? p.tab.title : p.tab.domain ? p.tab.domain : p.tab.url.split('/')[2]}
-              </a>
+        ref={this.getPanelRef}
+        id={`${p.i}`}
+        draggable={p.draggable}
+        onDragEnd={this.handleDragEnd}
+        onDragStart={this.handleDragStart}
+        onDragOver={p.onDragOver}
+        footerLeft={
+          <div className="metadata-container">
+            <div className={`media-left ${css(styles.mediaLeft)}`}>
+              <img src={p.tab.favIconUrl} className={css(styles.mediaLeftImage)} />
             </div>
-            {p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ?
-              <div className={css(dynamicStyles.footerSubTitleContainer) + ' text-muted text-size-small'}>
-                {p.tab.description}
-              </div> : null}
-            {p.prefs.mode === 'tabs' || p.prefs.mode === 'history' || p.prefs.mode === 'bookmarks' || p.prefs.mode === 'sessions' ?
-              <div
-              onMouseEnter={() => this.setState({stHover: true})}
-              onMouseLeave={() => this.setState({stHover: false})}>
-                <div onClick={this.handleClick} className={css(dynamicStyles.ST1) + ' text-muted text-size-small'}>
-                  {p.tab.domain ? p.tab.domain : p.tab.url.split('/')[2]}
-                </div>
-                {isTab && hasDiscarded && p.tab.discarded ?
-                  <div onClick={this.handleClick} className={css(dynamicStyles.ST2) + ' text-muted text-size-small'}>
-                    Discarded
-                  </div> : null}
-                {p.prefs.mode === 'history' ?
-                  <div onClick={this.handleClick} className={css(dynamicStyles.ST2) + ' text-muted text-size-small'}>
-                    {_.capitalize(moment(p.tab.lastVisitTime).fromNow())}
-                  </div> : null}
-                {p.prefs.mode === 'bookmarks' ?
-                  <div onClick={() => this.filterFolders(p.tab.folder)} className={css(dynamicStyles.ST2) + ' text-muted text-size-small'}>
-                    {p.tab.folder}
-                  </div> : null}
-                {p.prefs.mode === 'sessions' ?
-                  <div
-                  onClick={() => this.filterFolders(p.tab.originSession)}
-                  className={css(p.tab.hasOwnProperty('domain') && p.tab.domain ? dynamicStyles.ST2 : dynamicStyles.ST1) + ' text-muted text-size-small'}>
-                    {p.tab.label ? p.tab.label : _.capitalize(moment(p.tab.sTimeStamp).fromNow())}
-                  </div> : null}
-              </div> : null}
-            {p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ?
-              <div onMouseEnter={() => this.setState({stHover: true})} onMouseLeave={() => this.setState({stHover: false})}>
+            <div className="media-left">
+              <div className={css(dynamicStyles.footerTitleContainer)}>
+                <a className={css(dynamicStyles.footerTitleLink)}>
+                  {p.tab.title.length > 0 ? p.tab.title : p.tab.domain ? p.tab.domain : p.tab.url.split('/')[2]}
+                </a>
+              </div>
+              {p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ?
+                <div className={css(dynamicStyles.footerSubTitleContainer) + ' text-muted text-size-small'}>
+                  {p.tab.description}
+                </div> : null}
+              {p.prefs.mode === 'tabs' || p.prefs.mode === 'history' || p.prefs.mode === 'bookmarks' || p.prefs.mode === 'sessions' ?
                 <div
-                onClick={() => this.filterFolders(p.tab.originSession)}
-                className={css(dynamicStyles.ST1) + ' text-muted text-size-small'}>
-                  {`v${p.tab.version}`}
-                </div>
-              </div> : null}
+                  onMouseEnter={() => this.setState({stHover: true})}
+                  onMouseLeave={() => this.setState({stHover: false})}>
+                  <div onClick={this.handleClick} className={css(dynamicStyles.ST1) + ' text-muted text-size-small'}>
+                    {p.tab.domain ? p.tab.domain : p.tab.url.split('/')[2]}
+                  </div>
+                  {isTab && hasDiscarded && p.tab.discarded ?
+                    <div onClick={this.handleClick} className={css(dynamicStyles.ST2) + ' text-muted text-size-small'}>
+                      Discarded
+                    </div> : null}
+                  {p.prefs.mode === 'history' ?
+                    <div onClick={this.handleClick} className={css(dynamicStyles.ST2) + ' text-muted text-size-small'}>
+                      {_.capitalize(moment(p.tab.lastVisitTime).fromNow())}
+                    </div> : null}
+                  {p.prefs.mode === 'bookmarks' ?
+                    <div onClick={() => this.filterFolders(p.tab.folder)} className={css(dynamicStyles.ST2) + ' text-muted text-size-small'}>
+                      {p.tab.folder}
+                    </div> : null}
+                  {p.prefs.mode === 'sessions' ?
+                    <div
+                      onClick={() => this.filterFolders(p.tab.originSession)}
+                      className={css(p.tab.hasOwnProperty('domain') && p.tab.domain ? dynamicStyles.ST2 : dynamicStyles.ST1) + ' text-muted text-size-small'}>
+                      {p.tab.label ? p.tab.label : _.capitalize(moment(p.tab.sTimeStamp).fromNow())}
+                    </div> : null}
+                </div> : null}
+              {p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ?
+                <div onMouseEnter={() => this.setState({stHover: true})} onMouseLeave={() => this.setState({stHover: false})}>
+                  <div
+                    onClick={() => this.filterFolders(p.tab.originSession)}
+                    className={css(dynamicStyles.ST1) + ' text-muted text-size-small'}>
+                    {`v${p.tab.version}`}
+                  </div>
+                </div> : null}
+            </div>
           </div>
-        </div>
       }
-      header={
-        <div className={css(styles.headerContainer)}>
-          <ul className={css(dynamicStyles.headerIconContainer) + ' icons-list'}>
-            {isTab && (s.duplicate || isLoading) ?
-              <li>
-                <i
-                title={isLoading ? utils.t('loading') : utils.t('duplicateTab')}
-                className={css(dynamicStyles.notificationIcon) + ` icon-${isLoading ? 'spinner2 rotating' : `notification2 ${p.prefs.animations && p.prefs.duplicate ? 'pulse' : ''}`} `}
-                onMouseEnter={this.handlePinHoverIn}
-                onMouseLeave={this.handlePinHoverOut} />
-              </li>
+        header={
+          <div className={css(styles.headerContainer)}>
+            <ul className={css(dynamicStyles.headerIconContainer) + ' icons-list'}>
+              {isTab && (s.duplicate || isLoading) ?
+                <li>
+                  <i
+                    title={isLoading ? utils.t('loading') : utils.t('duplicateTab')}
+                    className={css(dynamicStyles.notificationIcon) + ` icon-${isLoading ? 'spinner2 rotating' : `notification2 ${p.prefs.animations && p.prefs.duplicate ? 'pulse' : ''}`} `}
+                    onMouseEnter={this.handlePinHoverIn}
+                    onMouseLeave={this.handlePinHoverOut}
+                  />
+                </li>
             : null}
-            {(p.chromeVersion >= 46 || p.chromeVersion === 1) && (openTab || p.prefs.mode === 'tabs') ?
-              <li>
-                <i
-                title={`${p.tab.mutedInfo.muted ? utils.t('unmute') : utils.t('mute')} ${utils.t('tab')}${p.tab.audible ? ' ('+utils.t('audible')+')' : ''}`}
-                className={css(dynamicStyles.muteIcon, dynamicStyles.iconCommon) + ` icon-volume-${p.tab.mutedInfo.muted ? 'mute2' : p.tab.audible ? 'medium' : 'mute'}`}
-                onMouseEnter={this.handleTabMuteHoverIn}
-                onMouseLeave={this.handleTabMuteHoverOut}
-                onClick={this.handleMute} />
-              </li>
+              {(p.chromeVersion >= 46 || p.chromeVersion === 1) && (openTab || p.prefs.mode === 'tabs') ?
+                <li>
+                  <i
+                    title={`${p.tab.mutedInfo.muted ? utils.t('unmute') : utils.t('mute')} ${utils.t('tab')}${p.tab.audible ? ' ('+utils.t('audible')+')' : ''}`}
+                    className={css(dynamicStyles.muteIcon, dynamicStyles.iconCommon) + ` icon-volume-${p.tab.mutedInfo.muted ? 'mute2' : p.tab.audible ? 'medium' : 'mute'}`}
+                    onMouseEnter={this.handleTabMuteHoverIn}
+                    onMouseLeave={this.handleTabMuteHoverOut}
+                    onClick={this.handleMute}
+                  />
+                </li>
             : null}
-            {isTab ?
-              <li>
-                <i
-                title={`${p.tab.pinned ? utils.t('unpin') : utils.t('pin')} ${utils.t('tab')}`}
-                className={css(dynamicStyles.pinIcon, dynamicStyles.iconCommon) + ' icon-pushpin'}
-                onMouseEnter={this.handlePinHoverIn}
-                onMouseLeave={this.handlePinHoverOut}
-                onClick={this.handlePinning} />
-              </li>
+              {isTab ?
+                <li>
+                  <i
+                    title={`${p.tab.pinned ? utils.t('unpin') : utils.t('pin')} ${utils.t('tab')}`}
+                    className={css(dynamicStyles.pinIcon, dynamicStyles.iconCommon) + ' icon-pushpin'}
+                    onMouseEnter={this.handlePinHoverIn}
+                    onMouseLeave={this.handlePinHoverOut}
+                    onClick={this.handlePinning}
+                  />
+                </li>
             : null}
-            {p.prefs.mode !== 'apps' && p.prefs.mode !== 'extensions' ?
-              <li>
-                <i
-                title={`${isTab ? utils.t('close') : utils.t('remove')} ${_.trimEnd(_.upperFirst(utils.t(p.prefs.mode)), 's')}${p.prefs.mode === 'sessions' ? ' '+utils.t('tab') : ''}`}
-                className={css(dynamicStyles.closeIcon, dynamicStyles.iconCommon) + ` icon-${isTab ? 'cross2' : 'eraser'} ntg-x`}
-                onMouseEnter={this.handleTabCloseHoverIn}
-                onMouseLeave={this.handleTabCloseHoverOut}
-                onClick={this.handleCloseTab} />
-              </li> : null}
-            {p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ?
-              <li>
-                <i
-                title={utils.t('offlineEnabled')}
-                className={css(dynamicStyles.offlineEnabledIcon, dynamicStyles.iconCommon) + ' icon-power2'}
-                onMouseEnter={this.handlePinHoverIn}
-                onMouseLeave={this.handlePinHoverOut} />
-              </li>
+              {p.prefs.mode !== 'apps' && p.prefs.mode !== 'extensions' ?
+                <li>
+                  <i
+                    title={`${isTab ? utils.t('close') : utils.t('remove')} ${_.trimEnd(_.upperFirst(utils.t(p.prefs.mode)), 's')}${p.prefs.mode === 'sessions' ? ' '+utils.t('tab') : ''}`}
+                    className={css(dynamicStyles.closeIcon, dynamicStyles.iconCommon) + ` icon-${isTab ? 'cross2' : 'eraser'} ntg-x`}
+                    onMouseEnter={this.handleTabCloseHoverIn}
+                    onMouseLeave={this.handleTabCloseHoverOut}
+                    onClick={this.handleCloseTab}
+                  />
+                </li> : null}
+              {p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ?
+                <li>
+                  <i
+                    title={utils.t('offlineEnabled')}
+                    className={css(dynamicStyles.offlineEnabledIcon, dynamicStyles.iconCommon) + ' icon-power2'}
+                    onMouseEnter={this.handlePinHoverIn}
+                    onMouseLeave={this.handlePinHoverOut}
+                  />
+                </li>
             : null}
-            {p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ?
-              <li>
-                <i
-                title={`${_.trimEnd(_.upperFirst(utils.t(p.prefs.mode)), 's')} ${utils.t('homepage')}`}
-                className={css(dynamicStyles.homepageIcon, dynamicStyles.iconCommon) + ' icon-home5 ntg-x'}
-                onMouseEnter={this.handleTabCloseHoverIn}
-                onMouseLeave={this.handleTabCloseHoverOut}
-                onClick={() => chrome.tabs.create({url: p.tab.homepageUrl})} />
-              </li> : null}
-          </ul>
-        </div>
+              {p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ?
+                <li>
+                  <i
+                    title={`${_.trimEnd(_.upperFirst(utils.t(p.prefs.mode)), 's')} ${utils.t('homepage')}`}
+                    className={css(dynamicStyles.homepageIcon, dynamicStyles.iconCommon) + ' icon-home5 ntg-x'}
+                    onMouseEnter={this.handleTabCloseHoverIn}
+                    onMouseLeave={this.handleTabCloseHoverOut}
+                    onClick={() => chrome.tabs.create({url: p.tab.homepageUrl})}
+                  />
+                </li> : null}
+            </ul>
+          </div>
       }
-      className={css(dynamicStyles.panelContainer)}
-      bodyStyle={css(dynamicStyles.panelBody)}
-      footerStyle={css(dynamicStyles.panelFooter)}
-      headingStyle={css(dynamicStyles.panelHeading)}
-      onMouseEnter={this.handleHoverIn}
-      onMouseLeave={this.handleHoverOut}
-      onBodyClick={this.handleClick}
-      onFooterClick={!s.stHover ? () => this.handleClick() : null}
-      onContextMenu={this.handleContextClick}>
+        className={css(dynamicStyles.panelContainer)}
+        bodyStyle={css(dynamicStyles.panelBody)}
+        footerStyle={css(dynamicStyles.panelFooter)}
+        headingStyle={css(dynamicStyles.panelHeading)}
+        onMouseEnter={this.handleHoverIn}
+        onMouseLeave={this.handleHoverOut}
+        onBodyClick={this.handleClick}
+        onFooterClick={!s.stHover ? () => this.handleClick() : null}
+        onContextMenu={this.handleContextClick}>
         {!p.tab.favIconUrl || (p.tab.domain && p.tab.domain === 'chrome') ?
           <div className={css(dynamicStyles.titleContainer)}>
             {p.tab.title.length > 0 && p.tab.title ? sanitizeTitle(p.tab.title)

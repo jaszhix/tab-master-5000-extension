@@ -507,6 +507,7 @@ const themeStore = <ThemeStore>init({
       themeStore.getWallpapers().then((wallpapers) => {
         let refTheme: ThemeState = null;
         let selectThemeIsCustom = false;
+
         if (themes && themes.themes !== undefined) {
           if (prefs.theme >= 9000) {
             refTheme = find(themeStore.standardThemes, theme => theme.id === prefs.theme);
@@ -514,6 +515,7 @@ const themeStore = <ThemeStore>init({
             selectThemeIsCustom = true;
             refTheme = find(themes.themes, theme => theme.id === prefs.theme);
           }
+
           tryFn(
             () => themeStore.theme = _.cloneDeep(refTheme.theme),
             () => themeStore.theme = _.cloneDeep(themeStore.standardThemes[1].theme)
@@ -521,25 +523,32 @@ const themeStore = <ThemeStore>init({
           themeStore.savedThemes = typeof themes.themes !== 'undefined' ? themes.themes : [];
         } else {
           refTheme = find(themeStore.standardThemes, theme => theme.id === prefs.theme);
+
           if (!refTheme) {
             // Occurs when the theme cache is empty, but prefs is pointing to a theme id < 9000 (non-default)
             refTheme = themeStore.standardThemes[1];
             setPrefs({theme: 9001, wallpaper: null});
           }
+
           themeStore.theme = _.cloneDeep(refTheme.theme);
           themeStore.savedThemes = [];
         }
+
         if (typeof refTheme === 'undefined') {
           refTheme = themeStore.standardThemes[1];
         }
+
         if (themeStore.savedThemes.length > 0 && selectThemeIsCustom) {
           themeStore.themeId = _.last(themeStore.savedThemes).id;
         }
+
         console.log('init.ref.theme', refTheme.label);
+
         if (typeof wallpapers.wallpapers !== 'undefined') {
           themeStore.wallpapers = _.concat(wallpapers.wallpapers, themeStore.standardWallpapers);
           tryFn(() => {
             let lastSavedWallpaper: Wallpaper = _.last(wallpapers.wallpapers);
+
             if (typeof lastSavedWallpaper !== 'undefined' && typeof lastSavedWallpaper.id !== 'undefined' && lastSavedWallpaper) {
               themeStore.wallpaperId = _.last(wallpapers.wallpapers).id;
             } else {
@@ -553,6 +562,7 @@ const themeStore = <ThemeStore>init({
         } else {
           themeStore.wallpapers = themeStore.standardWallpapers;
         }
+
         if (refTheme.id !== 9000 && refTheme.id !== 9001) {
           themeStore.currentWallpaper = find(themeStore.wallpapers, wallpaper => wallpaper.id === prefs.wallpaper);
         }
@@ -634,9 +644,11 @@ const themeStore = <ThemeStore>init({
     let currentWallpaper = themeStore.currentWallpaper != null && themeStore.currentWallpaper.id != null ? themeStore.currentWallpaper.id : null;
     let newThemeId = themeStore.themeId++;
     let existingTheme = findIndex(themeStore.savedThemes, theme => theme.id === newThemeId);
+
     if (existingTheme > -1) {
       return themeStore.save();
     }
+
     let newTheme: ThemeState = {
       id: newThemeId,
       created: now,
@@ -645,6 +657,7 @@ const themeStore = <ThemeStore>init({
       theme: _.cloneDeep(themeStore.theme),
       wallpaper: currentWallpaper
     };
+
     themeStore.savedThemes.push(newTheme);
     console.log('newTheme: ', newTheme);
     console.log('themeStore savedThemes: ', themeStore.savedThemes);
@@ -735,6 +748,7 @@ const themeStore = <ThemeStore>init({
   update: (id) => {
     if (id < 9000) {
       let refTheme = findIndex(themeStore.savedThemes, theme => theme.id === id);
+
       _.merge(themeStore.savedThemes[refTheme], {
         theme: themeStore.theme,
         modified: Date.now(),
@@ -748,21 +762,25 @@ const themeStore = <ThemeStore>init({
         });
       });
     }
+
     themeStore.setTriggers();
   },
   remove: (id) => {
     let refTheme = find(themeStore.savedThemes, theme => theme.id === id);
+
     if (_.isEqual(refTheme.theme, state.theme)) {
       themeStore.theme = themeStore.standardThemes[0].theme;
       themeStore.currentWallpaper = {data: -1};
       setPrefs({theme: 9000, wallpaper: -1});
     }
+
     themeStore.savedThemes = _.without(themeStore.savedThemes, refTheme);
     chrome.storage.local.set({themes: themeStore.savedThemes});
     themeStore.setTriggers();
   },
   removeWallpaper: (wpId) => {
     let refWallpaper = find(themeStore.wallpapers, wallpaper => wallpaper.id === wpId);
+
     themeStore.wallpapers = _.without(themeStore.wallpapers, _.remove(themeStore.wallpapers, refWallpaper));
     themeStore.currentWallpaper = {data: -1};
     chrome.storage.local.set({wallpapers: themeStore.wallpapers});
@@ -771,6 +789,7 @@ const themeStore = <ThemeStore>init({
   },
   label: (id, label) => {
     let refTheme = findIndex(themeStore.savedThemes, theme => theme.id === id);
+
     themeStore.savedThemes[refTheme].label = label;
     themeStore.update(id, false);
   },
@@ -779,6 +798,7 @@ const themeStore = <ThemeStore>init({
       let json = JSON.stringify(themeStore.savedThemes);
       let filename = `TM5K-Themes-${Date.now()}.json`;
       let blob = new Blob([json], {type: "application/json;charset=utf-8"});
+
       chrome.downloads.download({
         url: URL.createObjectURL(blob),
         body: json,
@@ -790,8 +810,10 @@ const themeStore = <ThemeStore>init({
   import: (e) => {
     if (e.target.files[0].name.split('-')[1] === 'Themes') {
       let reader = new FileReader();
+
         reader.onload = () => {
           let themeImport = _.cloneDeep(JSON.parse(<string>reader.result));
+
           if (typeof themeImport[0].theme !== 'undefined') {
             themeStore.savedThemes = themeImport;
             chrome.storage.local.set({themes: themeStore.savedThemes}, () => {
@@ -810,43 +832,53 @@ const themeStore = <ThemeStore>init({
             });
           }
       };
+
       reader.readAsText(e.target.files[0]);
     }
   },
   importWallpaper: (e, id) => {
     let reader = new FileReader();
+
     reader.onload = () => {
       let sourceImage = new Image();
+
       sourceImage.onload = () => {
         let imgWidth = sourceImage.width / 2;
         let imgHeight = sourceImage.height / 2;
         let canvas = document.createElement("canvas");
+
         canvas.width = imgWidth;
         canvas.height = imgHeight;
         canvas.getContext("2d").drawImage(sourceImage, 0, 0, imgWidth, imgHeight);
         let newDataUri = canvas.toDataURL('image/jpeg', 0.25);
+
         if (newDataUri) {
           let newWallpaper = {
             data: newDataUri,
             id: ++themeStore.wallpaperId
           };
+
           themeStore.wallpapers = [newWallpaper].concat(themeStore.wallpapers);
           let savedWallpapers = filter(themeStore.wallpapers, (wp) => {
             if (wp.id < 9000) {
               return wp;
             }
           });
+
           chrome.storage.local.set({wallpapers: _.orderBy(savedWallpapers, 'created')});
           themeStore.setTriggers();
           themeStore.selectWallpaper(id, newWallpaper.id);
         }
       };
+
       sourceImage.src = <string>reader.result;
     };
+
     reader.readAsDataURL(e.target.files[0]);
   },
   opacify: (rgba, opacity) => {
     let _rgba = rgba.split(', ');
+
     _rgba[3] = `${opacity})`;
     return _rgba.join(', ');
   },
@@ -856,6 +888,7 @@ const themeStore = <ThemeStore>init({
   balance: (color) => {
     let rgb = color;
     let colors = rgb.match(/^rgba\((\d+),\s*(\d+),\s*(\d+),\s*(\d+(\.\d*)?)|(\.\d+)\)$/);
+
     if (colors !== undefined && colors) {
       let r = colors[1];
       let g = colors[2];
@@ -1042,6 +1075,18 @@ const onThemeChange = (e) => {
     .table>thead>tr>th, .table>tbody>tr>th, .table>tfoot>tr>th, .table>thead>tr>td, .table>tbody>tr>td, .table>tfoot>tr>td {
       border-top: 1px solid ${e.theme.darkBtnBg};
     }
+    tr {
+      color: ${e.theme.tileText} !important;
+    }
+    tr.even:hover, tr.odd:hover, tr.odd.selected, tr.even.selected {
+      background-color: ${e.theme.settingsItemHover} !important;
+    }
+    tr.even {
+      background-color: ${themeStore.opacify(e.theme.tileBg, 0.34)} !important;
+    }
+    tr.odd {
+      background-color: ${themeStore.opacify(e.theme.tileBgHover, 0.25)} !important;
+    }
     body > div.ReactModalPortal > div > div {
       -${vendor}-transition: ${prefs.animations ? 'background 0.5s ease-in, height 0.2s, width 0.2s, top 0.2s, left 0.2s, right 0.2s, bottom 0.2s' : 'initial'};
       border: ${e.theme.tileShadow};
@@ -1114,6 +1159,10 @@ const onThemeChange = (e) => {
       color: ${e.theme.bodyText} !important;
       background-color: ${e.theme.bodyBg} !important;
     }
+    .Slide:hover,
+    .Toggle:hover {
+      background-color: ${e.theme.settingsItemHover};
+    }
     `;
 
     // Firefox options integration
@@ -1145,6 +1194,7 @@ const onThemeChange = (e) => {
         }
       `;
     }
+
     stateUpdate.theme = e.theme;
   }
 
@@ -1163,6 +1213,7 @@ const onThemeChange = (e) => {
         z-index: -12;
       }
     `;
+
     if (e.currentWallpaper) {
       stateUpdate.currentWallpaper = e.currentWallpaper;
     }

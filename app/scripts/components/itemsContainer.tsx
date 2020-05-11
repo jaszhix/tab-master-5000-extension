@@ -146,7 +146,9 @@ class ItemsContainer extends React.Component<ItemsContainerProps, ItemContainerS
     this.setState({range});
   }
 
-  dragStart = (e, i) => {
+  dragStart = (e) => {
+    let i = parseInt(e.currentTarget.id);
+
     state.set({dragging: true});
     e.dataTransfer.setData(1, 2); // FF fix
     e.dataTransfer.effectAllowed = 'move';
@@ -202,7 +204,8 @@ class ItemsContainer extends React.Component<ItemsContainerProps, ItemContainerS
     });
   }
 
-  dragOver = (e, i) => {
+  dragOver = (e) => {
+    let i = parseInt(e.currentTarget.id);
     let p = this.props;
 
     e.preventDefault();
@@ -245,36 +248,49 @@ class ItemsContainer extends React.Component<ItemsContainerProps, ItemContainerS
   }
 
   render = () => {
-    let p = this.props;
-    let tileLetterTopPos = p.s.prefs.tabSizeHeight >= 175 ?
-      parseInt((p.s.prefs.tabSizeHeight + 80).toString()[0]+(p.s.prefs.tabSizeHeight + 80).toString()[1]) - 10
-      : p.s.prefs.tabSizeHeight <= 136 ? -5
-      : p.s.prefs.tabSizeHeight <= 150 ? 0
-      : p.s.prefs.tabSizeHeight <= 160 ? 5 : 10;
-    let navOffset = p.s.prefs.format === 'tile' ? 52 : 81;
-    const dynamicStyles = StyleSheet.create({
-      tilePlaceholder: {
-        width: `${p.s.prefs.tabSizeHeight + 80}px`,
-        height: `${p.s.prefs.tabSizeHeight}px`
-      }
-    });
+    let {s, theme, wallpaper} = this.props;
+    let {prefs, height, modeKey, context, folder, chromeVersion} = s;
+    let isTileView = prefs.format === 'tile';
+    let draggable = prefs.mode === 'tabs' && prefs.drag;
+    let navOffset = 77;
+    let tileLetterTopPos;
+    let dynamicStyles;
+    let containerStyle: React.CSSProperties = {
+      position: 'absolute',
+      left: '0px',
+      right: '0px',
+      margin: '0px auto',
+      width: '99.6%',
+      height: `${height - navOffset}px`,
+      overflowY: 'auto',
+      overflowX: 'hidden',
+    }
+
+    if (isTileView) {
+      tileLetterTopPos = prefs.tabSizeHeight >= 175 ?
+        parseInt((prefs.tabSizeHeight + 80).toString()[0]+(prefs.tabSizeHeight + 80).toString()[1]) - 10
+        : prefs.tabSizeHeight <= 136 ? -5
+        : prefs.tabSizeHeight <= 150 ? 0
+        : prefs.tabSizeHeight <= 160 ? 5 : 10;
+      navOffset = 52;
+      containerStyle.left = containerStyle.right = '5px';
+      containerStyle.top = `${navOffset}px`;
+      dynamicStyles = StyleSheet.create({
+        tilePlaceholder: {
+          width: `${prefs.tabSizeHeight + 80}px`,
+          height: `${prefs.tabSizeHeight}px`
+        }
+      });
+    } else {
+      containerStyle.top = `${navOffset + (prefs.tablePadding * 2)}px`;
+    }
 
     return (
       <div
         ref={this.getRef}
         className="tile-body"
-        style={{
-          position: 'absolute',
-          left: p.s.prefs.format === 'tile' ? '5px' : '0px',
-          right: p.s.prefs.format === 'tile' ? '5px' : '0px',
-          top: `${navOffset}px`,
-          margin: '0px auto',
-          width: '99.6%',
-          height: `${p.s.height - navOffset}px`,
-          overflowY: 'auto',
-          overflowX: 'hidden',
-        }}>
-        {p.s.prefs.format === 'tile' ? map(p.s[p.s.modeKey], (tab, i) => {
+        style={containerStyle}>
+        {isTileView ? map(s[modeKey], (tab, i) => {
           if (isNewTab(tab.url) || !tab.title) {
             return null;
           }
@@ -294,26 +310,28 @@ class ItemsContainer extends React.Component<ItemsContainerProps, ItemContainerS
             <Tile
               key={tab.id}
               onDragEnd={this.dragEnd}
-              onDragStart={(e) => this.dragStart(e, i)}
-              onDragOver={(e) => this.dragOver(e, i)}
-              prefs={p.s.prefs}
+              onDragStart={this.dragStart}
+              onDragOver={this.dragOver}
+              draggable={draggable}
+              prefs={prefs}
               i={i}
               tab={tab}
-              theme={p.theme}
-              wallpaper={p.wallpaper}
-              context={p.s.context}
-              folder={p.s.folder}
-              chromeVersion={p.s.chromeVersion}
+              theme={theme}
+              wallpaper={wallpaper}
+              context={context}
+              folder={folder}
+              chromeVersion={chromeVersion}
               tileLetterTopPos={tileLetterTopPos}
             />
           );
         })
         :
         <Table
-          s={p.s}
+          s={s}
           onDragEnd={this.dragEnd}
           onDragStart={this.dragStart}
           onDragOver={this.dragOver}
+          draggable={draggable}
           range={this.state.range}
         />}
       </div>

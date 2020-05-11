@@ -34,18 +34,19 @@ const formatDate = function(date) {
 };
 
 interface RowProps {
+  id?: string;
   s: GlobalState;
   row: ChromeTab;
   onDragStart: React.DragEventHandler;
-  onDragEnd: (e: React.DragEvent, i?: number) => void;
+  onDragEnd: React.DragEventHandler;
   onDragOver: React.DragEventHandler;
-  onClick: (e: React.MouseEvent) => void;
-  onContextMenu: (e: React.MouseEvent, row: ChromeTab) => void;
+  draggable: boolean;
+  onRowClick: (e: React.MouseEvent) => void;
+  onContextMenu: React.MouseEventHandler;
   onActivate: React.MouseEventHandler;
-  handleBooleanClick: (column: SortKey) => void;
+  handleBooleanClick: React.MouseEventHandler;
   className: string;
   style?: React.CSSProperties;
-  draggable: boolean;
   columns: SortKey[];
   columnWidths: number[];
   dynamicStyles: any;
@@ -80,14 +81,15 @@ class Row extends React.Component<RowProps> {
     return (
       <tr
         ref={this.getRef}
+        id={p.id}
         className={p.className}
         style={p.style}
         draggable={p.draggable}
         onDragEnd={p.onDragEnd}
         onDragStart={this.handleDragStart}
         onDragOver={p.onDragOver}
-        onClick={p.onClick}
-        onContextMenu={(e) => p.onContextMenu(e, p.row)}>
+        onClick={p.onRowClick}
+        onContextMenu={p.onContextMenu}>
         {map(p.columns, (column, z) => {
           if (!p.row.hasOwnProperty(column) && column !== 'session')  return;
 
@@ -149,8 +151,9 @@ class Row extends React.Component<RowProps> {
                 id={`column-${column}`}
                 className={css(p.dynamicStyles.columnCommon)}>
                 <i
+                  id={p.id}
                   className={css(columnStyles.icon) + ` icon-${bool ? 'check2' : 'cross'}`}
-                  onClick={toggleBool.indexOf(column) !== -1 ? () => p.handleBooleanClick(column) : null}
+                  onClick={toggleBool.indexOf(column) > -1 ? p.handleBooleanClick : null}
                 />
               </td>
             )
@@ -294,9 +297,10 @@ class TableHeader extends React.Component<TableHeaderProps> {
 export interface TableProps {
   s: GlobalState;
   range: VisibleRange;
-  onDragEnd: (e: React.DragEvent, i: number) => void;
-  onDragStart: (e: React.DragEvent, i: number) => void;
-  onDragOver: (e: React.DragEvent, i: number) => void;
+  onDragEnd: (e: React.DragEvent) => void;
+  onDragStart: (e: React.DragEvent) => void;
+  onDragOver: (e: React.DragEvent) => void;
+  draggable: boolean;
 }
 
 export interface TableState {
@@ -428,8 +432,11 @@ class Table extends React.Component<TableProps, TableState> {
     });
   }
 
-  handleBooleanClick = (column, row) => {
+  handleBooleanClick = (e) => {
+    let i = parseInt(e.currentTarget.id);
     let s = this.state;
+    let row = s.rows[i];
+    let column = e.currentTarget.parentNode.id.split('column-')[1];
 
     if (column === 'pinned') {
       chrome.tabs.update(row.id, {pinned: !row.pinned});
@@ -443,11 +450,12 @@ class Table extends React.Component<TableProps, TableState> {
         }
       });
     } else if (column === 'enabled') {
-      chrome.management.setEnabled(row.id, !row.enabled);
+      chrome.management.setEnabled((row as unknown as ChromeExtensionInfo).id, !row.enabled);
     }
   }
 
-  handleSelect = (i) => {
+  handleSelect = (e) => {
+    let i = parseInt(e.currentTarget.id);
     let {shiftRange, selectedItems, rows} = this.state;
     let p = this.props;
 
@@ -548,7 +556,9 @@ class Table extends React.Component<TableProps, TableState> {
 
   }
 
-  handleActivation = (i) => {
+  handleActivation = (e) => {
+    let i = parseInt(e.currentTarget.parentNode.id);
+
     if (window.cursor.keys.ctrl || window.cursor.keys.shift) {
       return;
     }
@@ -567,12 +577,13 @@ class Table extends React.Component<TableProps, TableState> {
     this.setState({rows: s.rows, selectedItems: [], shiftRange: null});
   }
 
-  handleContext = (e, row) => {
+  handleContext = (e) => {
     e.preventDefault();
 
-    const {rows, selectedItems} = this.state;
-    const {prefs, context} = this.props.s;
-    let rowIndex;
+    let rowIndex = parseInt(e.currentTarget.id);
+    let {rows, selectedItems} = this.state;
+    let row = rows[rowIndex];
+    let {prefs, context} = this.props.s;
 
     if (!prefs.context) return;
 
@@ -580,8 +591,6 @@ class Table extends React.Component<TableProps, TableState> {
       state.set({context: {value: false, id: null}});
       return;
     }
-
-    rowIndex = findIndex(rows, (item) => item.id === row.id);
 
     if (selectedItems.length > 0 && selectedItems.indexOf(rowIndex) > -1) {
       let selectedRows = [];
@@ -607,15 +616,13 @@ class Table extends React.Component<TableProps, TableState> {
       rows,
       selectedItems,
     } = this.state;
-    let {s, range, onDragEnd, onDragStart, onDragOver} = this.props;
+    let {s, range, onDragEnd, onDragStart, onDragOver, draggable} = this.props;
 
     if (!columns || !rows) return null;
 
-    let evenRowColor = themeStore.opacify(s.theme.tileBg, 0.34);
-    let oddRowColor = themeStore.opacify(s.theme.tileBgHover, 0.25);
-
-    const dynamicStyles: any = StyleSheet.create({
-      columnCommon: {padding: `${s.prefs.tablePadding}px ${s.prefs.tablePadding + 8}px`},
+    let columnPadding = `${s.prefs.tablePadding}px ${s.prefs.tablePadding + 8}px`;
+    let dynamicStyles = (StyleSheet as StyleSheetStatic).create({
+      columnCommon: {padding: columnPadding},
       titleColumn: {maxWidth: s.width <= 950 ? '300px' : s.width <= 1015 ? '400px' : '700px', userSelect: 'none', cursor: 'pointer'},
       faviconContainer: {paddingRight: `${s.prefs.tablePadding + 8}px`},
       tableCommon: {width: `${s.width}px`},
@@ -631,7 +638,9 @@ class Table extends React.Component<TableProps, TableState> {
     let placeholderChildren = [];
 
     for (let i = 0, len = columns.length; i < len; i++) {
-      placeholderChildren.push(<td style={{padding: `${s.prefs.tablePadding}px ${s.prefs.tablePadding + 8}px`}} />);
+      placeholderChildren.push(
+        <td key={i} style={{padding: columnPadding}} />
+      );
     }
 
     return (
@@ -652,56 +661,46 @@ class Table extends React.Component<TableProps, TableState> {
           : null}
           <tbody>
             {map(rows, (row, i) => {
+              if (isNewTab(row.url) || !row.title) return null;
 
-            if (isNewTab(row.url) || !row.title) return null;
+              let isVisible = i >= range.start && i <= range.start + range.length;
+              let rowEvenOddClassName = i % 2 === 0 ? ' even' : ' odd';
+              let selectedClassName = selectedItems.indexOf(i) !== -1 ? 'selected' : '';
 
-            let isVisible = i >= range.start && i <= range.start + range.length;
-            let isEven = i % 2 === 0;
-            let rowColor = isEven ? evenRowColor : oddRowColor;
+              if (isVisible) {
+                return (
+                  <Row
+                    key={row.id}
+                    id={`${i}`}
+                    className={`${rowEvenOddClassName} ${selectedClassName}`}
+                    s={s}
+                    dynamicStyles={dynamicStyles}
+                    draggable={draggable}
+                    onDragEnd={onDragEnd}
+                    onDragStart={onDragStart}
+                    onDragOver={onDragOver}
+                    onRowClick={this.handleSelect}
+                    onActivate={this.handleActivation}
+                    onContextMenu={this.handleContext}
+                    handleBooleanClick={this.handleBooleanClick}
+                    row={row}
+                    columns={columns}
+                    columnWidths={columnWidths}
+                  />
+                );
+              }
 
-            if (isVisible) {
               const rowStyles = StyleSheet.create({
                 row: {
-                  fontSize: '14px',
-                  color: s.theme.tileText,
-                  ':hover': {backgroundColor: s.theme.settingsItemHover},
-                  backgroundColor: selectedItems.indexOf(i) !== -1 ? s.theme.settingsItemHover : rowColor,
+                  height: s.prefs.tablePadding + 22
                 }
               });
 
               return (
-                <Row
-                  s={s}
-                  key={row.id}
-                  className={css(rowStyles.row) + (isEven ? ' even' : ' odd')}
-                  dynamicStyles={dynamicStyles}
-                  draggable={s.prefs.mode === 'tabs' && s.prefs.drag}
-                  onDragEnd={onDragEnd}
-                  onDragStart={(e) => onDragStart(e, i)}
-                  onDragOver={(e) => onDragOver(e, i)}
-                  onClick={() => this.handleSelect(i)}
-                  onActivate={() => this.handleActivation(i)}
-                  onContextMenu={this.handleContext}
-                  handleBooleanClick={(column) => this.handleBooleanClick(column, row)}
-                  row={row}
-                  columns={columns}
-                  columnWidths={columnWidths}
-                />
+                <tr key={row.id} className={`placeholder ${css(rowStyles.row)} ${rowEvenOddClassName}`} >
+                  {placeholderChildren}
+                </tr>
               );
-            }
-
-            const rowStyles = StyleSheet.create({
-              row: {
-                backgroundColor: isEven ? themeStore.opacify(s.theme.tileBg, 0.34) : themeStore.opacify(s.theme.tileBgHover, 0.25),
-                height: s.prefs.tablePadding + 22
-              }
-            });
-
-            return (
-              <tr key={row.id} className={`placeholder ${css(rowStyles.row)} ${(isEven ? ' even' : ' odd')}`} >
-                {placeholderChildren}
-              </tr>
-            );
           })}
           </tbody>
         </table>

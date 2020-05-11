@@ -13,6 +13,7 @@ const {NODE_ENV, DEV_ENV} = process.env;
 let {COMMIT_HASH, SKIP_MINIFY} = process.env;
 
 const PROD = NODE_ENV === 'production';
+
 SKIP_MINIFY = JSON.parse(SKIP_MINIFY || 'false');
 const CONTENT_BASE = SKIP_MINIFY ? 'sources' : 'dist';
 const WORKDIR = PROD ? CONTENT_BASE : 'app';
@@ -55,9 +56,11 @@ gulp.task('copy', function() {
     '!./app/scripts/main.worker.js',
     '!./app/manifest.json'
   ];
+
   if (SKIP_MINIFY) {
     patterns.push('!./app/scripts/components', '!./app/scripts/bg', '!./app/scripts/content');
   }
+
   return gulp.src(patterns)
     .pipe(gulp.dest(`./${WORKDIR}/`));
 });
@@ -97,6 +100,7 @@ gulp.task('package', gulp.series('backup-source-maps', function() {
       './dist/manifest_*'
     ]);
   }
+
   return gulp.src(`./${WORKDIR}/**/**/*`)
     .pipe(zip(`../releases/tm5k-${WORKDIR}-${DEV_ENV}-${process.env.COMMIT_HASH}.zip`))
     .pipe(gulp.dest(`./${WORKDIR}/`));
@@ -106,6 +110,7 @@ gulp.task('dist', gulp.series('copy', 'copyChunks', 'htmlmin', 'imgmin', 'packag
 
 gulp.task('watch', function(done) {
   const glob = './app/scripts/bg/*.{ts}';
+
   gulp.watch(glob)
     .on('change', gulp.parallel('build-bg'));
   done();
