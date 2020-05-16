@@ -1,5 +1,6 @@
 /// <reference path="../../../types/index.d.ts" />
 import {browser} from 'webextension-polyfill-ts';
+import type * as B from 'webextension-polyfill-ts';
 chrome.runtime.setUninstallURL('https://docs.google.com/forms/d/e/1FAIpQLSeNuukS1pTpeZgtMgE-xg0o1R-b5br-JdWJE7I2SfXMOdfjUQ/viewform');
 import _ from 'lodash';
 import v from 'vquery';
@@ -44,32 +45,56 @@ chrome.runtime.onInstalled.addListener((details) => {
   eventState.onInstalled = details;
 });
 
-let checkChromeErrors = (err?: Error) => {
-  if (!errorReportingEnabled) return;
+const captureException = _.throttle(Sentry.captureException, 2000, {leading: true});
 
-  if (chrome.runtime.lastError) {
-    Sentry.captureException(chrome.runtime.lastError);
-  }
+const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-  if (chrome.extension.lastError) {
-    Sentry.captureException(chrome.extension.lastError);
-  }
+const sendMsg = async (msg: Partial<BgMessage>): Promise<any> => {
+  let response;
 
-  if (err) {
-    Sentry.captureException(err);
-  }
-};
-
-let checkChromeErrorsThrottled = _.throttle(checkChromeErrors, 2000, {leading: true});
-
-let sendMsg = (msg, res?) => {
   console.log(`Sending message: `, msg);
-  chrome.runtime.sendMessage(chrome.runtime.id, msg, (response) => {
-    if (response) {
-      res(response);
-    }
-  });
+
+  try {
+    response = await browser.runtime.sendMessage(chrome.runtime.id, msg);
+  } catch (e) {
+    return null;
+  }
+
+  return response;
 };
+
+const sendError = async (err: Error) => {
+  if (!err) return;
+
+  if (errorReportingEnabled) {
+    captureException(err);
+  }
+
+  if (process.env.NODE_ENV === 'production') return;
+
+  await sendMsg({type: 'error', e: {
+    message: err.message,
+    stack: err.stack,
+  }});
+}
+
+const chromeHandler = (handler) => {
+  return async (...args) => {
+    if (chrome.runtime.lastError) {
+      await sendError(new Error(chrome.runtime.lastError.message));
+    }
+
+    if (chrome.extension.lastError) {
+      await sendError(new Error(chrome.extension.lastError.message));
+    }
+
+    try {
+      return await handler(...args);
+    } catch (e) {
+      await sendError(e);
+    }
+  }
+}
 
 let syncSession = (sessions, prefs, windows=null) => {
   let allTabs = [];
@@ -115,12 +140,65 @@ let checkAutoDiscard = (windows, prefs) => {
   return discards;
 };
 
-let createScreenshot = (t, refWindow, refTab, run=0) => {
+const resize = (image) => {
+  let sourceImage = new Image();
+
+  return new Promise((resolve, reject) => {
+    sourceImage.onload = () => {
+      let imgWidth = sourceImage.width / 2;
+      let imgHeight = sourceImage.height / 2;
+      let canvas = document.createElement('canvas');
+
+      canvas.width = imgWidth;
+      canvas.height = imgHeight;
+      canvas.getContext('2d').drawImage(sourceImage, 0, 0, imgWidth, imgHeight);
+      let newDataUri = canvas.toDataURL('image/jpeg', 0.15);
+
+      if (newDataUri) resolve(newDataUri);
+      else reject(new Error('resize: Unable to covert image to dataURI.'));
+    };
+
+    sourceImage.onerror = reject;
+
+    sourceImage.src = image;
+  });
+}
+
+const capture = async (t: Bg, windowId, run = 0) => {
+  let image;
+
+  if (t.image) {
+    image = t.image;
+    t.image = null;
+    return image;
+  }
+
+  await pause(500);
+
+  image = await browser.tabs.captureVisibleTab(windowId, {format: 'jpeg', quality: 10});
+
+  if (image) {
+    return await resize(image);
+  }
+
+  ++run;
+
+  if (run <= 1) {
+    await pause(500);
+    return capture(t, windowId, run++)
+  }
+
+  throw new Error(`Unable to capture screenshot for ${windowId}`);
+}
+
+let createScreenshot = async (t, refWindow, refTab, run=0) => {
+  let tab, windowId, image;
+
   if (refWindow === -1 || refTab === -1) {
     return;
   }
 
-  if (t.state.windows[refWindow].tabs[refTab] === undefined) {
+  if (typeof t.state.windows[refWindow].tabs[refTab] === 'undefined') {
     return;
   }
 
@@ -132,81 +210,35 @@ let createScreenshot = (t, refWindow, refTab, run=0) => {
     t.state.screenshots = [];
   }
 
-  let capture = new Promise((resolve, reject) => {
-    if (t.image) {
-      resolve(t.image);
-      t.image = null;
-      return;
-    }
+  windowId = t.state.windows[refWindow].id;
+  tab = t.state.windows[refWindow].tabs[refTab];
 
-    tryFn(() => {
-      setTimeout(() => {
-        chrome.tabs.captureVisibleTab({format: 'jpeg', quality: 10}, (image) => {
-          if (image) {
-            resolve(image);
-          } else {
-            ++run;
-
-            if (run <= 1) {
-              setTimeout(() => createScreenshot(t, refWindow, refTab, run), 500);
-            } else {
-              reject(null);
-            }
-          }
-        });
-      }, 500);
-    }, reject);
-  });
-
-  capture.then((image: string) => {
-    let resize = new Promise((resolve) => {
-      let sourceImage = new Image();
-
-      sourceImage.onload = function() {
-        let imgWidth = sourceImage.width / 2;
-        let imgHeight = sourceImage.height / 2;
-        let canvas = document.createElement('canvas');
-
-        canvas.width = imgWidth;
-        canvas.height = imgHeight;
-        canvas.getContext('2d').drawImage(sourceImage, 0, 0, imgWidth, imgHeight);
-        let newDataUri = canvas.toDataURL('image/jpeg', 0.15);
-
-        if (newDataUri) {
-          resolve(newDataUri);
-        }
-      };
-
-      sourceImage.src = image;
-    });
-
-    resize.then((image) => {
-      if (typeof t.state.windows[refWindow].tabs[refTab] === 'undefined') {
-        return;
-      }
-
-      let screenshot = {
-        url: t.state.windows[refWindow].tabs[refTab].url,
-        data: image,
-        timeStamp: Date.now()
-      };
-
-      let refScreenshot = findIndex(t.state.screenshots, ss => ss && ss.url === t.state.windows[refWindow].tabs[refTab].url);
-
-      if (refScreenshot !== -1) {
-        t.state.screenshots[refScreenshot] = screenshot;
-      } else {
-        t.state.screenshots.push(screenshot);
-      }
-
-      chrome.storage.local.set({screenshots: t.state.screenshots});
-      t.state.set({screenshots: t.state.screenshots}, () => {
-        sendMsg({screenshots: t.state.screenshots, windowId: t.state.windows[refWindow].id});
-      });
-    });
-  }).catch(() => {
+  try {
+    image = await capture(t, windowId);
+  } catch (e) {
+    sendError(e);
     return;
-  });
+  }
+
+  let screenshot: Screenshot = {
+    url: tab.url,
+    data: image,
+    timeStamp: Date.now()
+  };
+
+  let refScreenshot = findIndex(t.state.screenshots, ss => ss && ss.url === tab.url);
+
+  if (refScreenshot > -1) {
+    t.state.screenshots[refScreenshot] = screenshot;
+  } else {
+    t.state.screenshots.push(screenshot);
+  }
+
+  await browser.storage.local.set({screenshots: t.state.screenshots});
+
+  t.state.set({screenshots: t.state.screenshots});
+
+  await sendMsg({screenshots: t.state.screenshots, windowId});
 };
 
 let createScreenshotThrottled = _.throttle(createScreenshot, 2000, {leading: true});
@@ -373,24 +405,24 @@ class Bg {
     }
 
     if (eventState.onUpdateAvailable) {
-      sendMsg({e: eventState.onUpdateAvailable, type:'appState', action: 'newVersion'});
+      await sendMsg({e: eventState.onUpdateAvailable, type:'appState', action: 'newVersion'});
     }
 
     /*
     Storage changed
     */
-    chrome.storage.onChanged.addListener((changed, areaName) => {
+    chrome.storage.onChanged.addListener(async (changed, areaName) => {
       console.log('Storage changed: ', changed, areaName);
 
       if (changed.hasOwnProperty('sessions') && areaName === 'local') {
         this.state.set({sessions: changed.sessions.newValue});
 
         if (this.state.prefs && this.state.prefs.screenshot) {
-          sendMsg({sessions: changed.sessions.newValue});
+          await sendMsg({sessions: changed.sessions.newValue});
         }
       } else if (changed.hasOwnProperty('screenshots') && areaName === 'local' && this.state.prefs && this.state.prefs.screenshot) {
         this.state.set({screenshots: changed.screenshots.newValue});
-        sendMsg({screenshots: changed.screenshots.newValue, action: true});
+        await sendMsg({screenshots: changed.screenshots.newValue, action: true});
       } else if (changed.hasOwnProperty('blacklist')) {
         this.state.set({blacklist: changed.blacklist.newValue});
       }
@@ -398,24 +430,24 @@ class Bg {
     /*
     Windows created
     */
-    chrome.windows.onCreated.addListener((window: ChromeWindow) => {
-      chrome.tabs.query({windowId: window.id}, (tabs) => {
-        Object.assign(window, {tabs});
-        this.state.windows.push(window);
-        this.state.set({windows: this.state.windows}, true);
-        sendMsg({windows: this.state.windows, windowId: window.id});
-      });
+    chrome.windows.onCreated.addListener(async (window: ChromeWindow) => {
+      let tabs = await browser.tabs.query({windowId: window.id});
+
+      Object.assign(window, {tabs});
+      this.state.windows.push(window);
+      this.state.set({windows: this.state.windows}, true);
+      await sendMsg({windows: this.state.windows, windowId: window.id});
     });
     /*
     Windows removed
     */
-    chrome.windows.onRemoved.addListener((windowId) => {
+    chrome.windows.onRemoved.addListener(async (windowId) => {
       let refWindow = findIndex(this.state.windows, win => win.windowId === windowId);
 
       if (refWindow !== -1) {
         this.state.windows.splice(refWindow, 1);
         this.state.set({windows: this.state.windows}, true);
-        sendMsg({windows: this.state.windows, windowId});
+        await sendMsg({windows: this.state.windows, windowId});
       }
     });
     /*
@@ -476,7 +508,9 @@ class Bg {
       console.log('onDetached: ', tabId, info);
       this.removeSingleItem(tabId, info.oldWindowId);
     });
-    this.attachMessageListener(s);
+
+    await this.attachMessageListener(s);
+
     this.state.set({init: false, blacklist: s.blacklist});
   }
 
@@ -555,112 +589,108 @@ class Bg {
     }, 1000);
   }
 
-  attachMessageListener = (s) => {
-    chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  attachMessageListener = async (s) => {
+    browser.runtime.onMessage.addListener(chromeHandler(async (msg: any, sender: B.Runtime.MessageSender) => {
       console.log('Message from front-end: ', msg, sender);
 
       // requests from front-end javascripts
-      if (msg.method === 'captureTabs') {
-        let capture = new Promise((resolve, reject) => {
-          tryFn(() => {
-            chrome.tabs.captureVisibleTab({format: 'jpeg', quality: 10}, (image) => {
-              if (image) {
-                resolve(image);
-              } else {
-                reject();
-              }
+      switch (msg.method) {
+        case 'close':
+          await browser.tabs.remove(sender.tab.id);
+          break;
+        case 'restoreWindow':
+          for (let i = 0, len = msg.tabs.length; i < len; i++) {
+            let options: chrome.tabs.CreateProperties = {
+              windowId: msg.windowId,
+              index: msg.tabs[i].index,
+              url: msg.tabs[i].url,
+              active: msg.tabs[i].active,
+              pinned: msg.tabs[i].pinned
+            };
 
-              checkChromeErrorsThrottled();
-            });
-          }, () => reject());
-        });
+            if (this.state.chromeVersion > 1) {
+              options.selected = msg.tabs[i].selected;
+            }
 
-        capture.then((image) => {
-          sendResponse({'image': image});
-        }).catch(() => {
-          if (s.prefs.mode !== 'tabs') {
-            chrome.tabs.update(msg.id, {active: true});
-          } else {
-            sendMsg({e: sender.id, type: 'error'});
-          }
-        });
-      } else if (msg.method === 'close') {
-        chrome.tabs.remove(sender.tab.id);
-      } else if (msg.method === 'restoreWindow') {
-        for (let i = 0, len = msg.tabs.length; i < len; i++) {
-          let options: chrome.tabs.CreateProperties = {
-            windowId: msg.windowId,
-            index: msg.tabs[i].index,
-            url: msg.tabs[i].url,
-            active: msg.tabs[i].active,
-            pinned: msg.tabs[i].pinned
-          };
+            let tab = await browser.tabs.create(options);
 
-          if (this.state.chromeVersion > 1) {
-            options.selected = msg.tabs[i].selected;
+            console.log('restored: ', tab);
           }
 
-          chrome.tabs.create(options, (t) => {
-            console.log('restored: ', t);
-            checkChromeErrorsThrottled();
+          return {reload: true};
+        case 'prefs':
+          return {prefs: s.prefs};
+        case 'setPrefs':
+          prefsStore.setPrefs(msg.obj);
+          return {prefs: prefsStore.getPrefs()};
+        case 'getWindowId':
+          return sender.tab.windowId;
+        case 'getTabs':
+          await sendMsg({
+            windows: this.state.windows,
+            windowId: sender.tab.windowId,
+            screenshots: this.state.screenshots,
+            init: msg.init
           });
+          break;
+        case 'queryTabs':
+          this.queryTabs(true, this.state.prefs, sender.tab.windowId);
+          break;
+        case 'getSessions':
+          await sendMsg({sessions: this.state.sessions, windowId: sender.tab.windowId});
+          break;
+        case 'queryBookmarks':
+          if (msg.init || this.state.bookmarks.length === 0) {
+            this.queryBookmarks(sender.tab.windowId);
+          } else {
+            await sendMsg({bookmarks: this.state.bookmarks, windowId: sender.tab.windowId});
+          }
+
+          break;
+        case 'queryHistory':
+          if (msg.init || this.state.history.length === 0) {
+            this.queryHistory(sender.tab.windowId);
+          } else {
+            await sendMsg({history: this.state.history, windowId: sender.tab.windowId});
+          }
+
+          break;
+        case 'queryExtensions':
+          this.queryExtensions(sender.tab.windowId);
+          break;
+        case 'getScreenshots':
+          return {screenshots: this.state.screenshots, windowId: sender.tab.windowId};
+
+        case 'screenshot': {
+          this.image = msg.image;
+
+          let refWindow = findIndex(this.state.windows, win => win.id === sender.tab.windowId);
+          let refTab = findIndex(this.state.windows[refWindow].tabs, tab => tab.id === sender.tab.id);
+
+          createScreenshotThrottled(this, refWindow, refTab);
+          break;
         }
 
-        sendResponse({reload: true});
-      } else if (msg.method === 'prefs') {
-        sendResponse({prefs: s.prefs});
-      } else if (msg.method === 'setPrefs') {
-        prefsStore.setPrefs(msg.obj);
-        sendResponse({prefs: prefsStore.getPrefs()});
-      } else if (msg.method === 'getWindowId') {
-        sendResponse(sender.tab.windowId);
-      } else if (msg.method === 'getTabs') {
-        sendMsg({
-          windows: this.state.windows,
-          windowId: sender.tab.windowId,
-          screenshots: this.state.screenshots,
-          init: msg.init
-        });
-      } else if (msg.method === 'queryTabs') {
-        this.queryTabs(true, this.state.prefs, sender.tab.windowId);
-      } else if (msg.method === 'getSessions') {
-        sendMsg({sessions: this.state.sessions, windowId: sender.tab.windowId});
-      } else if (msg.method === 'queryBookmarks') {
-        if (msg.init || this.state.bookmarks.length === 0) {
-          this.queryBookmarks(sender.tab.windowId);
-        } else {
-          sendMsg({bookmarks: this.state.bookmarks, windowId: sender.tab.windowId});
-        }
-      } else if (msg.method === 'queryHistory') {
-        if (msg.init || this.state.history.length === 0) {
-          this.queryHistory(sender.tab.windowId);
-        } else {
-          sendMsg({history: this.state.history, windowId: sender.tab.windowId});
-        }
-      } else if (msg.method === 'queryExtensions') {
-        this.queryExtensions(sender.tab.windowId);
-      } else if (msg.method === 'getScreenshots') {
-        sendResponse({screenshots: this.state.screenshots, windowId: sender.tab.windowId});
-      } else if (msg.type === 'screenshot') {
-        this.image = msg.image;
-        let refWindow = findIndex(this.state.windows, win => win.id === sender.tab.windowId);
-        let refTab = findIndex(this.state.windows[refWindow].tabs, tab => tab.id === sender.tab.id);
+        case 'removeSingleWindow':
+          this.removeSingleWindow(msg.windowId);
+          break;
 
-        createScreenshotThrottled(this, refWindow, refTab);
-      } else if (msg.method === 'removeSingleWindow') {
-        this.removeSingleWindow(msg.windowId);
-      } else if (msg.method === 'undoAction') {
-        let refWindow = findIndex(this.state.windows, win => win.id === msg.windowId);
+        case 'undoAction': {
+          let refWindow = findIndex(this.state.windows, win => win.id === msg.windowId);
 
-        this.undoAction(this.state.windows[refWindow].tabs, this.state.chromeVersion);
-      } else if (msg.method === 'getActions') {
-        sendResponse({actions: this.state.actions, windowId: sender.tab.windowId});
-      } else if (msg.method === 'setPermissions') {
-        prefsStore.setPermissions(msg.permissions);
+          this.undoAction(this.state.windows[refWindow].tabs, this.state.chromeVersion);
+          break;
+        }
+
+        case 'getActions':
+          return {actions: this.state.actions, windowId: sender.tab.windowId};
+        case 'setPermissions':
+          prefsStore.setPermissions(msg.permissions);
+          break;
       }
 
       return true;
-    });
+    }));
   }
 
   formatTabs = (prefs, tabs) => {
@@ -720,7 +750,7 @@ class Bg {
       return;
     }
 
-    chrome.bookmarks.getTree((bookmarks) => {
+    chrome.bookmarks.getTree((bookmarks: ChromeBookmarkTreeNode[]) => {
       this.state.set({bookmarks}, true);
 
       if (!windowId) {
@@ -744,7 +774,7 @@ class Bg {
       maxResults: 1000,
       startTime: now - 6.048e+8,
       endTime: now
-    }, (history) => {
+    }, (history: ChromeHistoryItem[]) => {
       this.state.set({history}, true);
 
       if (!windowId) {

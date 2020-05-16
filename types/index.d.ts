@@ -383,6 +383,29 @@ declare global {
     historyOnVisitRemoved: chrome.history.RemovedResult;
   }
 
+  interface Screenshot {
+    url: string;
+    data: string;
+    timeStamp: number;
+  }
+
+  interface BgMessage {
+    e: any;
+    type: 'startup' | 'appState' | 'prefs' | 'screenshot' | 'error';
+    action: boolean | 'newVersion' | 'installed' | 'versionUpdate';
+    noPermissions: 'bookmarks' | 'history' | 'management';
+    screenshots?: Screenshot[];
+    sessions?: SessionState[];
+    windows: ChromeWindow[];
+    bookmarks: ChromeBookmarkTreeNode[];
+    history: ChromeHistoryItem[];
+    extensions: BackgroundState['extensions'][];
+    actions: ActionRecord[];
+    windowId?: number;
+    init: boolean;
+    focusSearchEntry: boolean;
+  }
+
   interface BackgroundState extends State.Data {
     eventState: EventState;
     prefs: PreferencesState;

@@ -7,8 +7,8 @@
     "url": "https://github.com/jaszhix/tab-master-5000-chrome-extension"
   },
   "scripts": {
-    "dev-chrome": "cross-env DEV_ENV=chrome NODE_ENV=development concurrently \"gulp build-bg\" \"gulp watch\" \"cross-env BUNDLE_ENTRY=app node --max_old_space_size=16192 --trace-warnings -r @babel/register -r @babel/polyfill -r ts-node/register ./node_modules/webpack-dev-server/bin/webpack-dev-server --host=0.0.0.0 --config ./webpack.config\"",
-    "dev-firefox": "cross-env DEV_ENV=firefox NODE_ENV=development concurrently \"gulp build-bg\" \"gulp watch\" \"cross-env BUNDLE_ENTRY=app node --max_old_space_size=16192 --trace-warnings  -r @babel/register -r @babel/polyfill -r ts-node/register ./node_modules/webpack-dev-server/bin/webpack-dev-server --config ./webpack.config\"",
+    "dev-chrome": "cross-env DEV_ENV=chrome NODE_ENV=development concurrently \"gulp build-bg\" \"cross-env DEV_ENV=chrome NODE_ENV=development gulp watch\" \"cross-env BUNDLE_ENTRY=app node --max_old_space_size=16192 --trace-warnings -r @babel/register -r @babel/polyfill -r ts-node/register ./node_modules/webpack-dev-server/bin/webpack-dev-server --host=0.0.0.0 --config ./webpack.config\"",
+    "dev-firefox": "cross-env DEV_ENV=firefox NODE_ENV=development concurrently \"gulp build-bg\" \"cross-env DEV_ENV=firefox NODE_ENV=development gulp watch\" \"cross-env BUNDLE_ENTRY=app node --max_old_space_size=16192 --trace-warnings  -r @babel/register -r @babel/polyfill -r ts-node/register ./node_modules/webpack-dev-server/bin/webpack-dev-server --config ./webpack.config\"",
     "build-bg": "cross-env BUNDLE_ENTRY=bg node --trace-warnings -r @babel/register -r @babel/polyfill -r ts-node/register ./node_modules/webpack/bin/webpack --config webpack.config --profile --colors",
     "build-app": "cross-env BUNDLE_ENTRY=app node --trace-warnings -r @babel/register -r @babel/polyfill -r ts-node/register ./node_modules/webpack/bin/webpack --config webpack.config --profile --colors",
     "build-all": "concurrently \"npm run build-app && gulp dist\" \"npm run build-bg\" \"gulp clean\"",

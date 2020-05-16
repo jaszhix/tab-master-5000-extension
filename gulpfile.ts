@@ -108,12 +108,8 @@ gulp.task('package', gulp.series('backup-source-maps', function() {
 
 gulp.task('dist', gulp.series('copy', 'copyChunks', 'htmlmin', 'imgmin', 'package', (done) => done()));
 
-gulp.task('watch', function(done) {
-  const glob = './app/scripts/bg/*.{ts}';
-
-  gulp.watch(glob)
-    .on('change', gulp.parallel('build-bg'));
-  done();
+gulp.task('watch', function() {
+  gulp.watch('./app/scripts/bg/*.ts', gulp.parallel('build-bg'));
 });
 
 gulp.task('default', gulp.series('watch', (done) => done()));
