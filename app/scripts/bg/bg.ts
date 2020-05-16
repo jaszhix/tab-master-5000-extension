@@ -546,11 +546,13 @@ class Bg {
       await browser.tabs.create({active, windowId});
     });
 
-    if (eventState.onInstalled.reason === 'install') {
-      sendMsg({e: eventState.onInstalled, type: 'appState', action: 'installed'});
-    } else if (eventState.onInstalled.reason === 'update') {
-      sendMsg({e: eventState.onInstalled, type: 'appState', action: 'versionUpdate'});
-    }
+    setTimeout(() => {
+      if (eventState.onInstalled.reason === 'install') {
+        sendMsg({e: eventState.onInstalled, type: 'appState', action: 'installed'});
+      } else if (eventState.onInstalled.reason === 'update') {
+        sendMsg({e: eventState.onInstalled, type: 'appState', action: 'versionUpdate'});
+      }
+    }, 1000);
   }
 
   attachMessageListener = (s) => {
