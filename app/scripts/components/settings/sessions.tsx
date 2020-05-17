@@ -113,8 +113,8 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
       }
     };
 
-    each(this.props.sessions, (session, s) => {
-      each(session.tabs, (Window, w) => {
+    each(this.props.sessions, (session) => {
+      each(session.tabs, (Window) => {
         each(Window, replaceFavicon);
       });
     });

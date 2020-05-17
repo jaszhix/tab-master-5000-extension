@@ -6,7 +6,6 @@
     "app/**/**/*.tsx",
     "app/**/**/*.js",
     "test/**/*.ts",
-    "types",
     "webpack.config.ts",
     "gulpfile.ts"
   ]

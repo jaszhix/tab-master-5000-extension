@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'; // eslint-disable-line no-unused-vars
 import Loadable from 'react-loadable';
 
 const sanitizeRegex = /[^a-z0-9]/gi;

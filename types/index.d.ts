@@ -1,4 +1,4 @@
-import type * as aphrodite from 'aphrodite';
+import type * as aphrodite from 'aphrodite'; // eslint-disable-line no-unused-vars
 
 type Modify<T, R> = Omit<T, keyof R> & R;
 

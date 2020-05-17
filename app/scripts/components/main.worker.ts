@@ -1,6 +1,6 @@
 import Fuse from 'fuse.js';
 import uuid from 'node-uuid';
-import _ from 'lodash';
+import {assignIn, cloneDeep, merge, orderBy, uniqBy, flatten, last} from 'lodash';
 import {each, find, findIndex, filter, map, tryFn} from '@jaszhix/utils';
 
 import {includes} from './utils';
@@ -72,17 +72,17 @@ const sort = (state, data) => {
   let result;
 
   if (state.prefs.mode === 'tabs') {
-    let pinned = _.orderBy(filter(data, tab => tab.pinned === true), state.sort, state.direction);
-    let unpinned = _.orderBy(filter(data, tab => tab.pinned === false), state.sort, state.direction);
-    let concat = _.concat(pinned, unpinned);
+    let pinned = orderBy(filter(data, tab => tab.pinned === true), state.sort, state.direction);
+    let unpinned = orderBy(filter(data, tab => tab.pinned === false), state.sort, state.direction);
+    let concat = pinned.concat(unpinned);
 
     if (state.sort !== 'count') {
-      result = _.orderBy(concat, ['pinned', state.sort], [state.direction]);
+      result = orderBy(concat, ['pinned', state.sort], [state.direction]);
     } else {
       result = concat;
     }
   } else {
-    result = _.orderBy(data, [state.sort], [state.direction]);
+    result = orderBy(data, [state.sort], [state.direction]);
   }
 
   return result;
@@ -116,7 +116,7 @@ const checkFavicons = (state, tabs, stateUpdate: Partial<GlobalState> = {}) => {
     }
   });
 
-  each(matched, function(match, i) {
+  each(matched, function(match) {
     // @ts-ignore
     postMessage({msg: 'setFavicon', args: [match, matched.length - ignoredCount, unmatchedCount++]});
   });
@@ -150,7 +150,7 @@ const searchChange = (query, items) => {
       threshold: 0.4
     });
 
-    _items = map(_.orderBy(itemsSearch.search(query.toLowerCase()), 'score'), item => item.item);
+    _items = map(orderBy(itemsSearch.search(query.toLowerCase()), 'score'), item => item.item);
   }, () => _items = items);
   // @ts-ignore
   postMessage({stateUpdate: {searchCache: _items, modeKey: 'searchCache'}});
@@ -158,14 +158,14 @@ const searchChange = (query, items) => {
 
 const processHistory = function(s, msg) {
   let {history} = msg;
-  let tabs: ChromeHistoryItem[] = _.flatten(s.allTabs);
+  let tabs: ChromeHistoryItem[] = flatten(s.allTabs);
 
   for (let i = 0, len = history.length; i < len; i++) {
-    history[i] = _.assignIn(history[i], _.cloneDeep(defaults(i, s.windowId)));
+    history[i] = assignIn(history[i], cloneDeep(defaults(i, s.windowId)));
 
     for (let y = 0, _len = tabs.length; y < _len; y++) {
       if (history[i].url === tabs[y].url) {
-        history[i] = _.assignIn(_.cloneDeep(tabs[y]), history[i]);
+        history[i] = assignIn(cloneDeep(tabs[y]), history[i]);
         history[i].openTab = tabs[y].id;
       }
     }
@@ -179,7 +179,7 @@ const processBookmarks = function(s, msg) {
   let {bookmarks} = msg;
   let _bookmarks = [];
   let folders = [];
-  let tabs: ChromeBookmarkTreeNode[] = _.flatten(s.allTabs);
+  let tabs: ChromeBookmarkTreeNode[] = flatten(s.allTabs);
   let iter = -1;
 
   let addBookmarkChildren = (bookmarkLevel, title='') => {
@@ -206,7 +206,7 @@ const processBookmarks = function(s, msg) {
   };
 
   addBookmarkChildren(bookmarks[0]);
-  _bookmarks = _.uniqBy(_bookmarks, 'id')
+  _bookmarks = uniqBy(_bookmarks, 'id')
 
   const findOpenTab = url => tab => tab.url === url;
 
@@ -214,10 +214,10 @@ const processBookmarks = function(s, msg) {
     let refOpenTab = findIndex(tabs, findOpenTab(_bookmarks[i].url));
 
     if (refOpenTab > -1) {
-      _bookmarks[i] = _.merge(_.cloneDeep(tabs[refOpenTab]), _bookmarks[i]);
+      _bookmarks[i] = merge(cloneDeep(tabs[refOpenTab]), _bookmarks[i]);
       _bookmarks[i].openTab = tabs[refOpenTab].id;
     } else {
-      _bookmarks[i] = _.assignIn(_bookmarks[i], _.cloneDeep(defaults(iter, s.windowId)));
+      _bookmarks[i] = assignIn(_bookmarks[i], cloneDeep(defaults(iter, s.windowId)));
     }
   }
 
@@ -236,14 +236,14 @@ const processAppExtension = function(s, msg: {extensions: ChromeExtensionInfo[]}
   if (!extensions) return;
 
   for (let i = 0, len = extensions.length; i < len; i++) {
-    _.assign(extensions[i], {
-      favIconUrl: extensions[i].icons ? filterFavicons(_.last(extensions[i].icons).url, _.last(extensions[i].icons).url) : '../images/IDR_EXTENSIONS_FAVICON@2x.png',
+    Object.assign(extensions[i], {
+      favIconUrl: extensions[i].icons ? filterFavicons(last(extensions[i].icons).url, last(extensions[i].icons).url) : '../images/IDR_EXTENSIONS_FAVICON@2x.png',
       id: extensions[i].id,
       url: isApp ? extensions[i].appLaunchUrl : extensions[i].optionsUrl,
       title: extensions[i].name
     });
 
-    extensions[i] = _.assignIn(defaults(i), extensions[i]);
+    extensions[i] = assignIn(defaults(i), extensions[i]);
   }
 
   let stateUpdate: Partial<GlobalState> = isApp ? {apps: extensions} : {extensions};
@@ -267,8 +267,8 @@ const processSessionTabs = function(sessions, tabs, windowId) {
   for (let i = 0, len = sessions.length; i < len; i++) {
     for (let y = 0, _len = sessions[i].tabs.length; y < _len; y++) {
       for (let z = 0, __len = sessions[i].tabs[y].length; z < __len; z++) {
-        sessions[i].tabs[y][z] = _.assignIn(
-          _.cloneDeep(defaults(iter++, windowId)),
+        sessions[i].tabs[y][z] = assignIn(
+          cloneDeep(defaults(iter++, windowId)),
           sessions[i].tabs[y][z],
           {
             id: uuid.v4(),
@@ -283,7 +283,7 @@ const processSessionTabs = function(sessions, tabs, windowId) {
         let refOpenTab = findIndex(tabs, tab => tab.url === sessions[i].tabs[y][z].url);
 
         if (refOpenTab !== -1) {
-          sessions[i].tabs[y][z] = _.assignIn(sessions[i].tabs[y][z], tabs[refOpenTab]);
+          sessions[i].tabs[y][z] = assignIn(sessions[i].tabs[y][z], tabs[refOpenTab]);
           sessions[i].tabs[y][z].openTab = tabs[refOpenTab].id;
         }
       }
@@ -292,7 +292,7 @@ const processSessionTabs = function(sessions, tabs, windowId) {
     }
   }
 
-  return _.uniqBy(_.flatten(allTabs), 'url');
+  return uniqBy(flatten(allTabs), 'url');
 }
 
 const processWindows = function(s, msg) {
@@ -319,7 +319,7 @@ const processWindows = function(s, msg) {
     }
 
     if (s.prefs.allTabs) {
-      stateUpdate.tabs = _.flatten(stateUpdate.allTabs);
+      stateUpdate.tabs = flatten(stateUpdate.allTabs);
     } else if (!msg.modalOpen) {
       let win = find(msg.windows, function(win) {
         return win.id === s.windowId;
@@ -344,7 +344,7 @@ const processWindows = function(s, msg) {
       stateUpdate.direction = 'desc';
     }
 
-    stateUpdate.sessionTabs = processSessionTabs(s.sessions, _.flatten(stateUpdate.allTabs), s.windowId);
+    stateUpdate.sessionTabs = processSessionTabs(s.sessions, flatten(stateUpdate.allTabs), s.windowId);
   } else {
     // @ts-ignore
     postMessage({msg: 'handleMode', mode: s.prefs.mode, stateUpdate, init: msg.init});

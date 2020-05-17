@@ -1,6 +1,6 @@
 import React from 'react';
 import {StyleSheet, css} from 'aphrodite';
-import _ from 'lodash';
+import {throttle} from 'lodash';
 import v from 'vquery';
 import {each, map, tryFn} from '@jaszhix/utils';
 
@@ -68,16 +68,16 @@ class ItemsContainer extends React.Component<ItemsContainerProps, ItemContainerS
       state.connect(
         ['sort', 'prefs'], () => {
           this.scrollTop = this.ref.scrollTop;
-          _.defer(() => {
+          setTimeout(() => {
             if (this.ref.scrollTop === 0) {
               this.ref.scrollTop = this.scrollTop;
             }
-          });
+          }, 0);
         }
       )
     ];
     this.height = 0;
-    this.setViewableRange = _.throttle(this._setViewableRange, 250, {leading: false, trailing: true});
+    this.setViewableRange = throttle(this._setViewableRange, 250, {leading: false, trailing: true});
   }
 
   componentWillUnmount = () => {
@@ -184,9 +184,9 @@ class ItemsContainer extends React.Component<ItemsContainerProps, ItemContainerS
     }
 
     if (start === end) {
-      _.defer(() => {
+      setTimeout(() => {
         tryFn(() => this.dragged.el.parentNode.removeChild(this.placeholder))
-      });
+      }, 0);
       return;
     }
 
@@ -198,10 +198,10 @@ class ItemsContainer extends React.Component<ItemsContainerProps, ItemContainerS
 
     chrome.tabs.move(p.s.tabs[start].id, {index}, () => {
       queryTabs();
-      _.defer(() => {
+      setTimeout(() => {
         tryFn(() => this.dragged.el.parentNode.removeChild(this.placeholder));
         state.set({dragging: false});
-      });
+      }, 0);
     });
   }
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import {StyleSheet, css} from 'aphrodite';
-import _ from 'lodash';
+import {isEqual, upperFirst, trimEnd} from 'lodash';
 import moment from 'moment';
 import {findIndex} from '@jaszhix/utils';
 
@@ -84,11 +84,11 @@ class Tile extends React.Component<TileProps, TileState> {
 
   componentDidMount = () => {
     this.updateScreenshot();
-    utils.checkDuplicateTabs(this.props.tab, (duplicate) => this.setState({duplicate}));
+    this.handleDuplicates();
   }
 
   shouldComponentUpdate = (nP, nS) => {
-    return (!_.isEqual(this.props, nP) || !_.isEqual(this.state, nS) || state.screenshotClear) && state.settings !== 'sessions';
+    return (!isEqual(this.props, nP) || !isEqual(this.state, nS) || state.screenshotClear) && state.settings !== 'sessions';
   }
 
   componentWillUnmount = () => {
@@ -436,7 +436,7 @@ class Tile extends React.Component<TileProps, TileState> {
                     </div> : null}
                   {p.prefs.mode === 'history' ?
                     <div onClick={this.handleClick} className={css(dynamicStyles.ST2) + ' text-muted text-size-small'}>
-                      {_.capitalize(moment(p.tab.lastVisitTime).fromNow())}
+                      {upperFirst(moment(p.tab.lastVisitTime).fromNow())}
                     </div> : null}
                   {p.prefs.mode === 'bookmarks' ?
                     <div onClick={() => this.filterFolders(p.tab.folder)} className={css(dynamicStyles.ST2) + ' text-muted text-size-small'}>
@@ -446,7 +446,7 @@ class Tile extends React.Component<TileProps, TileState> {
                     <div
                       onClick={() => this.filterFolders(p.tab.originSession)}
                       className={css(p.tab.hasOwnProperty('domain') && p.tab.domain ? dynamicStyles.ST2 : dynamicStyles.ST1) + ' text-muted text-size-small'}>
-                      {p.tab.label ? p.tab.label : _.capitalize(moment(p.tab.sTimeStamp).fromNow())}
+                      {p.tab.label ? p.tab.label : upperFirst(moment(p.tab.sTimeStamp).fromNow())}
                     </div> : null}
                 </div> : null}
               {p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ?
@@ -498,7 +498,7 @@ class Tile extends React.Component<TileProps, TileState> {
               {p.prefs.mode !== 'apps' && p.prefs.mode !== 'extensions' ?
                 <li>
                   <i
-                    title={`${isTab ? utils.t('close') : utils.t('remove')} ${_.trimEnd(_.upperFirst(utils.t(p.prefs.mode)), 's')}${p.prefs.mode === 'sessions' ? ' '+utils.t('tab') : ''}`}
+                    title={`${isTab ? utils.t('close') : utils.t('remove')} ${trimEnd(upperFirst(utils.t(p.prefs.mode)), 's')}${p.prefs.mode === 'sessions' ? ' '+utils.t('tab') : ''}`}
                     className={css(dynamicStyles.closeIcon, dynamicStyles.iconCommon) + ` icon-${isTab ? 'cross2' : 'eraser'} ntg-x`}
                     onMouseEnter={this.handleTabCloseHoverIn}
                     onMouseLeave={this.handleTabCloseHoverOut}
@@ -518,7 +518,7 @@ class Tile extends React.Component<TileProps, TileState> {
               {p.prefs.mode === 'apps' || p.prefs.mode === 'extensions' ?
                 <li>
                   <i
-                    title={`${_.trimEnd(_.upperFirst(utils.t(p.prefs.mode)), 's')} ${utils.t('homepage')}`}
+                    title={`${trimEnd(upperFirst(utils.t(p.prefs.mode)), 's')} ${utils.t('homepage')}`}
                     className={css(dynamicStyles.homepageIcon, dynamicStyles.iconCommon) + ' icon-home5 ntg-x'}
                     onMouseEnter={this.handleTabCloseHoverIn}
                     onMouseLeave={this.handleTabCloseHoverOut}

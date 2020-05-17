@@ -1,5 +1,5 @@
 import {browser} from 'webextension-polyfill-ts';
-import type * as B from 'webextension-polyfill-ts';
+import type * as B from 'webextension-polyfill-ts'; // eslint-disable-line no-unused-vars
 import {merge, cloneDeep} from 'lodash';
 import {init} from '@jaszhix/state';
 import {each, tryFn} from '@jaszhix/utils';

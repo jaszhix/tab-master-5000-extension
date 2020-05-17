@@ -10,7 +10,7 @@ if (!state.isOptions) {
 
 import React from 'react';
 import ReactTooltip from 'react-tooltip';
-import _ from 'lodash';
+import {assignIn} from 'lodash';
 import v from 'vquery';
 import {each, filter, tryFn} from '@jaszhix/utils';
 
@@ -25,9 +25,9 @@ import Search from './search';
 import tmWorker from './main.worker';
 import {sidebarSortOptions} from './constants';
 
-import {PreferencesComponentProps, PreferencesComponentState} from './settings/preferences'; // eslint-disable-line no-unused-vars
-import {ContextMenuProps, ContextMenuState} from './context'; // eslint-disable-line no-unused-vars
-import {ModalHandlerProps, ModalHandlerState} from './modal'; // eslint-disable-line no-unused-vars
+import type {PreferencesComponentProps, PreferencesComponentState} from './settings/preferences'; // eslint-disable-line no-unused-vars
+import type {ContextMenuProps, ContextMenuState} from './context'; // eslint-disable-line no-unused-vars
+import type {ModalHandlerProps} from './modal'; // eslint-disable-line no-unused-vars
 
 let Preferences = AsyncComponent({
   loader: () => import(/* webpackChunkName: "preferences" */ './settings/preferences')
@@ -37,7 +37,7 @@ let ContextMenu = AsyncComponent({
 } as LoadableExport.Options<unknown, object>) as React.ComponentClass<ContextMenuProps, ContextMenuState>;
 let ModalHandler = AsyncComponent({
   loader: () => import(/* webpackChunkName: "modal" */ './modal')
-} as LoadableExport.Options<unknown, object>) as React.ComponentClass<ModalHandlerProps, ModalHandlerState>;
+} as LoadableExport.Options<unknown, object>) as React.ComponentClass<ModalHandlerProps>;
 
 window.tmWorker = new tmWorker();
 
@@ -212,7 +212,7 @@ class Root extends React.Component<RootProps, RootState> {
       }
 
       if (sU) {
-        _.assignIn(sU, stateUpdate);
+        assignIn(sU, stateUpdate);
         return sU;
       } else {
         state.set(stateUpdate);
@@ -221,7 +221,7 @@ class Root extends React.Component<RootProps, RootState> {
     } else {
       if (sU) {
         sU.tabs = p.s.tabs;
-        _.assignIn(sU, stateUpdate);
+        assignIn(sU, stateUpdate);
         return sU;
       } else {
         state.set({tabs: p.s.tabs});

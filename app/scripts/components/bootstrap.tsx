@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {StyleSheet, css} from 'aphrodite';
-import _ from 'lodash';
+import {assignIn, cloneDeep} from 'lodash';
 import onClickOutside from 'react-onclickoutside';
 import ReactTooltip from 'react-tooltip';
 import {tryFn} from '@jaszhix/utils';
@@ -49,7 +49,6 @@ export class Btn extends React.Component<BtnProps, BtnState> {
   componentDidMount = () => {
     let selectedTheme = themeStore.getSelectedTheme();
 
-    this.setState({theme: selectedTheme});
     this.themeChange({theme: selectedTheme});
   }
 
@@ -64,10 +63,10 @@ export class Btn extends React.Component<BtnProps, BtnState> {
     tryFn(() => this.ref.style.display = 'none');
   }
 
-  themeChange(e){
+  themeChange = (e) => {
     if (e.theme) {
       this.setState({theme: e.theme});
-      _.defer(()=>ReactTooltip.rebuild());
+      setTimeout(ReactTooltip.rebuild, 0);
     }
   }
 
@@ -111,16 +110,16 @@ export class Btn extends React.Component<BtnProps, BtnState> {
         };
       }
 
-      _.assignIn(style, {
+      assignIn(style, {
         boxShadow: `${s.theme.tileShadow} 1px 1px 5px -1px`,
         opacity: '1'
       });
-      _.assignIn(style, _.cloneDeep(p.style));
+      assignIn(style, cloneDeep(p.style));
       let faStyle = {
         paddingRight: !p.noIconPadding ? '6px' : null
       };
 
-      _.assignIn(faStyle, _.cloneDeep(p.faStyle));
+      assignIn(faStyle, cloneDeep(p.faStyle));
       const dynamicStyles = StyleSheet.create({
         style,
         faStyle
@@ -339,12 +338,12 @@ export class Panel extends React.Component<PanelProps> {
     let defaultStyle = {};
 
     if (p.content) {
-      _.assignIn(defaultStyle, {
+      assignIn(defaultStyle, {
         boxShadow: p.type === 'default' ? '0 1px 3px rgba(0, 0, 0, 0), 0 1px 2px rgba(0, 0, 0, 0)' : 'initial'
       });
     }
 
-    _.assignIn(defaultStyle, _.cloneDeep(p.style));
+    assignIn(defaultStyle, cloneDeep(p.style));
     return (
       <div
         id={p.id}
@@ -404,19 +403,16 @@ interface TabsState {
 
 export class Tabs extends React.Component<TabsProps, TabsState> {
   static defaultProps = {
-    options: []
+    options: [],
+    initActiveOption: 0,
   };
 
   constructor(props) {
     super(props);
 
     this.state = {
-      active: 0
+      active: props.initActiveOption
     }
-  }
-
-  componentDidMount = () => {
-    this.setState({active: this.props.initActiveOption});
   }
 
   handleTabClick = (option, i) => {
@@ -441,7 +437,7 @@ export class Tabs extends React.Component<TabsProps, TabsState> {
               borderRightColor: active ? p.borderTopColor : p.borderLeftRightColor
             };
 
-            tabStyle = _.assignIn(tabStyle, _.cloneDeep(p.tabStyle));
+            tabStyle = assignIn(tabStyle, cloneDeep(p.tabStyle));
             return (
               <li key={i} className={s.active === i ? 'active' : ''}>
                 <a style={tabStyle} data-toggle="tab" className="legitRipple" onClick={() => this.handleTabClick(option, i)}>{option.label}</a>
@@ -482,15 +478,15 @@ export class Context extends React.Component<ContextProps> {
       <ul
         className="dropdown-menu dropdown-menu-xs"
         style={{
-        userSelect: 'none',
-        display: 'block',
-        position: 'relative',
-        width: '100%',
-        marginTop: '0',
-        float: 'none',
-        padding: '1px',
-        borderRadius: '1px',
-        backgroundColor: p.theme.settingsBg
+          userSelect: 'none',
+          display: 'block',
+          position: 'relative',
+          width: '100%',
+          marginTop: '0',
+          float: 'none',
+          padding: '1px',
+          borderRadius: '1px',
+          backgroundColor: p.theme.settingsBg
         }}>
         {p.options ? p.options.map((option, i) => {
           if (option.divider) {
@@ -505,11 +501,11 @@ export class Context extends React.Component<ContextProps> {
                     <span
                       className="switchery switchery-default"
                       style={{
-                      left: '8px',
-                      backgroundColor: option.switch ? p.theme.darkBtnBg : 'rgba(255, 255, 255, 0)',
-                      borderColor: option.switch ? p.theme.textFieldsBorder : p.theme.darkBtnBg,
-                      boxShadow: `${option.switch ? p.theme.textFieldsBorder : p.theme.darkBtnBg} 0px 0px 0px 8px inset`,
-                      transition: p.animations ? 'border 0.4s, box-shadow 0.4s, background-color 1.2s' : 'initial',
+                        left: '8px',
+                        backgroundColor: option.switch ? p.theme.darkBtnBg : 'rgba(255, 255, 255, 0)',
+                        borderColor: option.switch ? p.theme.textFieldsBorder : p.theme.darkBtnBg,
+                        boxShadow: `${option.switch ? p.theme.textFieldsBorder : p.theme.darkBtnBg} 0px 0px 0px 8px inset`,
+                        transition: p.animations ? 'border 0.4s, box-shadow 0.4s, background-color 1.2s' : 'initial',
                       }}>
                       <small style={{left: option.switch ? '14px' : '0px', transition: p.animations ? 'background-color 0.4s, left 0.2s' : 'initial', backgroundColor: option.switch ? p.theme.darkBtnText : p.theme.bodyText}} />
                     </span>

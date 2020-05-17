@@ -2,7 +2,7 @@
 
 import React from 'react';
 import {StyleSheet, css} from 'aphrodite';
-import _ from 'lodash';
+import {assignIn, isEqual} from 'lodash';
 import onClickOutside from 'react-onclickoutside';
 import ReactTooltip from 'react-tooltip';
 import state from './stores/state';
@@ -29,16 +29,18 @@ class LargeBtn extends React.Component<LargeBtnProps> {
   constructor(props) {
     super(props);
   }
+
   render = () => {
     let p = this.props;
+
     return (
       <button
-      style={p.style}
-      className="btn btn-block btn-float btn-float-lg legitRipple"
-      type="button"
-      onClick={p.onClick}
-      onMouseEnter={p.onMouseEnter}
-      onMouseLeave={p.onMouseLeave}>
+        style={p.style}
+        className="btn btn-block btn-float btn-float-lg legitRipple"
+        type="button"
+        onClick={p.onClick}
+        onMouseEnter={p.onMouseEnter}
+        onMouseLeave={p.onMouseLeave}>
         <i className={p.icon} />
         <span>{p.label}</span>
       </button>
@@ -59,10 +61,7 @@ interface SidebarMenuProps {
 }
 
 interface SidebarMenuState {
-  sidebarTab: string;
   lgBtnHover: string;
-  viewMode: boolean;
-  sortBy: boolean;
 }
 
 export class SidebarMenu extends React.Component<SidebarMenuProps, SidebarMenuState> {
@@ -70,18 +69,18 @@ export class SidebarMenu extends React.Component<SidebarMenuProps, SidebarMenuSt
     super(props);
 
     this.state = {
-      sidebarTab: 'Navigation',
       lgBtnHover: '',
-      viewMode: true,
-      sortBy: true
     }
   }
+
   handleFormat = () => {
     let prefsUpdate = {format: this.props.prefs.format === 'tile' ? 'table' : 'tile'} as PreferencesState;
-    state.set({prefs: _.assignIn(this.props.prefs, prefsUpdate)});
-    _.defer(() => setPrefs(prefsUpdate));
+
+    state.set({prefs: assignIn(this.props.prefs, prefsUpdate)});
+    setTimeout(() => setPrefs(prefsUpdate), 0);
     ReactTooltip.hide();
   }
+
   handleSortOption = (key) => {
     state.set({
       sort: key,
@@ -90,6 +89,7 @@ export class SidebarMenu extends React.Component<SidebarMenuProps, SidebarMenuSt
       : state.direction === 'desc' ? 'asc' : 'desc'
     }, true);
   }
+
   render = () => {
     let p = this.props;
     let s = this.state;
@@ -165,9 +165,10 @@ export class SidebarMenu extends React.Component<SidebarMenuProps, SidebarMenuSt
       categorySortSpan: {border: `2px solid ${textColor}`},
       applyTabOrderContainer: {textAlign: 'center'},
     });
+
     return (
       <div
-      className={css(dynamicStyles.container) + ' sidebar sidebar-secondary sidebar-default'}>
+        className={css(dynamicStyles.container) + ' sidebar sidebar-secondary sidebar-default'}>
         <div className="sidebar-content">
           <div className="tabbable sortable ui-sortable">
             <ul className="nav nav-lg nav-tabs nav-justified">
@@ -186,8 +187,8 @@ export class SidebarMenu extends React.Component<SidebarMenuProps, SidebarMenuSt
               <div className="tab-pane no-padding active" id="components-tab">
                 <div className="sidebar-category">
                   <div
-                  className={css(dynamicStyles.categoryContainer) + ` category-title ${p.prefs.showViewMode ? '' : 'category-collapsed'}`}
-                  onClick={() => setPrefs({showViewMode: !p.prefs.showViewMode})}>
+                    className={css(dynamicStyles.categoryContainer) + ` category-title ${p.prefs.showViewMode ? '' : 'category-collapsed'}`}
+                    onClick={() => setPrefs({showViewMode: !p.prefs.showViewMode})}>
                     <span>{utils.t('viewMode')}</span>
                     <ul className="icons-list">
                       <li>
@@ -197,9 +198,9 @@ export class SidebarMenu extends React.Component<SidebarMenuProps, SidebarMenuSt
                   </div>
 
                   {p.prefs.showViewMode ?
-                  <div className={css(dynamicStyles.categoryContentContainer) + ' category-content'}>
-                    <div className="row" onMouseLeave={() => this.setState({lgBtnHover: ''})}>
-                      {map(lgBtnOptions, (row, i) => {
+                    <div className={css(dynamicStyles.categoryContentContainer) + ' category-content'}>
+                      <div className="row" onMouseLeave={() => this.setState({lgBtnHover: ''})}>
+                        {map(lgBtnOptions, (row, i) => {
                         return (
                           <div key={i} className="row">
                             {map(row, (column, c) => {
@@ -212,14 +213,16 @@ export class SidebarMenu extends React.Component<SidebarMenuProps, SidebarMenuSt
                                         backgroundColor: p.prefs.mode === option.label.toLowerCase() ? themeStore.opacify(p.theme.darkBtnBg, 0.8) : s.lgBtnHover === option.label ? p.theme.lightBtnBgHover : themeStore.opacify(p.theme.lightBtnBg, 0.8),
                                         marginBottom: '10px'
                                       };
+
                                       return (
                                         <LargeBtn
-                                        key={o}
-                                        style={lgBtnStyle}
-                                        icon={option.icon}
-                                        label={option.label}
-                                        onClick={() => handleMode(option.key, {}, false, true)}
-                                        onMouseEnter={() => this.setState({lgBtnHover: option.label})} />
+                                          key={o}
+                                          style={lgBtnStyle}
+                                          icon={option.icon}
+                                          label={option.label}
+                                          onClick={() => handleMode(option.key, {}, false, true)}
+                                          onMouseEnter={() => this.setState({lgBtnHover: option.label})}
+                                        />
                                       );
                                     } else {
                                       return null;
@@ -231,13 +234,13 @@ export class SidebarMenu extends React.Component<SidebarMenuProps, SidebarMenuSt
                           </div>
                         );
                       })}
-                    </div>
-                  </div> : null}
+                      </div>
+                    </div> : null}
                 </div>
                 <div className="sidebar-category">
                   <div
-                  className={css(dynamicStyles.categoryTitleContainer) + ` category-title ${p.prefs.sort ? '' : 'category-collapsed'}`}
-                  onClick={() => setPrefs({sort: !p.prefs.sort})}>
+                    className={css(dynamicStyles.categoryTitleContainer) + ` category-title ${p.prefs.sort ? '' : 'category-collapsed'}`}
+                    onClick={() => setPrefs({sort: !p.prefs.sort})}>
                     <span>{utils.t('sortBy')}</span>
                     <ul className="icons-list">
                       <li>
@@ -247,8 +250,8 @@ export class SidebarMenu extends React.Component<SidebarMenuProps, SidebarMenuSt
                   </div>
 
                   {p.prefs.sort ?
-                  <div className={css(dynamicStyles.categorySortContainer) + " category-content"}>
-                    <form action="#">
+                    <div className={css(dynamicStyles.categorySortContainer) + " category-content"}>
+                      <form action="#">
                         <div className="form-group">
                           {map(p.keys, (key, i) => {
                             return (
@@ -257,10 +260,11 @@ export class SidebarMenu extends React.Component<SidebarMenuProps, SidebarMenuSt
                                   <div className="choice">
                                     <span className={css(dynamicStyles.categorySortSpan) + (p.sort === key ? ' checked' : '')}>
                                       <input
-                                      type="radio"
-                                      name="radio-group"
-                                      className="styled"
-                                      onClick={() => this.handleSortOption(key)} />
+                                        type="radio"
+                                        name="radio-group"
+                                        className="styled"
+                                        onClick={() => this.handleSortOption(key)}
+                                      />
                                     </span>
                                   </div>
                                   {`${p.labels[key]} ${p.sort === key ? `(${p.direction === 'asc' ? utils.t('ascending') : utils.t('descending')})` : ''}`}
@@ -269,12 +273,12 @@ export class SidebarMenu extends React.Component<SidebarMenuProps, SidebarMenuSt
                             );
                           })}
                         </div>
-                    </form>
-                  </div> : null}
+                      </form>
+                    </div> : null}
                   {p.sort !== 'index' && p.prefs.mode === 'tabs' ?
-                  <div className={css(dynamicStyles.applyTabOrderContainer)}>
-                    <Btn className="ntg-top-btn"  onClick={() => state.set({applyTabOrder: true})}>{utils.t('apply')}</Btn>
-                  </div> : null}
+                    <div className={css(dynamicStyles.applyTabOrderContainer)}>
+                      <Btn className="ntg-top-btn"  onClick={() => state.set({applyTabOrder: true})}>{utils.t('apply')}</Btn>
+                    </div> : null}
                 </div>
               </div>
             </div>
@@ -316,31 +320,36 @@ class Sidebar extends React.Component<SidebarProps, SidebarState> {
     this.connectId = state.connect({
       sidebar: ({sidebar}) => {
         ReactTooltip.rebuild();
-        if (!_.isEqual(sidebar, this.props.enabled)) {
-          _.defer(() => {
+
+        if (!isEqual(sidebar, this.props.enabled)) {
+          setTimeout(() => {
             if (sidebar) {
-              _.defer(() => this.setState({enabled: true}));
+              setTimeout(() => this.setState({enabled: true}), 0);
             } else {
-              _.delay(() => {
+              setTimeout(() => {
                 this.setState({enabled: false});
               }, 200);
             }
-          });
+          }, 0);
         }
       }
     });
   }
+
   shouldComponentUpdate = () => {
     return this.props.enabled;
   }
+
   handleClickOutside = () => {
     if (!this.props.disableSidebarClickOutside && this.props.enabled) {
       state.set({sidebar: false}, ReactTooltip.hide);
     }
   }
+
   handleSort = () => {
     setPrefs({sort: !this.props.prefs.sort});
   }
+
   render = () => {
     let p = this.props;
     const dynamicStyles: any = StyleSheet.create({
@@ -357,19 +366,21 @@ class Sidebar extends React.Component<SidebarProps, SidebarState> {
         transition: p.prefs.animations ? 'left 0.225s, opacity 0.2s' : 'initial'
       }
     } as StyleDeclaration);
+
     return (
       <div className={css(dynamicStyles.container) + ' side-div'}>
         {this.state.enabled ?
-        <SidebarMenu
-        allTabs={p.allTabs}
-        prefs={p.prefs}
-        theme={p.theme}
-        labels={p.labels}
-        keys={p.keys}
-        sort={p.sort}
-        direction={p.direction}
-        sessionsExist={p.sessionsExist}
-        chromeVersion={p.chromeVersion} /> : null}
+          <SidebarMenu
+            allTabs={p.allTabs}
+            prefs={p.prefs}
+            theme={p.theme}
+            labels={p.labels}
+            keys={p.keys}
+            sort={p.sort}
+            direction={p.direction}
+            sessionsExist={p.sessionsExist}
+            chromeVersion={p.chromeVersion}
+          /> : null}
       </div>
     );
   }

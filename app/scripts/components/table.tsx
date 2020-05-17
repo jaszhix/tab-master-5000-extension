@@ -2,7 +2,7 @@ import React from 'react';
 import onClickOutside from 'react-onclickoutside';
 import moment from 'moment';
 import {StyleSheet, css} from 'aphrodite';
-import _ from 'lodash';
+import {upperFirst} from 'lodash';
 import v from 'vquery';
 import mouseTrap from 'mousetrap';
 import tc from 'tinycolor2';
@@ -285,7 +285,7 @@ class TableHeader extends React.Component<TableHeaderProps> {
                 rowSpan={1}
                 colSpan={1}
                 onClick={() => onColumnClick(column)}>
-                {_.upperFirst(columnLabel.replace(/([A-Z])/g, ' $1'))}
+                {upperFirst(columnLabel.replace(/([A-Z])/g, ' $1'))}
               </th>
             );
           })}
@@ -481,7 +481,7 @@ class Table extends React.Component<TableProps, TableState> {
         this.setState({shiftRange: i});
         return;
       } else {
-        rows = _.clone(rows);
+        rows = rows.slice();
 
         if (i < shiftRange) {
           let i_cache = i;
@@ -490,7 +490,7 @@ class Table extends React.Component<TableProps, TableState> {
           shiftRange = i_cache;
         }
 
-        let range = _.slice(rows, shiftRange, i);
+        let range = rows.slice(shiftRange, i);
 
         for (let z = 0, len = range.length; z < len; z++) {
           let refRow = findIndex(rows, row => row.id === range[z].id);
@@ -572,7 +572,7 @@ class Table extends React.Component<TableProps, TableState> {
 
     for (let i = 0, len = s.selectedItems.length; i < len; i++) {
       utils.closeTab(s.rows[s.selectedItems[i]]);
-      _.pullAt(s.rows, s.selectedItems[i]);
+      s.rows.splice(s.selectedItems[i], 1);
     }
 
     this.setState({rows: s.rows, selectedItems: [], shiftRange: null});

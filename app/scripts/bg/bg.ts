@@ -1,6 +1,6 @@
 /// <reference path="../../../types/index.d.ts" />
 import {browser} from 'webextension-polyfill-ts';
-import type * as B from 'webextension-polyfill-ts';
+import type * as B from 'webextension-polyfill-ts'; // eslint-disable-line no-unused-vars
 chrome.runtime.setUninstallURL('https://docs.google.com/forms/d/e/1FAIpQLSeNuukS1pTpeZgtMgE-xg0o1R-b5br-JdWJE7I2SfXMOdfjUQ/viewform');
 import {throttle, cloneDeep, isEqual, first, last, orderBy, uniqBy, without} from 'lodash';
 import v from 'vquery';
@@ -424,22 +424,22 @@ class Bg {
     }
 
     // Bookmarks created
-    chrome.bookmarks.onCreated.addListener(chromeHandler((id, info) => {
+    chrome.bookmarks.onCreated.addListener(chromeHandler((id, info) => { // eslint-disable-line no-unused-vars
       eventState.bookmarksOnCreated = id;
       this.queryBookmarks();
     }));
     // Bookmarks removed
-    chrome.bookmarks.onRemoved.addListener(chromeHandler((id, info) => {
+    chrome.bookmarks.onRemoved.addListener(chromeHandler((id, info) => { // eslint-disable-line no-unused-vars
       eventState.bookmarksOnRemoved = id;
       this.queryBookmarks();
     }));
     // Bookmarks changed
-    chrome.bookmarks.onChanged.addListener(chromeHandler((id, info) => {
+    chrome.bookmarks.onChanged.addListener(chromeHandler((id, info) => { // eslint-disable-line no-unused-vars
       eventState.bookmarksOnChanged = id;
       this.queryBookmarks();
     }));
     // Bookmarks moved
-    chrome.bookmarks.onMoved.addListener(chromeHandler((id, info) => {
+    chrome.bookmarks.onMoved.addListener(chromeHandler((id, info) => { // eslint-disable-line no-unused-vars
       eventState.bookmarksOnMoved = id;
       this.queryBookmarks();
     }));

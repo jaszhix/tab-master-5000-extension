@@ -15,6 +15,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
   static defaultProps = {
     Sentry: null
   };
+
   constructor(props) {
     super(props);
 
@@ -36,6 +37,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
     Sentry.withScope((scope) => {
       scope.setExtras(errorInfo);
       const eventId = Sentry.captureException(error);
+
       this.setState({eventId});
     });
   }

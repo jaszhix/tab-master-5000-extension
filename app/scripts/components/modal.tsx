@@ -1,5 +1,5 @@
 import React from 'react';
-import _ from 'lodash';
+import {upperFirst} from 'lodash';
 import tc from 'tinycolor2';
 import onClickOutside from 'react-onclickoutside';
 import ReactTooltip from 'react-tooltip';
@@ -41,12 +41,15 @@ export class ModalDefault extends React.Component<ModalDefaultProps> {
       this.props.onClose();
     }
   }
+
   render = () => {
     let p = this.props;
     let heightOffset = p.heightOffset ? p.heightOffset : p.footerComponent ? p.maximized ? 125 : 200 : 140;
     let bodyStyle: React.CSSProperties = {maxHeight: `${p.height - heightOffset}px`, overflowY: 'auto', transition: p.animations ? 'max-height 0.2s' : 'initial'};
+
     bodyStyle = Object.assign(bodyStyle, p.bodyStyle);
     let headerStyle = {paddingTop: '0px'};
+
     headerStyle = Object.assign(headerStyle, p.headerStyle);
     const dynamicStyles = (StyleSheet as StyleSheetStatic).create({
       dialogStyle: p.dialogStyle,
@@ -57,6 +60,7 @@ export class ModalDefault extends React.Component<ModalDefaultProps> {
       closeBtnStyle: p.closeBtnStyle,
       footerStyle: p.footerStyle
     });
+
     return (
       <div className={css(dynamicStyles.dialogStyle) + ` modal-dialog${p.size ? ' modal-'+p.size : ''}`}>
         <div className={css(dynamicStyles.contentStyle) + ' modal-content'}>
@@ -108,11 +112,7 @@ export interface ModalHandlerProps {
   chromeVersion: number;
 }
 
-export interface ModalHandlerState {
-  maximized: boolean;
-}
-
-class ModalHandler extends React.Component<ModalHandlerProps, ModalHandlerState> {
+class ModalHandler extends React.Component<ModalHandlerProps> {
   static defaultProps = {
     onClose: () => {return;},
     header: '',
@@ -122,13 +122,7 @@ class ModalHandler extends React.Component<ModalHandlerProps, ModalHandlerState>
     bodyStyle: {},
     collapse: true
   };
-  constructor(props) {
-    super(props);
 
-    this.state = {
-      maximized: false
-    }
-  }
   handleClose = () => {
     queryTabs();
     state.set({
@@ -137,15 +131,17 @@ class ModalHandler extends React.Component<ModalHandlerProps, ModalHandlerState>
       windowRestored: false
     });
   }
+
   handleMaximize = () => {
     setPrefs({settingsMax: !this.props.prefs.settingsMax});
   }
+
   render = () => {
     let p = this.props;
     let maximized = p.prefs.settingsMax && p.settings !== 'theming';
     let tabOptions = [
       {label: utils.t('preferences'), key: 'preferences'},
-      {label: _.upperFirst(utils.t('sessions')), key: 'sessions'},
+      {label: upperFirst(utils.t('sessions')), key: 'sessions'},
       {label: utils.t('theming'), key: 'theming'},
       {label: utils.t('about'), key: 'about'}
     ];
@@ -164,6 +160,7 @@ class ModalHandler extends React.Component<ModalHandlerProps, ModalHandlerState>
       margin: maximized ? '0px' : '0px auto',
       top: maximized ? '0px' :  '3.5%'
     };
+
     if (maximized) {
       Object.assign(overlayStyle, {
         height: `${p.height}px`,
@@ -171,76 +168,82 @@ class ModalHandler extends React.Component<ModalHandlerProps, ModalHandlerState>
       });
       Object.assign(dialogStyle, {height: `${p.height}px`});
     }
+
     if (!p.modal.state || p.modal.type !== 'settings') {
       return null;
     }
+
     return (
       <div className="modal-tm5k modal" style={overlayStyle}>
         <ModalDefault
-        clickOutside={!p.colorPickerOpen}
-        onMaximize={this.handleMaximize}
-        onClose={this.handleClose}
-        maximized={maximized}
-        height={p.height}
-        settings={p.settings}
-        size="full"
-        header={utils.t('settings')}
-        maximizeBtnStyle={{color: headerBgIsLight ? p.theme.lightBtnText : p.theme.darkBtnText, right: '60px', fontSize: '17px'}}
-        closeBtnStyle={{color: headerBgIsLight ? p.theme.lightBtnText : p.theme.darkBtnText}}
-        animations={p.prefs.animations}
-        dialogStyle={dialogStyle}
-        headerStyle={{
-          backgroundColor: p.theme.headerBg,
-          color: headerBgIsLight ? p.theme.lightBtnText : p.theme.darkBtnText
-        }}
-        contentStyle={{backgroundColor: p.theme.settingsBg}}
-        bodyStyle={{
-          backgroundColor: p.theme.settingsBg,
-          height: p.settings === 'theming' ? '300px' : `${maximized ? p.height + 125 : p.height - 200}px`,
-          overflowY: p.settings !== 'theming' ? 'auto' : 'hidden',
-          overflowX: 'hidden'
-        }}
-        footerStyle={{backgroundColor: p.theme.settingsBg, paddingTop: '8px'}}
-        headerComponent={
-          <Tabs
-          initActiveOption={findIndex(tabOptions, opt => p.settings.indexOf(opt.label.toLowerCase()) > -1)}
-          style={{position: 'relative', top: '16px'}}
-          options={tabOptions}
-          onClick={(setting)=>state.set({settings: setting.key})}
-          borderTopColor={p.theme.darkBtnText}
-          borderLeftRightColor={p.theme.headerBg}
-          settings={p.settings} />
-        }
-        footerComponent={p.modal.footer}>
-          <Settings
-          sessions={p.sessions}
-          modal={p.modal}
-          tabs={p.tabs}
-          allTabs={p.allTabs}
-          prefs={p.prefs}
-          favicons={p.favicons}
-          collapse={p.collapse}
-          theme={p.theme}
-          savedThemes={p.savedThemes}
-          wallpaper={p.wallpaper}
-          wallpapers={p.wallpapers}
-          settings={p.settings}
+          clickOutside={!p.colorPickerOpen}
+          onMaximize={this.handleMaximize}
+          onClose={this.handleClose}
+          maximized={maximized}
           height={p.height}
-          chromeVersion={p.chromeVersion} />
+          settings={p.settings}
+          size="full"
+          header={utils.t('settings')}
+          maximizeBtnStyle={{color: headerBgIsLight ? p.theme.lightBtnText : p.theme.darkBtnText, right: '60px', fontSize: '17px'}}
+          closeBtnStyle={{color: headerBgIsLight ? p.theme.lightBtnText : p.theme.darkBtnText}}
+          animations={p.prefs.animations}
+          dialogStyle={dialogStyle}
+          headerStyle={{
+            backgroundColor: p.theme.headerBg,
+            color: headerBgIsLight ? p.theme.lightBtnText : p.theme.darkBtnText
+          }}
+          contentStyle={{backgroundColor: p.theme.settingsBg}}
+          bodyStyle={{
+            backgroundColor: p.theme.settingsBg,
+            height: p.settings === 'theming' ? '300px' : `${maximized ? p.height + 125 : p.height - 200}px`,
+            overflowY: p.settings !== 'theming' ? 'auto' : 'hidden',
+            overflowX: 'hidden'
+          }}
+          footerStyle={{backgroundColor: p.theme.settingsBg, paddingTop: '8px'}}
+          headerComponent={
+            <Tabs
+              initActiveOption={findIndex(tabOptions, opt => p.settings.indexOf(opt.label.toLowerCase()) > -1)}
+              style={{position: 'relative', top: '16px'}}
+              options={tabOptions}
+              onClick={(setting)=>state.set({settings: setting.key})}
+              borderTopColor={p.theme.darkBtnText}
+              borderLeftRightColor={p.theme.headerBg}
+              settings={p.settings}
+            />
+        }
+          footerComponent={p.modal.footer}>
+          <Settings
+            sessions={p.sessions}
+            modal={p.modal}
+            tabs={p.tabs}
+            allTabs={p.allTabs}
+            prefs={p.prefs}
+            favicons={p.favicons}
+            collapse={p.collapse}
+            theme={p.theme}
+            savedThemes={p.savedThemes}
+            wallpaper={p.wallpaper}
+            wallpapers={p.wallpapers}
+            settings={p.settings}
+            height={p.height}
+            chromeVersion={p.chromeVersion}
+          />
           {p.prefs.tooltip ?
             <ReactTooltip
-            effect="solid"
-            place="top"
-            multiline={true}
-            html={true} /> : null}
+              effect="solid"
+              place="top"
+              multiline={true}
+              html={true}
+            /> : null}
         </ModalDefault>
         <div
-        className="modal-backdrop"
-        style={{
-          zIndex: 11,
-          backgroundColor: 'rgba(255, 255, 255, 0)',
-          transition: p.prefs.animations ? 'background-color 0.2s' : 'initial'
-        }} />
+          className="modal-backdrop"
+          style={{
+            zIndex: 11,
+            backgroundColor: 'rgba(255, 255, 255, 0)',
+            transition: p.prefs.animations ? 'background-color 0.2s' : 'initial'
+          }}
+        />
       </div>
     );
   }

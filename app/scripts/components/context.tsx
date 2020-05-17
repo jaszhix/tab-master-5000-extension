@@ -1,5 +1,5 @@
 import React from 'react';
-import _ from 'lodash';
+import {first, last, endsWith, words} from 'lodash';
 import copyToClipboard from 'copy-to-clipboard';
 import {filter, each} from '@jaszhix/utils';
 
@@ -20,8 +20,6 @@ export interface ContextMenuProps {
 
 export interface ContextMenuState {
   openTab: number;
-  actions: ActionRecord[];
-  inViewport: boolean;
 }
 
 class ContextMenu extends React.Component<ContextMenuProps, ContextMenuState> {
@@ -33,33 +31,26 @@ class ContextMenu extends React.Component<ContextMenuProps, ContextMenuState> {
 
     this.state = {
       openTab: 0,
-      actions: this.props.actions,
-      inViewport: true,
     };
   }
-
-  static getDerivedStateFromProps = (nextProps, prevState) => {
-    if (!_.isEqual(nextProps.actions, prevState.actions)) {
-      return {actions: nextProps.actions}; // TBD
-    }
-    return null;
-  };
 
   componentDidMount = () => {
     this.handleOptions();
     this.containerStyle = {left: window.cursor.page.x, top: window.cursor.page.y, opacity: 0};
     // TBD
-    _.defer(() => (this.containerStyle = {left: window.cursor.page.x, top: window.cursor.page.y, opacity: 0}));
+    setTimeout(() => this.containerStyle = {left: window.cursor.page.x, top: window.cursor.page.y, opacity: 0}, 0);
   };
 
   handleClickOutside = () => {
     let p = this.props;
+
     p.context.value = false;
     p.context.id = {id: p.context.id.id};
     state.set({
       context: p.context,
       disableSidebarClickOutside: false,
     });
+
     if (this.shouldDeselect && p.prefs.format === 'table') {
       this.shouldDeselect = false;
       state.trigger('deselectSelection');
@@ -197,13 +188,14 @@ class ContextMenu extends React.Component<ContextMenuProps, ContextMenuState> {
             argument: true,
             onClick: () => this.handleMenuOption(launchType),
             icon: 'icon-gear',
-            label: _.endsWith(launchType, 'SCREEN')
+            label: endsWith(launchType, 'SCREEN')
               ? utils.t('openFullscreen')
-              : _.endsWith(launchType, 'PINNED_TAB')
+              : endsWith(launchType, 'PINNED_TAB')
               ? utils.t('openAsAPinnedTab')
-              : `${utils.t('openAsA')} ${_.last(_.words(launchType.toLowerCase()))}`,
+              : `${utils.t('openAsA')} ${last(words(launchType.toLowerCase()))}`,
             divider: null,
           };
+
           contextOptions.push(launchOption);
         }
       });
@@ -226,6 +218,7 @@ class ContextMenu extends React.Component<ContextMenuProps, ContextMenuState> {
           divider: null,
         },
       ];
+
       contextOptions = contextOptions.concat(appToggleOptions);
     }
 
@@ -272,11 +265,14 @@ class ContextMenu extends React.Component<ContextMenuProps, ContextMenuState> {
       if (opt.indexOf('close') > -1) {
         this.shouldDeselect = true;
       }
+
       let selectedItems = context.id;
+
       for (let z = 0, len = selectedItems.length; z < len; z++) {
         context.id = selectedItems[z];
         this.handleMenuOption(opt, ++recursion, hasBookmark, bookmark, true);
       }
+
       return;
     }
 
@@ -306,7 +302,7 @@ class ContextMenu extends React.Component<ContextMenuProps, ContextMenuState> {
       utils.checkDuplicateTabs(context.id);
     } else if (opt === 'closeSearched') {
       utils.closeAllItems({tab: null, left: false, right: false});
-    } else if (opt === 'uninstallApp' || opt === 'createAppShortcut' || opt === 'launchApp' || opt === 'toggleEnable' || _.first(_.words(opt)) === 'OPEN') {
+    } else if (opt === 'uninstallApp' || opt === 'createAppShortcut' || opt === 'launchApp' || opt === 'toggleEnable' || first(words(opt)) === 'OPEN') {
       utils.app(context.id, opt);
     } else if (opt === 'toggleBookmark') {
       chrome.permissions.request(
@@ -339,10 +335,13 @@ class ContextMenu extends React.Component<ContextMenuProps, ContextMenuState> {
       return p.context.id.mutedInfo.muted;
     } else if (opt === 'duplicate') {
       let duplicateTabs: ChromeTab[] = filter(p.tabs, (tab) => tab.url === p.context.id.url);
-      return _.includes(p.duplicateTabs, p.context.id.url) && p.context.id.id !== _.first(duplicateTabs).id;
+
+      return p.duplicateTabs.indexOf(p.context.id.url) > -1 && p.context.id.id !== first(duplicateTabs).id;
     } else if (opt === 'actions') {
-      let lastAction = _.last(p.actions);
+      let lastAction = last(p.actions);
+
       console.log('lastAction: ', lastAction);
+
       if (lastAction && lastAction.hasOwnProperty('item')) {
         if (lastAction.type === 'remove') {
           return ` ${utils.t('removalOf')} ${lastAction.item.title}`;
@@ -371,25 +370,31 @@ class ContextMenu extends React.Component<ContextMenuProps, ContextMenuState> {
     if (!ref) {
       return;
     }
+
     // Ensure the context menu is fully visible
-    _.delay(() => {
+    setTimeout(() => {
       let topChange;
+
       if (window.cursor.page.y + ref.clientHeight > window.innerHeight + document.body.scrollTop) {
         ref.style.top = window.innerHeight + document.body.scrollTop - ref.clientHeight;
         topChange = true;
       }
+
       if (window.cursor.page.x + ref.clientWidth > window.innerWidth + document.body.scrollTop) {
         ref.style.left = window.innerWidth + document.body.scrollTop - ref.clientWidth;
+
         if (!topChange) {
           ref.style.top = window.cursor.page.y;
         }
       }
+
       ref.style.opacity = 1;
     }, 50);
   };
 
   render = () => {
     let p = this.props;
+
     return (
       <div className="ntg-context">
         <div ref={this.getRef} style={this.containerStyle} className="ntg-context-menu">
