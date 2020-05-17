@@ -17,32 +17,23 @@ import {Btn} from './bootstrap';
 import {StyleDeclaration} from 'aphrodite'; // eslint-disable-line no-unused-vars
 
 interface LargeBtnProps {
-  style: React.CSSProperties;
+  className: string;
   onClick: React.MouseEventHandler;
-  onMouseEnter: React.MouseEventHandler;
-  onMouseLeave?: React.MouseEventHandler;
   label: string;
   icon: string;
 }
 
 class LargeBtn extends React.Component<LargeBtnProps> {
-  constructor(props) {
-    super(props);
-  }
-
   render = () => {
-    let p = this.props;
+    let {className, icon, label, onClick} = this.props;
 
     return (
       <button
-        style={p.style}
-        className="btn btn-block btn-float btn-float-lg legitRipple"
+        className={`btn btn-block btn-float btn-float-lg legitRipple LargeBtn ${className}`}
         type="button"
-        onClick={p.onClick}
-        onMouseEnter={p.onMouseEnter}
-        onMouseLeave={p.onMouseLeave}>
-        <i className={p.icon} />
-        <span>{p.label}</span>
+        onClick={onClick}>
+        <i className={icon} />
+        <span>{label}</span>
       </button>
     );
   }
@@ -60,19 +51,7 @@ interface SidebarMenuProps {
   chromeVersion?: number;
 }
 
-interface SidebarMenuState {
-  lgBtnHover: string;
-}
-
-export class SidebarMenu extends React.Component<SidebarMenuProps, SidebarMenuState> {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      lgBtnHover: '',
-    }
-  }
-
+export class SidebarMenu extends React.Component<SidebarMenuProps> {
   handleFormat = () => {
     let prefsUpdate = {format: this.props.prefs.format === 'tile' ? 'table' : 'tile'} as PreferencesState;
 
@@ -92,7 +71,6 @@ export class SidebarMenu extends React.Component<SidebarMenuProps, SidebarMenuSt
 
   render = () => {
     let p = this.props;
-    let s = this.state;
 
     let bookmarks = {label: utils.t('bookmarks'), icon: 'icon-bookmark4', key: 'bookmarks'};
     let extensions = {label: utils.t('extensions'), icon: 'icon-puzzle', key: 'extensions'};
@@ -199,7 +177,7 @@ export class SidebarMenu extends React.Component<SidebarMenuProps, SidebarMenuSt
 
                   {p.prefs.showViewMode ?
                     <div className={css(dynamicStyles.categoryContentContainer) + ' category-content'}>
-                      <div className="row" onMouseLeave={() => this.setState({lgBtnHover: ''})}>
+                      <div className="row">
                         {map(lgBtnOptions, (row, i) => {
                         return (
                           <div key={i} className="row">
@@ -208,20 +186,13 @@ export class SidebarMenu extends React.Component<SidebarMenuProps, SidebarMenuSt
                                 <div key={c} className="col-xs-6">
                                   {map(column, (option, o) => {
                                     if (option) {
-                                      let lgBtnStyle = {
-                                        color: p.prefs.mode === option.label.toLowerCase() ? p.theme.darkBtnText : p.theme.lightBtnText,
-                                        backgroundColor: p.prefs.mode === option.label.toLowerCase() ? themeStore.opacify(p.theme.darkBtnBg, 0.8) : s.lgBtnHover === option.label ? p.theme.lightBtnBgHover : themeStore.opacify(p.theme.lightBtnBg, 0.8),
-                                        marginBottom: '10px'
-                                      };
-
                                       return (
                                         <LargeBtn
                                           key={o}
-                                          style={lgBtnStyle}
+                                          className={p.prefs.mode === option.label.toLowerCase() ? 'active' : ''}
                                           icon={option.icon}
                                           label={option.label}
                                           onClick={() => handleMode(option.key, {}, false, true)}
-                                          onMouseEnter={() => this.setState({lgBtnHover: option.label})}
                                         />
                                       );
                                     } else {

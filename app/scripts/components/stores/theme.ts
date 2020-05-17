@@ -1163,6 +1163,18 @@ const onThemeChange = (e) => {
     .Toggle:hover {
       background-color: ${e.theme.settingsItemHover};
     }
+    .LargeBtn:not(.active):not(:hover) {
+      color: ${e.theme.lightBtnText} !important;
+      background-color: ${themeStore.opacify(e.theme.lightBtnBg, 0.8)} !important;
+    }
+    .LargeBtn.active {
+      color: ${e.theme.darkBtnText};
+      background-color: ${themeStore.opacify(e.theme.darkBtnBg, 0.8)};
+    }
+    .LargeBtn:hover:not(.active) {
+      color: ${e.theme.lightBtnText} !important;
+      background-color: ${e.theme.lightBtnBgHover} !important;
+    }
     `;
 
     // Firefox options integration
