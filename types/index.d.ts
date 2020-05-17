@@ -1,6 +1,5 @@
 import type * as aphrodite from 'aphrodite';
 
-
 type Modify<T, R> = Omit<T, keyof R> & R;
 
 declare global {
@@ -249,6 +248,12 @@ declare global {
     prefs: PreferencesState;
     defaultPrefs: PreferencesState;
     permissions: PermissionsState;
+    init: () => Promise<void>;
+    syncPermissions: () => void;
+    checkPermissions: (prefs: Partial<PreferencesState>) => void
+    setPermissions: (obj: Partial<PermissionsState>) => void;
+    setPrefs: (obj: Partial<PreferencesState>) => void;
+    getPrefs: () => PreferencesState;
   }
 
   interface ActionRecord {
@@ -399,7 +404,7 @@ declare global {
     windows: ChromeWindow[];
     bookmarks: ChromeBookmarkTreeNode[];
     history: ChromeHistoryItem[];
-    extensions: BackgroundState['extensions'][];
+    extensions: ChromeExtensionInfo[];
     actions: ActionRecord[];
     windowId?: number;
     init: boolean;
@@ -412,9 +417,9 @@ declare global {
     init: boolean;
     blacklist: string[];
     windows: ChromeWindow[];
-    history: [];
-    bookmarks: [];
-    extensions: [];
+    history: ChromeHistoryItem[];
+    bookmarks: ChromeBookmarkTreeNode[];
+    extensions: ChromeExtensionInfo[];
     removed: ChromeTab[];
     newTabs: TabIDInfo[];
     sessions: [];

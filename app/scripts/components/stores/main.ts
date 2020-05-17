@@ -87,13 +87,17 @@ export const focusSearchEntry = () => {
 };
 
 const handleMessage = function(s, msg, sender, sendResponse) {
-  if (process.env.NODE_ENV === 'development' && msg.type === 'error') {
-    let error = new Error(msg.e.message);
+  if (process.env.NODE_ENV === 'development') {
+    switch (msg.type) {
+      case 'error': {
+        let error = new Error(msg.e.message);
 
-    error.stack = msg.e.stack;
+        error.stack = msg.e.stack;
 
-    console.error('BG Error:', error);
-    return;
+        console.error('BG:', msg.e.message, error);
+        return;
+      }
+    }
   }
 
   if ((!s.prefs.allTabs

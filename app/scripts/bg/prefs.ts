@@ -1,6 +1,10 @@
-import _ from 'lodash';
+import {browser} from 'webextension-polyfill-ts';
+import type * as B from 'webextension-polyfill-ts';
+import {merge, cloneDeep} from 'lodash';
 import {init} from '@jaszhix/state';
 import {each, tryFn} from '@jaszhix/utils';
+
+import {sendError} from './utils';
 
 let prefsStore = <PreferencesStore>init({
   prefs: {},
@@ -47,43 +51,41 @@ let prefsStore = <PreferencesStore>init({
     history: false,
     management: false,
   },
-  init: function() {
-    let getPrefs = new Promise((resolve, reject) => {
-      chrome.storage.sync.get('preferences', (prefs) => {
-        chrome.storage.sync.get('themePrefs', (themePrefs) => {
-          if (prefs && prefs.preferences && themePrefs && themePrefs.themePrefs) {
-            resolve(_.merge(prefs.preferences, themePrefs.themePrefs));
-          } else {
-            if (chrome.extension.lastError) {
-              reject(chrome.extension.lastError);
-            } else {
-              prefsStore.prefs = prefsStore.defaultPrefs;
-              prefsStore.syncPermissions();
-              prefsStore.setPrefs(prefsStore.prefs);
-              console.log('init prefs: ', prefsStore.prefs);
-            }
-          }
-        });
-      });
-    });
-    getPrefs.then((prefs: PreferencesState) => {
-      prefsStore.prefs = prefs;
 
-      // Migrate
-      each(prefsStore.defaultPrefs, function(pref, key) {
-        if (typeof prefsStore.prefs[key] === 'undefined') {
-          prefsStore.prefs[key] = prefsStore.defaultPrefs[key];
-        }
-      });
+  init: async function() {
+    let prefs, themePrefs;
 
+    try {
+      prefs = await browser.storage.sync.get('preferences');
+      themePrefs = await browser.storage.sync.get('themePrefs');
+    } catch (e) {
+      sendError(e);
+    }
+
+    if (prefs && prefs.preferences && themePrefs && themePrefs.themePrefs) {
+      prefs = merge(prefs.preferences, themePrefs.themePrefs);
+    } else {
+      prefsStore.prefs = prefsStore.defaultPrefs;
       prefsStore.syncPermissions();
+      prefsStore.setPrefs(prefsStore.prefs);
+      console.log('init prefs: ', prefsStore.prefs);
+    }
 
-      console.log('load prefs: ', prefs, prefsStore.prefs);
-      prefsStore.set({prefs: prefsStore.prefs}, true);
-    }).catch((err) => {
-      console.log('chrome.extension.lastError: ', err);
+    prefsStore.prefs = prefs;
+
+    // Migrate
+    each(prefsStore.defaultPrefs, function(pref, key) {
+      if (typeof prefsStore.prefs[key] === 'undefined') {
+        prefsStore.prefs[key] = prefsStore.defaultPrefs[key];
+      }
     });
+
+    prefsStore.syncPermissions();
+
+    console.log('load prefs: ', prefs, prefsStore.prefs);
+    prefsStore.set({prefs: prefsStore.prefs}, true);
   },
+
   syncPermissions() {
     // With cloud syncing, the extension settings could be restored and the user might get
     // stuck in a view mode we haven't asked permission for yet. Resolve this by tracking
@@ -102,7 +104,8 @@ let prefsStore = <PreferencesStore>init({
       prefsStore.permissions = permissions;
     }
   },
-  checkPermissions(prefs) {
+
+  checkPermissions(prefs: Partial<PreferencesState>) {
     const {permissions} = prefsStore;
 
     if (!permissions.screenshot && prefs.screenshot) {
@@ -115,33 +118,39 @@ let prefsStore = <PreferencesStore>init({
       prefs.mode = 'tabs';
     }
   },
-  setPermissions(obj) {
-    _.merge(prefsStore.permissions, obj);
+
+  setPermissions(obj: Partial<PermissionsState>) {
+    merge(prefsStore.permissions, obj);
     localStorage.setItem('tm5kPermissionsTracking', JSON.stringify(prefsStore.permissions));
   },
-  setPrefs(obj) {
+
+  async setPrefs(obj: Partial<PreferencesState>) {
+    let parsedPrefs, themePrefs;
+
     prefsStore.checkPermissions(obj);
 
-    _.merge(prefsStore.prefs, obj);
+    merge(prefsStore.prefs, obj);
 
     prefsStore.set({prefs: prefsStore.prefs}, true);
-    let themePrefs = {
+    themePrefs = {
       wallpaper: prefsStore.prefs.wallpaper,
       theme: prefsStore.prefs.theme,
       alerts: prefsStore.prefs.alerts,
       syncedSession: prefsStore.prefs.syncedSession
     };
-    let parsedPrefs = _.cloneDeep(prefsStore.prefs);
+    parsedPrefs = cloneDeep(prefsStore.prefs);
+
     delete parsedPrefs.wallpaper;
     delete parsedPrefs.theme;
     delete parsedPrefs.alerts;
     delete parsedPrefs.syncedSession;
-    chrome.storage.sync.set({preferences: parsedPrefs}, () => {
-      chrome.storage.sync.set({themePrefs: themePrefs}, () => {
-        console.log('Preferences saved: ', prefsStore.prefs, themePrefs);
-      });
-    });
+
+    await browser.storage.sync.set({preferences: parsedPrefs});
+    await browser.storage.sync.set({themePrefs: themePrefs});
+
+    console.log('Preferences saved: ', prefsStore.prefs, themePrefs);
   },
+
   getPrefs() {
     return prefsStore.prefs;
   },
