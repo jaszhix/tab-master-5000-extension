@@ -8,7 +8,8 @@ import state from './stores/state';
 import {queryTabs} from './stores/main';
 import {themeStore} from './stores/theme';
 
-import {whichToShow, isNewTab, AsyncComponent} from './utils';
+import {whichToShow, AsyncComponent} from './utils';
+import {isNewTab} from '../shared/utils';
 
 import {TileProps, TileState} from './tile'; // eslint-disable-line no-unused-vars
 import {TableProps, TableState} from './table'; // eslint-disable-line no-unused-vars

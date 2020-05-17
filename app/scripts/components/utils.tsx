@@ -9,17 +9,21 @@ export const includes = function (arr: any[], val: any, index: number): boolean 
       return true;
     }
   }
+
   return false;
 }
 
 export const merge = function(): object {
   let [result, ...extenders]: any[] = Array.from(arguments);
+
   for (let i = 0, len = extenders.length; i < len; i++) {
     let keys = Object.keys(extenders[i]);
+
     for (let z = 0, len = keys.length; z < len; z++) {
       result[keys[z]] = extenders[i][keys[z]]
     }
   }
+
   return result;
 }
 
@@ -37,16 +41,11 @@ export const whichToShow = function({outerHeight, itemHeight, scrollTop, columns
 export const unref = function(object: object) {
   setTimeout(() => {
     let keys = Object.keys(object);
+
     for (let i = 0; i < keys.length; i++) {
       object[keys[i]] = null;
     }
   }, 0);
-};
-
-export const isNewTab = function(url: string): boolean {
-  return (url && (url.indexOf('chrome://newtab/') > -1
-    || url.substr(-11) === 'newtab.html'
-    || url.substr(-11) === 'ewtab.html#'))
 };
 
 interface LoadingProps {

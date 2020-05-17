@@ -70,6 +70,11 @@ gulp.task('copyChunks', function() {
     .pipe(gulp.dest(`./${WORKDIR}/`));
 });
 
+gulp.task('copyBundleReports', function() {
+  return gulp.src([`./dist/bundleReports/*.html`])
+    .pipe(gulp.dest(`./releases/bundleReports/`));
+});
+
 gulp.task('htmlmin', function() {
   return gulp.src(`./${WORKDIR}/newtab_prod.html`)
     .pipe(htmlclean())
@@ -97,7 +102,8 @@ gulp.task('package', gulp.series('backup-source-maps', function() {
       './dist/scripts/*.map',
       './dist/styles/*.scss',
       './dist/newtab_prod.html',
-      './dist/manifest_*'
+      './dist/manifest_*',
+      './dist/bundleReports',
     ]);
   }
 
@@ -106,7 +112,7 @@ gulp.task('package', gulp.series('backup-source-maps', function() {
     .pipe(gulp.dest(`./${WORKDIR}/`));
 }));
 
-gulp.task('dist', gulp.series('copy', 'copyChunks', 'htmlmin', 'imgmin', 'package', (done) => done()));
+gulp.task('dist', gulp.series('copy', 'copyChunks', 'htmlmin', 'imgmin', 'copyBundleReports', 'package', (done) => done()));
 
 gulp.task('watch', function() {
   gulp.watch('./app/scripts/bg/*.ts', gulp.parallel('build-bg'));

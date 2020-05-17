@@ -3,7 +3,8 @@ import uuid from 'node-uuid';
 import _ from 'lodash';
 import {each, find, findIndex, filter, map, tryFn} from '@jaszhix/utils';
 
-import {includes, isNewTab} from './utils';
+import {includes} from './utils';
+import {isNewTab} from '../shared/utils';
 
 const defaultFavicon = '../images/file_paper_blank_document.png';
 
@@ -14,13 +15,16 @@ export const filterFavicons = (faviconUrl, tabUrl) => {
   if (tabUrl && tabUrl.indexOf('chrome://') > -1) { // TODO: Fix for FF
     urlPart = tabUrl.split('chrome://')[1];
     chromePage = urlPart.indexOf('/') !== -1 ? urlPart.split('/')[0] : urlPart;
+
     if (chromePages.indexOf(chromePage) > -1) {
       return `../images/IDR_${chromePage.toUpperCase()}_FAVICON@2x.png`;
     }
   }
+
   if (!faviconUrl || faviconUrl === 'unknown') {
     return defaultFavicon;
   }
+
   return faviconUrl;
 };
 
@@ -38,11 +42,13 @@ const checkDuplicateTabs = function(stateUpdate){
   let tabUrls = map(stateUpdate.tabs, function(tab) {
     return tab.url;
   })
+
   if (hasDuplicates(tabUrls)) {
     stateUpdate.duplicateTabs = getDuplicates(tabUrls);
   } else {
     stateUpdate.duplicateTabs = [];
   }
+
   return stateUpdate;
 }
 
@@ -69,6 +75,7 @@ const sort = (state, data) => {
     let pinned = _.orderBy(filter(data, tab => tab.pinned === true), state.sort, state.direction);
     let unpinned = _.orderBy(filter(data, tab => tab.pinned === false), state.sort, state.direction);
     let concat = _.concat(pinned, unpinned);
+
     if (state.sort !== 'count') {
       result = _.orderBy(concat, ['pinned', state.sort], [state.direction]);
     } else {
@@ -87,20 +94,24 @@ const checkFavicons = (state, tabs, stateUpdate: Partial<GlobalState> = {}) => {
   }).length;
   let unmatchedCount = 1;
   let matched = [];
+
   each(tabs, function(tab, i) {
     let favicon = find(state.favicons, function(favicon) {
       return tab.url.indexOf(favicon.domain) > -1;
     });
+
     tabs[i].favIconUrl = filterFavicons(
       favicon ? favicon.favIconUrl : tab.favIconUrl,
       tab.url
     );
+
     if (!favicon
       && tab.favIconUrl !== defaultFavicon
       && tab.url.indexOf('chrome://') === -1) {
       if (typeof tab.id === 'number' || tab.openTab) {
         matched.push(tab);
       }
+
       return;
     }
   });
@@ -113,6 +124,7 @@ const checkFavicons = (state, tabs, stateUpdate: Partial<GlobalState> = {}) => {
   if (stateUpdate.sessions) {
     state.modeKey = 'sessionTabs';
   }
+
   stateUpdate[state.modeKey] = sort({
     prefs: state.prefs,
     sort: stateUpdate.sort,
@@ -124,6 +136,7 @@ const checkFavicons = (state, tabs, stateUpdate: Partial<GlobalState> = {}) => {
 
 const searchChange = (query, items) => {
   let _items;
+
   tryFn(() => {
     let itemsSearch = new Fuse(items, {
       keys: [{
@@ -136,6 +149,7 @@ const searchChange = (query, items) => {
       includeScore: true,
       threshold: 0.4
     });
+
     _items = map(_.orderBy(itemsSearch.search(query.toLowerCase()), 'score'), item => item.item);
   }, () => _items = items);
   // @ts-ignore
@@ -156,6 +170,7 @@ const processHistory = function(s, msg) {
       }
     }
   }
+
   history = filter(history, item => item.title && !isNewTab(item.url));
   checkFavicons(s, history, {direction: 'desc', sort: 'lastVisitTime'});
 };
@@ -170,10 +185,12 @@ const processBookmarks = function(s, msg) {
   let addBookmarkChildren = (bookmarkLevel, title='') => {
     bookmarkLevel.folder = title;
     iter++;
+
     if (!bookmarkLevel.children) {
       _bookmarks.push(bookmarkLevel);
     } else {
       folders.push(bookmarkLevel);
+
       for (let i = 0, len = _bookmarks.length; i < len; i++) {
         for (let x = 0, _len = folders.length; x < _len; x++) {
           if (_bookmarks[i].parentId === folders[x].id) {
@@ -181,6 +198,7 @@ const processBookmarks = function(s, msg) {
           }
         }
       }
+
       for (let i = 0, len = bookmarkLevel.children.length; i < len; i++) {
         addBookmarkChildren(bookmarkLevel.children[i], title);
       }
@@ -202,6 +220,7 @@ const processBookmarks = function(s, msg) {
       _bookmarks[i] = _.assignIn(_bookmarks[i], _.cloneDeep(defaults(iter, s.windowId)));
     }
   }
+
   _bookmarks = filter(_bookmarks, (bookmark) => {
     return bookmark.url.substr(0, 10) !== 'javascript';
   });
@@ -228,6 +247,7 @@ const processAppExtension = function(s, msg: {extensions: ChromeExtensionInfo[]}
   }
 
   let stateUpdate: Partial<GlobalState> = isApp ? {apps: extensions} : {extensions};
+
   stateUpdate.direction = 'asc';
   stateUpdate.sort = 'index';
   // @ts-ignore
@@ -240,8 +260,10 @@ const processSessionTabs = function(sessions, tabs, windowId) {
     postMessage({setPrefs: {mode: 'tabs'}});
     return;
   }
+
   let allTabs = [];
   let iter = -1;
+
   for (let i = 0, len = sessions.length; i < len; i++) {
     for (let y = 0, _len = sessions[i].tabs.length; y < _len; y++) {
       for (let z = 0, __len = sessions[i].tabs[y].length; z < __len; z++) {
@@ -259,14 +281,17 @@ const processSessionTabs = function(sessions, tabs, windowId) {
         );
 
         let refOpenTab = findIndex(tabs, tab => tab.url === sessions[i].tabs[y][z].url);
+
         if (refOpenTab !== -1) {
           sessions[i].tabs[y][z] = _.assignIn(sessions[i].tabs[y][z], tabs[refOpenTab]);
           sessions[i].tabs[y][z].openTab = tabs[refOpenTab].id;
         }
       }
+
       allTabs.push(sessions[i].tabs[y]);
     }
   }
+
   return _.uniqBy(_.flatten(allTabs), 'url');
 }
 
@@ -277,11 +302,13 @@ const processWindows = function(s, msg) {
     }),
     modeKey: 'tabs'
   };
+
   if (msg.init) {
     if (msg.screenshots) {
       stateUpdate.screenshots = msg.screenshots;
     }
   }
+
   if (s.prefs.mode === 'tabs') {
     if (s.modeKey === 'tabs') {
       stateUpdate.sort = s.sort;
@@ -297,15 +324,18 @@ const processWindows = function(s, msg) {
       let win = find(msg.windows, function(win) {
         return win.id === s.windowId;
       });
+
       if (win) {
         stateUpdate.tabs = win.tabs;
       }
     }
+
     if (s.prefs.mode === 'tabs' && s.prefs.duplicate) {
       stateUpdate = checkDuplicateTabs(stateUpdate);
     }
   } else if (s.prefs.mode === 'sessions') {
     stateUpdate.modeKey = 'sessionTabs';
+
     if (s.modeKey === 'sessionTabs') {
       stateUpdate.sort = s.sort;
       stateUpdate.direction = s.direction;
@@ -313,12 +343,14 @@ const processWindows = function(s, msg) {
       stateUpdate.sort = 'sTimeStamp';
       stateUpdate.direction = 'desc';
     }
+
     stateUpdate.sessionTabs = processSessionTabs(s.sessions, _.flatten(stateUpdate.allTabs), s.windowId);
   } else {
     // @ts-ignore
     postMessage({msg: 'handleMode', mode: s.prefs.mode, stateUpdate, init: msg.init});
     return;
   }
+
   // Prevent state being overriden from another window while session manager is in use
   if (!msg.modalOpen) {
     stateUpdate[stateUpdate.modeKey] = filter(stateUpdate[stateUpdate.modeKey], function(item) {
@@ -344,6 +376,7 @@ onmessage = function(e) {
     searchChange(e.data.msg.query, e.data.msg.items);
   } else if (e.data.msg.sort) {
     let stateUpdate = {};
+
     stateUpdate[e.data.msg.modeKey] = sort(e.data.msg, e.data.msg.data);
     // @ts-ignore
     postMessage({stateUpdate, force: true});

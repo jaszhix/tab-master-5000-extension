@@ -8,12 +8,13 @@ import mouseTrap from 'mousetrap';
 import tc from 'tinycolor2';
 import {findIndex, map, each, filter} from '@jaszhix/utils';
 
-import {isNewTab, unref} from './utils';
+import {unref} from './utils';
 import state from './stores/state';
 import {setAlert} from './stores/main';
 import {themeStore} from './stores/theme';
 import * as utils from './stores/tileUtils';
-import {domainRegex} from './constants';
+import {isNewTab} from '../shared/utils';
+import {domainRegex} from '../shared/constants';
 
 const styles = StyleSheet.create({
   favicon: {width: '16px', height: '16px'},

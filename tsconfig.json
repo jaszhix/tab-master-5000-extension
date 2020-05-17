@@ -17,8 +17,8 @@
     ]
   },
   "include": [
-    "**app/scripts/components/**/*.ts",
-    "**app/scripts/components/**/*.tsx"
+    "**app/scripts/**/**/*.ts",
+    "**app/scripts/**/**/*.tsx"
   ],
   "exclude": [
     "dist",

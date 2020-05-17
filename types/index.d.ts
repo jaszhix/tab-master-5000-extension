@@ -252,7 +252,7 @@ declare global {
     syncPermissions: () => void;
     checkPermissions: (prefs: Partial<PreferencesState>) => void
     setPermissions: (obj: Partial<PermissionsState>) => void;
-    setPrefs: (obj: Partial<PreferencesState>) => void;
+    setPrefs: (obj: Partial<PreferencesState>) => Promise<void>;
     getPrefs: () => PreferencesState;
   }
 

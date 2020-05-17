@@ -292,6 +292,15 @@ if (PROD && ENTRY) {
 
   config.entry = ['@babel/polyfill', config.entry];
   config.devtool = 'hidden-source-map';
+
+  config.plugins.push(
+    new BundleAnalyzerPlugin({
+      openAnalyzer: false,
+      analyzerMode: 'static',
+      reportFilename: `../bundleReports/${ENTRY}-${COMMIT_HASH}-bundleReport.html`,
+    })
+  );
+
   if (!SKIP_MINIFY) {
     Object.assign(config.optimization, {
       minimize: true,
@@ -338,14 +347,6 @@ if (PROD && ENTRY) {
         })
       );
     }
-  } else {
-    config.plugins.push(
-      new BundleAnalyzerPlugin({
-        openAnalyzer: false,
-        analyzerMode: 'static',
-        reportFilename: `../bundle_analysis/${ENTRY}_bundleReport.html`
-      })
-    );
   }
 } else {
   config.devServer = {

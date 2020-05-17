@@ -2,7 +2,7 @@
 import {browser} from 'webextension-polyfill-ts';
 import type * as B from 'webextension-polyfill-ts';
 chrome.runtime.setUninstallURL('https://docs.google.com/forms/d/e/1FAIpQLSeNuukS1pTpeZgtMgE-xg0o1R-b5br-JdWJE7I2SfXMOdfjUQ/viewform');
-import _ from 'lodash';
+import {throttle, cloneDeep, isEqual, first, last, orderBy, uniqBy, without} from 'lodash';
 import v from 'vquery';
 import uuid from 'node-uuid';
 import * as Sentry from '@sentry/browser';
@@ -11,8 +11,8 @@ import {eventState, state} from './state';
 import {timeout, sendMsg, sendError, chromeHandler} from './utils';
 
 import prefsStore from './prefs';
-import {isNewTab} from '../components/utils';
-import {domainRegex} from '../components/constants';
+import {isNewTab} from '../shared/utils';
+import {domainRegex} from '../shared/constants';
 
 chrome.runtime.onStartup.addListener(() => {
   eventState.onStartup = {type: 'startup'};
@@ -167,9 +167,9 @@ let createScreenshot = async (t, refWindow, refTab) => {
   await sendMsg({screenshots: t.state.screenshots, windowId});
 };
 
-let createScreenshotThrottled = _.throttle(createScreenshot, 2000, {leading: true});
+let createScreenshotThrottled = throttle(createScreenshot, 2000, {leading: true});
 
-let synchronizeSession = _.throttle(syncSession, 100, {leading: true});
+let synchronizeSession = throttle(syncSession, 100, {leading: true});
 
 let setAction = (t: Bg, type, oldTabInstance, newTabInstance=null) => {
   if (t.state.prefs && !t.state.prefs.actions) {
@@ -177,17 +177,17 @@ let setAction = (t: Bg, type, oldTabInstance, newTabInstance=null) => {
   }
 
   if (t.state.actions.length > 30) {
-    let firstAction = findIndex(t.state.actions, action => action.id === _.first(t.state.actions).id);
+    let firstAction = findIndex(t.state.actions, action => action.id === first(t.state.actions).id);
 
     if (firstAction !== -1) {
-      _.pullAt(t.state.actions, firstAction);
+      t.state.actions.splice(firstAction, 1);
     }
   }
 
   if (oldTabInstance && !isNewTab(oldTabInstance.url) && newTabInstance && !isNewTab(newTabInstance.url)) {
     let action: ActionRecord = {
       type: type,
-      item: _.cloneDeep(type === 'update' ? newTabInstance : oldTabInstance),
+      item: cloneDeep(type === 'update' ? newTabInstance : oldTabInstance),
       id: uuid.v4()
     };
 
@@ -214,7 +214,7 @@ let setAction = (t: Bg, type, oldTabInstance, newTabInstance=null) => {
   }
 };
 
-let setActionThrottled = _.throttle(setAction, 100, {leading: true});
+let setActionThrottled = throttle(setAction, 100, {leading: true});
 
 class Bg {
   state: BackgroundState;
@@ -526,7 +526,7 @@ class Bg {
         case 'prefs':
           return {prefs: s.prefs};
         case 'setPrefs':
-          prefsStore.setPrefs(msg.obj);
+          await prefsStore.setPrefs(msg.obj);
           return {prefs: prefsStore.getPrefs()};
         case 'getWindowId':
           return sender.tab.windowId;
@@ -539,7 +539,7 @@ class Bg {
           });
           break;
         case 'queryTabs':
-          this.queryTabs(true, this.state.prefs, sender.tab.windowId);
+          await this.queryTabs(true, this.state.prefs, sender.tab.windowId);
           break;
         case 'getSessions':
           await sendMsg({sessions: this.state.sessions, windowId: sender.tab.windowId});
@@ -631,7 +631,7 @@ class Bg {
       this.state.newTabs = this.state.newTabs.concat(blacklisted);
     }
 
-    this.state.set({newTabs: _.uniqBy(this.state.newTabs, 'id')});
+    this.state.set({newTabs: uniqBy(this.state.newTabs, 'id')});
     return tabs;
   }
 
@@ -723,7 +723,7 @@ class Bg {
 
     if (item && item.sessions) {
       // Sort sessionData array to show the newest sessions at the top of the list.
-      //let reverse = _.orderBy(item.sessions, ['timeStamp'], ['desc']);
+      //let reverse = orderBy(item.sessions, ['timeStamp'], ['desc']);
       sessions = item.sessions;
     } else {
       item = await browser.storage.local.get('sessionData');
@@ -739,7 +739,7 @@ class Bg {
       }
     }
 
-    sessions = _.orderBy(sessions, ['timeStamp'], ['desc']);
+    sessions = orderBy(sessions, ['timeStamp'], ['desc']);
     this.state.set({sessions: sessions});
     await sendMsg({sessions: sessions});
   }
@@ -780,7 +780,7 @@ class Bg {
   };
 
   undoAction = async (tabs, chromeVersion) => {
-    let lastAction = _.last(this.state.actions);
+    let lastAction = last(this.state.actions);
 
     if (!lastAction) return;
 
@@ -798,7 +798,7 @@ class Bg {
       }
 
       case (lastAction.type === 'update'): {
-        this.state.actions = _.without(this.state.actions, _.last(this.state.actions));
+        this.state.actions = without(this.state.actions, last(this.state.actions));
         await this.undoAction(tabs, chromeVersion);
         break;
       }
@@ -936,14 +936,14 @@ class Bg {
       windows[refWindow].tabs.push(e);
       // @ts-ignore
       windows[refWindow].tabs = v(windows[refWindow].tabs).move(
-        findIndex(windows[refWindow].tabs, tab => _.isEqual(_.last(windows[refWindow].tabs), tab)),
+        findIndex(windows[refWindow].tabs, tab => isEqual(last(windows[refWindow].tabs), tab)),
         e.index
       ).ns;
     } else {
       windows[refWindow].tabs.push(e);
     }
 
-    windows[refWindow].tabs = _.orderBy(_.uniqBy(windows[refWindow].tabs, 'id'), ['pinned'], ['desc']);
+    windows[refWindow].tabs = orderBy(uniqBy(windows[refWindow].tabs, 'id'), ['pinned'], ['desc']);
     windows[refWindow].tabs = await this.formatTabs(prefs, windows[refWindow].tabs);
     this.state.set({windows}, true);
 
@@ -1000,7 +1000,7 @@ class Bg {
     this.state.removed.push(this.state.windows[refWindow].tabs[refTab]);
     this.state.windows[refWindow].tabs.splice(refTab, 1);
 
-    this.state.windows[refWindow].tabs = _.orderBy(_.uniqBy(this.state.windows[refWindow].tabs, 'id'), ['pinned'], ['desc']);
+    this.state.windows[refWindow].tabs = orderBy(uniqBy(this.state.windows[refWindow].tabs, 'id'), ['pinned'], ['desc']);
     this.state.set({
       windows: this.state.windows,
       newTabs: this.state.newTabs,
@@ -1055,9 +1055,9 @@ class Bg {
     this.state.windows[refWindow].tabs[refTab] = tab;
 
     if (tab.pinned) {
-      this.state.windows[refWindow].tabs = _.orderBy(_.uniqBy(this.state.windows[refWindow].tabs, 'id'), ['pinned'], ['desc']);
+      this.state.windows[refWindow].tabs = orderBy(uniqBy(this.state.windows[refWindow].tabs, 'id'), ['pinned'], ['desc']);
     } else {
-      this.state.windows[refWindow].tabs = _.orderBy(this.state.windows[refWindow].tabs, ['pinned'], ['desc']);
+      this.state.windows[refWindow].tabs = orderBy(this.state.windows[refWindow].tabs, ['pinned'], ['desc']);
     }
 
     this.state.set({windows: this.state.windows}, true);
@@ -1097,9 +1097,9 @@ class Bg {
     this.state.windows[refWindow].tabs[refTab].timeStamp = new Date(Date.now()).getTime();
 
     if (tab.pinned) {
-      this.state.windows[refWindow].tabs = _.orderBy(_.uniqBy(this.state.windows[refWindow].tabs, 'id'), ['pinned'], ['desc']);
+      this.state.windows[refWindow].tabs = orderBy(uniqBy(this.state.windows[refWindow].tabs, 'id'), ['pinned'], ['desc']);
     } else {
-      this.state.windows[refWindow].tabs = _.orderBy(this.state.windows[refWindow].tabs, ['pinned'], ['desc']);
+      this.state.windows[refWindow].tabs = orderBy(this.state.windows[refWindow].tabs, ['pinned'], ['desc']);
     }
 
     each(this.state.windows[refWindow].tabs, (tab, i) => {
