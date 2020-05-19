@@ -66,3 +66,21 @@ export const sidebarSortOptions: SidebarSortOptions = {
 }
 
 sidebarSortOptions.apps = sidebarSortOptions.extensions;
+
+export const tableWidths = {
+  title: 472,
+  name: 472,
+  domain: 200,
+  folder: 200,
+  dateAdded: 150,
+  lastVisitTime: 150,
+  session: 150,
+  pinned: 75,
+  mutedInfo: 75,
+  visitCount: 75,
+  typedCount: 75,
+  enabled: 75,
+  offlineEnabled: 75,
+  version: 150,
+  launchType: 150,
+}

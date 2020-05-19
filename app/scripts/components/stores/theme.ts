@@ -1087,6 +1087,12 @@ const onThemeChange = (e) => {
     tr.odd {
       background-color: ${themeStore.opacify(e.theme.tileBgHover, 0.25)} !important;
     }
+    #thead-float {
+      background-color: ${themeStore.opacify(e.theme.headerBg, 0.86)} !important;
+    }
+    #thead-float > tr > th {
+      color: ${e.theme.darkBtnText} !important;
+    }
     body > div.ReactModalPortal > div > div {
       -${vendor}-transition: ${prefs.animations ? 'background 0.5s ease-in, height 0.2s, width 0.2s, top 0.2s, left 0.2s, right 0.2s, bottom 0.2s' : 'initial'};
       border: ${e.theme.tileShadow};

@@ -4318,11 +4318,6 @@ thead .htCollapseButton:after {
 .fixedHeader-locked + .fixedHeader-floating {
   border-top: 0!important;
 }
-@media (max-width: 768px) {
-  .fixedHeader-floating {
-    display: none;
-  }
-}
 .fixedHeader-locked {
   position: absolute;
 }

@@ -38,14 +38,14 @@ export const whichToShow = function({outerHeight, itemHeight, scrollTop, columns
   }
 }
 
-export const unref = function(object: object) {
+export const unref = function(object: object, ms = 0) {
   setTimeout(() => {
     let keys = Object.keys(object);
 
     for (let i = 0; i < keys.length; i++) {
       object[keys[i]] = null;
     }
-  }, 0);
+  }, ms);
 };
 
 interface LoadingProps {

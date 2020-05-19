@@ -3,17 +3,15 @@ import onClickOutside from 'react-onclickoutside';
 import moment from 'moment';
 import {StyleSheet, css} from 'aphrodite';
 import {upperFirst} from 'lodash';
-import v from 'vquery';
 import mouseTrap from 'mousetrap';
-import tc from 'tinycolor2';
 import {findIndex, map, each, filter} from '@jaszhix/utils';
 
 import {unref} from './utils';
 import state from './stores/state';
 import {setAlert} from './stores/main';
-import {themeStore} from './stores/theme';
 import * as utils from './stores/tileUtils';
 import {isNewTab} from '../shared/utils';
+import {tableWidths} from './constants';
 import {domainRegex} from '../shared/constants';
 
 const styles = StyleSheet.create({
@@ -50,6 +48,7 @@ interface RowProps {
   style?: React.CSSProperties;
   columns: SortKey[];
   columnWidths: number[];
+  labelWidth: string;
   dynamicStyles: any;
 }
 
@@ -73,7 +72,7 @@ class Row extends React.Component<RowProps> {
     let p = this.props;
     let textOverflow: React.CSSProperties = {
       whiteSpace: 'nowrap',
-      width: `${p.s.width <= 1186 ? p.s.width / 3 : p.s.width <= 1015 ? p.s.width / 6 : p.s.width / 2}px`,
+      width: p.labelWidth,
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       display: 'inline-block'
@@ -99,6 +98,7 @@ class Row extends React.Component<RowProps> {
           if (p.columnWidths && p.columnWidths[z]) {
             style = {
               width: `${p.columnWidths[z]}px`,
+              minWidth: `${tableWidths[column]}px`
             }
           }
 
@@ -207,6 +207,7 @@ class Row extends React.Component<RowProps> {
 
 interface TableHeaderProps {
   isFloating: boolean;
+  init?: boolean;
   headerBg?: string;
   darkBtnText?: string;
   columns: SortKey[];
@@ -228,28 +229,30 @@ class TableHeader extends React.Component<TableHeaderProps> {
   componentWillUnmount = () => {
     this.willUnmount = true;
     state.disconnect(this.connectId);
-    unref(this);
-  }
-
-  getRef = (ref: HTMLElement) => {
-    if (!this.props.isFloating || !ref) {
-      return;
-    }
-
-    this.ref = ref;
-    setTimeout(() => {
-      this.ref.style.backgroundColor = themeStore.opacify(this.props.headerBg, 0.86);
-
-      if (tc(this.props.headerBg).isDark()) {
-        v('#thead-float > tr > th').css({color: this.props.darkBtnText});
-      }
-    }, 0);
+    unref(this, 750);
   }
 
   handleColumnRef = (ref) => {
+    // TODO: Redo tables with flexbox
+    // Firefox needs extra time after the component mounts to get the correct clientWidth
+    if (state.chromeVersion === 1 && !this.props.init) {
+      setTimeout(() => this._handleColumnRef(ref), 500);
+      return;
+    }
+
+    this._handleColumnRef(ref);
+  }
+
+  _handleColumnRef = (ref) => {
     if (!ref) return;
 
-    this.columnWidths[parseInt(ref.id)] = ref.clientWidth;
+    let {clientWidth} = ref;
+
+    if (state.chromeVersion === 1) {
+      clientWidth = Math.min(600, clientWidth);
+    }
+
+    this.columnWidths[parseInt(ref.id)] = clientWidth;
 
     if (this.columnWidths.length === this.props.columns.length) {
       this.props.onColumnWidthsComputed(this.columnWidths);
@@ -261,7 +264,6 @@ class TableHeader extends React.Component<TableHeaderProps> {
 
     return (
       <thead
-        ref={this.getRef}
         id={isFloating ? 'thead-float' : ''}
         style={{opacity: isFloating ? '1' : '0'}}>
         <tr role="row">
@@ -272,6 +274,7 @@ class TableHeader extends React.Component<TableHeaderProps> {
             if (columnWidths && columnWidths[i] != null) {
               style = {
                 width: `${columnWidths[i]}px`,
+                minWidth: `${tableWidths[column]}px`
               };
             }
 
@@ -307,10 +310,12 @@ export interface TableProps {
 export interface TableState {
   columns?: SortKey[];
   columnWidths: number[];
+  labelWidth: string;
   rows?: ChromeTab[];
   muteInit?: boolean;
   selectedItems?: number[];
   shiftRange?: number;
+  init?: boolean;
 }
 
 class Table extends React.Component<TableProps, TableState> {
@@ -323,10 +328,12 @@ class Table extends React.Component<TableProps, TableState> {
     this.state = {
       columns: null,
       columnWidths: [],
+      labelWidth: 'auto',
       rows: null,
       muteInit: true,
       selectedItems: [],
-      shiftRange: null
+      shiftRange: null,
+      init: false,
     };
   }
 
@@ -366,7 +373,7 @@ class Table extends React.Component<TableProps, TableState> {
   buildTable = () => {
     if (this.willUnmount) return;
 
-    const {prefs} = state;
+    const {prefs, chromeVersion} = state;
     let rows: ChromeTab[] = [];
     let columns: SortKey[] = ['title', 'domain'];
 
@@ -397,7 +404,12 @@ class Table extends React.Component<TableProps, TableState> {
         columns = columns.concat(['session']);
         break;
       case 'history':
-        columns = columns.concat(['lastVisitTime', 'visitCount', 'typedCount']);
+        if (chromeVersion === 1) {
+          columns = columns.concat(['lastVisitTime', 'visitCount']);
+        } else {
+          columns = columns.concat(['lastVisitTime', 'visitCount', 'typedCount']);
+        }
+
         break;
       case 'apps':
       case 'extensions':
@@ -607,15 +619,21 @@ class Table extends React.Component<TableProps, TableState> {
   }
 
   handleColumnWidths = (columnWidths: number[]) => {
-    this.setState({columnWidths});
+    this.setState({
+      columnWidths,
+      labelWidth: `${Math.round(columnWidths[0] * 0.9)}px`,
+      init: true,
+    });
   }
 
   render = () => {
     let {
       columns,
       columnWidths,
+      labelWidth,
       rows,
       selectedItems,
+      init,
     } = this.state;
     let {s, range, onDragEnd, onDragStart, onDragOver, draggable} = this.props;
 
@@ -657,6 +675,7 @@ class Table extends React.Component<TableProps, TableState> {
               direction={s.direction}
               onColumnClick={this.handleColumnClick}
               isFloating={false}
+              init={init}
               onColumnWidthsComputed={this.handleColumnWidths}
             />
           : null}
@@ -687,6 +706,7 @@ class Table extends React.Component<TableProps, TableState> {
                     row={row}
                     columns={columns}
                     columnWidths={columnWidths}
+                    labelWidth={labelWidth}
                   />
                 );
               }
@@ -705,6 +725,7 @@ class Table extends React.Component<TableProps, TableState> {
           })}
           </tbody>
         </table>
+
         <table
           className={css(dynamicStyles.fixedTableHeader, dynamicStyles.tableCommon) + ' table datatable-responsive dataTable no-footer dtr-inline fixedHeader-floating'}
           role="grid"

@@ -83,9 +83,8 @@ gulp.task('htmlmin', function() {
 });
 
 gulp.task('imgmin', function() {
-  return gulp.src(`./${WORKDIR}/images/*.{png,jpg,gif}`)
+  return gulp.src(`./${WORKDIR}/images/*.{png,jpg}`)
     .pipe(imagemin([
-      imagemin.gifsicle({interlaced: true, optimizationLevel: 7}),
       imagemin.mozjpeg({quality: 70, progressive: false}),
       imagemin.optipng({optimizationLevel: 7}),
     ]))
