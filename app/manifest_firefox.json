@@ -11,6 +11,17 @@
   "chrome_url_overrides": {
     "newtab": "newtab.html"
   },
+  "commands": {
+    "openClient": {
+      "suggested_key": {
+        "windows": "Ctrl+Shift+A",
+        "mac": "Command+Shift+A",
+        "chromeos": "Ctrl+Shift+A",
+        "linux": "Ctrl+Shift+A"
+      },
+      "description": "Open Tab Master"
+    }
+  },
   "options_ui": {
     "browser_style": true,
     "open_in_tab": true,
@@ -22,7 +33,7 @@
       "scripts/background.js"
     ]
   },
-  "page_action": {
+  "browser_action": {
     "browser_style": true,
     "default_icon": {
       "19": "images/icon-19.png",

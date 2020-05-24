@@ -1,10 +1,10 @@
 import {browser} from 'webextension-polyfill-ts';
 import * as Sentry from '@sentry/browser';
-import _ from 'lodash';
+import {throttle} from 'lodash';
 
 import {state} from './state';
 
-const captureException = _.throttle(Sentry.captureException, 2000, {leading: true});
+const captureException = throttle(Sentry.captureException, 2000, {leading: true});
 
 export const timeout = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 

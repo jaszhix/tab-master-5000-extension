@@ -226,6 +226,11 @@ class TableHeader extends React.Component<TableHeaderProps> {
   willUnmount: boolean;
   connectId: number;
 
+  static defaultProps = {
+    init: false,
+    darkBtnText: '',
+  }
+
   componentWillUnmount = () => {
     this.willUnmount = true;
     state.disconnect(this.connectId);

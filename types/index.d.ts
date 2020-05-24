@@ -235,6 +235,8 @@ declare global {
     resetSearchOnClick: boolean;
     tablePadding: number;
     errorTelemetry: boolean;
+    newTabMode: 'tm5k' | 'default' | 'custom';
+    newTabCustom: string;
   }
 
   interface PermissionsState {

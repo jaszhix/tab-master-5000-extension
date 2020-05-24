@@ -8,7 +8,7 @@ import {sendError} from './utils';
 
 let prefsStore = <PreferencesStore>init({
   prefs: {},
-  defaultPrefs: {
+  defaultPrefs: <PreferencesState>{
     autoDiscard: false,
     autoDiscardTime: 3600000,
     tabSizeHeight: 134,
@@ -44,6 +44,8 @@ let prefsStore = <PreferencesStore>init({
     resetSearchOnClick: true,
     tablePadding: 5,
     errorTelemetry: false,
+    newTabMode: 'tm5k',
+    newTabCustom: '',
   },
   permissions: {
     screenshot: false,

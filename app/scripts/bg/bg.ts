@@ -357,9 +357,36 @@ class Bg {
     /*
     Tabs created
     */
-    chrome.tabs.onCreated.addListener(chromeHandler((tab) => {
+    chrome.tabs.onCreated.addListener(chromeHandler(async (tab: ChromeTab) => {
       eventState.onCreated = tab;
       console.log('onCreated: ', tab);
+
+      if (tab.pendingUrl.indexOf('newtab') > -1 || tab.title === 'New Tab') {
+        let url;
+
+        switch (this.state.prefs.newTabMode) {
+          case 'tm5k':
+            break;
+
+          case 'default': {
+            if (state.chromeVersion === 1) {
+              url = 'about:newtab'
+            } else {
+              url = 'chrome-search://local-ntp/local-ntp.html';
+            }
+
+            break;
+          }
+
+          case 'custom': {
+            url = this.state.prefs.newTabCustom;
+            break;
+          }
+        }
+
+        if (url) await browser.tabs.update(tab.id, {url});
+      }
+
       this.createSingleItem(tab);
     }));
     /*
@@ -412,6 +439,17 @@ class Bg {
       console.log('onDetached: ', tabId, info);
       this.removeSingleItem(tabId, info.oldWindowId);
     }));
+
+    chrome.commands.onCommand.addListener(async (command) => {
+      switch (command) {
+        case 'openClient': {
+          await this.openTabMaster();
+          break;
+        }
+      }
+    });
+
+    chrome.browserAction.onClicked.addListener(this.openTabMaster)
 
     await this.attachMessageListener(s);
 
@@ -755,6 +793,13 @@ class Bg {
     }
 
     this.state.set({screenshots: index});
+  }
+
+  openTabMaster = async () => {
+    await browser.tabs.create({
+      url: `chrome-extension://${chrome.runtime.id}/tm5k.html`,
+      active: true
+    });
   }
 
   keepNewTabOpen = async () => {

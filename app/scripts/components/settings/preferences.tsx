@@ -100,6 +100,60 @@ class Toggle extends React.Component<ToggleProps> {
   }
 }
 
+interface Option {
+  value: string;
+  label: string;
+}
+
+interface DropdownProps {
+  theme: Theme;
+  onChange: React.ChangeEventHandler;
+  child?: boolean;
+  value: string;
+  label: string;
+  options: Option[];
+}
+
+class Dropdown extends React.Component<DropdownProps> {
+  componentDidMount = () => {
+    ReactTooltip.rebuild();
+  }
+
+  render = () => {
+    let p = this.props;
+    let {options, value, onChange} = this.props;
+
+    return (
+      <Row
+        className={`Toggle ${css(styles.cursorPointer)}`}
+        data-place="bottom"
+        data-tip={p['data-tip']}>
+        <Row className={p.child ? "prefs-row-child" : "prefs-row"}>
+          <Col size="4">
+            <label style={{position: 'relative', top: '8px', color: p.theme.bodyText}}>{p.label}</label>
+          </Col>
+          <Col size="8">
+            <select
+              className="form-control"
+              style={{backgroundColor: state.theme.settingsBg, color: state.theme.bodyText, width: '144px', paddingLeft: '6px'}}
+              value={value}
+              onChange={onChange}>
+              {map(options, (option) => {
+                return (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                );
+              })}
+            </select>
+          </Col>
+          <Col size="12">
+            {p.children}
+          </Col>
+        </Row>
+      </Row>
+    );
+  }
+}
+
 interface BlacklistProps {
   dynamicStyles: any;
 }
@@ -245,6 +299,7 @@ export interface PreferencesComponentState {
   faviconsBytesInUse?: number;
   screenshotsBytesInUse?: number;
   aboutAddonsOpen?: boolean;
+  newTabCustom?: string;
 }
 
 class Preferences extends React.Component<PreferencesComponentProps, PreferencesComponentState> {
@@ -261,7 +316,8 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
       hover: 'null',
       faviconsBytesInUse: 0,
       screenshotsBytesInUse: 0,
-      aboutAddonsOpen: false
+      aboutAddonsOpen: false,
+      newTabCustom: props.prefs.newTabCustom,
     }
   }
 
@@ -411,6 +467,18 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
     this.buildFooter();
   }
 
+  handleNewTabOverrideChange = (e) => {
+    setPrefs({newTabMode: e.target.value});
+  }
+
+  handleNewTabCustomChange = (e) => {
+    let {value} = e.target;
+
+    this.setState({newTabCustom: value}, async () => {
+      setPrefs({newTabCustom: value});
+    })
+  }
+
   render = () => {
     let s = this.state;
     let p = this.props;
@@ -438,8 +506,26 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
       <div className="preferences">
         <Row>
           {s.aboutAddonsOpen ?
-            <p className="content-divider">{utils.t('addonsManagerHint')}</p> : null}
+            <p className="content-divider">{utils.t('addonsManagerHint')}</p>
+          : null}
           <Col size="6">
+            <Dropdown
+              theme={p.theme}
+              label="New Tab Override"
+              options={[{value: 'tm5k', label: 'Tab Master'}, {value: 'default', label: 'Browser Default'}, {value: 'custom', label: 'Custom'}]}
+              value={p.prefs.newTabMode}
+              onChange={this.handleNewTabOverrideChange}
+              data-tip="Controls what page is shown when opening a new tab.">
+              {p.prefs.newTabMode === 'custom' ?
+                <input
+                  type="url"
+                  className="form-control"
+                  placeholder="New Tab URL"
+                  value={s.newTabCustom}
+                  onChange={this.handleNewTabCustomChange}
+                />
+              : null}
+            </Dropdown>
             <Toggle
               theme={p.theme}
               onMouseEnter={() => this.handleToggle('context')}

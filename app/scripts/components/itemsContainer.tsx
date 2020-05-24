@@ -261,7 +261,7 @@ class ItemsContainer extends React.Component<ItemsContainerProps, ItemContainerS
       left: '0px',
       right: '0px',
       margin: '0px auto',
-      width: '99.6%',
+      width: '100%',
       height: `${height - navOffset}px`,
       overflowY: 'auto',
       overflowX: 'hidden',

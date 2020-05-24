@@ -2,9 +2,9 @@
   // extend your base config so you don't have to redefine your compilerOptions
   "extends": "./tsconfig.json",
   "include": [
-    "app/**/**/*.ts",
-    "app/**/**/*.tsx",
-    "app/**/**/*.js",
+    "app/**/**/**/*.ts",
+    "app/**/**/**/*.tsx",
+    "app/**/**/**/*.js",
     "test/**/*.ts",
     "webpack.config.ts",
     "gulpfile.ts"

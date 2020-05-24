@@ -44,6 +44,10 @@ class App extends React.Component<AppProps, GlobalState> {
 
       this.setState(newState, () => console.log('STATE: ', this.state));
     });
+
+    if (window.location.href === `chrome-extension://${chrome.runtime.id}/tm5k.html`) {
+      document.title = 'Tab Master';
+    }
   }
 
   componentDidMount = () => {

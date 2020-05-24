@@ -1,5 +1,17 @@
 #### Release Notes
 
+##### v2.10.0 / *TBD*
+
+* Added ability to override TM5K's control of the New Tab page.
+* Added scrollbar theme support.
+* Added new theme "Blue Out".
+* Fixed table headers being misaligned with columns.
+* Fixed the new tab page sometimes not loading while the browser is starting up.
+* Fixed placeholder favicons erroneously being cached, preventing the correct ones from displaying.
+* Fixed closing tabs to the right/left context menu option not closing every tab in range.
+* Bumped the minimum table padding setting value to 2px to prevent drag and drop bugs.
+* Various optimizations.
+
 ##### v2.9.7 / *11-27-19*
 
 * Various bug fixes and tweaks for the table view:

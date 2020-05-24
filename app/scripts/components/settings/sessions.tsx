@@ -328,7 +328,7 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
                       {sessionTitle}
                     </div>
                   </div>
-                  {s.sessionHover === i ?
+                  {s.sessionHover === i || s.expandedSession === i ?
                     <div className={css(styles.sessionItemContainerStyle)}>
                       <Btn
                         onClick={() => this.handleRemoveSession(session)}

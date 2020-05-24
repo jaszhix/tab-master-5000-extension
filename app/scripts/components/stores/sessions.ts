@@ -1,7 +1,8 @@
+import {browser} from 'webextension-polyfill-ts';
 import _ from 'lodash';
 import uuid from 'node-uuid';
 import ReactTooltip from 'react-tooltip';
-import {each, findIndex, filter} from '@jaszhix/utils';
+import {each, findIndex, filter, cloneDeep} from '@jaszhix/utils';
 
 import state from './state';
 import {setPrefs, setAlert} from './main';
@@ -179,12 +180,12 @@ export const removeSessionTab = (sessions: SessionState[], session, _window, tab
     }
 
     if (refSessionTab !== -1) {
-      _.pullAt(sessionTabs, refSessionTab);
+      sessionTabs.splice(refSessionTab, 1);
       stateUpdate.sessionTabs = sessionTabs;
     }
   }
 
-  _.pullAt(sessions[session].tabs[_window], tab);
+  sessions[session].tabs[_window].splice(tab, 1);
   stateUpdate.sessions = sessions;
   state.set(stateUpdate, true);
   chrome.storage.local.set({sessions: sessions}, () => {
@@ -193,7 +194,7 @@ export const removeSessionTab = (sessions: SessionState[], session, _window, tab
 };
 
 export const removeWindow = (sessions: SessionState[], sessionIndex: number, windowIndex: number) => {
-  _.pullAt(sessions[sessionIndex].tabs, windowIndex);
+  sessions[sessionIndex].tabs.splice(windowIndex, 1);
   state.set({sessions});
   chrome.storage.local.set({sessions}, () => {
     console.log('session window removed', sessions);
@@ -203,7 +204,7 @@ export const removeWindow = (sessions: SessionState[], sessionIndex: number, win
 export const removeSession = (sessions: SessionState[], session: SessionState) => {
   let refSession = findIndex(sessions, _session => _session.id === session.id);
 
-  _.pullAt(sessions, refSession);
+  sessions.splice(refSession, 1);
   state.set({sessions: sessions});
   chrome.storage.local.set({sessions: sessions}, () => {
     console.log('session removed', sessions);
@@ -219,44 +220,51 @@ export const updateSession = (sessions: SessionState[], session: SessionState) =
   chrome.storage.local.set({sessions: sessions});
 };
 
-export const saveSession = (opt) => {
-  opt.tabs = filter(opt.tabs, function(Window) {
+export const saveSession = async ({tabs, label}) => {
+  let sessions, session, item;
+
+  tabs = filter(tabs, function(Window) {
     return Window && Window.length > 0;
   });
-  each(opt.tabs, (Window, wKey) => {
-    each(Window, (Tab, tKey) => {
-      if (Tab.favIconUrl !== undefined && Tab.favIconUrl && Tab.favIconUrl.indexOf('data') !== -1) {
-        opt.tabs[wKey][tKey].favIconUrl = '';
+
+  each(tabs, (Window, wKey) => {
+    each(Window, (tab, tKey) => {
+      tab = tabs[wKey][tKey] = cloneDeep(tab);
+      if (tab.favIconUrl != null && tab.favIconUrl && tab.favIconUrl.indexOf('data') > -1) {
+        tab.favIconUrl = '';
       }
     })
   });
-  let session = {
+
+  session = {
     timeStamp: Date.now(),
-    tabs: opt.tabs,
-    label: opt.label,
+    tabs: tabs,
+    label: label,
     id: uuid.v4()
   };
-  let sessions;
 
-  chrome.storage.local.get('sessions', (item) => {
-    if (!item.sessions) {
-      sessions = {sessions: []};
-      sessions.sessions.push(session);
-    } else {
-      sessions = item;
-      sessions.sessions.push(session);
-    }
 
-    let result = _.orderBy(sessions.sessions, ['timeStamp'], ['desc']);
+  item = await browser.storage.local.get('sessions');
 
-    state.set({sessions: result});
-    chrome.storage.local.set({sessions: result}, () => {
-      console.log('session saved');
-      setAlert({
-        text: `Successfully saved new session.`,
-        tag: 'alert-success',
-        open: true
-      });
-    });
+  if (!item.sessions) {
+    sessions = {sessions: []};
+    sessions.sessions.push(session);
+  } else {
+    sessions = item;
+    sessions.sessions.push(session);
+  }
+
+  let result = _.orderBy(sessions.sessions, ['timeStamp'], ['desc']);
+
+  state.set({sessions: result});
+
+  await browser.storage.local.set({sessions: result});
+
+  state.trigger('favicons', {favicons: state.favicons});
+
+  setAlert({
+    text: `Successfully saved new session.`,
+    tag: 'alert-success',
+    open: true
   });
 };
