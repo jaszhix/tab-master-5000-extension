@@ -57,7 +57,7 @@ export class Btn extends React.Component<BtnProps, BtnState> {
 
   render = () => {
     let p = this.props;
-    let {className, noIconPadding, fa, icon} = p;
+    let {className, style, faStyle, noIconPadding, fa, icon} = p;
     let hasIcon = (fa || icon);
     let iconClassName = '';
 
@@ -71,10 +71,13 @@ export class Btn extends React.Component<BtnProps, BtnState> {
         onMouseLeave={this.handleHoverOut}
         onClick={p.onClick}
         id={p.id}
-        className={className}>
+        className={className}
+        style={style}>
         <div className="btnLabel">
           {hasIcon ?
-            <i className={`${iconClassName} ${fa ? 'fa fa-' + fa : ''}${icon ? ' icon-' + icon : ''}`} /> : null}
+            <i
+              className={`${iconClassName} ${fa ? 'fa fa-' + fa : ''}${icon ? ' icon-' + icon : ''}`}
+              style={faStyle} /> : null}
           {p.fa ? ' ' : null}
           {p.children}
         </div>
