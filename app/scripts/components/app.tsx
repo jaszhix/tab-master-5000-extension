@@ -38,7 +38,7 @@ class App extends React.Component<AppProps, GlobalState> {
         }, (e) => {
           let stackParts = e.stack.split('\n');
 
-          console.log('STATE CALLEE: ', stackParts[6].trim());
+          if (stackParts[6]) console.log('STATE CALLEE: ', stackParts[6].trim());
         });
       }
 

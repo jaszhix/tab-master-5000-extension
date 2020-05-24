@@ -93,7 +93,7 @@ class Contribute extends React.Component<ContributeProps, ContributeState> {
               <option value="3 -">$25.00 USD</option>
             </select>
             <input type="hidden" name="currency_code" value="USD" />
-            <Btn className="ntg-top-btn">PayPal</Btn>
+            <Btn className="topDarkBtn">PayPal</Btn>
           </form>
         </Col>
 

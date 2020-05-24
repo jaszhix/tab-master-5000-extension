@@ -1045,8 +1045,31 @@ const onThemeChange = (e) => {
     .ntg-move-hover {
       color: ${e.theme.tileMoveHover};
     }
-    .ntg-session-text {
+    .darkBtn, .topDarkBtn {
+      color: ${e.theme.darkBtnText} !important;
+      background-color: ${e.theme.darkBtnBg} !important;
+      text-shadow: 1px 1px ${e.theme.darkBtnTextShadow} !important;
+    }
+    .darkBtn:hover, topDarkBtn:hover {
+      background-color: ${e.theme.darkBtnBgHover} !important;
+    }
+    button {
+      color: ${e.theme.lightBtnText} !important;
+      background-color: ${e.theme.lightBtnBg} !important;
+      text-shadow: 1px 1px ${e.theme.lightBtnTextShadow} !important;
+      box-shadow: ${e.theme.tileShadow} 1px 1px 5px -1px;
+    }
+    button:hover {
+      background-color: ${e.theme.lightBtnBgHover} !important;
+    }
+    .sessionText {
       color: ${e.theme.bodyText};
+    }
+    .sessionRow {
+      background-color: ${e.theme.settingsBg};
+    }
+    .sessionRow:hover, .sessionRow.active {
+      background-color: ${e.theme.settingsItemHover};
     }
     .text-muted.text-size-small {
       color: ${themeStore.opacify(e.theme.bodyText, 0.9)};

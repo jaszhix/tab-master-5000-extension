@@ -316,17 +316,58 @@ div.row.ntg-tile-row-top > div.col-xs-3 > div > i {
   padding-left: 3px;
   opacity: 0.8;
 }
-.ntg-session-row {
+.sessionRow {
   vertical-align: middle;
   padding-top: 4px;
   padding-bottom: 4px;
   height: auto;
+  transition: height 0.15s;
+
+  &.parent {
+    min-height: 30px;
+    user-select: none;
+    padding-bottom: 5px;
+
+    &.active {
+      padding-bottom: 4px;
+    }
+
+    &.active.current {
+      .row > span {
+        font-weight: 600;
+        padding-bottom: 1px;
+      }
+    }
+  }
 }
-.ntg-session-text {
+
+.sessionText {
   font-size: 14px;
   padding-left: 8px;
   overflow: hidden;
+
+  &.withSearch {
+    margin-bottom: 1px;
+  }
+
+  &.active {
+    margin-bottom: 1px;
+  }
+
+  &.sessionWindow {
+    min-height: 22px;
+  }
+
+  &.expandable {
+    cursor: pointer;
+
+    &.expanded {
+      padding-bottom: 5px;
+      font-weight: 600;
+    }
+  }
 }
+
 .ntg-session-expanded {
   overflow-y: auto;
   width: 100%;

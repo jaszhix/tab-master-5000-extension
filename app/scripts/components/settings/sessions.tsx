@@ -13,6 +13,7 @@ import {removeSingleWindow, setPrefs} from '../stores/main';
 import {exportSessions, saveSession, updateSession, removeSession, removeSessionTab, restore, removeWindow, restoreWindow, importSessions} from '../stores/sessions';
 
 import {Btn, Col, Row} from '../bootstrap';
+import type {RowProps} from '../bootstrap';
 import style from '../style';
 import styles from './styles';
 
@@ -74,19 +75,20 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
   }
 
   componentDidMount = () => {
-    let p = this.props;
-    let s = this.state;
+    let {modal} = this.props;
 
     this.modalBody = v('.modal-body').n;
     this.modalBody.addEventListener('scroll', this.onModalBodyScroll);
-    p.modal.footer = (
+
+    modal.footer = (
       <div>
-        <Btn onClick={() => exportSessions(state.sessions)} className="ntg-setting-btn" icon="database-export">{utils.t('export')}</Btn>
+        <Btn onClick={this.handleExportSessions} className="ntg-setting-btn" icon="database-export">{utils.t('export')}</Btn>
         <Btn onClick={this.triggerInput} className="ntg-setting-btn" icon="database-insert">{utils.t('import')}</Btn>
-        <Btn onClick={() => saveSession({tabs: p.allTabs, label: s.sessionLabelValue})} className="ntg-setting-btn pull-right" icon="floppy-disk">{utils.t('saveSession')}</Btn>
+        <Btn onClick={this.handleSaveSession} className="ntg-setting-btn pull-right" icon="floppy-disk">{utils.t('saveSession')}</Btn>
       </div>
     );
-    state.set({modal: p.modal}, true);
+
+    state.set({modal}, true);
     this.handleSessionsState(state);
   }
 
@@ -99,6 +101,17 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
   }
 
   onModalBodyScroll = () => v('#currentSession').css({top: this.modalBody.scrollTop})
+
+  handleSaveSession = () => {
+    let {allTabs} = this.props;
+    let {sessionLabelValue} = this.state;
+
+    saveSession({tabs: allTabs, label: sessionLabelValue});
+  }
+
+  handleExportSessions = () => {
+    exportSessions(state.sessions);
+  }
 
   handleSessionsState = (partial) => {
     const replaceFavicon = (tab) => {
@@ -142,26 +155,21 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
     this.fileInputRef.click();
   }
 
-  handleSessionHoverIn = (i) => {
-    this.setState({sessionHover: i});
-  }
+  handleSearchActivation = (e) => {
+    let i = parseInt(e.currentTarget.id);
+    let {searchField} = this.state;
+    let nextState: Partial<SessionsState> = {
+      expandedSession: i,
+    };
 
-  handleSessionHoverOut = (i) => {
-    ReactTooltip.hide();
-    this.setState({sessionHover: i});
-  }
+    if (searchField === i) {
+      nextState.search = '';
+      nextState.searchField = -1;
+    } else {
+      nextState.searchField = i;
+    }
 
-  handleSelectedSessionTabHoverIn = (i) => {
-    this.setState({selectedSessionTabHover: i});
-  }
-
-  handleSelectedSessionTabHoverOut = (i) => {
-    ReactTooltip.hide();
-    this.setState({selectedSessionTabHover: i});
-  }
-
-  handleSearchActivation = (i) => {
-    this.setState({searchField: this.state.searchField === i ? -1 : i, expandedSession: i}, () => {
+    this.setState(nextState, () => {
       if (this.state.searchField !== i) {
         return;
       }
@@ -179,8 +187,8 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
       labelSession: -1
     }, () => {
       _.delay(() => {
-        if (v(`#ntg-session-row-${i}`).height() + (i * 30) > v('.modal-body').height()) {
-          v(`#ntg-session-row-${i}`).n.scrollIntoView();
+        if (v(`#sessionRow-${i}`).height() + (i * 30) > v('.modal-body').height()) {
+          v(`#sessionRow-${i}`).n.scrollIntoView();
         }
       }, 200);
     });
@@ -196,7 +204,7 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
   handleCurrentSessionCloseWindow = (id, refWindow) => {
     chrome.windows.remove(id);
     removeSingleWindow(id);
-    _.pullAt(this.props.allTabs, refWindow);
+    this.props.allTabs.splice(refWindow, 1);
     state.set({allTabs: this.props.allTabs});
     ReactTooltip.hide();
   }
@@ -208,6 +216,15 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
 
   getFileInputRef = (ref) => {
     this.fileInputRef = ref;
+  }
+
+  handleRowMouseEnter: RowProps['onMouseEnter'] = (e, mouseKey, mouseId) => {
+    this.setState({[mouseKey]: mouseId});
+  }
+
+  handleRowMouseLeave: RowProps['onMouseLeave'] = (e, mouseKey) => {
+    ReactTooltip.hide();
+    this.setState({[mouseKey]: -1});
   }
 
   render = () => {
@@ -224,7 +241,8 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
           size={currentSessionSelected || p.prefs.settingsMax ? '6' : '9'}
           style={{transition: p.prefs.animations ? 'width 0.15s' : 'initial'}}
           className="session-col"
-          onMouseLeave={() => this.handleSessionHoverOut(-1)}>
+          mouseKey="sessionHover"
+          onMouseLeave={this.handleRowMouseLeave}>
           <h4>{utils.t('savedSessions')} {p.sessions.length > 0 ? `(${p.sessions.length})` : null}</h4>
           {map(p.sessions, (session, i) => {
             let time = _.capitalize(moment(session.timeStamp).fromNow());
@@ -248,65 +266,56 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
 
             return (
               <Row
-                ref={(ref) => {
-                if (!ref || !p.prefs.animations) {
-                  return;
-                }
-
-                let height = 30;
-
-                if (s.expandedSession === i) {
-                  height += sessionTabsLength * 30;
-
-                  if (s.selectedSavedSessionWindow > -1 || searchActive) {
-                    let len = tabsLength * 20;
-                    let maxMultiplier = searchActive ? sessionTabsLength : 1;
-                    let max = 400 * maxMultiplier;
-
-                    height += len > max ? max : len;
+                ref={p.prefs.animations ? (ref) => {
+                  if (!ref) {
+                    return;
                   }
 
-                  if (s.searchField === i) {
-                    height += 44;
+                  let height = 30;
+
+                  if (s.expandedSession === i) {
+                    height += sessionTabsLength * 30;
+
+                    if (s.selectedSavedSessionWindow > -1 || searchActive) {
+                      let len = tabsLength * 20;
+                      let maxMultiplier = searchActive ? sessionTabsLength : 1;
+                      let max = 400 * maxMultiplier;
+
+                      height += len > max ? max : len;
+                    }
+
+                    if (s.searchField === i) {
+                      height += 44;
+                    }
+
+                    if (s.labelSession === i) {
+                      height += 41;
+                    }
                   }
 
-                  if (s.labelSession === i) {
-                    height += 41;
+                  // @ts-ignore
+                  if (ref.height && height === ref.height) {
+                    return;
                   }
-                }
 
-                // @ts-ignore
-                if (ref.height && height === ref.height) {
-                  return;
-                }
-
-                v(`#ntg-session-row-${i}`).css({
-                  height: `${height}px`
-                });
-                // @ts-ignore
-                ref.height = height;
-                }}
-                onMouseEnter={() => this.handleSessionHoverIn(i)}
-                onMouseLeave={() => this.handleSessionHoverOut(i)}
+                  v(`#sessionRow-${i}`).css({
+                    height: `${height}px`
+                  });
+                  // @ts-ignore
+                  ref.height = height;
+                } : null}
+                mouseKey="sessionHover"
+                mouseId={i}
+                onMouseEnter={this.handleRowMouseEnter}
+                onMouseLeave={this.handleRowMouseLeave}
                 key={i}
-                className="ntg-session-row"
-                id={`ntg-session-row-${i}`}
-                style={{
-                  backgroundColor: s.sessionHover === i || s.expandedSession === i ? p.theme.settingsItemHover : 'initial',
-                  minHeight: '30px',
-                  userSelect: 'none',
-                  transition: 'height 0.15s'
-                }}>
+                className={`sessionRow parent${s.expandedSession === i ? ' active' : ''}`}
+                id={`sessionRow-${i}`}>
                 <Row>
                   <div className={css(styles.sessionTitleContainerStyle)}>
                     <div
                       onClick={() => this.expandSelectedSession(i)}
-                      className="ntg-session-text"
-                      style={{
-                        paddingBottom: s.expandedSession === i ? '5px' : 'initial',
-                        cursor: 'pointer',
-                        fontWeight: s.expandedSession === i ? 600 : 400
-                      }}>
+                      className={`sessionText expandable${s.expandedSession === i ? ' expanded' : ''}`}>
                       {p.prefs.syncedSession === session.id ?
                         <span
                           title={utils.t('synchronized')}
@@ -347,7 +356,8 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
                           data-tip={p.prefs.syncedSession === session.id ? utils.t('desynchronizeSession') : utils.t('synchronizeSession')}
                         /> : null}
                       <Btn
-                        onClick={() => this.handleSearchActivation(i)}
+                        id={`${i}`}
+                        onClick={this.handleSearchActivation}
                         className="ntg-session-btn"
                         icon="search4"
                         faStyle={sessionHoverButtonIconStyle}
@@ -366,7 +376,10 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
                     </div> : null}
                 </Row>
                 {s.expandedSession === i ?
-                  <Row fluid={true} onMouseLeave={() => this.setState({windowHover: -1})}>
+                  <Row
+                    fluid={true}
+                    mouseKey="windowHover"
+                    onMouseLeave={this.handleRowMouseLeave}>
                     <Row>
                       {s.labelSession === i ?
                         <div>
@@ -424,15 +437,15 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
                   return (
                     <Row
                       key={w}
-                      className="ntg-session-row"
-                      style={{backgroundColor: s.windowHover === w || s.selectedSavedSessionWindow === w ? p.theme.settingsItemHover : p.theme.settingsBg}}
-                      onMouseEnter={() => this.setState({windowHover: w})}>
+                      className={`sessionRow sessionWindow${s.selectedSavedSessionWindow === w ? ' active' : ''}`}
+                      mouseKey="windowHover"
+                      mouseId={w}
+                      onMouseEnter={this.handleRowMouseEnter}>
                       <Row
-                        className="ntg-session-text"
-                        style={{marginBottom: s.selectedSavedSessionWindow === w || searchActive ? '1px' : 'initial', minHeight: '22px'}}>
+                        className={`sessionText sessionWindow${s.selectedSavedSessionWindow === w ? ' active' : ''}${searchActive ? ' withSearch' : ''}`}>
                         <span
                           title={windowTitle}
-                          className={css(styles.sessionWindowTitleSpanStyle) + ' ntg-session-text'}
+                          className={css(styles.sessionWindowTitleSpanStyle) + ' sessionText'}
                           onClick={() => this.setState({selectedSavedSessionWindow: s.selectedSavedSessionWindow === w ? -1 : w})}>
                           {windowTitle}
                         </span>
@@ -458,38 +471,44 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
                         </div>
                       </Row>
                       {s.selectedSavedSessionWindow === w || searchActive ?
-                        <Row className="ntg-session-expanded" style={sessionExpandedRowStyle} onMouseLeave={() => this.handleSelectedSessionTabHoverOut(-1)}>
+                        <Row
+                          className="ntg-session-expanded"
+                          style={sessionExpandedRowStyle}
+                          mouseKey="selectedSessionTabHover"
+                          onMouseLeave={this.handleRowMouseLeave}>
                           {map(_window, (t, x) => {
-                        if (!searchActive || t.title.toLowerCase().indexOf(s.search) > -1) {
-                          tabsLength++;
-                          return (
-                            <Row
-                              className="ntg-session-text"
-                              onMouseEnter={() => this.handleSelectedSessionTabHoverIn(x)}
-                              onMouseLeave={() => this.handleSelectedSessionTabHoverOut(x)}
-                              key={x}
-                              style={{backgroundColor: s.selectedSessionTabHover === x ? p.theme.settingsItemHover : 'initial', maxHeight: '20px'}}>
-                              <Col size="11" className={css(styles.noPaddingStyle)}>
-                                <span title={t.title} onClick={() => chrome.tabs.create({url: t.url})} className={css(styles.cursorPointerStyle, styles.noWrap)}>
-                                  <img className="ntg-small-favicon" style={{position: 'relative', top: '-1px'}} src={t.favIconUrl} />
-                                  {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {t.title}
-                                </span>
-                              </Col>
-                              <Col size="1" className={css(styles.noPaddingStyle)}>
-                                {s.selectedSessionTabHover === x ?
-                                  <Btn
-                                    onClick={() => removeSessionTab(p.sessions, i, w, x)}
-                                    className={css(styles.sessionCloseButtonStyle) + ' ntg-session-btn'}
-                                    icon="cross"
-                                    faStyle={sessionButtonIconStyle}
-                                    noIconPadding={true}
-                                    data-tip={utils.t('removeTab')}
-                                  />: null}
-                              </Col>
-                            </Row>
-                          );
-                        }
-                      })}
+                            if (!searchActive || t.title.toLowerCase().indexOf(s.search) > -1) {
+                              tabsLength++;
+                              return (
+                                <Row
+                                  className="sessionText"
+                                  mouseKey="selectedSessionTabHover"
+                                  mouseId={x}
+                                  onMouseEnter={this.handleRowMouseEnter}
+                                  onMouseLeave={this.handleRowMouseLeave}
+                                  key={x}
+                                  style={{backgroundColor: s.selectedSessionTabHover === x ? p.theme.settingsItemHover : 'initial', maxHeight: '20px'}}>
+                                  <Col size="11" className={css(styles.noPaddingStyle)}>
+                                    <span title={t.title} onClick={() => chrome.tabs.create({url: t.url})} className={css(styles.cursorPointerStyle, styles.noWrap)}>
+                                      <img className="ntg-small-favicon" style={{position: 'relative', top: '-1px'}} src={t.favIconUrl} />
+                                      {t.pinned ? <i className="fa fa-map-pin ntg-session-pin" /> : null} {t.title}
+                                    </span>
+                                  </Col>
+                                  <Col size="1" className={css(styles.noPaddingStyle)}>
+                                    {s.selectedSessionTabHover === x ?
+                                      <Btn
+                                        onClick={() => removeSessionTab(p.sessions, i, w, x)}
+                                        className={css(styles.sessionCloseButtonStyle) + ' ntg-session-btn'}
+                                        icon="cross"
+                                        faStyle={sessionButtonIconStyle}
+                                        noIconPadding={true}
+                                        data-tip={utils.t('removeTab')}
+                                      />: null}
+                                  </Col>
+                                </Row>
+                              );
+                            }
+                          })}
                         </Row> : null}
                     </Row>
                   );
@@ -512,7 +531,8 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
           className="session-col"
           id="currentSession"
           style={{postion: 'absolute', right: '0px', transition: p.prefs.animations ? 'width 0.15s' : 'initial'} as React.CSSProperties}
-          onMouseLeave={() => this.setState({currentSessionHover: -1})}>
+          mouseKey="currentSessionHover"
+          onMouseLeave={this.handleRowMouseLeave}>
           <h4>{utils.t('currentSession')}</h4>
           {p.allTabs ? map(state.allTabs, (_window, w) => {
             let windowLength = _window.length;
@@ -529,49 +549,42 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
             return (
               <Row
                 key={w}
-                ref={(ref) => {
-                if (!ref || !p.prefs.animations) {
-                  return;
-                }
-
-                setTimeout(() => {
-                  let height = 30;
-
-                  if (s.selectedCurrentSessionWindow === w) {
-                    let len = windowLength * 20;
-
-                    height += len > 400 ? 400 : len;
-                  }
-
-                  // @ts-ignore
-                  if (ref.height && ref.height === height) {
+                ref={p.prefs.animations ? (ref) => {
+                  if (!ref) {
                     return;
                   }
 
-                  v(`#ntg-session-row-2-${w}`).css({
-                    height: `${height}px`
-                  });
-                  // @ts-ignore
-                  ref.height = height;
-                }, 0);
-                }}
-                className="ntg-session-row"
-                id={`ntg-session-row-2-${w}`}
-                style={{
-                  backgroundColor: s.currentSessionHover === w || s.selectedCurrentSessionWindow === w ? p.theme.settingsItemHover : 'initial',
-                  paddingBottom: s.selectedCurrentSessionWindow === w ? '4px' : '5px',
-                  transition: 'height 0.15s'
-                }}
-                onMouseEnter={() => this.setState({currentSessionHover: w})}
-                onMouseLeave={() => this.setState({currentSessionTabHover: -1})}>
-                <Row
-                  style={{
-                    fontWeight: s.selectedCurrentSessionWindow === w ? 600 : 400,
-                    paddingBottom: s.selectedCurrentSessionWindow === w  ? '1px' : 'initial'
-                  }}>
+                  setTimeout(() => {
+                    let height = 30;
+
+                    if (s.selectedCurrentSessionWindow === w) {
+                      let len = windowLength * 20;
+
+                      height += len > 400 ? 400 : len;
+                    }
+
+                    // @ts-ignore
+                    if (ref.height && ref.height === height) {
+                      return;
+                    }
+
+                    v(`#sessionRow-2-${w}`).css({
+                      height: `${height}px`
+                    });
+                    // @ts-ignore
+                    ref.height = height;
+                  }, 0);
+                } : null}
+                className={`sessionRow current parent${s.selectedCurrentSessionWindow === w ? ' active' : ''}`}
+                id={`sessionRow-2-${w}`}
+                mouseKey="currentSessionHover"
+                mouseId={w}
+                onMouseEnter={this.handleRowMouseEnter}
+                onMouseLeave={this.handleRowMouseLeave}>
+                <Row>
                   <span
                     title={windowTitle}
-                    className={css(styles.sessionWindowTitleSpanStyle) + ' ntg-session-text'}
+                    className={css(styles.sessionWindowTitleSpanStyle) + ' sessionText'}
                     onClick={() => this.setState({selectedCurrentSessionWindow: s.selectedCurrentSessionWindow === w ? -1 : w})}>
                     {windowTitle}
                   </span>
@@ -595,16 +608,18 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
                   }
 
                   if (isNewTab(t.url)) {
-                    _.pullAt(_window, i);
+                    _window.splice(i, 1);
                     return null;
                   }
 
                   return (
                     <Row
-                      className="ntg-session-text"
+                      className="sessionText"
                       key={i}
                       style={{backgroundColor: s.currentSessionTabHover === i ? p.theme.settingsItemHover : 'initial', maxHeight: '20px'}}
-                      onMouseEnter={() => this.setState({currentSessionTabHover: i})}>
+                      mouseKey="currentSessionTabHover"
+                      mouseId={i}
+                      onMouseEnter={this.handleRowMouseEnter}>
                       <Col size="11" className={css(styles.noPaddingStyle)}>
                         <span
                           title={t.title}

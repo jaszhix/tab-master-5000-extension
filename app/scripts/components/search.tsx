@@ -73,7 +73,7 @@ class Search extends React.Component<SearchProps> {
                 onMouseEnter={() => state.set({disableSidebarClickOutside: true})}
                 onMouseLeave={() => state.set({disableSidebarClickOutside: false})}
                 style={{marginRight: '0px', padding: '9px 12px 7px 12px'}}
-                className="ntg-top-btn"
+                className="topDarkBtn"
                 icon="menu7"
                 noIconPadding={true}
               />

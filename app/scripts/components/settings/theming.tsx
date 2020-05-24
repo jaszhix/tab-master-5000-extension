@@ -412,7 +412,7 @@ class Theming extends React.Component<ThemingProps, ThemingState> {
                   return (
                     <Row
                     key={i}
-                    className="ntg-session-row"
+                    className="sessionRow"
                     style={p.prefs.theme === theme.id ? {
                       backgroundColor: p.theme.darkBtnBg,
                       color: s.themeHover === i ? p.theme.bodyText : p.theme.darkBtnText,
@@ -423,7 +423,7 @@ class Theming extends React.Component<ThemingProps, ThemingState> {
                     }}
                     onMouseEnter={() => this.setState({themeHover: i})}>
                       <div
-                      className="ntg-session-text"
+                      className="sessionText"
                       style={{
                         width: 'auto',
                         display: 'inline',
@@ -473,7 +473,7 @@ class Theming extends React.Component<ThemingProps, ThemingState> {
                   return (
                     <Row
                     key={i}
-                    className="ntg-session-row"
+                    className="sessionRow"
                     style={p.prefs.theme === theme.id ? {
                       backgroundColor: p.theme.darkBtnBg,
                       color: p.theme.lightBtnText,
@@ -484,7 +484,7 @@ class Theming extends React.Component<ThemingProps, ThemingState> {
                     }}
                     onMouseEnter={() => this.setState({themeHover: i})}>
                       <div
-                      className="ntg-session-text"
+                      className="sessionText"
                       style={{
                         width: 'auto',
                         display: 'inline',

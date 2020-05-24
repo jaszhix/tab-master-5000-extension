@@ -1,12 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {StyleSheet, css} from 'aphrodite';
 import {assignIn, cloneDeep} from 'lodash';
 import onClickOutside from 'react-onclickoutside';
 import ReactTooltip from 'react-tooltip';
 import {tryFn} from '@jaszhix/utils';
-
-import {themeStore} from './stores/theme';
 
 interface BtnProps {
   onMouseEnter?: (e?: React.MouseEvent | Element) => void;
@@ -32,55 +29,23 @@ export class Btn extends React.Component<BtnProps, BtnState> {
 
   static defaultProps = {
     style: {},
+    className: '',
     faStyle: {},
-    noIconPadding: false
+    noIconPadding: false,
   };
 
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      theme: null,
-      hover: false
-    }
-    this.connectId = themeStore.connect('*', (e) => this.themeChange(e));
-  }
-
-  componentDidMount = () => {
-    let selectedTheme = themeStore.getSelectedTheme();
-
-    this.themeChange({theme: selectedTheme});
-  }
-
-  componentDidUpdate(pP, pS){
-    if (pS.hover !== this.state.hover && !this.state.hover) {
-      ReactTooltip.hide();
-    }
-  }
-
   componentWillUnmount = () => {
-    themeStore.disconnect(this.connectId);
     tryFn(() => this.ref.style.display = 'none');
   }
 
-  themeChange = (e) => {
-    if (e.theme) {
-      this.setState({theme: e.theme});
-      setTimeout(ReactTooltip.rebuild, 0);
-    }
-  }
-
   handleHoverIn = (e) => {
-    this.setState({hover: true});
-
     if (this.props.onMouseEnter) {
       this.props.onMouseEnter(e);
     }
   }
 
   handleHoverOut = (e) => {
-    this.setState({hover: false});
-
+    ReactTooltip.hide();
     if (this.props.onMouseLeave) {
       this.props.onMouseLeave(e);
     }
@@ -92,71 +57,50 @@ export class Btn extends React.Component<BtnProps, BtnState> {
 
   render = () => {
     let p = this.props;
-    let s = this.state;
-    let style = {};
+    let {className, noIconPadding, fa, icon} = p;
+    let hasIcon = (fa || icon);
+    let iconClassName = '';
 
-    if (s.theme) {
-      if (p.className === 'ntg-btn' || p.className === 'ntg-top-btn') {
-        style = {
-          backgroundColor: s.hover ? s.theme.darkBtnBgHover : s.theme.darkBtnBg,
-          color: s.theme.darkBtnText,
-          textShadow: `1px 1px ${s.theme.darkBtnTextShadow}`
-        };
-      } else {
-        style = {
-          backgroundColor: s.hover ? s.theme.lightBtnBgHover : s.theme.lightBtnBg,
-          color: s.theme.lightBtnText,
-          textShadow: `1px 1px ${s.theme.lightBtnTextShadow}`
-        };
-      }
+    if (hasIcon && !noIconPadding) iconClassName += ' iconPadding';
 
-      assignIn(style, {
-        boxShadow: `${s.theme.tileShadow} 1px 1px 5px -1px`,
-        opacity: '1'
-      });
-      assignIn(style, cloneDeep(p.style));
-      let faStyle = {
-        paddingRight: !p.noIconPadding ? '6px' : null
-      };
-
-      assignIn(faStyle, cloneDeep(p.faStyle));
-      const dynamicStyles = StyleSheet.create({
-        style,
-        faStyle
-      });
-
-      return (
-        <button
-          data-tip={p['data-tip'] ? `<div style="max-width: 350px;">${p['data-tip']}</div>` : null}
-          ref={this.getRef}
-          onMouseEnter={this.handleHoverIn}
-          onMouseLeave={this.handleHoverOut}
-          onClick={p.onClick}
-          id={p.id}
-          className={css(dynamicStyles.style) + ' ' + p.className}>
-          <div className="btn-label">
-            {p.fa || p.icon ?
-              <i className={css(dynamicStyles.faStyle) + ` ${p.fa ? 'fa fa-'+p.fa : ''}${p.icon ? ' icon-'+p.icon : ''}`} /> : null}
-            {p.fa ? ' ' : null}
-            {p.children}
-          </div>
-        </button>
-      );
-    } else {
-      return null;
-    }
+    return (
+      <button
+        data-tip={p['data-tip'] ? `<div style="max-width: 350px;">${p['data-tip']}</div>` : null}
+        ref={this.getRef}
+        onMouseEnter={this.handleHoverIn}
+        onMouseLeave={this.handleHoverOut}
+        onClick={p.onClick}
+        id={p.id}
+        className={className}>
+        <div className="btnLabel">
+          {hasIcon ?
+            <i className={`${iconClassName} ${fa ? 'fa fa-' + fa : ''}${icon ? ' icon-' + icon : ''}`} /> : null}
+          {p.fa ? ' ' : null}
+          {p.children}
+        </div>
+      </button>
+    );
   }
 }
 
 interface ColProps {
   onContextMenu?: React.MouseEventHandler;
   onDragEnter?: React.DragEventHandler;
-  onMouseEnter?: React.MouseEventHandler;
-  onMouseLeave?: React.MouseEventHandler;
+  onMouseEnter?: (
+    e: React.MouseEvent<Element, MouseEvent>,
+    mouseKey: string,
+    mouseId: number
+  ) => void;
+  onMouseLeave?: (
+    e: React.MouseEvent<Element, MouseEvent>,
+    mouseKey: string,
+  ) => void;
   onClick?: React.MouseEventHandler;
   style?: React.CSSProperties;
   className?: string;
   id?: string;
+  mouseKey?: string;
+  mouseId?: number;
   size?: string;
 }
 
@@ -169,6 +113,18 @@ export class Col extends React.Component<ColProps> {
     super(props);
   }
 
+  handleMouseEnter: React.MouseEventHandler = (e) => {
+    let {onMouseEnter, mouseKey, mouseId} = this.props;
+
+    if (onMouseEnter) onMouseEnter(e, mouseKey, mouseId);
+  }
+
+  handleMouseLeave: React.MouseEventHandler = (e) => {
+    let {onMouseLeave, mouseKey} = this.props;
+
+    if (onMouseLeave) onMouseLeave(e, mouseKey);
+  }
+
   render = () => {
     let p = this.props;
 
@@ -177,8 +133,8 @@ export class Col extends React.Component<ColProps> {
         data-tip={p['data-tip'] ? `<div style="max-width: 350px;">${p['data-tip']}</div>` : null}
         onContextMenu={p.onContextMenu}
         onDragEnter={p.onDragEnter}
-        onMouseEnter={p.onMouseEnter}
-        onMouseLeave={p.onMouseLeave}
+        onMouseEnter={this.handleMouseEnter}
+        onMouseLeave={this.handleMouseLeave}
         onClick={p.onClick}
         style={p.style}
         id={p.id}
@@ -189,15 +145,24 @@ export class Col extends React.Component<ColProps> {
   }
 }
 
-interface RowProps {
+export interface RowProps {
   onContextMenu?: React.MouseEventHandler;
   onDragEnter?: React.DragEventHandler;
-  onMouseEnter?: React.MouseEventHandler;
-  onMouseLeave?: React.MouseEventHandler;
+  onMouseEnter?: (
+    e: React.MouseEvent<Element, MouseEvent>,
+    mouseKey: string,
+    mouseId: number
+  ) => void;
+  onMouseLeave?: (
+    e: React.MouseEvent<Element, MouseEvent>,
+    mouseKey: string,
+  ) => void;
   onClick?: React.MouseEventHandler;
   style?: React.CSSProperties;
   className?: string;
   id?: string;
+  mouseKey?: string;
+  mouseId?: number;
   fluid?: boolean;
 }
 
@@ -208,10 +173,20 @@ export class Row extends React.Component<RowProps> {
 
   static defaultProps = {
     fluid: false,
+    onMouseEnter: null,
+    onMouseLeave: null,
   };
 
-  constructor(props) {
-    super(props);
+  handleMouseEnter: React.MouseEventHandler = (e) => {
+    let {onMouseEnter, mouseKey, mouseId} = this.props;
+
+    if (onMouseEnter) onMouseEnter(e, mouseKey, mouseId);
+  }
+
+  handleMouseLeave: React.MouseEventHandler = (e) => {
+    let {onMouseLeave, mouseKey} = this.props;
+
+    if (onMouseLeave) onMouseLeave(e, mouseKey);
   }
 
   render = () => {
@@ -222,8 +197,8 @@ export class Row extends React.Component<RowProps> {
         data-tip={p['data-tip'] ? `<div style="max-width: 350px;">${p['data-tip']}</div>` : null}
         onContextMenu={p.onContextMenu}
         onDragEnter={p.onDragEnter}
-        onMouseEnter={p.onMouseEnter}
-        onMouseLeave={p.onMouseLeave}
+        onMouseEnter={this.handleMouseEnter}
+        onMouseLeave={this.handleMouseLeave}
         onClick={p.onClick}
         style={p.style}
         id={p.id}

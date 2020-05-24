@@ -8,12 +8,16 @@ button {
     box-shadow: none;
     background-color: rgba(245, 245, 245, 0);
     color: rgba(245, 245, 245, 0);
-};
-.btn-label {
+    opacity: 1;
 
+    .btnLabel {
+        .iconPadding {
+            padding-right: 6px;
+        }
+    }
 };
 
-button.ntg-btn {
+button.darkBtn {
     width: 100%;
     height: 24px;
     color: #FFF;
@@ -30,7 +34,7 @@ button.ntg-btn {
     user-select: none;
     overflow: hidden;
 }
-button.ntg-top-btn {
+button.topDarkBtn {
     position: relative;
     width: auto;
     color: #FFF;

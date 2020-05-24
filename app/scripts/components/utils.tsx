@@ -66,9 +66,9 @@ export const sanitizeTitle = (str: string): string => {
 
 const Loading = function(props: LoadingProps): React.ReactElement {
   if (props.error) {
-    return <div>Error! <button className="ntg-btn" onClick={props.retry}>Retry</button></div>;
+    return <div>Error! <button className="darkBtn" onClick={props.retry}>Retry</button></div>;
   } else if (props.timedOut) {
-    return <div>Taking a long time... <button className="ntg-btn" onClick={props.retry}>Retry</button></div>;
+    return <div>Taking a long time... <button className="darkBtn" onClick={props.retry}>Retry</button></div>;
   } else {
     return null;
   }
