@@ -57,7 +57,6 @@ class Slide extends React.Component<SlideProps> {
 }
 
 interface ToggleProps {
-  theme: Theme;
   onClick: React.MouseEventHandler;
   child?: boolean;
   on: boolean;
@@ -79,17 +78,9 @@ class Toggle extends React.Component<ToggleProps> {
         data-tip={p['data-tip']}>
         <Row className={p.child ? "prefs-row-child" : "prefs-row"}>
           <div className="checkbox checkbox-switchery switchery-xs" onClick={p.onClick}>
-            <label style={{paddingLeft: '47px', color: p.theme.bodyText}}>
-              <span
-                className="switchery switchery-default"
-                style={{
-                  left: '8px',
-                  backgroundColor: p.on ? p.theme.darkBtnBg : 'rgba(255, 255, 255, 0)',
-                  borderColor: p.on ? p.theme.textFieldsBorder : p.theme.darkBtnBg,
-                  boxShadow: `${p.on ? p.theme.textFieldsBorder : p.theme.darkBtnBg} 0px 0px 0px 8px inset`,
-                  transition: 'border 0.4s, box-shadow 0.4s, background-color 1.2s',
-                }}>
-                <small style={{left: p.on ? '14px' : '0px', transition: 'background-color 0.4s, left 0.2s', backgroundColor: p.on ? p.theme.darkBtnText : p.theme.bodyText}} />
+            <label>
+              <span className={`switchery switchery-default${p.on ? ' on' : ' off'}`}>
+                <small />
               </span>
               {p.label}
             </label>
@@ -133,12 +124,11 @@ class Dropdown extends React.Component<DropdownProps> {
         data-tip={p['data-tip']}>
         <Row className={p.child ? "prefs-row-child" : "prefs-row"}>
           <Col size="4">
-            <label style={{position: 'relative', top: '8px', color: p.theme.bodyText}}>{p.label}</label>
+            <label className="Dropdown">{p.label}</label>
           </Col>
           <Col size="8">
             <select
-              className="form-control"
-              style={{backgroundColor: state.theme.settingsBg, color: state.theme.bodyText, width: '144px', paddingLeft: '6px'}}
+              className="form-control Dropdown"
               value={value}
               onChange={onChange}>
               {map(options, (option) => {
@@ -523,7 +513,7 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
               {p.prefs.newTabMode === 'custom' ?
                 <input
                   type="url"
-                  className="form-control"
+                  className="form-control settings"
                   placeholder="New Tab URL"
                   value={s.newTabCustom}
                   onChange={this.handleNewTabCustomChange}
@@ -531,42 +521,36 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
               : null}
             </Dropdown>
             <Toggle
-              theme={p.theme}
               onClick={() => this.handleClick('context')}
               on={p.prefs.context}
               label={utils.t('enableContextMenu')}
               data-tip={utils.t('enableContextMenuTip')}
             />
             <Toggle
-              theme={p.theme}
               onClick={() => this.handleClick('drag')}
               on={p.prefs.drag}
               label={utils.t('enableDraggableTabReordering')}
               data-tip={utils.t('enableDraggableTabReorderingTip')}
             />
             <Toggle
-              theme={p.theme}
               onClick={() => this.handleClick('singleNewTab')}
               on={p.prefs.singleNewTab}
               label={utils.t('singleNewTab')}
               data-tip={utils.t('singleNewTabTip')}
             />
             <Toggle
-              theme={p.theme}
               onClick={() => this.handleClick('closeOnActivate')}
               on={p.prefs.closeOnActivate}
               label={utils.t('closeOnActivate')}
               data-tip={utils.t('closeOnActivateTip')}
             />
             <Toggle
-              theme={p.theme}
               onClick={() => this.handleClick('allTabs')}
               on={p.prefs.allTabs}
               label={utils.t('allTabs')}
               data-tip={utils.t('allTabsTip')}
             />
             <Toggle
-              theme={p.theme}
               onClick={() => this.handleClick('trackMostUsed')}
               on={p.prefs.trackMostUsed}
               label={`${utils.t('trackMostUsed')} (BETA)`}
@@ -574,7 +558,6 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
             />
             {p.chromeVersion >= 54?
               <Toggle
-                theme={p.theme}
                 onClick={() => this.handleClick('autoDiscard')}
                 on={p.prefs.autoDiscard}
                 label={utils.t('autoDiscard')}
@@ -594,14 +577,12 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
                   </div> : null}
               </Toggle> : null}
             <Toggle
-              theme={p.theme}
               onClick={() => this.handleClick('animations')}
               on={p.prefs.animations}
               label={utils.t('animations')}
               data-tip={utils.t('animationsTip')}>
               {p.prefs.animations ?
                 <Toggle
-                  theme={p.theme}
                   onClick={() => this.handleClick('duplicate')}
                   on={p.prefs.duplicate}
                   child={true}
@@ -610,13 +591,11 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
                 /> : null}
             </Toggle>
             <Toggle
-              theme={p.theme}
               onClick={() => this.handleScreenshotPref('screenshot')}
               on={p.prefs.screenshot} label={utils.t('screenshot')}
               data-tip={utils.t('screenshotTip')}>
               {p.prefs.screenshot ?
                 <Toggle
-                  theme={p.theme}
                   onClick={() => this.handleClick('screenshotBg')}
                   on={p.prefs.screenshotBg}
                   child={true}
@@ -626,21 +605,18 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
               : null}
             </Toggle>
             <Toggle
-              theme={p.theme}
               onClick={() => this.handleClick('tooltip')}
               on={p.prefs.tooltip}
               label={utils.t('tooltip')}
               data-tip={utils.t('tooltipTip')}
             />
             <Toggle
-              theme={p.theme}
               onClick={() => this.handleClick('alerts')}
               on={p.prefs.alerts}
               label={utils.t('alerts')}
               data-tip={utils.t('alertsTip')}
             />
             <Toggle
-              theme={p.theme}
               onClick={() => this.handleClick('errorTelemetry')}
               on={p.prefs.errorTelemetry}
               label={utils.t('errorTelemetry')}
@@ -692,28 +668,24 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
                 />
               </div>  : null}
             <Toggle
-              theme={p.theme}
               onClick={() => this.handleClick('resetSearchOnClick')}
               on={p.prefs.resetSearchOnClick}
               label={utils.t('resetSearchOnClick')}
               data-tip={utils.t('resetSearchOnClickTip')}
             />
             <Toggle
-              theme={p.theme}
               onClick={() => this.handleClick('sessionsSync')}
               on={p.prefs.sessionsSync}
               label={utils.t('sessionsSync')}
               data-tip={utils.t('sessionsSyncTip')}
             />
             <Toggle
-              theme={p.theme}
               onClick={() => this.handleClick('actions')}
               on={p.prefs.actions}
               label={utils.t('actions')}
               data-tip={utils.t('actionsTip')}
             />
             <Toggle
-              theme={p.theme}
               onClick={() => this.handleClick('keyboardShortcuts')}
               on={p.prefs.keyboardShortcuts}
               label={utils.t('keyboardShortcuts')}
@@ -735,7 +707,6 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
             `}
             />
             <Toggle
-              theme={p.theme}
               onClick={() => this.handleClick('blacklist')}
               on={p.prefs.blacklist}
               label={utils.t('blacklist')}

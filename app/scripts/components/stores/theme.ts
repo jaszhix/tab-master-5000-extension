@@ -945,6 +945,17 @@ const onThemeChange = (e) => {
     let vendor = chromeVersion > 1 ? 'webkit' : 'moz';
     let inputPlaceholder = chromeVersion > 1 ? `${vendor}-input` : vendor;
     let scrollbarHoverColor = tc(e.theme.settingsItemHover).darken(2);
+    let bodyColor90 = themeStore.opacify(e.theme.bodyText, 0.9);
+    let headerBg86 = themeStore.opacify(e.theme.headerBg, 0.86);
+    let settingsTextFieldsBg, settingsTextFieldsBg86;
+
+    if (tc(e.theme.settingsBg).isDark()) {
+      settingsTextFieldsBg = e.theme.bodyText;
+      settingsTextFieldsBg86 = themeStore.opacify(e.theme.bodyText, 0.86);
+    } else {
+      settingsTextFieldsBg = e.theme.headerBg
+      settingsTextFieldsBg86 = headerBg86;
+    }
 
     innerHTML = `
     ::-webkit-scrollbar-track {
@@ -968,19 +979,31 @@ const onThemeChange = (e) => {
       border: 1px solid ${scrollbarHoverColor};
     }
     a, a:focus, a:hover {
-      color: ${themeStore.opacify(e.theme.bodyText, 0.9)};
+      color: ${bodyColor90};
     }
-    .form-control::-${inputPlaceholder}-placeholder {
+    .form-control:not(.settings)::-${inputPlaceholder}-placeholder {
       color: ${e.theme.textFieldsPlaceholder};
     }
-    .form-control {
+    .form-control:not(.settings) {
       color: ${e.theme.textFieldsText};
       border-bottom-color: ${e.theme.textFieldsBorder};
       box-shadow: 0 1px 0 ${e.theme.textFieldsBorder};
     }
-    .form-control:focus {
+    .form-control:not(.settings):focus {
       border-bottom-color: ${e.theme.textFieldsBg};
       box-shadow: 0 1px 0 ${e.theme.textFieldsBg};
+    }
+    .form-control.settings::-${inputPlaceholder}-placeholder {
+      color: ${bodyColor90};
+    }
+    .form-control.settings {
+      color: ${e.theme.bodyText};
+      border-bottom-color: ${settingsTextFieldsBg86};
+      box-shadow: 0 1px 0 ${settingsTextFieldsBg86};
+    }
+    .form-control.settings:focus {
+      border-bottom-color: ${settingsTextFieldsBg};
+      box-shadow: 0 1px 0 ${settingsTextFieldsBg};
     }
     .session-field {
       color: ${sessionFieldColor};
@@ -1006,10 +1029,35 @@ const onThemeChange = (e) => {
     .nav-tabs>li:hover {
       background-color: ${e.theme.lightBtnBgHover};
     }
-    .dropdown-menu>li>a:hover, .dropdown-menu>li>a:focus {
+    .checkbox-switchery > label {
+      color: ${e.theme.bodyText};
+    }
+    .checkbox-switchery > label > span.on {
+      background-color: ${e.theme.darkBtnBg};
+      border-color: ${e.theme.textFieldsBorder};
+      box-shadow: ${e.theme.textFieldsBorder} 0px 0px 0px 8px inset;
+    }
+    .checkbox-switchery > label > span.on > small {
+      background-color: ${e.theme.darkBtnText};
+    }
+    .checkbox-switchery > label > span.off {
+      border-color: ${e.theme.darkBtnBg};
+      box-shadow: ${e.theme.darkBtnBg} 0px 0px 0px 8px inset;
+    }
+    .checkbox-switchery > label > span.off > small {
+      background-color: ${e.theme.bodyText};
+    }
+    label.Dropdown {
+      color: ${e.theme.bodyText};
+    }
+    select.Dropdown {
+      color: ${e.theme.bodyText};
+      background-color: ${e.theme.settingsBg};
+    }
+    .dropdown-menu > li > a:hover, .dropdown-menu > li > a:focus {
       background-color: ${e.theme.settingsItemHover};
     }
-    .dropdown-menu>li>label:hover, .dropdown-menu>li>label:focus {
+    .dropdown-menu > li > label:hover, .dropdown-menu > li > label:focus {
       background-color: ${e.theme.settingsItemHover};
     }
     .dropdown-menu .divider {
@@ -1072,7 +1120,7 @@ const onThemeChange = (e) => {
       background-color: ${e.theme.settingsItemHover};
     }
     .text-muted.text-size-small {
-      color: ${themeStore.opacify(e.theme.bodyText, 0.9)};
+      color: ${bodyColor90};
     }
     .ntg-folder {
       text-shadow: 2px 2px ${e.theme.tileTextShadow};
@@ -1111,7 +1159,7 @@ const onThemeChange = (e) => {
       background-color: ${themeStore.opacify(e.theme.tileBgHover, 0.25)} !important;
     }
     #thead-float {
-      background-color: ${themeStore.opacify(e.theme.headerBg, 0.86)} !important;
+      background-color: ${headerBg86} !important;
     }
     #thead-float > tr > th {
       color: ${e.theme.darkBtnText} !important;

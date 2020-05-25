@@ -105,6 +105,45 @@ body {
   padding-left: 2%;
 }
 
+.checkbox-switchery {
+  label {
+    padding-left: 47px;
+
+    span {
+      left: 8px;
+      transition: border 0.4s, box-shadow 0.4s, background-color 1.2s;
+
+      &.off {
+        background-color: rgba(255, 255, 255, 0);
+
+        small {
+          left: 0px;
+        }
+      }
+
+      &.on {
+        small {
+          left: 14px;
+        }
+      }
+
+      small {
+        transition: background-color 0.4s, left 0.2s;
+      }
+    }
+  }
+}
+
+label.Dropdown {
+  position: relative;
+  top: 8px;
+}
+
+select.Dropdown {
+  width: 144px;
+  padding-left: 6px;
+}
+
 .ntg-form {
   background-color: #ededed;
 }
