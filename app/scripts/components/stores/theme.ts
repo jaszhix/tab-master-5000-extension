@@ -978,6 +978,10 @@ const onThemeChange = (e) => {
       background-color: ${scrollbarHoverColor};
       border: 1px solid ${scrollbarHoverColor};
     }
+    * {
+      scrollbar-color: ${tc(e.theme.settingsItemHover).lighten(10)} ${e.theme.settingsBg};
+      scrollbar-width: 10px;
+    }
     a, a:focus, a:hover {
       color: ${bodyColor90};
     }
