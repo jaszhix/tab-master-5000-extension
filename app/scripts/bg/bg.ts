@@ -361,7 +361,7 @@ class Bg {
       eventState.onCreated = tab;
       console.log('onCreated: ', tab);
 
-      if (state.chromeVersion > 1) await this.checkNewTabOnCreated(tab);
+      await this.checkNewTabOnCreated(tab);
 
       this.createSingleItem(tab);
     }));
@@ -967,9 +967,8 @@ class Bg {
       if (!e) {
         return;
       }
-    } else {
-      if (state.chromeVersion === 1) await this.checkNewTabOnCreated(e);
     }
+
 
     let urlMatch = e.url.match(domainRegex);
 
