@@ -280,6 +280,18 @@
   "addonsManagerHint": {
     "message": "Please close the Add-ons Manager before changing any settings from a New Tab."
   },
+  "newTabOverride": {
+    "message": "New Tab Override"
+  },
+  "newTabOverrideTip": {
+    "message": "Controls what page is shown when opening a new tab."
+  },
+  "newTabOverrideOption1": {
+    "message": "Browser Default"
+  },
+  "newTabOverrideOption2": {
+    "message": "Custom"
+  },
   "enableContextMenu": {
     "message": "Enable context menu"
   },

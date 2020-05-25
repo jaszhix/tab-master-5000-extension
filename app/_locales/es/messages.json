@@ -278,6 +278,18 @@
   "addonsManagerHint": {
     "message": "Cierre el Administrador de complementos antes de cambiar la configuración de una pestaña nueva."
   },
+  "newTabOverride": {
+    "message": "Nueva anulación de pestaña"
+  },
+  "newTabOverrideTip": {
+    "message": "Controla qué página se muestra al abrir una nueva pestaña."
+  },
+  "newTabOverrideOption1": {
+    "message": "Navegador predeterminado"
+  },
+  "newTabOverrideOption2": {
+    "message": "Personalizada"
+  },
   "enableContextMenu": {
     "message": "Habilitar menú contextual"
   },

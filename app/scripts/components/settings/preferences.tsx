@@ -24,8 +24,8 @@ const styles = StyleSheet.create({
 
 const newTabOverrideOptions = [
   {value: 'tm5k', label: 'Tab Master'},
-  {value: 'default', label: 'Browser Default'},
-  {value: 'custom', label: 'Custom'}
+  {value: 'default', label: utils.t('newTabOverrideOption1')},
+  {value: 'custom', label: utils.t('newTabOverrideOption2')}
 ];
 
 interface SlideProps {
@@ -505,11 +505,11 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
           <Col size="6">
             <Dropdown
               theme={p.theme}
-              label="New Tab Override"
+              label={utils.t('newTabOverride')}
               options={newTabOverrideOptions}
               value={p.prefs.newTabMode}
               onChange={this.handleNewTabOverrideChange}
-              data-tip="Controls what page is shown when opening a new tab.">
+              data-tip={utils.t('newTabOverrideTip')}>
               {p.prefs.newTabMode === 'custom' ?
                 <input
                   type="url"
