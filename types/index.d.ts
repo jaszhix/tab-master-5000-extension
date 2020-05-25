@@ -428,6 +428,7 @@ declare global {
     screenshots: [];
     actions: ActionRecord[];
     chromeVersion: number;
+    prefix: 'chrome' | 'moz';
     bookmarksListenersAttached: boolean;
     historyListenersAttached: boolean;
     managementListenersAttached: boolean;

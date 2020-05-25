@@ -361,31 +361,7 @@ class Bg {
       eventState.onCreated = tab;
       console.log('onCreated: ', tab);
 
-      if (tab.pendingUrl.indexOf('newtab') > -1 || tab.title === 'New Tab') {
-        let url;
-
-        switch (this.state.prefs.newTabMode) {
-          case 'tm5k':
-            break;
-
-          case 'default': {
-            if (state.chromeVersion === 1) {
-              url = 'about:newtab'
-            } else {
-              url = 'chrome-search://local-ntp/local-ntp.html';
-            }
-
-            break;
-          }
-
-          case 'custom': {
-            url = this.state.prefs.newTabCustom;
-            break;
-          }
-        }
-
-        if (url) await browser.tabs.update(tab.id, {url});
-      }
+      if (state.chromeVersion > 1) await this.checkNewTabOnCreated(tab);
 
       this.createSingleItem(tab);
     }));
@@ -511,6 +487,35 @@ class Bg {
       eventState.onEnabled = details;
       this.queryExtensions();
     }));
+  }
+
+  checkNewTabOnCreated = async (tab: ChromeTab) => {
+    if ((tab.pendingUrl && tab.pendingUrl.indexOf('newtab') > -1)
+      || (tab.url === 'about:blank' && tab.title === 'New Tab')) {
+      let url;
+
+      switch (this.state.prefs.newTabMode) {
+        case 'tm5k':
+          break;
+
+        case 'default': {
+          if (state.chromeVersion === 1) {
+            break;
+          }
+
+          url = 'chrome-search://local-ntp/local-ntp.html';
+
+          break;
+        }
+
+        case 'custom': {
+          url = this.state.prefs.newTabCustom;
+          break;
+        }
+      }
+
+      if (url) await browser.tabs.update(tab.id, {url});
+    }
   }
 
   handleNewTabsOnInit = async (instances) => {
@@ -796,8 +801,18 @@ class Bg {
   }
 
   openTabMaster = async () => {
+    let {chromeVersion, prefix} = this.state;
+    let id;
+
+    // chrome.runtime.id does not return the extension UUID in Firefox
+    if (chromeVersion === 1) {
+      id = window.location.href.match(/moz-extension:\/\/([0-9a-z-]*)/)[1];
+    } else {
+      id = chrome.runtime.id;
+    }
+
     await browser.tabs.create({
-      url: `chrome-extension://${chrome.runtime.id}/tm5k.html`,
+      url: `${prefix}-extension://${id}/tm5k.html`,
       active: true
     });
   }
@@ -952,6 +967,8 @@ class Bg {
       if (!e) {
         return;
       }
+    } else {
+      if (state.chromeVersion === 1) await this.checkNewTabOnCreated(e);
     }
 
     let urlMatch = e.url.match(domainRegex);

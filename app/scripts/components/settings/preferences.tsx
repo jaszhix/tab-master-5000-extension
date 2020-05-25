@@ -3,7 +3,7 @@ import {StyleSheet, css} from 'aphrodite';
 import _ from 'lodash';
 import tc from 'tinycolor2';
 import v from 'vquery'
-import {map, each} from '@jaszhix/utils';
+import {map, each, findIndex} from '@jaszhix/utils';
 import Slider from 'rc-slider';
 import ReactTooltip from 'react-tooltip';
 
@@ -22,6 +22,12 @@ const styles = StyleSheet.create({
   cursorPointer: {cursor: 'pointer'}
 });
 
+const newTabOverrideOptions = [
+  {value: 'tm5k', label: 'Tab Master'},
+  {value: 'default', label: 'Browser Default'},
+  {value: 'custom', label: 'Custom'}
+];
+
 interface SlideProps {
   className: string;
   label: string;
@@ -29,9 +35,7 @@ interface SlideProps {
   value: number;
   min: number;
   max: number;
-  onMouseEnter: React.MouseEventHandler;
   onChange: (value?: number) => void;
-
 }
 
 class Slide extends React.Component<SlideProps> {
@@ -43,7 +47,7 @@ class Slide extends React.Component<SlideProps> {
         className={`Slide ${css(styles.sliderContainer)}`}
         data-place="bottom"
         data-tip={`<div style="max-width: 350px;">${p['data-tip']}</div>`}>
-        <Row className={p.className} onMouseEnter={p.onMouseEnter}>
+        <Row className={p.className}>
           <div className={css(styles.sliderLabel)}>{p.label}</div>
           <Slider min={p.min} max={p.max} defaultValue={p.defaultValue} value={p.value} onChange={p.onChange} />
         </Row>
@@ -54,7 +58,6 @@ class Slide extends React.Component<SlideProps> {
 
 interface ToggleProps {
   theme: Theme;
-  onMouseEnter: React.MouseEventHandler;
   onClick: React.MouseEventHandler;
   child?: boolean;
   on: boolean;
@@ -74,7 +77,7 @@ class Toggle extends React.Component<ToggleProps> {
         className={`Toggle ${css(styles.cursorPointer)}`}
         data-place="bottom"
         data-tip={p['data-tip']}>
-        <Row onMouseEnter={p.onMouseEnter} className={p.child ? "prefs-row-child" : "prefs-row"}>
+        <Row className={p.child ? "prefs-row-child" : "prefs-row"}>
           <div className="checkbox checkbox-switchery switchery-xs" onClick={p.onClick}>
             <label style={{paddingLeft: '47px', color: p.theme.bodyText}}>
               <span
@@ -295,7 +298,6 @@ export interface PreferencesComponentProps {
 }
 
 export interface PreferencesComponentState {
-  hover?: string;
   faviconsBytesInUse?: number;
   screenshotsBytesInUse?: number;
   aboutAddonsOpen?: boolean;
@@ -313,11 +315,17 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
     super(props);
 
     this.state = {
-      hover: 'null',
       faviconsBytesInUse: 0,
       screenshotsBytesInUse: 0,
       aboutAddonsOpen: false,
       newTabCustom: props.prefs.newTabCustom,
+    }
+
+    if (state.chromeVersion === 1) {
+      // Remove 'default' option for Firefox users since FF doesn't allow extensions to navigate to 'about:newtab'.
+      let defaultNewTabOverrideIndex = findIndex(newTabOverrideOptions, (item) => item.value === 'default');
+
+      if (defaultNewTabOverrideIndex > -1) newTabOverrideOptions.splice(defaultNewTabOverrideIndex, 1);
     }
   }
 
@@ -407,10 +415,6 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
       }
     });
     this.setState({aboutAddonsOpen});
-  }
-
-  handleToggle = (opt) => {
-    this.setState({hover: opt});
   }
 
   handleClick = (opt) => {
@@ -512,7 +516,7 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
             <Dropdown
               theme={p.theme}
               label="New Tab Override"
-              options={[{value: 'tm5k', label: 'Tab Master'}, {value: 'default', label: 'Browser Default'}, {value: 'custom', label: 'Custom'}]}
+              options={newTabOverrideOptions}
               value={p.prefs.newTabMode}
               onChange={this.handleNewTabOverrideChange}
               data-tip="Controls what page is shown when opening a new tab.">
@@ -528,7 +532,6 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
             </Dropdown>
             <Toggle
               theme={p.theme}
-              onMouseEnter={() => this.handleToggle('context')}
               onClick={() => this.handleClick('context')}
               on={p.prefs.context}
               label={utils.t('enableContextMenu')}
@@ -536,7 +539,6 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
             />
             <Toggle
               theme={p.theme}
-              onMouseEnter={() => this.handleToggle('drag')}
               onClick={() => this.handleClick('drag')}
               on={p.prefs.drag}
               label={utils.t('enableDraggableTabReordering')}
@@ -544,7 +546,6 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
             />
             <Toggle
               theme={p.theme}
-              onMouseEnter={() => this.handleToggle('singleNewTab')}
               onClick={() => this.handleClick('singleNewTab')}
               on={p.prefs.singleNewTab}
               label={utils.t('singleNewTab')}
@@ -552,7 +553,6 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
             />
             <Toggle
               theme={p.theme}
-              onMouseEnter={() => this.handleToggle('closeOnActivate')}
               onClick={() => this.handleClick('closeOnActivate')}
               on={p.prefs.closeOnActivate}
               label={utils.t('closeOnActivate')}
@@ -560,7 +560,6 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
             />
             <Toggle
               theme={p.theme}
-              onMouseEnter={() => this.handleToggle('allTabs')}
               onClick={() => this.handleClick('allTabs')}
               on={p.prefs.allTabs}
               label={utils.t('allTabs')}
@@ -568,7 +567,6 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
             />
             <Toggle
               theme={p.theme}
-              onMouseEnter={() => this.handleToggle('trackMostUsed')}
               onClick={() => this.handleClick('trackMostUsed')}
               on={p.prefs.trackMostUsed}
               label={`${utils.t('trackMostUsed')} (BETA)`}
@@ -577,7 +575,6 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
             {p.chromeVersion >= 54?
               <Toggle
                 theme={p.theme}
-                onMouseEnter={() => this.handleToggle('autoDiscard')}
                 onClick={() => this.handleClick('autoDiscard')}
                 on={p.prefs.autoDiscard}
                 label={utils.t('autoDiscard')}
@@ -598,7 +595,6 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
               </Toggle> : null}
             <Toggle
               theme={p.theme}
-              onMouseEnter={() => this.handleToggle('animations')}
               onClick={() => this.handleClick('animations')}
               on={p.prefs.animations}
               label={utils.t('animations')}
@@ -606,7 +602,6 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
               {p.prefs.animations ?
                 <Toggle
                   theme={p.theme}
-                  onMouseEnter={() => this.handleToggle('duplicate')}
                   onClick={() => this.handleClick('duplicate')}
                   on={p.prefs.duplicate}
                   child={true}
@@ -616,14 +611,12 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
             </Toggle>
             <Toggle
               theme={p.theme}
-              onMouseEnter={() => this.handleToggle('screenshot')}
               onClick={() => this.handleScreenshotPref('screenshot')}
               on={p.prefs.screenshot} label={utils.t('screenshot')}
               data-tip={utils.t('screenshotTip')}>
               {p.prefs.screenshot ?
                 <Toggle
                   theme={p.theme}
-                  onMouseEnter={() => this.handleToggle('screenshotBg')}
                   onClick={() => this.handleClick('screenshotBg')}
                   on={p.prefs.screenshotBg}
                   child={true}
@@ -634,7 +627,6 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
             </Toggle>
             <Toggle
               theme={p.theme}
-              onMouseEnter={() => this.handleToggle('tooltip')}
               onClick={() => this.handleClick('tooltip')}
               on={p.prefs.tooltip}
               label={utils.t('tooltip')}
@@ -642,7 +634,6 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
             />
             <Toggle
               theme={p.theme}
-              onMouseEnter={() => this.handleToggle('alerts')}
               onClick={() => this.handleClick('alerts')}
               on={p.prefs.alerts}
               label={utils.t('alerts')}
@@ -650,7 +641,6 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
             />
             <Toggle
               theme={p.theme}
-              onMouseEnter={() => this.handleToggle('errorTelemetry')}
               onClick={() => this.handleClick('errorTelemetry')}
               on={p.prefs.errorTelemetry}
               label={utils.t('errorTelemetry')}
@@ -668,7 +658,6 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
                   defaultValue={p.prefs.screenshotBgOpacity}
                   value={p.prefs.screenshotBgOpacity}
                   onChange={(e) => this.handleSlide(e, 'screenshotBgOpacity')}
-                  onMouseEnter={() => this.handleToggle('screenshotBgOpacity')}
                   data-tip={utils.t('screenshotBgOpacityTip')}
                 />
                 <Slide
@@ -679,7 +668,6 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
                   defaultValue={p.prefs.screenshotBgBlur}
                   value={p.prefs.screenshotBgBlur}
                   onChange={(e) => this.handleSlide(e, 'screenshotBgBlur')}
-                  onMouseEnter={() => this.handleToggle('screenshotBgBlur')}
                   data-tip={utils.t('screenshotBgBlurTip')}
                 />
                 <Slide
@@ -690,7 +678,6 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
                   defaultValue={p.prefs.tabSizeHeight}
                   value={p.prefs.tabSizeHeight}
                   onChange={(e) => this.handleSlide(e, 'tabSizeHeight')}
-                  onMouseEnter={() => this.handleToggle('tabSizeHeight')}
                   data-tip={utils.t('tabSizeHeightTip')}
                 />
                 <Slide
@@ -701,13 +688,11 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
                   defaultValue={p.prefs.tablePadding}
                   value={p.prefs.tablePadding}
                   onChange={(e) => this.handleSlide(e, 'tablePadding')}
-                  onMouseEnter={() => this.handleToggle('tablePadding')}
                   data-tip={utils.t('tablePaddingTip')}
                 />
               </div>  : null}
             <Toggle
               theme={p.theme}
-              onMouseEnter={() => this.handleToggle('resetSearchOnClick')}
               onClick={() => this.handleClick('resetSearchOnClick')}
               on={p.prefs.resetSearchOnClick}
               label={utils.t('resetSearchOnClick')}
@@ -715,7 +700,6 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
             />
             <Toggle
               theme={p.theme}
-              onMouseEnter={() => this.handleToggle('sessionsSync')}
               onClick={() => this.handleClick('sessionsSync')}
               on={p.prefs.sessionsSync}
               label={utils.t('sessionsSync')}
@@ -723,7 +707,6 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
             />
             <Toggle
               theme={p.theme}
-              onMouseEnter={() => this.handleToggle('actions')}
               onClick={() => this.handleClick('actions')}
               on={p.prefs.actions}
               label={utils.t('actions')}
@@ -731,30 +714,28 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
             />
             <Toggle
               theme={p.theme}
-              onMouseEnter={() => this.handleToggle('keyboardShortcuts')}
               onClick={() => this.handleClick('keyboardShortcuts')}
               on={p.prefs.keyboardShortcuts}
               label={utils.t('keyboardShortcuts')}
               data-tip={`
-              <div><strong>CTRL+Z</strong>: ${utils.t('ctrlZ')}</div>
-              <div><strong>CTRL+F</strong>: ${utils.t('search')}</div>
-              <div><strong>CTRL+ALT+S</strong>: ${_.upperFirst(utils.t('sessions'))}</div>
-              <div><strong>CTRL+ALT+P</strong>: ${utils.t('preferences')}</div>
-              <div><strong>CTRL+ALT+T</strong>: ${utils.t('theming')}</div>
-              <div><strong>CTRL+ALT+A</strong>: ${utils.t('about')}</div>
-              <div><strong>CTRL+SHIFT+S</strong>: ${utils.t('saveSession')}</div>
-              <div><strong>CTRL+SHIFT+SPACE</strong>: ${utils.t('sidebar')}</div>
-              <div><strong>ALT+T</strong>: ${_.upperFirst(utils.t('tabs'))}</div>
-              <div><strong>ALT+B</strong>: ${_.upperFirst(utils.t('bookmarks'))}</div>
-              <div><strong>ALT+H</strong>: ${_.upperFirst(utils.t('history'))}</div>
-              <div><strong>ALT+S</strong>: ${_.upperFirst(utils.t('sessions'))}</div>
-              <div><strong>ALT+A</strong>: ${_.upperFirst(utils.t('apps'))}</div>
-              <div><strong>ALT+E</strong>: ${_.upperFirst(utils.t('extensions'))}</div>
+                <div><strong>CTRL+Z</strong>: ${utils.t('ctrlZ')}</div>
+                <div><strong>CTRL+F</strong>: ${utils.t('search')}</div>
+                <div><strong>CTRL+ALT+S</strong>: ${_.upperFirst(utils.t('sessions'))}</div>
+                <div><strong>CTRL+ALT+P</strong>: ${utils.t('preferences')}</div>
+                <div><strong>CTRL+ALT+T</strong>: ${utils.t('theming')}</div>
+                <div><strong>CTRL+ALT+A</strong>: ${utils.t('about')}</div>
+                <div><strong>CTRL+SHIFT+S</strong>: ${utils.t('saveSession')}</div>
+                <div><strong>CTRL+SHIFT+SPACE</strong>: ${utils.t('sidebar')}</div>
+                <div><strong>ALT+T</strong>: ${_.upperFirst(utils.t('tabs'))}</div>
+                <div><strong>ALT+B</strong>: ${_.upperFirst(utils.t('bookmarks'))}</div>
+                <div><strong>ALT+H</strong>: ${_.upperFirst(utils.t('history'))}</div>
+                <div><strong>ALT+S</strong>: ${_.upperFirst(utils.t('sessions'))}</div>
+                <div><strong>ALT+A</strong>: ${_.upperFirst(utils.t('apps'))}</div>
+                <div><strong>ALT+E</strong>: ${_.upperFirst(utils.t('extensions'))}</div>
             `}
             />
             <Toggle
               theme={p.theme}
-              onMouseEnter={() => this.handleToggle('blacklist')}
               onClick={() => this.handleClick('blacklist')}
               on={p.prefs.blacklist}
               label={utils.t('blacklist')}

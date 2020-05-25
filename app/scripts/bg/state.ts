@@ -1,11 +1,14 @@
 import {init} from '@jaszhix/state';
 import {tryFn} from '@jaszhix/utils';
 
-let version = 1;
+let chromeVersion = 1;
+let prefix;
 
 // TBD
 // @ts-ignore
-tryFn(() => version = parseInt(/Chrome\/([0-9.]+)/.exec(navigator.userAgent)[1].split('.')));
+tryFn(() => chromeVersion = parseInt(/Chrome\/([0-9.]+)/.exec(navigator.userAgent)[1].split('.')));
+
+prefix = chromeVersion === 1 ? 'moz' : 'chrome';
 
 export const eventState: EventState = {
   onStartup: null,
@@ -27,7 +30,7 @@ export const eventState: EventState = {
   historyOnVisitRemoved: null,
 };
 
-export const state = <BackgroundState>init({
+const initialState = <BackgroundState>{
   eventState: eventState,
   prefs: null,
   init: true,
@@ -41,8 +44,11 @@ export const state = <BackgroundState>init({
   sessions: [],
   screenshots: [],
   actions: [],
-  chromeVersion: version,
+  chromeVersion,
+  prefix,
   bookmarksListenersAttached: false,
   historyListenersAttached: false,
   managementListenersAttached: false,
-});
+};
+
+export const state = <BackgroundState>init(initialState);
