@@ -127,6 +127,7 @@ gulp.task('dist', gulp.series('copy', 'copyChunks', 'htmlmin', 'imgmin', 'copyBu
 
 gulp.task('watch', function() {
   gulp.watch('./app/scripts/bg/*.ts', gulp.parallel('build-bg'));
+  gulp.watch('./app/scripts/shared/*.ts', gulp.parallel('build-bg'));
 });
 
 gulp.task('default', gulp.series('watch', (done) => done()));
