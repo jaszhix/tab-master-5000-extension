@@ -8,6 +8,7 @@ import Slider from 'rc-slider';
 import ReactTooltip from 'react-tooltip';
 
 import * as utils from '../stores/tileUtils';
+import {urlRegex} from '../../shared/constants';
 import state from '../stores/state';
 import {setPermissions, setPrefs, getBlackList, setBlackList, isValidDomain, getBytesInUse} from '../stores/main';
 
@@ -292,6 +293,7 @@ export interface PreferencesComponentState {
   screenshotsBytesInUse?: number;
   aboutAddonsOpen?: boolean;
   newTabCustom?: string;
+  newTabCustomValid?: boolean;
 }
 
 class Preferences extends React.Component<PreferencesComponentProps, PreferencesComponentState> {
@@ -309,6 +311,7 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
       screenshotsBytesInUse: 0,
       aboutAddonsOpen: false,
       newTabCustom: props.prefs.newTabCustom,
+      newTabCustomValid: true,
     }
 
     if (state.chromeVersion === 1) {
@@ -468,9 +471,14 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
   handleNewTabCustomChange = (e) => {
     let {value} = e.target;
 
-    this.setState({newTabCustom: value}, async () => {
-      setPrefs({newTabCustom: value});
-    })
+    let isValidURL = value.match(urlRegex) != null;
+
+    this.setState({
+      newTabCustom: value.trim(),
+      newTabCustomValid: isValidURL,
+    }, async () => {
+      if (isValidURL) setPrefs({newTabCustom: value});
+    });
   }
 
   render = () => {
@@ -511,13 +519,22 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
               onChange={this.handleNewTabOverrideChange}
               data-tip={utils.t('newTabOverrideTip')}>
               {p.prefs.newTabMode === 'custom' ?
-                <input
-                  type="url"
-                  className="form-control settings"
-                  placeholder="New Tab URL"
-                  value={s.newTabCustom}
-                  onChange={this.handleNewTabCustomChange}
-                />
+                <>
+                  <input
+                    type="url"
+                    className="form-control settings"
+                    placeholder="New Tab URL"
+                    value={s.newTabCustom}
+                    onChange={this.handleNewTabCustomChange}
+                  />
+                  {s.newTabCustom.length ?
+                    <span
+                      style={p.prefs.settingsMax ? {left: '98%'} : null}
+                      className={`newTabOverrideValidation validation-${s.newTabCustomValid ? 'valid' : 'error'}-label`}>
+                      {' '}
+                    </span>
+                  : null}
+                </>
               : null}
             </Dropdown>
             <Toggle
