@@ -2,6 +2,14 @@ If you have a question that can't be answered here, please open a new issue on e
 
 ### FAQ
 
+**How do I use Tab Master 5000 with another extension that replaces a new tab?**
+
+Make sure the extension you would like to override the New Tab page is installed before TM5K. Then after installing TM5K, click the "tm" icon in the toolbar to open the UI.
+
+**How do I use Tab Master 5000 and keep the default New Tab page?**
+
+Open Settings, click the Preferences tab, and under "New Tab Override" select "Browser Default" from the dropdown. Due to technical differences out of TM5K's control, this option is not available in Firefox.
+
 **How do I close all tabs from a specific domain?**
 
 Right-click a tile, and a context menu with list of options will appear. Click "Close all tabs from..." to trigger this action.
@@ -24,7 +32,7 @@ A bug was causing favicon cache data to be saved with session data, and this has
 
 **I am experiencing performance issues.**
 
-Try disabling screenshots, animations, session synchronization, or undoing of tab actions in Preferences. Enabling automatic tab discarding can also help improve performance on lower-end PCs.
+TM5K's impact on browser performance is regularly profiled with the newest versions of Chromium and Firefox. If you do experience issues though, try disabling screenshots, animations, session synchronization, or undoing of tab actions in Preferences. Enabling automatic tab discarding can also help improve performance on lower-end PCs.
 
 **The extension crashed.**
 
