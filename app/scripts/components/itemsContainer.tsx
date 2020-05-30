@@ -283,7 +283,7 @@ class ItemsContainer extends React.Component<ItemsContainerProps, ItemContainerS
         }
       });
     } else {
-      containerStyle.top = `${navOffset + (prefs.tablePadding * 2)}px`;
+      containerStyle.top = `${navOffset + (prefs.tablePadding * 2) - 2}px`;
     }
 
     return (

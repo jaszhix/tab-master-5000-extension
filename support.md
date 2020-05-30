@@ -2,9 +2,9 @@ If you have a question that can't be answered here, please open a new issue on e
 
 ### FAQ
 
-**How do I use Tab Master 5000 with another extension that replaces a new tab?**
+**How do I use Tab Master 5000 with another extension that overrides the New Tab page?**
 
-Make sure the extension you would like to override the New Tab page is installed before TM5K. Then after installing TM5K, click the "tm" icon in the toolbar to open the UI.
+Make sure the extension you would like to override the New Tab page with is installed before TM5K. Then after installing TM5K, click the "tm" icon in the toolbar to open the UI.
 
 **How do I use Tab Master 5000 and keep the default New Tab page?**
 
