@@ -98,7 +98,7 @@ class Search extends React.Component<SearchProps> {
               <Btn
                 onClick={() => this.handleTopNavButtonClick(()=>chrome.runtime.reload())}
                 style={topNavButtonStyle}
-                className="ntg-sort-btn pull-right"
+                className="settingBtn pull-right"
                 fa="rocket"
                 data-place="bottom"
                 data-tip={p.s.width <= 841 ? utils.t('newVersionAvailable') : null}>
@@ -107,7 +107,7 @@ class Search extends React.Component<SearchProps> {
             {p.s.topNavButton === 'versionUpdate' ?
               <Btn
                 onClick={() => this.handleTopNavButtonClick(() => this.openAbout())}
-                style={topNavButtonStyle} className="ntg-sort-btn pull-right"
+                style={topNavButtonStyle} className="settingBtn pull-right"
                 icon="info3" data-place="bottom"
                 data-tip={p.s.width <= 841 ? `${utils.t('updatedTo')} ${version}` : null}>
                 {p.s.width <= 841 ? '' : `${utils.t('updatedTo')} ${version}`}
@@ -116,7 +116,7 @@ class Search extends React.Component<SearchProps> {
               <Btn
                 onClick={() => this.handleTopNavButtonClick(() => this.openAbout())}
                 style={topNavButtonStyle}
-                className="ntg-sort-btn pull-right"
+                className="settingBtn pull-right"
                 fa="thumbs-o-up"
                 data-place="bottom"
                 data-tip={p.s.width <= 841 ? utils.t('thankYouForInstallingTM5K') : null}>

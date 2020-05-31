@@ -262,7 +262,7 @@ class Blacklist extends React.Component<BlacklistProps, BlacklistState> {
       <Col size="12" className={css(styles.blacklistColumn)}>
         <Btn
           onClick={this.blacklistSubmit}
-          className={css(styles.blacklistSaveButton) + ' ntg-setting-btn'}
+          className={css(styles.blacklistSaveButton) + ' settingBtn'}
           icon="floppy-disk">
           {utils.t('save')}
         </Btn>
@@ -362,7 +362,7 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
         <div>
           <Btn
             onClick={() => this.handleSlide(134, 'tabSizeHeight')}
-            className="ntg-setting-btn"
+            className="settingBtn"
             icon="reset"
             faStyle={{position: 'relative', top: '-2px'}}>
             {utils.t('resetTileSize')}
@@ -370,14 +370,14 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
           {p.prefs.screenshot ?
             <Btn
               onClick={this.handleScreenshotClear}
-              className="ntg-setting-btn"
+              className="settingBtn"
               icon="trash"
               faStyle={{paddingRight: '8px'}}>
               {utils.t('clearScreenshotCache')}
             </Btn> : null}
           <Btn
             onClick={this.handleFaviconClear}
-            className="ntg-setting-btn"
+            className="settingBtn"
             icon="trash"
             faStyle={{paddingRight: '8px'}}>
             {utils.t('clearFaviconCache')}

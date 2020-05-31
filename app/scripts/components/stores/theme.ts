@@ -944,6 +944,10 @@ const onThemeChange = (e) => {
     let sessionFieldColor = themeStore.balance(e.theme.settingsBg);
     let vendor = chromeVersion > 1 ? 'webkit' : 'moz';
     let inputPlaceholder = chromeVersion > 1 ? `${vendor}-input` : vendor;
+
+    let darkBtnBgOpaque = themeStore.opacify(e.theme.darkBtnBg, 1);
+    let lightBtnBg85 = themeStore.opacify(e.theme.lightBtnBg, 0.85);
+    let settingsItemHoverLight10 = tc(e.theme.settingsItemHover).lighten(10);
     let scrollbarHoverColor = tc(e.theme.settingsItemHover).darken(2);
     let bodyColor90 = themeStore.opacify(e.theme.bodyText, 0.9);
     let headerBg86 = themeStore.opacify(e.theme.headerBg, 0.86);
@@ -971,7 +975,7 @@ const onThemeChange = (e) => {
       background-color: ${scrollbarHoverColor};
     }
     ::-webkit-scrollbar-thumb {
-      background-color: ${tc(e.theme.settingsItemHover).lighten(10)};
+      background-color: ${settingsItemHoverLight10};
       border: 1px solid ${e.theme.settingsItemHover};
     }
     ::-webkit-scrollbar-thumb:hover {
@@ -979,7 +983,7 @@ const onThemeChange = (e) => {
       border: 1px solid ${scrollbarHoverColor};
     }
     * {
-      scrollbar-color: ${tc(e.theme.settingsItemHover).lighten(10)} ${e.theme.settingsBg};
+      scrollbar-color: ${settingsItemHoverLight10} ${e.theme.settingsBg};
       scrollbar-width: 10px;
     }
     a, a:focus, a:hover {
@@ -1098,21 +1102,21 @@ const onThemeChange = (e) => {
       color: ${e.theme.tileMoveHover};
     }
     .darkBtn, .topDarkBtn {
-      color: ${e.theme.darkBtnText} !important;
-      background-color: ${e.theme.darkBtnBg} !important;
-      text-shadow: 1px 1px ${e.theme.darkBtnTextShadow} !important;
+      color: ${e.theme.darkBtnText};
+      background-color: ${e.theme.darkBtnBg};
+      text-shadow: 1px 1px ${e.theme.darkBtnTextShadow};
     }
-    .darkBtn:hover, topDarkBtn:hover {
-      background-color: ${e.theme.darkBtnBgHover} !important;
+    .darkBtn:hover, .topDarkBtn:hover {
+      background-color: ${e.theme.darkBtnBgHover};
     }
     button {
-      color: ${e.theme.lightBtnText} !important;
-      background-color: ${e.theme.lightBtnBg} !important;
-      text-shadow: 1px 1px ${e.theme.lightBtnTextShadow} !important;
+      color: ${e.theme.lightBtnText};
+      background-color: ${e.theme.lightBtnBg};
+      text-shadow: 1px 1px ${e.theme.lightBtnTextShadow};
       box-shadow: ${e.theme.tileShadow} 1px 1px 5px -1px;
     }
     button:hover {
-      background-color: ${e.theme.lightBtnBgHover} !important;
+      background-color: ${e.theme.lightBtnBgHover};
     }
     .sessionText {
       color: ${e.theme.bodyText};
@@ -1195,11 +1199,11 @@ const onThemeChange = (e) => {
       background: ${themeStore.opacify(e.theme.settingsBg, 0.35)};
     }
     .rc-slider-track {
-      background-color: ${themeStore.opacify(e.theme.lightBtnBg, 0.85)};
+      background-color: ${lightBtnBg85};
     }
     .rc-slider-handle {
       background-color: ${themeStore.opacify(e.theme.darkBtnBg, 0.9)};
-      border: solid 2px ${themeStore.opacify(e.theme.lightBtnBg, 0.85)};
+      border: solid 2px ${lightBtnBg85};
     }
     .rc-slider-handle:hover {
       background-color: ${themeStore.opacify(e.theme.darkBtnBgHover, 0.9)};
@@ -1209,16 +1213,16 @@ const onThemeChange = (e) => {
       z-index: 9999 !important;
       opacity: 1 !important;
       color: ${e.theme.darkBtnText} !important;
-      background-color: ${themeStore.opacify(e.theme.darkBtnBg, 1)} !important;
+      background-color: ${darkBtnBgOpaque} !important;
     }
     .__react_component_tooltip.type-dark.place-bottom:after {
-      border-bottom: 6px solid ${themeStore.opacify(e.theme.darkBtnBg, 1)} !important;
+      border-bottom: 6px solid ${darkBtnBgOpaque} !important;
     }
     .__react_component_tooltip.type-dark.place-top:after {
-      border-top: 6px solid ${themeStore.opacify(e.theme.darkBtnBg, 1)} !important;
+      border-top: 6px solid ${darkBtnBgOpaque} !important;
     }
     .__react_component_tooltip.type-dark.place-right:after {
-      border-right: 6px solid ${themeStore.opacify(e.theme.darkBtnBg, 1)} !important;
+      border-right: 6px solid ${darkBtnBgOpaque} !important;
     }
     #main {
       -${vendor}-transition: ${prefs.animations ? `-${vendor}-filter 0.2s ease-in` : 'initial'};
@@ -1244,17 +1248,21 @@ const onThemeChange = (e) => {
     .Toggle:hover {
       background-color: ${e.theme.settingsItemHover};
     }
-    .LargeBtn:not(.active):not(:hover) {
-      color: ${e.theme.lightBtnText} !important;
-      background-color: ${themeStore.opacify(e.theme.lightBtnBg, 0.8)} !important;
+    .LargeBtn:not(.active), .LargeBtn:not(:hover) {
+      color: ${e.theme.lightBtnText};
+      background-color: ${themeStore.opacify(e.theme.lightBtnBg, 0.8)};
     }
     .LargeBtn.active {
       color: ${e.theme.darkBtnText};
       background-color: ${themeStore.opacify(e.theme.darkBtnBg, 0.8)};
     }
-    .LargeBtn:hover:not(.active) {
-      color: ${e.theme.lightBtnText} !important;
-      background-color: ${e.theme.lightBtnBgHover} !important;
+    .LargeBtn.active:hover {
+      color: ${e.theme.darkBtnText};
+      background-color: ${themeStore.opacify(e.theme.darkBtnBg, 0.9)};
+    }
+    .LargeBtn:not(.active):hover {
+      color: ${e.theme.lightBtnText};
+      background-color: ${e.theme.lightBtnBgHover};
     }
     `;
 

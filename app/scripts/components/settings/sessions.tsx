@@ -82,9 +82,9 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
 
     modal.footer = (
       <div>
-        <Btn onClick={this.handleExportSessions} className="ntg-setting-btn" icon="database-export">{utils.t('export')}</Btn>
-        <Btn onClick={this.triggerInput} className="ntg-setting-btn" icon="database-insert">{utils.t('import')}</Btn>
-        <Btn onClick={this.handleSaveSession} className="ntg-setting-btn pull-right" icon="floppy-disk">{utils.t('saveSession')}</Btn>
+        <Btn onClick={this.handleExportSessions} className="settingBtn" icon="database-export">{utils.t('export')}</Btn>
+        <Btn onClick={this.triggerInput} className="settingBtn" icon="database-insert">{utils.t('import')}</Btn>
+        <Btn onClick={this.handleSaveSession} className="settingBtn pull-right" icon="floppy-disk">{utils.t('saveSession')}</Btn>
       </div>
     );
 
@@ -332,7 +332,7 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
                     <div className={css(styles.sessionItemContainerStyle)}>
                       <Btn
                         onClick={() => this.handleRemoveSession(session)}
-                        className="ntg-session-btn"
+                        className="sessionBtn"
                         icon="cross"
                         faStyle={sessionButtonIconStyle}
                         noIconPadding={true}
@@ -340,7 +340,7 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
                       />
                       <Btn
                         onClick={() => restore(session)}
-                        className="ntg-session-btn"
+                        className="sessionBtn"
                         icon="folder-open2"
                         faStyle={buttonIconStyle}
                         noIconPadding={true}
@@ -349,7 +349,7 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
                       {p.prefs.sessionsSync ?
                         <Btn
                           onClick={() => setPrefs({syncedSession: p.prefs.syncedSession === session.id ? null : session.id})}
-                          className="ntg-session-btn"
+                          className="sessionBtn"
                           icon="sync"
                           faStyle={{fontWeight: p.prefs.syncedSession === session.id ? 600 : 'initial', position: 'relative', top: '0px'}}
                           noIconPadding={true}
@@ -358,7 +358,7 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
                       <Btn
                         id={`${i}`}
                         onClick={this.handleSearchActivation}
-                        className="ntg-session-btn"
+                        className="sessionBtn"
                         icon="search4"
                         faStyle={sessionHoverButtonIconStyle}
                         noIconPadding={true}
@@ -367,7 +367,7 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
                       {!s.labelSession || s.labelSession !== i ?
                         <Btn
                           onClick={() => this.setState({labelSession: i, expandedSession: i})}
-                          className="ntg-session-btn"
+                          className="sessionBtn"
                           icon="pencil"
                           faStyle={sessionHoverButtonIconStyle}
                           noIconPadding={true}
@@ -403,7 +403,7 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
                             <Btn
                               faStyle={buttonIconStyle}
                               onClick={() => this.labelSession(session)}
-                              className={css(styles.sessionLabelEditButtonStyle) + ' ntg-session-btn'}
+                              className={css(styles.sessionLabelEditButtonStyle) + ' sessionBtn'}
                               icon="checkmark3"
                               noIconPadding={true}
                               data-tip="Update Label"
@@ -411,7 +411,7 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
                             <Btn
                               faStyle={buttonIconStyle}
                               onClick={() => this.setState({labelSession: null})}
-                              className={css(styles.sessionLabelEditButtonStyle) + ' ntg-session-btn'}
+                              className={css(styles.sessionLabelEditButtonStyle) + ' sessionBtn'}
                               icon="cross"
                               noIconPadding={true}
                               data-tip={utils.t('cancelEdit')}
@@ -453,7 +453,7 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
                           {s.windowHover === w ?
                             <Btn
                               onClick={() => removeWindow(p.sessions, i, w)}
-                              className="ntg-session-btn"
+                              className="sessionBtn"
                               icon="cross"
                               faStyle={buttonIconStyle}
                               noIconPadding={true}
@@ -462,7 +462,7 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
                           {s.windowHover === w ?
                             <Btn
                               onClick={() => restoreWindow(session, w, p.chromeVersion)}
-                              className="ntg-session-btn"
+                              className="sessionBtn"
                               icon="folder-open2"
                               faStyle={buttonIconStyle}
                               noIconPadding={true}
@@ -498,7 +498,7 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
                                     {s.selectedSessionTabHover === x ?
                                       <Btn
                                         onClick={() => removeSessionTab(p.sessions, i, w, x)}
-                                        className={css(styles.sessionCloseButtonStyle) + ' ntg-session-btn'}
+                                        className={css(styles.sessionCloseButtonStyle) + ' sessionBtn'}
                                         icon="cross"
                                         faStyle={sessionButtonIconStyle}
                                         noIconPadding={true}
@@ -592,7 +592,7 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
                     {s.currentSessionHover === w && _window.length > 0 ?
                       <Btn
                         onClick={() => this.handleCurrentSessionCloseWindow(_window[0].windowId, w)}
-                        className="ntg-session-btn"
+                        className="sessionBtn"
                         icon="cross"
                         faStyle={sessionButtonIconStyle}
                         noIconPadding={true}
@@ -634,7 +634,7 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
                           {s.currentSessionTabHover === i ?
                             <Btn
                               onClick={() => this.handleCurrentSessionCloseTab(t.id, w, i)}
-                              className={css(styles.sessionCloseButtonStyle) + ' ntg-session-btn'}
+                              className={css(styles.sessionCloseButtonStyle) + ' sessionBtn'}
                               icon="cross"
                               faStyle={sessionButtonIconStyle}
                               noIconPadding={true}

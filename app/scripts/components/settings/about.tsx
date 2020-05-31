@@ -342,21 +342,21 @@ class About extends React.Component<AboutProps, AboutState> {
       <div>
         <Btn
         onClick={() => chrome.tabs.create({url: 'https://github.com/jaszhix/tab-master-5000-extension'})}
-        className="ntg-setting-btn"
+        className="settingBtn"
         icon="github">
           Github
         </Btn>
         {this.props.chromeVersion > 1 ?
           <Btn
           onClick={() => chrome.tabs.create({url: 'https://chrome.google.com/webstore/detail/tab-master-5000-tab-swiss/mippmhcfjhliihkkdobllhpdnmmciaim'})}
-          className="ntg-setting-btn"
+          className="settingBtn"
           icon="chrome">
             Chrome Web Store
           </Btn>
           :
           <Btn
           onClick={() => chrome.tabs.create({url: 'https://addons.mozilla.org/en-US/firefox/addon/tab-master-5000/'})}
-          className="ntg-setting-btn"
+          className="settingBtn"
           icon="firefox">
             Firefox Add-ons
           </Btn>}
