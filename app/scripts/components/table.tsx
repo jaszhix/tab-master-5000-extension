@@ -11,7 +11,6 @@ import state from './stores/state';
 import {setAlert} from './stores/main';
 import * as utils from './stores/tileUtils';
 import {isNewTab} from '../shared/utils';
-import {tableWidths} from './constants';
 import {domainRegex} from '../shared/constants';
 
 const styles = StyleSheet.create({
@@ -98,7 +97,6 @@ class Row extends React.Component<RowProps> {
           if (p.columnWidths && p.columnWidths[z]) {
             style = {
               width: `${p.columnWidths[z]}px`,
-              minWidth: `${tableWidths[column]}px`
             }
           }
 
@@ -110,20 +108,22 @@ class Row extends React.Component<RowProps> {
                 onClick={this.props.onActivate}
                 id={`column-${column}`}
                 className={css(p.dynamicStyles.titleColumn, p.dynamicStyles.columnCommon)}>
-                <div className={css(p.dynamicStyles.faviconContainer) + ' media-left media-middle'}>
-                  <img src={p.row.favIconUrl} className={css(styles.favicon)} />
-                </div>
-                <div className="media-left">
-                  <div style={textOverflow}>
-                    <div className={css(styles.mediaLeftLink) + ' text-default text-semibold'}>
-                      {p.row[column]}
-                    </div>
+                <span>
+                  <div className={css(p.dynamicStyles.faviconContainer) + ' media-left media-middle'}>
+                    <img src={p.row.favIconUrl} className={css(styles.favicon)} />
                   </div>
-                  {p.s.prefs.mode === 'apps' || p.s.prefs.mode === 'extensions' ?
-                    <div className={css(styles.mediaLeftDescription) + ' text-muted text-size-small'}>
-                      {p.row.description}
-                    </div> : null}
-                </div>
+                  <div className="media-left">
+                    <div style={textOverflow}>
+                      <div className={css(styles.mediaLeftLink) + ' text-default text-semibold'}>
+                        {p.row[column]}
+                      </div>
+                    </div>
+                    {p.s.prefs.mode === 'apps' || p.s.prefs.mode === 'extensions' ?
+                      <div className={css(styles.mediaLeftDescription) + ' text-muted text-size-small'}>
+                        {p.row.description}
+                      </div> : null}
+                  </div>
+                </span>
                 {p.row.audible ?
                   <div className={css(styles.mediaRight) + ' media-right media-middle'}>
                     <i className="icon-volume-medium" />
@@ -218,6 +218,8 @@ interface TableHeaderProps {
   onColumnClick: (column: SortKey) => void;
   onColumnWidthsComputed?: (widths: number[]) => void;
   columnWidths?: number[];
+  show?: boolean;
+  titleMaxWidth?: string;
 }
 
 class TableHeader extends React.Component<TableHeaderProps> {
@@ -225,52 +227,65 @@ class TableHeader extends React.Component<TableHeaderProps> {
   columnWidths: number[] = [];
   willUnmount: boolean;
   connectId: number;
+  observer: ResizeObserver;
+  count: number = 0;
 
   static defaultProps = {
     init: false,
+    show: false,
     darkBtnText: '',
+  }
+
+  constructor(props) {
+    super(props);
+
+    if (!props.isFloating) {
+      this.observer = new ResizeObserver((elements) => {
+
+        for (let i = 0, len = elements.length; i < len; i++) {
+          this._handleColumnRef(elements[i].target);
+        }
+      });
+    }
   }
 
   componentWillUnmount = () => {
     this.willUnmount = true;
     state.disconnect(this.connectId);
+
+    if (!this.props.isFloating) this.observer.disconnect();
+
     unref(this, 750);
   }
 
   handleColumnRef = (ref) => {
-    // TODO: Redo tables with flexbox
-    // Firefox needs extra time after the component mounts to get the correct clientWidth
-    if (state.chromeVersion === 1 && !this.props.init) {
-      setTimeout(() => this._handleColumnRef(ref), 500);
-      return;
-    }
+    if (!ref || this.columnWidths[parseInt(ref.id)]) return;
 
-    this._handleColumnRef(ref);
+    this.observer.observe(ref);
   }
 
   _handleColumnRef = (ref) => {
-    if (!ref) return;
+    this.count++;
 
     let {clientWidth} = ref;
 
-    if (state.chromeVersion === 1) {
-      clientWidth = Math.min(600, clientWidth);
-    }
-
     this.columnWidths[parseInt(ref.id)] = clientWidth;
 
-    if (this.columnWidths.length === this.props.columns.length) {
+    if (this.columnWidths.length === this.props.columns.length
+      && (this.props.init || this.count >= this.props.columns.length * 2)) {
       this.props.onColumnWidthsComputed(this.columnWidths);
     }
   }
 
   render = () => {
-    let {isFloating, mode, columns, columnWidths, dynamicStyles, order, direction, onColumnClick} = this.props;
+    let {isFloating, show, mode, columns, columnWidths, titleMaxWidth, dynamicStyles, order, direction, onColumnClick} = this.props;
+
+    if (isFloating && !columnWidths.length) return null;
 
     return (
       <thead
         id={isFloating ? 'thead-float' : ''}
-        style={{opacity: isFloating ? '1' : '0'}}>
+        style={{opacity: show ? '1' : '0'}}>
         <tr role="row">
           {map(columns, (column, i) => {
             let columnLabel = mode === 'apps' && column === 'domain' ? 'webWrapper' : column === 'mutedInfo' ? 'muted' : column;
@@ -279,8 +294,9 @@ class TableHeader extends React.Component<TableHeaderProps> {
             if (columnWidths && columnWidths[i] != null) {
               style = {
                 width: `${columnWidths[i]}px`,
-                minWidth: `${tableWidths[column]}px`
               };
+
+              if (!i) style.maxWidth = titleMaxWidth;
             }
 
             return (
@@ -645,9 +661,10 @@ class Table extends React.Component<TableProps, TableState> {
     if (!columns || !rows) return null;
 
     let columnPadding = `${s.prefs.tablePadding}px ${s.prefs.tablePadding + 8}px`;
+    let titleMaxWidth = s.width <= 950 ? '300px' : s.width <= 1015 ? '400px' : '700px';
     let dynamicStyles = (StyleSheet as StyleSheetStatic).create({
       columnCommon: {padding: columnPadding},
-      titleColumn: {maxWidth: s.width <= 950 ? '300px' : s.width <= 1015 ? '400px' : '700px', userSelect: 'none', cursor: 'pointer'},
+      titleColumn: {maxWidth: titleMaxWidth, userSelect: 'none', cursor: 'pointer'},
       faviconContainer: {paddingRight: `${s.prefs.tablePadding + 8}px`},
       tableCommon: {width: `${s.width}px`},
       fixedTableHeader: {
@@ -671,7 +688,7 @@ class Table extends React.Component<TableProps, TableState> {
       <div className="datatable-scroll-wrap">
         <table
           className={css(dynamicStyles.tableCommon) + ' table datatable-responsive dataTable no-footer dtr-inline'}>
-          {!columnWidths.length ?
+          {!columnWidths.length && rows.length ?
             <TableHeader
               dynamicStyles={dynamicStyles}
               mode={s.prefs.mode}
@@ -730,11 +747,11 @@ class Table extends React.Component<TableProps, TableState> {
           })}
           </tbody>
         </table>
-
         <table
           className={css(dynamicStyles.fixedTableHeader, dynamicStyles.tableCommon) + ' table datatable-responsive dataTable no-footer dtr-inline fixedHeader-floating'}
           role="grid"
           aria-describedby="DataTables_Table_1_info">
+
           <TableHeader
             dynamicStyles={dynamicStyles}
             mode={s.prefs.mode}
@@ -745,7 +762,9 @@ class Table extends React.Component<TableProps, TableState> {
             darkBtnText={s.theme.darkBtnText}
             headerBg={s.theme.headerBg}
             isFloating={true}
+            show={rows.length > 0}
             columnWidths={columnWidths}
+            titleMaxWidth={titleMaxWidth}
           />
         </table>
       </div>

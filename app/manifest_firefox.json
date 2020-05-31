@@ -4,6 +4,11 @@
   "version": "2.9.7",
   "manifest_version": 2,
   "description": "__MSG_appDesc__",
+  "browser_specific_settings": {
+    "gecko": {
+      "strict_min_version": "76.0"
+    }
+  },
   "icons": {
     "16": "images/icon-16.png",
     "128": "images/icon-128.png"

@@ -79,6 +79,7 @@
     "@types/react-loadable": "^5.5.3",
     "@types/react-onclickoutside": "^6.7.3",
     "@types/react-tooltip": "^4.2.4",
+    "@types/resize-observer-browser": "^0.1.3",
     "@types/scriptjs": "^0.0.2",
     "@types/terser-webpack-plugin": "^2.2.0",
     "@types/tinycolor2": "^1.4.2",

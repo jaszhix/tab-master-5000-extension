@@ -493,6 +493,13 @@ div.row.ntg-tile-row-top > div.col-xs-3 > div > i {
   border-radius: initial;
   margin-right: initial;
 }
+
+td, th {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
 tr {
   font-size: 14px !important;
 
