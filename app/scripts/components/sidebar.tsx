@@ -69,6 +69,8 @@ export class SidebarMenu extends React.Component<SidebarMenuProps> {
     }, true);
   }
 
+  handleApplyTabOrder = () => state.set({applyTabOrder: true})
+
   render = () => {
     let p = this.props;
 
@@ -246,9 +248,9 @@ export class SidebarMenu extends React.Component<SidebarMenuProps> {
                         </div>
                       </form>
                     </div> : null}
-                  {p.sort !== 'index' && p.prefs.mode === 'tabs' ?
+                  {p.prefs.sort && p.sort !== 'index' && p.prefs.mode === 'tabs' ?
                     <div className={css(dynamicStyles.applyTabOrderContainer)}>
-                      <Btn className="topDarkBtn"  onClick={() => state.set({applyTabOrder: true})}>{utils.t('apply')}</Btn>
+                      <Btn className="topDarkBtn"  onClick={this.handleApplyTabOrder}>{utils.t('apply')}</Btn>
                     </div> : null}
                 </div>
               </div>
