@@ -46,41 +46,48 @@ class Settings extends React.Component<SettingsProps> {
   componentDidMount = () => {
     state.set({sidebar: false});
   }
+
   handleTabClick = (opt) => {
     state.set({settings: opt});
   }
+
   render = () => {
     let p = this.props;
+
     return (
       <Container fluid={true}>
         <Row>
           {p.settings === 'sessions' ?
-          <Sessions
-          modal={p.modal}
-          sessions={p.sessions}
-          prefs={p.prefs}
-          theme={p.theme}
-          allTabs={p.allTabs}
-          chromeVersion={p.chromeVersion} /> : null}
+            <Sessions
+              modal={p.modal}
+              sessions={p.sessions}
+              prefs={p.prefs}
+              theme={p.theme}
+              allTabs={p.allTabs}
+              chromeVersion={p.chromeVersion}
+            /> : null}
           {p.settings === 'preferences' ?
-          <Preferences
-          modal={p.modal}
-          prefs={p.prefs}
-          theme={p.theme} /> : null}
+            <Preferences
+              modal={p.modal}
+              prefs={p.prefs}
+              theme={p.theme}
+            /> : null}
           {p.settings === 'theming' ?
-          <Theming
-          prefs={p.prefs}
-          theme={p.theme}
-          modal={p.modal}
-          savedThemes={p.savedThemes}
-          wallpaper={p.wallpaper}
-          wallpapers={p.wallpapers}
-          collapse={p.collapse} /> : null}
+            <Theming
+              prefs={p.prefs}
+              theme={p.theme}
+              modal={p.modal}
+              savedThemes={p.savedThemes}
+              wallpaper={p.wallpaper}
+              wallpapers={p.wallpapers}
+              collapse={p.collapse}
+            /> : null}
           {p.settings === 'about' ?
-          <About
-          modal={p.modal}
-          theme={p.theme}
-          chromeVersion={p.chromeVersion} /> : null}
+            <About
+              modal={p.modal}
+              theme={p.theme}
+              chromeVersion={p.chromeVersion}
+            /> : null}
         </Row>
       </Container>
     );

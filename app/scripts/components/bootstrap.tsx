@@ -34,25 +34,20 @@ export class Btn extends React.Component<BtnProps, BtnState> {
     noIconPadding: false,
   };
 
-  componentWillUnmount = () => {
-    tryFn(() => this.ref.style.display = 'none');
-  }
-
   handleHoverIn = (e) => {
+    if (this.props['data-tip']) ReactTooltip.rebuild();
+
     if (this.props.onMouseEnter) {
       this.props.onMouseEnter(e);
     }
   }
 
   handleHoverOut = (e) => {
-    ReactTooltip.hide();
+    if (this.props['data-tip']) ReactTooltip.hide();
+
     if (this.props.onMouseLeave) {
       this.props.onMouseLeave(e);
     }
-  }
-
-  getRef = (ref) => {
-    this.ref = ref;
   }
 
   render = () => {
@@ -66,7 +61,6 @@ export class Btn extends React.Component<BtnProps, BtnState> {
     return (
       <button
         data-tip={p['data-tip'] ? `<div style="max-width: 350px;">${p['data-tip']}</div>` : null}
-        ref={this.getRef}
         onMouseEnter={this.handleHoverIn}
         onMouseLeave={this.handleHoverOut}
         onClick={p.onClick}
@@ -77,7 +71,8 @@ export class Btn extends React.Component<BtnProps, BtnState> {
           {hasIcon ?
             <i
               className={`${iconClassName} ${fa ? 'fa fa-' + fa : ''}${icon ? ' icon-' + icon : ''}`}
-              style={faStyle} /> : null}
+              style={faStyle}
+            /> : null}
           {p.fa ? ' ' : null}
           {p.children}
         </div>
@@ -108,6 +103,8 @@ interface ColProps {
 }
 
 export class Col extends React.Component<ColProps> {
+  ref: React.RefObject<HTMLDivElement> = React.createRef();
+
   static propTypes = {
     size: PropTypes.string.isRequired
   };
@@ -133,6 +130,7 @@ export class Col extends React.Component<ColProps> {
 
     return (
       <div
+        ref={this.ref}
         data-tip={p['data-tip'] ? `<div style="max-width: 350px;">${p['data-tip']}</div>` : null}
         onContextMenu={p.onContextMenu}
         onDragEnter={p.onDragEnter}

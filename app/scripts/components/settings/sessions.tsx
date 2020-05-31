@@ -3,14 +3,23 @@ import {css} from 'aphrodite';
 import moment from 'moment';
 import _ from 'lodash';
 import ReactTooltip from 'react-tooltip';
-import v from 'vquery';
 import {each, find, map, filter} from '@jaszhix/utils';
 
 import * as utils from '../stores/tileUtils';
 import {isNewTab} from '../../shared/utils';
 import state from '../stores/state';
-import {removeSingleWindow, setPrefs} from '../stores/main';
-import {exportSessions, saveSession, updateSession, removeSession, removeSessionTab, restore, removeWindow, restoreWindow, importSessions} from '../stores/sessions';
+import {removeSingleWindow, setPrefs, getSessions} from '../stores/main';
+import {
+  exportSessions,
+  saveSession,
+  updateSession,
+  removeSession,
+  removeSessionTab,
+  restore,
+  removeWindow,
+  restoreWindow,
+  importSessions
+} from '../stores/sessions';
 
 import {Btn, Col, Row} from '../bootstrap';
 import type {RowProps} from '../bootstrap';
@@ -48,6 +57,9 @@ export interface SessionsState {
 class Sessions extends React.Component<SessionsProps, SessionsState> {
   modalBody: HTMLElement;
   fileInputRef: HTMLInputElement;
+  currentSessionRef: React.RefObject<Col> = React.createRef();
+  sessionSearchRef: React.RefObject<HTMLInputElement> = React.createRef();
+  connectId: number;
 
   static defaultProps = {
     collapse: true
@@ -68,17 +80,24 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
       search: '',
       selectedCurrentSessionWindow: -1,
       selectedSavedSessionWindow: -1
-    }
-    state.connect({
-      favicons: (partial) => this.handleSessionsState(partial)
-    });
+    };
   }
 
   componentDidMount = () => {
     let {modal} = this.props;
 
-    this.modalBody = v('.modal-body').n;
+    this.modalBody = document.querySelector('.modal-body');
     this.modalBody.addEventListener('scroll', this.onModalBodyScroll);
+
+    this.connectId = state.connect({
+      favicons: this.handleSessionsState,
+      allTabs: () => {
+        if (!state.prefs.syncedSession) return;
+
+        getSessions();
+        this.handleSessionsState();
+      }
+    });
 
     modal.footer = (
       <div>
@@ -89,18 +108,18 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
     );
 
     state.set({modal}, true);
-    this.handleSessionsState(state);
-  }
 
-  componentDidUpdate = () => {
-    ReactTooltip.rebuild();
+    this.handleSessionsState();
   }
 
   componentWillUnmount = () => {
     this.modalBody.removeEventListener('scroll', this.onModalBodyScroll);
+    state.disconnect(this.connectId);
   }
 
-  onModalBodyScroll = () => v('#currentSession').css({top: this.modalBody.scrollTop})
+  onModalBodyScroll = () => {
+    this.currentSessionRef.current.ref.current.style.top = `${this.modalBody.scrollTop}`;
+  }
 
   handleSaveSession = () => {
     let {allTabs} = this.props;
@@ -113,28 +132,32 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
     exportSessions(state.sessions);
   }
 
-  handleSessionsState = (partial) => {
+  handleSessionsState = () => {
+    const {sessions, allTabs, favicons} = state;
+
     const replaceFavicon = (tab) => {
       if (!tab) {
         return;
       }
 
-      let favicon = find(partial.favicons, fv => tab.url.indexOf(fv.domain) > -1);
+      let favicon = find(favicons, fv => tab.url.indexOf(fv.domain) > -1);
 
       if (favicon) {
         tab.favIconUrl = favicon.favIconUrl;
       }
     };
 
-    each(this.props.sessions, (session) => {
+    each(sessions, (session) => {
       each(session.tabs, (Window) => {
         each(Window, replaceFavicon);
       });
     });
-    each(state.allTabs, (Window) => {
+
+    each(allTabs, (Window) => {
       each(Window, replaceFavicon);
     });
-    state.set({sessions: this.props.sessions, allTabs: this.props.allTabs});
+
+    state.set({sessions, allTabs});
   }
 
   labelSession = (session: SessionState) => {
@@ -174,7 +197,7 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
         return;
       }
 
-      v('#sessionSearch').n.focus();
+      this.sessionSearchRef.current.focus();
     });
   }
 
@@ -186,9 +209,11 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
       search: '',
       labelSession: -1
     }, () => {
-      _.delay(() => {
-        if (v(`#sessionRow-${i}`).height() + (i * 30) > v('.modal-body').height()) {
-          v(`#sessionRow-${i}`).n.scrollIntoView();
+      setTimeout(() => {
+        let row = document.getElementById(`sessionRow-${i}`);
+
+        if (row.offsetHeight + (i * 30) > this.modalBody.offsetHeight) {
+          row.scrollIntoView();
         }
       }, 200);
     });
@@ -298,9 +323,7 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
                     return;
                   }
 
-                  v(`#sessionRow-${i}`).css({
-                    height: `${height}px`
-                  });
+                  document.getElementById(`sessionRow-${i}`).style.height = `${height}px`;
                   // @ts-ignore
                   ref.height = height;
                 } : null}
@@ -421,6 +444,7 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
                       {s.searchField === i ?
                         <Col size="12" className={css(styles.sessionSearchContainer)}>
                           <input
+                            ref={this.sessionSearchRef}
                             id="sessionSearch"
                             type="text"
                             value={s.search}
@@ -527,6 +551,7 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
           />
         </Col>
         <Col
+          ref={this.currentSessionRef}
           size={currentSessionSelected || p.prefs.settingsMax ? '6' : '3'}
           className="session-col"
           id="currentSession"
@@ -568,9 +593,7 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
                       return;
                     }
 
-                    v(`#sessionRow-2-${w}`).css({
-                      height: `${height}px`
-                    });
+                    document.getElementById(`sessionRow-2-${w}`).style.height = `${height}px`;
                     // @ts-ignore
                     ref.height = height;
                   }, 0);
