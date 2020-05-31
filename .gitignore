@@ -10,11 +10,6 @@ app/scripts/content.js
 /app/scripts/app.js.map
 /app/scripts/background.js.map
 /app/scripts/content.js.map
-/app/scripts/glyphicons-halflings-regular.eot
-/app/scripts/glyphicons-halflings-regular.svg
-/app/scripts/glyphicons-halflings-regular.ttf
-/app/scripts/glyphicons-halflings-regular.woff
-/app/scripts/glyphicons-halflings-regular.woff2
 app/manifest.json
 sources/
 source_maps/
