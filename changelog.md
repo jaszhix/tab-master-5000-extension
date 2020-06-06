@@ -1,6 +1,6 @@
 #### Release Notes
 
-##### v2.10.0 / *TBD*
+##### v2.10.0 / *6-6-20*
 
 * Added ability to override TM5K's control of the New Tab page.
 * Added scrollbar theme support.

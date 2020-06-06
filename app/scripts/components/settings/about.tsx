@@ -85,9 +85,9 @@ class Contribute extends React.Component<ContributeProps, ContributeState> {
             <input type="hidden" name="hosted_button_id" value="HDU6KR5LLBYUU" />
             <input type="hidden" name="on0" value="Contribution" />
             <select
-            className="form-control"
-            style={{backgroundColor: state.theme.settingsBg, color: state.theme.bodyText, width: '100px', margin: '12px 0px 18px 0px', paddingLeft: '6px'}}
-            name="os0">
+              className="form-control"
+              style={{backgroundColor: state.theme.settingsBg, color: state.theme.bodyText, width: '100px', margin: '12px 0px 18px 0px', paddingLeft: '6px'}}
+              name="os0">
               <option value="1 -">$5.00 USD</option>
               <option value="2 -">$15.00 USD</option>
               <option value="3 -">$25.00 USD</option>
@@ -248,6 +248,7 @@ class Attribution extends React.Component<AttributionProps, AttributionState> {
               <ul>
                 {map(slice, (dep, i) => {
                   let pkg = dep.split(' ');
+
                   return (
                     <li key={i}>
                       <Link target="_blank" href={`https://www.npmjs.com/package/${pkg[0]}`}>
@@ -302,7 +303,7 @@ class ReleaseNotes extends React.Component<ReleaseNotesProps, ReleaseNotesState>
       <div>
         <img className="ntg-about" style={{top: '20px'}} src={tm5kLogo} />
         <Link href="https://eff.org" target="_blank">
-          <img style={{position: 'absolute', top: '50px', right:'8%', height: '120px', opacity: '0.7'}} src="../../images/eff-member-badge-2019.png" />
+          <img style={{position: 'absolute', top: '50px', right:'8%', height: '120px', opacity: '0.7'}} src="../../images/eff-member-badge-2020.png" />
         </Link>
         <Col size="1" />
         <Col size="10" className="ntg-release">
@@ -336,34 +337,37 @@ class About extends React.Component<AboutProps, AboutState> {
       tab: 'release'
     };
   }
+
   componentDidMount() {
     let p = this.props;
+
     p.modal.footer = (
       <div>
         <Btn
-        onClick={() => chrome.tabs.create({url: 'https://github.com/jaszhix/tab-master-5000-extension'})}
-        className="settingBtn"
-        icon="github">
+          onClick={() => chrome.tabs.create({url: 'https://github.com/jaszhix/tab-master-5000-extension'})}
+          className="settingBtn"
+          icon="github">
           Github
         </Btn>
         {this.props.chromeVersion > 1 ?
           <Btn
-          onClick={() => chrome.tabs.create({url: 'https://chrome.google.com/webstore/detail/tab-master-5000-tab-swiss/mippmhcfjhliihkkdobllhpdnmmciaim'})}
-          className="settingBtn"
-          icon="chrome">
+            onClick={() => chrome.tabs.create({url: 'https://chrome.google.com/webstore/detail/tab-master-5000-tab-swiss/mippmhcfjhliihkkdobllhpdnmmciaim'})}
+            className="settingBtn"
+            icon="chrome">
             Chrome Web Store
           </Btn>
           :
           <Btn
-          onClick={() => chrome.tabs.create({url: 'https://addons.mozilla.org/en-US/firefox/addon/tab-master-5000/'})}
-          className="settingBtn"
-          icon="firefox">
+            onClick={() => chrome.tabs.create({url: 'https://addons.mozilla.org/en-US/firefox/addon/tab-master-5000/'})}
+            className="settingBtn"
+            icon="firefox">
             Firefox Add-ons
           </Btn>}
       </div>
     );
     state.set({modal: p.modal}, true);
   }
+
   render() {
     let p = this.props;
     let s = this.state;
