@@ -223,12 +223,13 @@ interface TableHeaderProps {
 }
 
 class TableHeader extends React.Component<TableHeaderProps> {
-  ref: HTMLElement;
   columnWidths: number[] = [];
-  willUnmount: boolean;
+  columnsWidthsAccurate: boolean;
+  lastWidth: number = 0;
+  count: number = 0;
+  calledBack: boolean = false;
   connectId: number;
   observer: ResizeObserver;
-  count: number = 0;
 
   static defaultProps = {
     init: false,
@@ -239,24 +240,39 @@ class TableHeader extends React.Component<TableHeaderProps> {
   constructor(props) {
     super(props);
 
-    if (!props.isFloating) {
-      this.observer = new ResizeObserver((elements) => {
+    this.columnsWidthsAccurate = false;
 
-        for (let i = 0, len = elements.length; i < len; i++) {
-          this._handleColumnRef(elements[i].target);
-        }
-      });
+    if (!props.isFloating) {
+      this.observer = new ResizeObserver(this.handleResizeObserverEntries);
     }
   }
 
   componentWillUnmount = () => {
-    this.willUnmount = true;
     state.disconnect(this.connectId);
 
     if (!this.props.isFloating) this.observer.disconnect();
 
     unref(this, 750);
   }
+
+  handleResizeObserverEntries = (elements) => {
+    if (this.calledBack) return;
+
+    let successCount = 0;
+
+    for (let i = 0, len = elements.length; i < len; i++) {
+      if (this._handleColumnRef(elements[i].target)) {
+        successCount++;
+      }
+    }
+
+    // Should only fail to get the correct widths if TM5K is not the active tab, so retry until
+    // it's active again. This occurs when TM5K is enabled while previous new tabs are open,
+    // or the user reloads TM5K and navigates to another tab.
+    if (successCount !== elements.length) {
+      setTimeout(() => this.handleResizeObserverEntries(elements), 500);
+    }
+  };
 
   handleColumnRef = (ref) => {
     if (!ref || this.columnWidths[parseInt(ref.id)]) return;
@@ -271,16 +287,28 @@ class TableHeader extends React.Component<TableHeaderProps> {
 
     this.columnWidths[parseInt(ref.id)] = clientWidth;
 
-    if (this.columnWidths.length === this.props.columns.length
-      && (this.props.init || this.count >= this.props.columns.length * 2)) {
-      this.props.onColumnWidthsComputed(this.columnWidths);
+    // Only assume the widths are correct after mounting when the first column's width changes once
+    if (this.lastWidth && this.columnWidths[0] && this.lastWidth !== this.columnWidths[0]) {
+      this.columnsWidthsAccurate = true;
     }
+
+    this.lastWidth = this.columnWidths[0];
+
+    if (this.columnWidths.length === this.props.columns.length) {
+
+      if (!this.calledBack && (this.props.init || this.count >= this.props.columns.length * 2)) {
+        this.calledBack = true;
+        this.props.onColumnWidthsComputed(this.columnWidths);
+      }
+
+      return this.columnsWidthsAccurate;
+    }
+
+    return true;
   }
 
   render = () => {
     let {isFloating, show, mode, columns, columnWidths, titleMaxWidth, dynamicStyles, order, direction, onColumnClick} = this.props;
-
-    if (isFloating && !columnWidths.length) return null;
 
     return (
       <thead
@@ -361,14 +389,21 @@ class Table extends React.Component<TableProps, TableState> {
   componentDidMount = () => {
     this.connections = [
       state.connect(
-        ['tabs', 'history', 'sessionTabs', 'bookmarks', 'apps', 'extensions', 'searchCache', 'prefs'],
+        ['tabs', 'history', 'sessionTabs', 'bookmarks', 'apps', 'extensions', 'searchCache'],
         this.buildTable
       ),
       state.connect({
         selectAllFromDomain: this.selectAllFromDomain,
         invertSelection: this.invertSelection,
         deselectSelection: this.handleClickOutside,
-        width: this.resetColumnWidths
+        width: this.resetColumnWidths,
+        prefs: () => {
+          this.setState({
+            init: true,
+          });
+
+          this.buildTable();
+        },
       })
     ];
 
