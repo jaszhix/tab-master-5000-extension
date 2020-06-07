@@ -1,9 +1,10 @@
+import {browser} from 'webextension-polyfill-ts';
 import React from 'react';
 import {StyleSheet, css} from 'aphrodite';
 import _ from 'lodash';
 import tc from 'tinycolor2';
 import v from 'vquery'
-import {map, each, findIndex} from '@jaszhix/utils';
+import {map, each, filter, findIndex} from '@jaszhix/utils';
 import Slider from 'rc-slider';
 import ReactTooltip from 'react-tooltip';
 
@@ -28,6 +29,24 @@ const newTabOverrideOptions = [
   {value: 'default', label: utils.t('newTabOverrideOption1')},
   {value: 'custom', label: utils.t('newTabOverrideOption2')}
 ];
+
+// TBD: Migrate commands to manifest.json
+const defaultCommandsInfo = `
+  <div><strong>Ctrl+Z</strong>: ${utils.t('ctrlZ')}</div>
+  <div><strong>Ctrl+F</strong>: ${utils.t('search')}</div>
+  <div><strong>Ctrl+Alt+S</strong>: ${_.upperFirst(utils.t('sessions'))}</div>
+  <div><strong>Ctrl+Alt+P</strong>: ${utils.t('preferences')}</div>
+  <div><strong>Ctrl+Alt+T</strong>: ${utils.t('theming')}</div>
+  <div><strong>Ctrl+Alt+A</strong>: ${utils.t('about')}</div>
+  <div><strong>Ctrl+Shift+S</strong>: ${utils.t('saveSession')}</div>
+  <div><strong>Ctrl+Shift+Space</strong>: ${utils.t('sidebar')}</div>
+  <div><strong>Alt+T</strong>: ${_.upperFirst(utils.t('tabs'))}</div>
+  <div><strong>Alt+B</strong>: ${_.upperFirst(utils.t('bookmarks'))}</div>
+  <div><strong>Alt+H</strong>: ${_.upperFirst(utils.t('history'))}</div>
+  <div><strong>Alt+S</strong>: ${_.upperFirst(utils.t('sessions'))}</div>
+  <div><strong>Alt+A</strong>: ${_.upperFirst(utils.t('apps'))}</div>
+  <div><strong>Alt+E</strong>: ${_.upperFirst(utils.t('extensions'))}</div>
+`;
 
 interface SlideProps {
   className: string;
@@ -294,6 +313,7 @@ export interface PreferencesComponentState {
   aboutAddonsOpen?: boolean;
   newTabCustom?: string;
   newTabCustomValid?: boolean;
+  commandsInfo: string;
 }
 
 class Preferences extends React.Component<PreferencesComponentProps, PreferencesComponentState> {
@@ -312,6 +332,7 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
       aboutAddonsOpen: false,
       newTabCustom: props.prefs.newTabCustom,
       newTabCustomValid: true,
+      commandsInfo: ''
     }
 
     if (state.chromeVersion === 1) {
@@ -325,6 +346,8 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
   componentDidMount = () => {
     this.buildFooter();
 
+    this.getCommands();
+
     if (!this.props.chromeVersion || this.props.chromeVersion !== 1) {
       return;
     }
@@ -335,6 +358,25 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
 
   componentWillUnmount = () => {
     state.disconnect(this.connectId);
+  }
+
+  getCommands = async () => {
+    let commandsInfo = '';
+    let commands = await browser.commands.getAll();
+
+    for (let i = 0, len = commands.length; i < len; i++) {
+      let {shortcut, description} = commands[i];
+
+      if (!description) continue;
+
+      if (!shortcut) shortcut = 'Unconfigured in Extension Settings';
+
+      commandsInfo += `<div><strong>${shortcut}</strong>: ${description}</div>`;
+    }
+
+    commandsInfo = commandsInfo + defaultCommandsInfo;
+
+    this.setState({commandsInfo}, ReactTooltip.rebuild);
   }
 
   buildFooter = () => {
@@ -487,6 +529,7 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
     let autoDiscardTimeOptions = [15, 30, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24];
     let autoDiscardTimeHourDivided = p.prefs.autoDiscardTime / 3600000;
     let lightTextColorArg = tc(p.theme.settingsBg).isLight() && tc(p.theme.textFieldsPlaceholder).isLight();
+
     const dynamicStyles = StyleSheet.create({
       blacklistTextarea: {
         backgroundColor: lightTextColorArg ? p.theme.darkBtnBg : p.theme.lightBtnBg,
@@ -706,22 +749,7 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
               onClick={() => this.handleClick('keyboardShortcuts')}
               on={p.prefs.keyboardShortcuts}
               label={utils.t('keyboardShortcuts')}
-              data-tip={`
-                <div><strong>CTRL+Z</strong>: ${utils.t('ctrlZ')}</div>
-                <div><strong>CTRL+F</strong>: ${utils.t('search')}</div>
-                <div><strong>CTRL+ALT+S</strong>: ${_.upperFirst(utils.t('sessions'))}</div>
-                <div><strong>CTRL+ALT+P</strong>: ${utils.t('preferences')}</div>
-                <div><strong>CTRL+ALT+T</strong>: ${utils.t('theming')}</div>
-                <div><strong>CTRL+ALT+A</strong>: ${utils.t('about')}</div>
-                <div><strong>CTRL+SHIFT+S</strong>: ${utils.t('saveSession')}</div>
-                <div><strong>CTRL+SHIFT+SPACE</strong>: ${utils.t('sidebar')}</div>
-                <div><strong>ALT+T</strong>: ${_.upperFirst(utils.t('tabs'))}</div>
-                <div><strong>ALT+B</strong>: ${_.upperFirst(utils.t('bookmarks'))}</div>
-                <div><strong>ALT+H</strong>: ${_.upperFirst(utils.t('history'))}</div>
-                <div><strong>ALT+S</strong>: ${_.upperFirst(utils.t('sessions'))}</div>
-                <div><strong>ALT+A</strong>: ${_.upperFirst(utils.t('apps'))}</div>
-                <div><strong>ALT+E</strong>: ${_.upperFirst(utils.t('extensions'))}</div>
-            `}
+              data-tip={s.commandsInfo}
             />
             <Toggle
               onClick={() => this.handleClick('blacklist')}

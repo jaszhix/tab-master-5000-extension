@@ -1,7 +1,7 @@
 {
   "name": "__MSG_appName__",
   "short_name": "TM5K",
-  "version": "2.9.7",
+  "version": "2.10.0",
   "manifest_version": 2,
   "description": "__MSG_appDesc__",
   "icons": {
@@ -15,7 +15,7 @@
     "openClient": {
       "suggested_key": {
         "windows": "Ctrl+Shift+A",
-        "mac": "Command+Shift+A",
+        "mac": "Ctrl+Shift+A",
         "chromeos": "Ctrl+Shift+A",
         "linux": "Ctrl+Shift+A"
       },
