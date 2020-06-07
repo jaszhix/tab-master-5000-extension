@@ -128,8 +128,8 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
     saveSession({tabs: allTabs, label: sessionLabelValue});
   }
 
-  handleExportSessions = () => {
-    exportSessions(state.sessions);
+  handleExportSessions = async () => {
+    await exportSessions(state.sessions);
   }
 
   handleSessionsState = () => {
@@ -369,15 +369,14 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
                         noIconPadding={true}
                         data-tip={utils.t('restoreSession')}
                       />
-                      {p.prefs.sessionsSync ?
-                        <Btn
-                          onClick={() => setPrefs({syncedSession: p.prefs.syncedSession === session.id ? null : session.id})}
-                          className="sessionBtn"
-                          icon="sync"
-                          faStyle={{fontWeight: p.prefs.syncedSession === session.id ? 600 : 'initial', position: 'relative', top: '0px'}}
-                          noIconPadding={true}
-                          data-tip={p.prefs.syncedSession === session.id ? utils.t('desynchronizeSession') : utils.t('synchronizeSession')}
-                        /> : null}
+                      <Btn
+                        onClick={() => setPrefs({syncedSession: p.prefs.syncedSession === session.id ? null : session.id})}
+                        className="sessionBtn"
+                        icon="sync"
+                        faStyle={{fontWeight: p.prefs.syncedSession === session.id ? 600 : 'initial', position: 'relative', top: '0px'}}
+                        noIconPadding={true}
+                        data-tip={p.prefs.syncedSession === session.id ? utils.t('desynchronizeSession') : utils.t('synchronizeSession')}
+                      />
                       <Btn
                         id={`${i}`}
                         onClick={this.handleSearchActivation}

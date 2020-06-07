@@ -1,3 +1,5 @@
+import {browser} from 'webextension-polyfill-ts';
+import type * as B from 'webextension-polyfill-ts'; // eslint-disable-line no-unused-vars
 import _ from 'lodash';
 import tc from 'tinycolor2';
 import v from 'vquery';
@@ -5,7 +7,7 @@ import {init} from '@jaszhix/state';
 import {findIndex, find, tryFn, filter} from '@jaszhix/utils';
 
 import state from './state';
-import {setAlert, setPrefs} from './main';
+import {setAlert, setPrefs, requestPermission} from './main';
 
 const now = Date.now();
 
@@ -793,18 +795,20 @@ const themeStore = <ThemeStore>init({
     themeStore.savedThemes[refTheme].label = label;
     themeStore.update(id, false);
   },
-  export: () => {
-    tryFn(() => {
-      let json = JSON.stringify(themeStore.savedThemes);
-      let filename = `TM5K-Themes-${Date.now()}.json`;
-      let blob = new Blob([json], {type: "application/json;charset=utf-8"});
+  export: async () => {
+    let granted = await requestPermission('downloads');
 
-      chrome.downloads.download({
-        url: URL.createObjectURL(blob),
-        body: json,
-        filename,
-        saveAs: true
-      });
+    if (!granted) return;
+
+    let json = JSON.stringify(themeStore.savedThemes);
+    let filename = `TM5K-Themes-${Date.now()}.json`;
+    let blob = new Blob([json], {type: "application/json;charset=utf-8"});
+
+    await browser.downloads.download({
+      url: URL.createObjectURL(blob),
+      body: json,
+      filename,
+      saveAs: true
     });
   },
   import: (e) => {

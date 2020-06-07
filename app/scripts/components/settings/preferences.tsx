@@ -11,7 +11,7 @@ import ReactTooltip from 'react-tooltip';
 import * as utils from '../stores/tileUtils';
 import {urlRegex} from '../../shared/constants';
 import state from '../stores/state';
-import {setPermissions, setPrefs, getBlackList, setBlackList, isValidDomain, getBytesInUse} from '../stores/main';
+import {requestPermission, setPrefs, getBlackList, setBlackList, isValidDomain, getBytesInUse, restoreDefaultPrefs} from '../stores/main';
 
 import {Btn, Col, Row} from '../bootstrap';
 
@@ -75,17 +75,89 @@ class Slide extends React.Component<SlideProps> {
     );
   }
 }
+const sessionButtonIconStyle: React.CSSProperties = {fontSize: '18px', position: 'relative', top: '0px'};
+
+interface OriginEntryProps {
+  onClick: BtnOnClick;
+  child?: boolean;
+  label: string;
+  dataId?: string;
+}
+
+interface OriginEntryState {
+  hover: boolean;
+}
+
+export class OriginEntry extends React.Component<OriginEntryProps, OriginEntryState> {
+  static defaultProps = {
+    dataId: '',
+  };
+
+  state = {
+    hover: false,
+  }
+
+  componentDidMount = () => {
+    ReactTooltip.rebuild();
+  }
+
+  handleClick = () => {
+    ReactTooltip.hide();
+    this.props.onClick(this.props.dataId);
+  }
+
+  handleMouseEnter = () => this.setState({hover: true})
+
+  handleMouseLeave = () => this.setState({hover: false})
+
+  render = () => {
+    let {hover} = this.state;
+    let p = this.props;
+
+    return (
+      <Row
+        className={`Toggle ${css(styles.cursorPointer)}`}
+        data-place="bottom"
+        onMouseEnter={this.handleMouseEnter}
+        onMouseLeave={this.handleMouseLeave}>
+        <Row className={p.child ? "prefs-row-child" : "prefs-row"}>
+          <div>
+            {hover ?
+              <Btn
+                onClick={this.handleClick}
+                className="sessionBtn"
+                icon="cross"
+                faStyle={sessionButtonIconStyle}
+                noIconPadding={true}
+                data-tip={utils.t('removeOrigin')}
+              /> : null}
+            {p.label}
+          </div>
+        </Row>
+      </Row>
+    );
+  }
+}
 
 interface ToggleProps {
-  onClick: React.MouseEventHandler;
+  onClick: BtnOnClick;
   child?: boolean;
   on: boolean;
   label: string;
+  dataId?: string;
 }
 
-class Toggle extends React.Component<ToggleProps> {
+export class Toggle extends React.Component<ToggleProps> {
+  static defaultProps = {
+    dataId: '',
+  };
+
   componentDidMount = () => {
     ReactTooltip.rebuild();
+  }
+
+  handleClick = () => {
+    this.props.onClick(this.props.dataId);
   }
 
   render = () => {
@@ -97,7 +169,7 @@ class Toggle extends React.Component<ToggleProps> {
         data-place="bottom"
         data-tip={p['data-tip']}>
         <Row className={p.child ? "prefs-row-child" : "prefs-row"}>
-          <div className="checkbox checkbox-switchery switchery-xs" onClick={p.onClick}>
+          <div className="checkbox checkbox-switchery switchery-xs" onClick={this.handleClick}>
             <label>
               <span className={`switchery switchery-default${p.on ? ' on' : ' off'}`}>
                 <small />
@@ -314,6 +386,7 @@ export interface PreferencesComponentState {
   newTabCustom?: string;
   newTabCustomValid?: boolean;
   commandsInfo: string;
+  restoreDefaultsConfirm: boolean;
 }
 
 class Preferences extends React.Component<PreferencesComponentProps, PreferencesComponentState> {
@@ -332,7 +405,8 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
       aboutAddonsOpen: false,
       newTabCustom: props.prefs.newTabCustom,
       newTabCustomValid: true,
-      commandsInfo: ''
+      commandsInfo: '',
+      restoreDefaultsConfirm: false,
     }
 
     if (state.chromeVersion === 1) {
@@ -379,6 +453,16 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
     this.setState({commandsInfo}, ReactTooltip.rebuild);
   }
 
+  handleRestoreDefaultPrefs = () => {
+    let {restoreDefaultsConfirm} = this.state;
+
+    if (restoreDefaultsConfirm) {
+      restoreDefaultPrefs();
+    }
+
+    this.setState({restoreDefaultsConfirm: !restoreDefaultsConfirm}, this.buildFooter);
+  }
+
   buildFooter = () => {
     getBytesInUse('favicons').then((bytes) => {
       this.setState({faviconsBytesInUse: bytes} as PreferencesComponentState);
@@ -394,6 +478,7 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
       if (bytes) this.setState({screenshotsBytesInUse: bytes} as PreferencesComponentState);
 
       let p = this.props;
+      let {restoreDefaultsConfirm} = this.state;
 
       if (p.options) {
         v('#options').remove();
@@ -403,11 +488,11 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
       p.modal.footer = (
         <div>
           <Btn
-            onClick={() => this.handleSlide(134, 'tabSizeHeight')}
+            onClick={this.handleRestoreDefaultPrefs}
             className="settingBtn"
             icon="reset"
             faStyle={{position: 'relative', top: '-2px'}}>
-            {utils.t('resetTileSize')}
+            {restoreDefaultsConfirm ? utils.t('restoreDefaultPrefsConfirm') : utils.t('restoreDefaultPrefs')}
           </Btn>
           {p.prefs.screenshot ?
             <Btn
@@ -465,18 +550,13 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
     }
   }
 
-  handleScreenshotPref = (opt) => {
-    chrome.permissions.request({
-      permissions: ['activeTab'],
-      origins: ['<all_urls>']
-    }, (granted) => {
-      if (!granted) return;
+  handleScreenshotPref = async (opt) => {
+    let granted = await requestPermission('activeTab');
 
-      setPermissions({screenshot: true} as PermissionsState);
-      this.handleClick(opt);
+    if (!granted) return;
 
-      setTimeout(chrome.runtime.reload, 500);
-    });
+    this.handleClick(opt);
+    this.buildFooter();
   }
 
   handleSlide = (e, opt) => {

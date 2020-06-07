@@ -172,7 +172,8 @@ class Root extends React.Component<RootProps, RootState> {
 
   init = (p) => {
     getWindowId().then(() => {
-      getSessions();
+      if (p.s.prefs.sessionsSync) getSessions();
+
       getTabs(true);
 
       if (p.s.prefs.screenshot) {

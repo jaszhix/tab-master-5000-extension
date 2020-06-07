@@ -103,7 +103,11 @@ class Tile extends React.Component<TileProps, TileState> {
   }
 
   updateScreenshot = () => {
-    if (!state.prefs.screenshot) return;
+    if (!state.prefs.screenshot) {
+      if (this.state.screenshot) this.setState({screenshot: null});
+
+      return;
+    }
 
     const {tab} = this.props;
     const refSS = findIndex(state.screenshots, ss => ss && ss.url === tab.url);

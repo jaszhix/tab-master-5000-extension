@@ -272,6 +272,9 @@
   "preferences": {
     "message": "Preferencias"
   },
+  "permissions": {
+    "message": "Permisos"
+  },
   "about": {
     "message": "Sobre"
   },
@@ -366,7 +369,7 @@
     "message": "Habilitar capturas de pantalla de pestañas"
   },
   "screenshotTip": {
-    "message": "Habilitar esta función agrega una captura de pantalla de una pestaña en el fondo de la ficha de la ficha una vez que se ha hecho clic en él. Cuando una captura de pantalla está activa, se almacena en Chrome hasta que la página vuelva a estar activa."
+    "message": "Al habilitar esta función, se agrega una captura de pantalla de una pestaña en el fondo de un mosaico de pestañas una vez que se hace clic en ella. Una vez que se activa una captura de pantalla, se almacena en Chrome hasta que la página vuelva a estar activa. Solo funciona en orígenes permitidos (ver Permisos)."
   },
   "screenshotDiskUsage": {
     "message": "Uso del disco de captura de pantalla"
@@ -432,10 +435,10 @@
     "message": "Restablece la búsqueda para que todos los elementos se muestren después de hacer clic en un resultado de búsqueda."
   },
   "sessionsSync": {
-    "message": "Habilitar la sincronización de sesión"
+    "message": "Habilitar administrador de sesión"
   },
   "sessionsSyncTip": {
-    "message": "Habilitar la sincronización de sesión le permite mantener una sesión guardada de forma persistente actualizada con la ventana actual de Chrome. La sincronización se produce con un intervalo máximo de quince segundos."
+    "message": "El administrador de sesión realiza un seguimiento y almacena las pestañas abiertas actualmente."
   },
   "actions": {
     "message": "Habilitar deshacer las acciones de pestaña"
@@ -461,8 +464,11 @@
   "sidebar": {
     "message": "Barra lateral"
   },
-  "resetTileSize": {
-    "message": "Restaurar tamaño de mosaico"
+  "restoreDefaultPrefs": {
+    "message": "Restaurar los valores predeterminados"
+  },
+  "restoreDefaultPrefsConfirm": {
+    "message": "Confirmar restablecimiento de configuración"
   },
   "clearFaviconCache": {
     "message": "Borrar caché de Favicon"
@@ -526,6 +532,9 @@
   },
   "removeWindow": {
     "message": "Eliminar ventana"
+  },
+  "removeOrigin": {
+    "message": "Eliminar origen"
   },
   "window": {
     "message": "Ventana"

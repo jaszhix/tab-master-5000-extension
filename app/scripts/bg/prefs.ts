@@ -1,156 +1,138 @@
 import {browser} from 'webextension-polyfill-ts';
 import type * as B from 'webextension-polyfill-ts'; // eslint-disable-line no-unused-vars
-import {merge, cloneDeep} from 'lodash';
+import {pick} from 'lodash';
 import {init} from '@jaszhix/state';
-import {each, tryFn} from '@jaszhix/utils';
+import {each} from '@jaszhix/utils';
 
-import {sendError} from './utils';
+import {sendError, sendLog} from './utils';
+
+let basePrefs: Partial<PreferencesState> = {
+  autoDiscard: false,
+  autoDiscardTime: 3600000,
+  tabSizeHeight: 134,
+  settingsMax: false,
+  drag: true,
+  context: true,
+  animations: true,
+  duplicate: true,
+  screenshot: false,
+  screenshotBg: false,
+  screenshotBgBlur: 5,
+  screenshotBgOpacity: 5,
+  blacklist: true,
+  sidebar: true,
+  sort: true,
+  showViewMode: true,
+  mode: 'tabs',
+  format: 'tile',
+  installTime: Date.now(),
+  actions: false,
+  trackMostUsed: false,
+  singleNewTab: false,
+  closeOnActivate: false,
+  keyboardShortcuts: true,
+  resolutionWarning: true,
+  syncedSession: true,
+  tooltip: true,
+  allTabs: false,
+  resetSearchOnClick: true,
+  tablePadding: 5,
+  errorTelemetry: false,
+  newTabMode: 'tm5k',
+  newTabCustom: '',
+};
+
+let baseThemePrefs: Partial<PreferencesState> = {
+  theme: 9001,
+  wallpaper: null,
+  alerts: true,
+  sessionsSync: false,
+};
 
 let prefsStore = <PreferencesStore>init({
   prefs: {},
   defaultPrefs: <PreferencesState>{
-    autoDiscard: false,
-    autoDiscardTime: 3600000,
-    tabSizeHeight: 134,
-    settingsMax: false,
-    drag: true,
-    context: true,
-    animations: true,
-    duplicate: true,
-    screenshot: false,
-    screenshotBg: false,
-    screenshotBgBlur: 5,
-    screenshotBgOpacity: 5,
-    blacklist: true,
-    sidebar: true,
-    sort: true,
-    showViewMode: true,
-    mode: 'tabs',
-    format: 'tile',
-    installTime: Date.now(),
-    actions: false,
-    sessionsSync: true,
-    trackMostUsed: false,
-    singleNewTab: false,
-    closeOnActivate: false,
-    keyboardShortcuts: true,
-    resolutionWarning: true,
-    syncedSession: true,
-    theme: 9001,
-    wallpaper: null,
-    tooltip: true,
-    alerts: true,
-    allTabs: false,
-    resetSearchOnClick: true,
-    tablePadding: 5,
-    errorTelemetry: false,
-    newTabMode: 'tm5k',
-    newTabCustom: '',
+    ...basePrefs,
+    ...baseThemePrefs,
   },
-  permissions: {
-    screenshot: false,
-    bookmarks: false,
-    history: false,
-    management: false,
-  },
+  permissions: [],
+  origins: [],
 
   init: async function() {
-    let prefs, themePrefs;
+    let prefs: Partial<PreferencesState>, themePrefs: Partial<PreferencesState>;
 
     try {
-      prefs = await browser.storage.sync.get('preferences');
-      themePrefs = await browser.storage.sync.get('themePrefs');
+      prefs = (await browser.storage.sync.get('preferences')).preferences;
+      themePrefs = (await browser.storage.sync.get('themePrefs')).themePrefs;
     } catch (e) {
       sendError(e);
     }
 
-    if (prefs && prefs.preferences && themePrefs && themePrefs.themePrefs) {
-      prefs = merge(prefs.preferences, themePrefs.themePrefs);
+    if (prefs && themePrefs) {
+      prefs = {...prefs, ...themePrefs};
+      sendLog('load prefs: ', prefs);
     } else {
-      prefsStore.prefs = prefsStore.defaultPrefs;
-      prefsStore.syncPermissions();
-      prefsStore.setPrefs(prefsStore.prefs);
-      console.log('init prefs: ', prefsStore.prefs);
+      prefs = {...prefsStore.defaultPrefs};
+      sendLog('init prefs: ', prefs);
     }
-
-    prefsStore.prefs = prefs;
 
     // Migrate
     each(prefsStore.defaultPrefs, function(pref, key) {
-      if (typeof prefsStore.prefs[key] === 'undefined') {
-        prefsStore.prefs[key] = prefsStore.defaultPrefs[key];
+      if (typeof prefs[key] === 'undefined') {
+        prefs[key] = prefsStore.defaultPrefs[key];
       }
     });
 
     prefsStore.syncPermissions();
-
-    console.log('load prefs: ', prefs, prefsStore.prefs);
-    prefsStore.set({prefs: prefsStore.prefs}, true);
+    prefsStore.checkPermissions(prefs);
+    prefsStore.set({prefs}, true);
   },
 
-  syncPermissions() {
+  async syncPermissions() {
     // With cloud syncing, the extension settings could be restored and the user might get
     // stuck in a view mode we haven't asked permission for yet. Resolve this by tracking
     // all permissions granted, and resetting prefs accordingly (handled in checkPermissions).
-    let permissions: PermissionsState;
-    let json = localStorage.getItem('tm5kPermissionsTracking');
+    let {permissions, origins} = await browser.permissions.getAll();
 
-    if (!json) {
-      localStorage.setItem('tm5kPermissionsTracking', JSON.stringify(prefsStore.permissions));
-    } else {
-      permissions = tryFn(
-        () => JSON.parse(json),
-        () => prefsStore.permissions
-      );
-
-      prefsStore.permissions = permissions;
-    }
+    prefsStore.permissions = permissions;
+    prefsStore.origins = origins;
   },
 
   checkPermissions(prefs: Partial<PreferencesState>) {
     const {permissions} = prefsStore;
 
-    if (!permissions.screenshot && prefs.screenshot) {
+    if (!permissions.includes('activeTab') && prefs.screenshot) {
       prefs.screenshot = false;
     }
 
-    if ((!permissions.bookmarks && prefs.mode === 'bookmarks')
-      || (!permissions.history && prefs.mode === 'history')
-      || (!permissions.management && (prefs.mode === 'apps' || prefs.mode === 'extensions'))) {
+    if ((!permissions.includes('bookmarks') && prefs.mode === 'bookmarks')
+      || (!permissions.includes('history') && prefs.mode === 'history')
+      || (!permissions.includes('management') && (prefs.mode === 'apps' || prefs.mode === 'extensions'))) {
       prefs.mode = 'tabs';
     }
   },
 
-  setPermissions(obj: Partial<PermissionsState>) {
-    merge(prefsStore.permissions, obj);
-    localStorage.setItem('tm5kPermissionsTracking', JSON.stringify(prefsStore.permissions));
-  },
-
   async setPrefs(obj: Partial<PreferencesState>) {
-    let parsedPrefs, themePrefs;
+    let {prefs} = prefsStore;
 
     prefsStore.checkPermissions(obj);
 
-    merge(prefsStore.prefs, obj);
+    Object.assign(prefs, obj);
 
-    prefsStore.set({prefs: prefsStore.prefs}, true);
-    themePrefs = {
-      wallpaper: prefsStore.prefs.wallpaper,
-      theme: prefsStore.prefs.theme,
-      alerts: prefsStore.prefs.alerts,
-      syncedSession: prefsStore.prefs.syncedSession
-    };
-    parsedPrefs = cloneDeep(prefsStore.prefs);
+    prefsStore.set({prefs}, true);
 
-    delete parsedPrefs.wallpaper;
-    delete parsedPrefs.theme;
-    delete parsedPrefs.alerts;
-    delete parsedPrefs.syncedSession;
+    await browser.storage.sync.set({
+      preferences: pick(prefs, Object.keys(basePrefs)),
+    });
+    await browser.storage.sync.set({
+      themePrefs: pick(prefs, Object.keys(baseThemePrefs))
+    });
 
-    await browser.storage.sync.set({preferences: parsedPrefs});
-    await browser.storage.sync.set({themePrefs: themePrefs});
+    sendLog('Preferences saved: ', prefsStore.prefs);
+  },
 
-    console.log('Preferences saved: ', prefsStore.prefs, themePrefs);
+  async restoreDefaultPrefs() {
+    await prefsStore.setPrefs({...basePrefs, ...baseThemePrefs})
   },
 
   getPrefs() {

@@ -5,7 +5,7 @@ import {filter, each} from '@jaszhix/utils';
 
 import {Context} from './bootstrap';
 import state from './stores/state';
-import {undoAction} from './stores/main';
+import {undoAction, requestPermission} from './stores/main';
 import * as utils from './stores/tileUtils';
 
 export interface ContextMenuProps {
@@ -256,7 +256,7 @@ class ContextMenu extends React.Component<ContextMenuProps, ContextMenuState> {
     }
   };
 
-  handleMenuOption = (opt, recursion = 0, hasBookmark = null, bookmark = null, selectedManipulation = false) => {
+  handleMenuOption = async (opt, recursion = 0, hasBookmark = null, bookmark = null, selectedManipulation = false) => {
     let {context} = this.props;
     // Create wrapper context for utils until component centric logic is revised.
     let isSelectedItems = Array.isArray(context.id);
@@ -305,21 +305,15 @@ class ContextMenu extends React.Component<ContextMenuProps, ContextMenuState> {
     } else if (opt === 'uninstallApp' || opt === 'createAppShortcut' || opt === 'launchApp' || opt === 'toggleEnable' || first(words(opt)) === 'OPEN') {
       utils.app(context.id, opt);
     } else if (opt === 'toggleBookmark') {
-      chrome.permissions.request(
-        {
-          permissions: ['bookmarks'],
-          origins: ['<all_urls>'],
-        },
-        (granted) => {
-          if (!granted) return;
+      let granted = await requestPermission('bookmarks');
 
-          if (hasBookmark) {
-            chrome.bookmarks.remove(bookmark[0].id, (bookmark) => console.log(bookmark));
-          } else {
-            chrome.bookmarks.create({title: context.id.title, url: context.id.url}, (bookmark) => console.log(bookmark));
-          }
+      if (granted) {
+        if (hasBookmark) {
+          chrome.bookmarks.remove(bookmark[0].id, (bookmark) => console.log(bookmark));
+        } else {
+          chrome.bookmarks.create({title: context.id.title, url: context.id.url}, (bookmark) => console.log(bookmark));
         }
-      );
+      }
     }
 
     this.handleClickOutside();

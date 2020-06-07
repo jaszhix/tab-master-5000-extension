@@ -571,6 +571,9 @@ class Bg {
         case 'setPrefs':
           await prefsStore.setPrefs(msg.obj);
           return {prefs: prefsStore.getPrefs()};
+        case 'restoreDefaultPrefs':
+          await prefsStore.restoreDefaultPrefs();
+          return {prefs: prefsStore.getPrefs()};
         case 'getWindowId':
           return sender.tab.windowId;
         case 'getTabs':
@@ -632,9 +635,14 @@ class Bg {
 
         case 'getActions':
           return {actions: this.state.actions, windowId: sender.tab.windowId};
-        case 'setPermissions':
-          prefsStore.setPermissions(msg.permissions);
+        case 'syncPermissions':
+          prefsStore.syncPermissions();
           break;
+        case 'getPermissions':
+          return {
+            permissions: prefsStore.permissions,
+            origins: prefsStore.origins,
+          };
       }
 
       return true;

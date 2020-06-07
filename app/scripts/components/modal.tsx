@@ -138,13 +138,15 @@ class ModalHandler extends React.Component<ModalHandlerProps> {
 
   render = () => {
     let p = this.props;
-    let maximized = p.prefs.settingsMax && p.settings !== 'theming';
     let tabOptions = [
       {label: utils.t('preferences'), key: 'preferences'},
-      {label: upperFirst(utils.t('sessions')), key: 'sessions'},
+      {label: utils.t('permissions'), key: 'permissions'},
+      p.prefs.sessionsSync ? {label: upperFirst(utils.t('sessions')), key: 'sessions'} : null,
       {label: utils.t('theming'), key: 'theming'},
       {label: utils.t('about'), key: 'about'}
     ];
+
+    let maximized = p.prefs.settingsMax && p.settings !== 'theming';
     let headerBgIsLight = tc(p.theme.headerBg).isLight();
     let overlayStyle = {
       display: 'block',
@@ -202,7 +204,7 @@ class ModalHandler extends React.Component<ModalHandlerProps> {
           footerStyle={{backgroundColor: p.theme.settingsBg, paddingTop: '8px'}}
           headerComponent={
             <Tabs
-              initActiveOption={findIndex(tabOptions, opt => p.settings.indexOf(opt.label.toLowerCase()) > -1)}
+              initActiveOption={findIndex(tabOptions, opt => opt && p.settings.indexOf(opt.label.toLowerCase()) > -1)}
               style={{position: 'relative', top: '16px'}}
               options={tabOptions}
               onClick={(setting)=>state.set({settings: setting.key})}

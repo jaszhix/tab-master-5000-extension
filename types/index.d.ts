@@ -1,4 +1,5 @@
 import type * as aphrodite from 'aphrodite'; // eslint-disable-line no-unused-vars
+import type * as B from 'webextension-polyfill-ts'; // eslint-disable-line no-unused-vars
 
 type Modify<T, R> = Omit<T, keyof R> & R;
 
@@ -244,16 +245,17 @@ declare global {
     bookmarks: boolean;
     history: boolean;
     management: boolean;
+    downloads: boolean;
   }
 
   interface PreferencesStore extends State.Data {
     prefs: PreferencesState;
     defaultPrefs: PreferencesState;
-    permissions: PermissionsState;
+    permissions: string[];
+    origins: string[];
     init: () => Promise<void>;
-    syncPermissions: () => void;
     checkPermissions: (prefs: Partial<PreferencesState>) => void
-    setPermissions: (obj: Partial<PermissionsState>) => void;
+    syncPermissions: () => void;
     setPrefs: (obj: Partial<PreferencesState>) => Promise<void>;
     getPrefs: () => PreferencesState;
   }
@@ -398,7 +400,8 @@ declare global {
 
   interface BgMessage {
     e: any;
-    type: 'startup' | 'appState' | 'prefs' | 'screenshot' | 'error';
+    args: any[];
+    type: 'startup' | 'appState' | 'prefs' | 'screenshot' | 'error' | 'log';
     action: boolean | 'newVersion' | 'installed' | 'versionUpdate';
     noPermissions: 'bookmarks' | 'history' | 'management';
     screenshots?: Screenshot[];
@@ -456,4 +459,6 @@ declare global {
     tmWorker?: Worker;
     v?: any;
   }
+
+  type BtnOnClick = (e?: React.MouseEvent | Element | string) => void | Promise<void> | State.Data;
 }

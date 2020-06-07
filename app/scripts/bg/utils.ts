@@ -22,6 +22,14 @@ export const sendMsg = async (msg: Partial<BgMessage>): Promise<any> => {
   return response;
 };
 
+export const sendLog = async (...args: any[]) => {
+  if (process.env.NODE_ENV === 'production') return;
+
+  console.log(...args);
+
+  await sendMsg({type: 'log', args});
+}
+
 export const sendError = async (err: Error) => {
   if (!err) return;
 
@@ -30,6 +38,8 @@ export const sendError = async (err: Error) => {
   }
 
   if (process.env.NODE_ENV === 'production') return;
+
+  console.error(err);
 
   await sendMsg({type: 'error', e: {
     message: err.message,

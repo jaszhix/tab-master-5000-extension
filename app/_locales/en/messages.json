@@ -274,6 +274,9 @@
   "preferences": {
     "message": "Preferences"
   },
+  "permissions": {
+    "message": "Permissions"
+  },
   "about": {
     "message": "About"
   },
@@ -368,7 +371,7 @@
     "message": "Enable tab screenshots"
   },
   "screenshotTip": {
-    "message": "Enabling this feature adds a screen shot of a tab in the tab tile's background once its been clicked. After a screenshot is active, it is stored in Chrome until the page is active again."
+    "message": "Enabling this feature adds a screen shot of a tab in a tab tile's background once its been clicked. After a screenshot is active, it is stored in Chrome until the page is active again. Only works on permitted origins (see Permissions)."
   },
   "screenshotDiskUsage": {
     "message": "Screenshot disk usage"
@@ -434,10 +437,10 @@
     "message": "Resets the search so all items are shown after a search result is clicked."
   },
   "sessionsSync": {
-    "message": "Enable session synchronization"
+    "message": "Enable session manager"
   },
   "sessionsSyncTip": {
-    "message": "Enabling session synchronization allows you to keep a saved session persistently up to date with the current Chrome window. Synchronization occurs at a max interval of fifteen seconds."
+    "message": "The session manager keeps track of, and stores currently open tabs."
   },
   "actions": {
     "message": "Enable undoing of tab actions"
@@ -463,8 +466,11 @@
   "sidebar": {
     "message": "Sidebar"
   },
-  "resetTileSize": {
-    "message": "Reset Tile Size"
+  "restoreDefaultPrefs": {
+    "message": "Restore Defaults"
+  },
+  "restoreDefaultPrefsConfirm": {
+    "message": "Confirm settings reset"
   },
   "clearFaviconCache": {
     "message": "Clear Favicon Cache"
@@ -528,6 +534,9 @@
   },
   "removeWindow": {
     "message": "Remove Window"
+  },
+  "removeOrigin": {
+    "message": "Remove Origin"
   },
   "window": {
     "message": "Window"

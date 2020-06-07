@@ -5,7 +5,7 @@ import ReactTooltip from 'react-tooltip';
 import {each, findIndex, filter, cloneDeep} from '@jaszhix/utils';
 
 import state from './state';
-import {setPrefs, setAlert} from './main';
+import {setPrefs, setAlert, syncPermissions} from './main';
 
 export const convertV1 = (sessions: any) => {
   for (let i = 0, len = sessions.length; i < len; i++) {
@@ -52,7 +52,7 @@ export const restore = (session) => {
   }
 };
 
-export const cleanSessions = (sessions: SessionState[], cb) => {
+export const cleanSessions = async (sessions: SessionState[]) => {
   each(sessions, (session, sKey) => {
     each(session.tabs, (Window, wKey) => {
       each(Window, (Tab, tKey) => {
@@ -62,23 +62,32 @@ export const cleanSessions = (sessions: SessionState[], cb) => {
       });
     });
   });
-  chrome.storage.local.set({sessions: sessions});
-  cb(sessions);
+
+  await browser.storage.local.set({sessions});
+
+  return sessions;
 };
 
-export const exportSessions = (_sessions) => {
-  // Stringify sessionData and export as JSON.
-  cleanSessions(_sessions, (sessions) => {
-    let json = JSON.stringify(sessions);
-    let filename = `TM5K-Sessions-${Date.now()}.json`;
-    let blob = new Blob([json], {type: 'application/json;charset=utf-8'});
+export const exportSessions = async (_sessions) => {
+  let granted = await browser.permissions.request({
+    permissions: ['downloads'],
+  });
 
-    chrome.downloads.download({
-      url: URL.createObjectURL(blob),
-      body: json,
-      filename,
-      saveAs: true
-    });
+  if (!granted) return;
+
+  syncPermissions();
+
+  // Stringify sessionData and export as JSON.
+  let sessions = await cleanSessions(_sessions);
+  let json = JSON.stringify(sessions);
+  let filename = `TM5K-Sessions-${Date.now()}.json`;
+  let blob = new Blob([json], {type: 'application/json;charset=utf-8'});
+
+  await browser.downloads.download({
+    url: URL.createObjectURL(blob),
+    body: json,
+    filename,
+    saveAs: true,
   });
 };
 
@@ -230,6 +239,7 @@ export const saveSession = async ({tabs, label}) => {
   each(tabs, (Window, wKey) => {
     each(Window, (tab, tKey) => {
       tab = tabs[wKey][tKey] = cloneDeep(tab);
+
       if (tab.favIconUrl != null && tab.favIconUrl && tab.favIconUrl.indexOf('data') > -1) {
         tab.favIconUrl = '';
       }

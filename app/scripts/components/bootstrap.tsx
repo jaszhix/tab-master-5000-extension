@@ -3,12 +3,12 @@ import PropTypes from 'prop-types';
 import {assignIn, cloneDeep} from 'lodash';
 import onClickOutside from 'react-onclickoutside';
 import ReactTooltip from 'react-tooltip';
-import {tryFn} from '@jaszhix/utils';
+import {map} from '@jaszhix/utils';
 
 interface BtnProps {
   onMouseEnter?: (e?: React.MouseEvent | Element) => void;
   onMouseLeave?: (e?: React.MouseEvent | Element) => void;
-  onClick?: (e?: React.MouseEvent | Element) => void;
+  onClick?: BtnOnClick;
   style?: React.CSSProperties;
   faStyle?: React.CSSProperties;
   className?: string;
@@ -403,7 +403,9 @@ export class Tabs extends React.Component<TabsProps, TabsState> {
     return (
       <div className="tabbable" style={p.style}>
         <ul className="nav nav-tabs nav-tabs-highlight nav-justified">
-          {p.options.map((option, i) => {
+          {map(p.options, (option, i) => {
+            if (!option) return null;
+
             let active = option.label.toLowerCase() === p.settings;
             let tabStyle: React.CSSProperties = {
               cursor: 'pointer',

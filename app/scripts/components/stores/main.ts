@@ -1,9 +1,12 @@
+import {browser} from 'webextension-polyfill-ts';
+import type * as B from 'webextension-polyfill-ts'; // eslint-disable-line no-unused-vars
 import _ from 'lodash';
 import v from 'vquery';
 import mouseTrap from 'mousetrap';
 import {find, tryFn, each, filter} from '@jaszhix/utils';
 
 import {saveSession} from './sessions';
+import {themeStore} from './theme';
 import state from './state';
 
 const DOMAIN_REGEX = /^(?!:\/\/)([a-zA-Z0-9]+\.)?[a-zA-Z0-9][a-zA-Z0-9-]+\.[a-zA-Z]{2,6}?$/i;
@@ -57,14 +60,37 @@ export const getChromeVersion = (): number => {
   return version;
 };
 
-export const setPrefs = (obj: Partial<PreferencesState>) => {
+export const setPrefs = async (obj: Partial<PreferencesState>) => {
   state.set({prefs: obj}, true);
-  chrome.runtime.sendMessage(chrome.runtime.id, {method: 'setPrefs', obj: obj}, (response) => {
-    if (response && response.prefs) {
-      console.log('setPrefs: ', obj);
+
+  let response = await browser.runtime.sendMessage(chrome.runtime.id, {method: 'setPrefs', obj: obj});
+
+  if (response && response.prefs) {
+    console.log('setPrefs: ', obj);
+
+    if (obj.screenshot) {
+      state.set({screenshots: await getScreenshots()});
+    } else {
+      state.set({screenshots: []});
     }
-  });
+
+    if (obj.sessionsSync) {
+      getSessions();
+    } else {
+      state.set({
+        sessions: [],
+        sessionTabs: [],
+      })
+    }
+  }
 };
+
+export const restoreDefaultPrefs = async () => {
+  let {prefs} = await browser.runtime.sendMessage(chrome.runtime.id, {method: 'restoreDefaultPrefs'});
+
+  state.set({prefs}, true);
+  themeStore.selectTheme(prefs.theme);
+}
 
 export const queryExtensions = () => {
   chrome.runtime.sendMessage(chrome.runtime.id, {method: 'queryExtensions'});
@@ -97,6 +123,10 @@ const handleMessage = function(s, msg, sender, sendResponse) {
         console.error('BG:', msg.e.message, error);
         return;
       }
+
+      case 'log':
+        console.log('BG:', ...msg.args);
+        return;
     }
   }
 
@@ -208,9 +238,26 @@ export const getActions = (): Promise<ActionRecord[]> => {
   });
 };
 
-export const setPermissions = (permissions: PermissionsState) => {
-  chrome.runtime.sendMessage(chrome.runtime.id, {method: 'setPermissions', permissions});
+export const syncPermissions = async () => {
+  await browser.runtime.sendMessage(chrome.runtime.id, {method: 'syncPermissions'});
 };
+
+export const getPermissions = async (): Promise<B.Permissions.AnyPermissions> => {
+  return await browser.runtime.sendMessage(chrome.runtime.id, {method: 'getPermissions'});
+}
+
+export const requestPermission = async (permission: B.Manifest.OptionalPermission): Promise<boolean> => {
+  let {origins} = await getPermissions();
+
+  let granted = await browser.permissions.request({
+    permissions: [permission],
+    origins
+  });
+
+  await syncPermissions();
+
+  return granted;
+}
 
 export const removeSingleWindow = (windowId: number) => {
   chrome.runtime.sendMessage(chrome.runtime.id, {method: 'removeSingleWindow', windowId});
@@ -233,7 +280,7 @@ export const init = () => {
 
 init();
 
-export const handleMode = (mode: ViewMode, stateUpdate: Partial<GlobalState> = {}, init = false, userGesture = false) => {
+export const handleMode = async (mode: ViewMode, stateUpdate: Partial<GlobalState> = {}, init = false, userGesture = false) => {
   if (!mode) mode = state.prefs.mode || 'tabs';
 
   switch (mode) {
@@ -244,17 +291,9 @@ export const handleMode = (mode: ViewMode, stateUpdate: Partial<GlobalState> = {
       // a new tab page if one was already open, to restore it. For now TM5K tracks permissions
       // granted manually, and resets prefs based on those values any time prefs are updated.
       if (userGesture) {
-        chrome.permissions.request({
-          permissions: ['bookmarks'],
-          origins: ['<all_urls>']
-        }, (granted) => {
-          if (!granted) return;
+        let granted = await requestPermission('bookmarks');
 
-          setPermissions(<PermissionsState>{bookmarks: true});
-          queryBookmarks(init);
-          setMode(mode, stateUpdate);
-        });
-        return;
+        if (!granted) return;
       }
 
       queryBookmarks(init);
@@ -262,17 +301,9 @@ export const handleMode = (mode: ViewMode, stateUpdate: Partial<GlobalState> = {
       return;
     case 'history':
       if (userGesture) {
-        chrome.permissions.request({
-          permissions: ['history'],
-          origins: ['<all_urls>']
-        }, (granted) => {
-          if (!granted) return;
+        let granted = await requestPermission('history');
 
-          setPermissions(<PermissionsState>{history: true});
-          queryHistory(init);
-          setMode(mode, stateUpdate);
-        });
-        return;
+        if (!granted) return;
       }
 
       queryHistory(init);
@@ -281,17 +312,9 @@ export const handleMode = (mode: ViewMode, stateUpdate: Partial<GlobalState> = {
     case 'apps':
     case 'extensions':
       if (userGesture) {
-        chrome.permissions.request({
-          permissions: ['management'],
-          origins: ['<all_urls>']
-        }, (granted) => {
-          if (!granted) return;
+        let granted = await requestPermission('management');
 
-          setPermissions(<PermissionsState>{management: true});
-          queryExtensions();
-          setMode(mode, stateUpdate);
-        });
-        return;
+        if (!granted) return;
       }
 
       queryExtensions();
@@ -319,22 +342,28 @@ export const setKeyBindings = (s: GlobalState) => {
   });
   mouseTrap.bind('ctrl+alt+s', (e) => {
     e.preventDefault();
-    state.set({settings: 'sessions', modal: {state: this.state('ctrl+shift+s'), type: 'settings'}});
+
+    if (!s.prefs.sessionsSync) return;
+
+    state.set({settings: 'sessions', modal: {state: true, type: 'settings'}});
   });
   mouseTrap.bind('ctrl+alt+p', (e) => {
     e.preventDefault();
-    state.set({settings: 'preferences', modal: {state: this.state('ctrl+shift+p'), type: 'settings'}});
+    state.set({settings: 'preferences', modal: {state: true, type: 'settings'}});
   });
   mouseTrap.bind('ctrl+alt+t', (e) => {
     e.preventDefault();
-    state.set({settings: 'theming', modal: {state: this.state('ctrl+shift+tab'), type: 'settings'}});
+    state.set({settings: 'theming', modal: {state: true, type: 'settings'}});
   });
   mouseTrap.bind('ctrl+alt+a', (e) => {
     e.preventDefault();
-    state.set({settings: 'about', modal: {state: this.state('ctrl+shift+a'), type: 'settings'}});
+    state.set({settings: 'about', modal: {state: true, type: 'settings'}});
   });
   mouseTrap.bind('ctrl+shift+s', (e) => {
     e.preventDefault();
+
+    if (!s.prefs.sessionsSync) return;
+
     saveSession({tabs: s.allTabs, label: ''});
   });
   mouseTrap.bind('ctrl+shift+space', (e) => {
@@ -355,6 +384,9 @@ export const setKeyBindings = (s: GlobalState) => {
   });
   mouseTrap.bind('alt+s', (e) => {
     e.preventDefault();
+
+    if (!s.prefs.sessionsSync || !s.sessionTabs.length) return;
+
     handleMode('sessions');
   });
   mouseTrap.bind('alt+a', (e) => {
