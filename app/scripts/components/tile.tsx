@@ -53,6 +53,7 @@ export interface TileState {
 class Tile extends React.Component<TileProps, TileState> {
   connectId: number;
   panelRef: HTMLElement;
+  shouldUpdate: boolean;
 
   constructor(props) {
     super(props);
@@ -73,12 +74,16 @@ class Tile extends React.Component<TileProps, TileState> {
       tab: this.props.tab,
       i: this.props.i
     }
+
+    this.shouldUpdate = false;
+
     this.connectId = state.connect({
       duplicateTabs: this.handleDuplicates,
       screenshots: this.updateScreenshot,
       screenshotClear: () => {
         this.setState({screenshot: null}, () => state.set({screenshotClear: false}));
-      }
+      },
+      theme: () => this.shouldUpdate = true,
     });
   }
 
@@ -88,7 +93,13 @@ class Tile extends React.Component<TileProps, TileState> {
   }
 
   shouldComponentUpdate = (nP, nS) => {
-    return (!isEqual(this.props, nP) || !isEqual(this.state, nS) || state.screenshotClear) && state.settings !== 'sessions';
+    if (this.shouldUpdate) {
+      this.shouldUpdate = false;
+      return true;
+    }
+
+    return (!isEqual(this.props, nP) || !isEqual(this.state, nS) || state.screenshotClear)
+      && state.settings !== 'sessions';
   }
 
   componentWillUnmount = () => {
