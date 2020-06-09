@@ -38,7 +38,7 @@ export const getBlackList = function(cb: (blacklist: string[] | string) => void)
   }, () => cb([]));
 };
 
-export const getBytesInUse = function(item) {
+export const getBytesInUse = function(item): Promise<number> {
   let chromeVersion = state.get('chromeVersion');
 
   return new Promise((resolve) => {
@@ -65,23 +65,25 @@ export const setPrefs = async (obj: Partial<PreferencesState>) => {
 
   let response = await browser.runtime.sendMessage(chrome.runtime.id, {method: 'setPrefs', obj: obj});
 
-  if (response && response.prefs) {
-    console.log('setPrefs: ', obj);
+  if (!response?.prefs) return;
 
+  console.log('setPrefs: ', obj);
+
+  if ('screenshot' in obj) {
     if (obj.screenshot) {
       state.set({screenshots: await getScreenshots()});
     } else {
       state.set({screenshots: []});
     }
+  }
 
-    if (obj.sessionsSync) {
-      getSessions();
-    } else {
-      state.set({
-        sessions: [],
-        sessionTabs: [],
-      })
-    }
+  if (obj.sessionsSync) {
+    getSessions();
+  } else {
+    state.set({
+      sessions: [],
+      sessionTabs: [],
+    })
   }
 };
 
@@ -246,13 +248,21 @@ export const getPermissions = async (): Promise<B.Permissions.AnyPermissions> =>
   return await browser.runtime.sendMessage(chrome.runtime.id, {method: 'getPermissions'});
 }
 
-export const requestPermission = async (permission: B.Manifest.OptionalPermission): Promise<boolean> => {
+export const requestPermission = async (permission?: B.Manifest.OptionalPermission, origin = ''): Promise<boolean> => {
   let {origins} = await getPermissions();
+  let config: B.Permissions.Permissions = {
+    origins,
+  };
 
-  let granted = await browser.permissions.request({
-    permissions: [permission],
-    origins
-  });
+  if (origin && !origins.includes(origin)) {
+    origins.push(origin);
+  }
+
+  if (permission) {
+    config.permissions = [permission];
+  }
+
+  let granted = await browser.permissions.request(config);
 
   await syncPermissions();
 
@@ -399,8 +409,38 @@ export const setKeyBindings = (s: GlobalState) => {
   });
 };
 
-export const setFavicon = (tab: ChromeTab) => {
-  let s: GlobalState = state.get('*');
+export const getFaviconData = (favIconUrl) => {
+  return new Promise((resolve, reject) => {
+    let sourceImage = new Image();
+
+    sourceImage.crossOrigin = 'anonymous';
+
+    sourceImage.onerror = (e) => {
+      reject(e);
+    };
+
+    sourceImage.onload = () => {
+      let imgWidth = sourceImage.width;
+      let imgHeight = sourceImage.height;
+      let canvas = document.createElement('canvas');
+      let img;
+
+      canvas.width = imgWidth;
+      canvas.height = imgHeight;
+      canvas.getContext('2d').drawImage(sourceImage, 0, 0, imgWidth, imgHeight);
+
+      img = canvas.toDataURL('image/png');
+
+      resolve(img)
+    };
+
+    sourceImage.src = favIconUrl;
+  })
+}
+
+export const setFavicon = async (tab: ChromeTab) => {
+  let {favicons} = state;
+  let img;
 
   if (tab.url.indexOf('chrome://') !== -1) {
     return;
@@ -409,43 +449,30 @@ export const setFavicon = (tab: ChromeTab) => {
   let urlParts = tab.url.split('/')
   let domain = `${urlParts[2]}/${urlParts[3]}`;
 
-  if (tab && tab.favIconUrl && !find(s.favicons, fv => fv && fv.domain === domain)) {
-    let saveFavicon = (__img) => {
-      s.favicons.push({
-        favIconUrl: __img,
-        domain
-      });
-      s.favicons = _.uniqBy(s.favicons, 'domain');
-      chrome.storage.local.set({favicons: s.favicons}, () => {
-        console.log('favicons saved');
-        state.set({favicons: s.favicons}, true);
-      });
-    };
-    let sourceImage = new Image();
-
-    sourceImage.onerror = (e) => {
-      console.log(e);
-    };
-
-    sourceImage.onload = () => {
-      let imgWidth = sourceImage.width;
-      let imgHeight = sourceImage.height;
-      let canvas = document.createElement('canvas');
-
-      canvas.width = imgWidth;
-      canvas.height = imgHeight;
-      canvas.getContext('2d').drawImage(sourceImage, 0, 0, imgWidth, imgHeight);
-      let img = null;
-
-      // Catch rare 'Tainted canvases may not be exported' error message.
-      tryFn(() => {
-        img = canvas.toDataURL('image/png');
-        saveFavicon(img);
-      });
-    };
-
-    sourceImage.src = tab.favIconUrl;
+  if (!tab || !tab.favIconUrl || find(favicons, (fv) => fv && fv.domain === domain)) {
+    return;
   }
+
+  try {
+    img = await getFaviconData(tab.favIconUrl);
+  } catch (e) {
+    console.log(e);
+  }
+
+  if (!img) return;
+
+  favicons.push({
+    favIconUrl: img,
+    domain,
+  });
+
+  favicons = _.uniqBy(favicons, 'domain');
+
+  await browser.storage.local.set({favicons});
+
+  console.log('favicons saved');
+
+  state.set({favicons}, true);
 }
 
 export const setAlert = function(alert: Partial<AlertState>) {

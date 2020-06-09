@@ -380,8 +380,6 @@ export interface PreferencesComponentProps {
 }
 
 export interface PreferencesComponentState {
-  faviconsBytesInUse?: number;
-  screenshotsBytesInUse?: number;
   aboutAddonsOpen?: boolean;
   newTabCustom?: string;
   newTabCustomValid?: boolean;
@@ -400,8 +398,6 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
     super(props);
 
     this.state = {
-      faviconsBytesInUse: 0,
-      screenshotsBytesInUse: 0,
       aboutAddonsOpen: false,
       newTabCustom: props.prefs.newTabCustom,
       newTabCustomValid: true,
@@ -463,60 +459,53 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
     this.setState({restoreDefaultsConfirm: !restoreDefaultsConfirm}, this.buildFooter);
   }
 
-  buildFooter = () => {
-    getBytesInUse('favicons').then((bytes) => {
-      this.setState({faviconsBytesInUse: bytes} as PreferencesComponentState);
+  buildFooter = async () => {
+    let {prefs, options, modal} = this.props;
+    let {restoreDefaultsConfirm} = this.state;
+    let faviconsBytesInUse = 0, screenshotsBytesInUse = 0;
 
-      if (this.props.prefs.screenshot) {
-        return getBytesInUse('screenshots');
-      }
+    if (prefs.screenshot) screenshotsBytesInUse = await getBytesInUse('screenshots');
 
-      return Promise.resolve(0);
-    }).then((bytes) => {
-      console.log({bytes})
+    if (prefs.faviconCaching) faviconsBytesInUse = await getBytesInUse('favicons');
 
-      if (bytes) this.setState({screenshotsBytesInUse: bytes} as PreferencesComponentState);
+    if (options) {
+      v('#options').remove();
+      return;
+    }
 
-      let p = this.props;
-      let {restoreDefaultsConfirm} = this.state;
-
-      if (p.options) {
-        v('#options').remove();
-        return;
-      }
-
-      p.modal.footer = (
-        <div>
+    modal.footer = (
+      <div>
+        <Btn
+          onClick={this.handleRestoreDefaultPrefs}
+          className="settingBtn"
+          icon="reset"
+          faStyle={{position: 'relative', top: '-2px'}}>
+          {restoreDefaultsConfirm ? utils.t('restoreDefaultPrefsConfirm') : utils.t('restoreDefaultPrefs')}
+        </Btn>
+        {prefs.screenshot ?
           <Btn
-            onClick={this.handleRestoreDefaultPrefs}
+            onClick={this.handleScreenshotClear}
             className="settingBtn"
-            icon="reset"
-            faStyle={{position: 'relative', top: '-2px'}}>
-            {restoreDefaultsConfirm ? utils.t('restoreDefaultPrefsConfirm') : utils.t('restoreDefaultPrefs')}
-          </Btn>
-          {p.prefs.screenshot ?
-            <Btn
-              onClick={this.handleScreenshotClear}
-              className="settingBtn"
-              icon="trash"
-              faStyle={{paddingRight: '8px'}}>
-              {utils.t('clearScreenshotCache')}
-            </Btn> : null}
+            icon="trash"
+            faStyle={{paddingRight: '8px'}}>
+            {utils.t('clearScreenshotCache')}
+          </Btn> : null}
+        {prefs.faviconCaching ?
           <Btn
             onClick={this.handleFaviconClear}
             className="settingBtn"
             icon="trash"
             faStyle={{paddingRight: '8px'}}>
             {utils.t('clearFaviconCache')}
-          </Btn>
-          <div className="disk-usage-container">
-            <div>{this.state.faviconsBytesInUse ? `${utils.t('faviconsDiskUsage')}: ${utils.formatBytes(this.state.faviconsBytesInUse, 2)}` : null}</div>
-            <div>{this.state.screenshotsBytesInUse ? `${utils.t('screenshotDiskUsage')}: ${utils.formatBytes(this.state.screenshotsBytesInUse, 2)}` : null}</div>
-          </div>
+          </Btn> : null}
+        <div className="disk-usage-container">
+          <div>{faviconsBytesInUse ? `${utils.t('faviconsDiskUsage')}: ${utils.formatBytes(faviconsBytesInUse, 2)}` : null}</div>
+          <div>{screenshotsBytesInUse ? `${utils.t('screenshotDiskUsage')}: ${utils.formatBytes(screenshotsBytesInUse, 2)}` : null}</div>
         </div>
-      );
-      state.set({modal: p.modal}, true);
-    }).catch((e) => console.log(e));
+      </div>
+    );
+
+    state.set({modal}, true);
   }
 
   checkAddonTab = (partial?) => {
@@ -551,11 +540,20 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
   }
 
   handleScreenshotPref = async (opt) => {
-    let granted = await requestPermission('activeTab');
+    let granted = await requestPermission('activeTab', '<all_urls>');
 
     if (!granted) return;
 
     this.handleClick(opt);
+    this.buildFooter();
+  }
+
+  handleFaviconCachingChange = async (opt) => {
+    let granted = await requestPermission(undefined, '<all_urls>');
+
+    if (!granted) return;
+
+    this.handleClick('faviconCaching');
     this.buildFooter();
   }
 
@@ -574,15 +572,17 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
     setPrefs({autoDiscardTime: output * 3600000});
   }
 
-  handleScreenshotClear = () => {
-    chrome.storage.local.remove('screenshots', () => {
-      this.buildFooter();
-      state.set({screenshotClear: true, screenshots: []});
-    });
+  handleScreenshotClear = async () => {
+    await browser.storage.local.remove('screenshots');
+
+    this.buildFooter();
+
+    state.set({screenshotClear: true, screenshots: []});
   }
 
-  handleFaviconClear = () => {
-    chrome.storage.local.remove('favicons');
+  handleFaviconClear = async () => {
+    await browser.storage.local.remove('favicons');
+
     this.buildFooter();
   }
 
@@ -808,16 +808,22 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
                 />
               </div>  : null}
             <Toggle
-              onClick={() => this.handleClick('resetSearchOnClick')}
-              on={p.prefs.resetSearchOnClick}
-              label={utils.t('resetSearchOnClick')}
-              data-tip={utils.t('resetSearchOnClickTip')}
-            />
-            <Toggle
               onClick={() => this.handleClick('sessionsSync')}
               on={p.prefs.sessionsSync}
               label={utils.t('sessionsSync')}
               data-tip={utils.t('sessionsSyncTip')}
+            />
+            <Toggle
+              onClick={this.handleFaviconCachingChange}
+              on={p.prefs.faviconCaching}
+              label={utils.t('faviconCaching')}
+              data-tip={utils.t('faviconCachingTip')}
+            />
+            <Toggle
+              onClick={() => this.handleClick('resetSearchOnClick')}
+              on={p.prefs.resetSearchOnClick}
+              label={utils.t('resetSearchOnClick')}
+              data-tip={utils.t('resetSearchOnClickTip')}
             />
             <Toggle
               onClick={() => this.handleClick('actions')}

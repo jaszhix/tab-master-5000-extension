@@ -41,20 +41,15 @@ let ModalHandler = AsyncComponent({
 
 window.tmWorker = new tmWorker();
 
-window.tmWorker.onmessage = (e) => {
+window.tmWorker.onmessage = async (e) => {
   console.log('WORKER: ', e.data);
 
-  if (e.data.favicons) {
-    chrome.storage.local.set({favicons: e.data.favicons}, () => {
-      console.log('favicons saved');
-      state.set({favicons: e.data.favicons});
-    });
-  } else if (e.data.setPrefs) {
+  if (e.data.setPrefs) {
     setPrefs(e.data.setPrefs);
   } else if (e.data.msg === 'handleMode') {
     handleMode(e.data.mode, e.data.stateUpdate, e.data.init);
-  } else if (e.data.msg === 'setFavicon') {
-    setFavicon(e.data.args[0]);
+  } else if (e.data.msg === 'setFavicon' && state.prefs.faviconCaching) {
+    await setFavicon(e.data.args[0]);
   } else if (e.data.stateUpdate) {
     let init = state.get('init');
 

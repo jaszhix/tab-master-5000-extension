@@ -19,6 +19,7 @@ let basePrefs: Partial<PreferencesState> = {
   screenshotBg: false,
   screenshotBgBlur: 5,
   screenshotBgOpacity: 5,
+  faviconCaching: false,
   blacklist: true,
   sidebar: true,
   sort: true,

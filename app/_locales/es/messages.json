@@ -440,6 +440,12 @@
   "sessionsSyncTip": {
     "message": "El administrador de sesión realiza un seguimiento y almacena las pestañas abiertas actualmente."
   },
+  "faviconCaching": {
+    "message": "Habilitar el almacenamiento en caché de favicon"
+  },
+  "faviconCachingTip": {
+    "message": "Cuando está habilitado, TM5K almacena favicons en el disco para limitar las descargas de imágenes y garantizar que los favicons se muestren cuando no hay conectividad a Internet."
+  },
   "actions": {
     "message": "Habilitar deshacer las acciones de pestaña"
   },

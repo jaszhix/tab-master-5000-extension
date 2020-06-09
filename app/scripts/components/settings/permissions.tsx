@@ -102,7 +102,10 @@ class Permissions extends React.Component<PermissionsProps, PermissionsState> {
           origins.splice(origins.indexOf(origin), 1);
           await browser.permissions.request({origins});
 
-          setPrefs({screenshot: false});
+          setPrefs({
+            screenshot: false,
+            faviconCaching: false,
+          });
         }
       }
     } catch (e) {

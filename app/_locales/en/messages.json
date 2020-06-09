@@ -442,6 +442,12 @@
   "sessionsSyncTip": {
     "message": "The session manager keeps track of, and stores currently open tabs."
   },
+  "faviconCaching": {
+    "message": "Enable favicon caching"
+  },
+  "faviconCachingTip": {
+    "message": "When enabled, TM5K stores favicons to disk to limit image downloads, and to ensure favicons display when there is no internet connectivity."
+  },
   "actions": {
     "message": "Enable undoing of tab actions"
   },
