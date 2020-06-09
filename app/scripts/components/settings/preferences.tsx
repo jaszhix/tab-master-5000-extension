@@ -17,7 +17,7 @@ import {Btn, Col, Row} from '../bootstrap';
 
 const styles = StyleSheet.create({
   sliderLabel: {marginBottom: '4px'},
-  sliderContainer: {minHeight: '36px', padding: '12px'},
+  sliderContainer: {minHeight: '36px', padding: '12px 12px 6px 12px'},
   blacklistColumn: {marginTop: '3px'},
   blacklistSaveButton: {position: 'absolute', top: '-2.5em', right: 0},
   blacklistFormatErrors: {width: '350px', color: 'A94442'},

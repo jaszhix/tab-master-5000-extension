@@ -912,9 +912,19 @@ const themeStore = <ThemeStore>init({
 
 themeStore.setMergeKeys(['theme']);
 
-const onThemeChange = (e) => {
+interface ThemeChangeParams {
+  theme: Theme;
+  savedThemes: ThemeState[];
+  currentWallpaper: Wallpaper;
+  hoverWallpaper: Wallpaper;
+  wallpapers: Wallpaper[];
+}
+
+const onThemeChange = (e: ThemeChangeParams) => {
+  let {theme, savedThemes, currentWallpaper, hoverWallpaper, wallpapers} = e;
+
   if (state.isOptions && state.chromeVersion === 1) {
-    Object.assign(e.theme, {
+    Object.assign(theme, {
       bodyBg: 'rgba(250, 250, 250, 1)',
       bodyText: 'rgba(34, 36, 38, 1)',
       settingsBg: 'rgba(250, 250, 250, 1)',
@@ -934,45 +944,48 @@ const onThemeChange = (e) => {
 
   const {prefs, chromeVersion} = state;
   let stateUpdate: Partial<GlobalState> = {};
-  let currentWallpaper = e.currentWallpaper || e.hoverWallpaper || state.currentWallpaper;
   let style = v('#theme-style-el').n;
   let innerHTML = '';
 
-  if (e.savedThemes) {
-    stateUpdate.savedThemes = e.savedThemes;
+  currentWallpaper = currentWallpaper || hoverWallpaper || state.currentWallpaper;
+
+  if (savedThemes) {
+    stateUpdate.savedThemes = savedThemes;
   }
 
   if (!style) return;
 
-  if (e.theme) {
-    let sessionFieldColor = themeStore.balance(e.theme.settingsBg);
+  if (theme) {
+    let sessionFieldColor = themeStore.balance(theme.settingsBg);
     let vendor = chromeVersion > 1 ? 'webkit' : 'moz';
     let inputPlaceholder = chromeVersion > 1 ? `${vendor}-input` : vendor;
 
-    let darkBtnBgOpaque = themeStore.opacify(e.theme.darkBtnBg, 1);
-    let lightBtnBg85 = themeStore.opacify(e.theme.lightBtnBg, 0.85);
-    let settingsItemHoverLight10 = tc(e.theme.settingsItemHover).lighten(10);
-    let scrollbarHoverColor = tc(e.theme.settingsItemHover).darken(2);
-    let bodyColor90 = themeStore.opacify(e.theme.bodyText, 0.9);
-    let headerBg86 = themeStore.opacify(e.theme.headerBg, 0.86);
+    let darkBtnBgOpaque = themeStore.opacify(theme.darkBtnBg, 1);
+    let lightBtnBg85 = themeStore.opacify(theme.lightBtnBg, 0.85);
+    let darkBtnBg75 = themeStore.opacify(theme.darkBtnBg, 0.55);
+    let bodyColor90 = themeStore.opacify(theme.bodyText, 0.9);
+    let bodyColor50 = themeStore.opacify(theme.bodyText, 0.5);
+    let settingsItemHoverLight10 = tc(theme.settingsItemHover).lighten(10);
+    let scrollbarHoverColor = tc(theme.settingsItemHover).darken(2);
+    let headerBg86 = themeStore.opacify(theme.headerBg, 0.86);
     let settingsTextFieldsBg, settingsTextFieldsBg86;
 
-    if (tc(e.theme.settingsBg).isDark()) {
-      settingsTextFieldsBg = e.theme.bodyText;
-      settingsTextFieldsBg86 = themeStore.opacify(e.theme.bodyText, 0.86);
+    if (tc(theme.settingsBg).isDark()) {
+      settingsTextFieldsBg = theme.bodyText;
+      settingsTextFieldsBg86 = themeStore.opacify(theme.bodyText, 0.86);
     } else {
-      settingsTextFieldsBg = e.theme.headerBg
+      settingsTextFieldsBg = theme.headerBg
       settingsTextFieldsBg86 = headerBg86;
     }
 
     innerHTML = `
     ::-webkit-scrollbar-track {
       -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.4);
-      background-color: ${e.theme.settingsBg};
+      background-color: ${theme.settingsBg};
     }
     ::-webkit-scrollbar {
       width: 10px;
-      background-color: ${e.theme.settingsItemHover};
+      background-color: ${theme.settingsItemHover};
     }
     ::-webkit-scrollbar:hover {
       width: 10px;
@@ -980,36 +993,36 @@ const onThemeChange = (e) => {
     }
     ::-webkit-scrollbar-thumb {
       background-color: ${settingsItemHoverLight10};
-      border: 1px solid ${e.theme.settingsItemHover};
+      border: 1px solid ${theme.settingsItemHover};
     }
     ::-webkit-scrollbar-thumb:hover {
       background-color: ${scrollbarHoverColor};
       border: 1px solid ${scrollbarHoverColor};
     }
     * {
-      scrollbar-color: ${settingsItemHoverLight10} ${e.theme.settingsBg};
+      scrollbar-color: ${settingsItemHoverLight10} ${theme.settingsBg};
       scrollbar-width: 10px;
     }
     a, a:focus, a:hover {
       color: ${bodyColor90};
     }
     .form-control:not(.settings)::-${inputPlaceholder}-placeholder {
-      color: ${e.theme.textFieldsPlaceholder};
+      color: ${theme.textFieldsPlaceholder};
     }
     .form-control:not(.settings) {
-      color: ${e.theme.textFieldsText};
-      border-bottom-color: ${e.theme.textFieldsBorder};
-      box-shadow: 0 1px 0 ${e.theme.textFieldsBorder};
+      color: ${bodyColor90};
+      border-bottom-color: ${theme.textFieldsBorder};
+      box-shadow: 0 1px 0 ${theme.textFieldsBorder};
     }
     .form-control:not(.settings):focus {
-      border-bottom-color: ${e.theme.textFieldsBg};
-      box-shadow: 0 1px 0 ${e.theme.textFieldsBg};
+      border-bottom-color: ${theme.textFieldsBg};
+      box-shadow: 0 1px 0 ${theme.textFieldsBg};
     }
     .form-control.settings::-${inputPlaceholder}-placeholder {
       color: ${bodyColor90};
     }
     .form-control.settings {
-      color: ${e.theme.bodyText};
+      color: ${theme.bodyText};
       border-bottom-color: ${settingsTextFieldsBg86};
       box-shadow: 0 1px 0 ${settingsTextFieldsBg86};
     }
@@ -1021,202 +1034,207 @@ const onThemeChange = (e) => {
       color: ${sessionFieldColor};
     }
     .nav-tabs>li {
-      background-color: ${e.theme.lightBtnBg};
+      background-color: ${theme.lightBtnBg};
     }
     .nav-tabs>li.active {
-      background-color: ${e.theme.settingsBg};
+      background-color: ${theme.settingsBg};
     }
     .nav-tabs>li>a, .nav-tabs>li>a:hover, .nav-tabs>li>a:focus {
-      color: ${e.theme.lightBtnText};
+      color: ${theme.lightBtnText};
     }
     .nav-tabs>li.active>a, .nav-tabs>li.active>a:focus {
-      color: ${tc.isReadable(tc(e.theme.darkBtnText).toHexString(), tc(e.theme.settingsBg).toHexString(), {}) ? e.theme.darkBtnText : e.theme.lightBtnText};
-      background-color: ${e.theme.settingsBg};
+      color: ${tc.isReadable(tc(theme.darkBtnText).toHexString(), tc(theme.settingsBg).toHexString(), {}) ? theme.darkBtnText : theme.lightBtnText};
+      background-color: ${theme.settingsBg};
     }
     .nav-tabs>li.active>a:hover {
-      color: ${e.theme.darkBtnText};
-      background-color: ${e.theme.darkBtnBgHover};
-      border: 1px solid ${e.theme.textFieldsBorder};
+      color: ${theme.darkBtnText};
+      background-color: ${theme.darkBtnBgHover};
+      border: 1px solid ${theme.textFieldsBorder};
     }
     .nav-tabs>li:hover {
-      background-color: ${e.theme.lightBtnBgHover};
+      background-color: ${theme.lightBtnBgHover};
     }
     .checkbox-switchery > label {
-      color: ${e.theme.bodyText};
+      color: ${theme.bodyText};
     }
     .checkbox-switchery > label > span.on {
-      background-color: ${e.theme.darkBtnBg};
-      border-color: ${e.theme.textFieldsBorder};
-      box-shadow: ${e.theme.textFieldsBorder} 0px 0px 0px 8px inset;
+      background-color: ${theme.darkBtnBg};
+      border-color: ${theme.textFieldsBorder};
+      box-shadow: ${theme.textFieldsBorder} 0px 0px 0px 8px inset;
     }
     .checkbox-switchery > label > span.on > small {
-      background-color: ${e.theme.darkBtnText};
+      background-color: ${theme.darkBtnText};
     }
     .checkbox-switchery > label > span.off {
-      border-color: ${e.theme.darkBtnBg};
-      box-shadow: ${e.theme.darkBtnBg} 0px 0px 0px 8px inset;
+      border-color: ${theme.darkBtnBg};
+      box-shadow: ${theme.darkBtnBg} 0px 0px 0px 8px inset;
     }
     .checkbox-switchery > label > span.off > small {
-      background-color: ${e.theme.bodyText};
+      background-color: ${theme.bodyText};
     }
     label.Dropdown {
-      color: ${e.theme.bodyText};
+      color: ${theme.bodyText};
     }
     select.Dropdown {
-      color: ${e.theme.bodyText};
-      background-color: ${e.theme.settingsBg};
+      color: ${theme.bodyText};
+      background-color: ${theme.settingsBg};
     }
     .dropdown-menu > li > a:hover, .dropdown-menu > li > a:focus {
-      background-color: ${e.theme.settingsItemHover};
+      background-color: ${theme.settingsItemHover};
     }
     .dropdown-menu > li > label:hover, .dropdown-menu > li > label:focus {
-      background-color: ${e.theme.settingsItemHover};
+      background-color: ${theme.settingsItemHover};
     }
     .dropdown-menu .divider {
-      background-color: ${e.theme.textFieldsBorder};
+      background-color: ${theme.textFieldsBorder};
     }
     .ntg-x {
-      color: ${e.theme.tileX};
+      color: ${theme.tileX};
     }
     .ntg-x-hover {
-      color: ${e.theme.tileXHover};
+      color: ${theme.tileXHover};
     }
     .ntg-pinned {
-      color: ${e.theme.tilePin};
+      color: ${theme.tilePin};
     }
     .ntg-pinned-hover {
-      color: ${e.theme.tilePinHover};
+      color: ${theme.tilePinHover};
     }
     .ntg-mute {
-      color: ${e.theme.tileMute};
+      color: ${theme.tileMute};
     }
     .ntg-mute-hover {
-      color: ${e.theme.tileMuteHover};
+      color: ${theme.tileMuteHover};
     }
     .ntg-mute-audible {
-      color: ${e.theme.tileMuteAudible};
+      color: ${theme.tileMuteAudible};
     }
     .ntg-mute-audible-hover {
-      color: ${e.theme.tileMuteAudibleHover};
+      color: ${theme.tileMuteAudibleHover};
     }
     .ntg-move {
-      color: ${e.theme.tileMove};
+      color: ${theme.tileMove};
     }
     .ntg-move-hover {
-      color: ${e.theme.tileMoveHover};
+      color: ${theme.tileMoveHover};
     }
     .darkBtn, .topDarkBtn {
-      color: ${e.theme.darkBtnText};
-      background-color: ${e.theme.darkBtnBg};
-      text-shadow: 1px 1px ${e.theme.darkBtnTextShadow};
+      color: ${theme.darkBtnText};
+      background-color: ${theme.darkBtnBg};
+      text-shadow: 1px 1px ${theme.darkBtnTextShadow};
     }
     .darkBtn:hover, .topDarkBtn:hover {
-      background-color: ${e.theme.darkBtnBgHover};
+      background-color: ${theme.darkBtnBgHover};
     }
     button {
-      color: ${e.theme.lightBtnText};
-      background-color: ${e.theme.lightBtnBg};
-      text-shadow: 1px 1px ${e.theme.lightBtnTextShadow};
-      box-shadow: ${e.theme.tileShadow} 1px 1px 5px -1px;
+      color: ${theme.lightBtnText};
+      background-color: ${theme.lightBtnBg};
+      text-shadow: 1px 1px ${theme.lightBtnTextShadow};
+      box-shadow: ${theme.tileShadow} 1px 1px 5px -1px;
     }
     button:hover {
-      background-color: ${e.theme.lightBtnBgHover};
+      background-color: ${theme.lightBtnBgHover};
     }
     .sessionText {
-      color: ${e.theme.bodyText};
+      color: ${theme.bodyText};
     }
     .sessionRow {
-      background-color: ${e.theme.settingsBg};
+      background-color: ${theme.settingsBg};
     }
     .sessionRow:hover, .sessionRow.active {
-      background-color: ${e.theme.settingsItemHover};
+      background-color: ${theme.settingsItemHover};
     }
     .text-muted.text-size-small {
       color: ${bodyColor90};
     }
     .ntg-folder {
-      text-shadow: 2px 2px ${e.theme.tileTextShadow};
+      text-shadow: 2px 2px ${theme.tileTextShadow};
     }
     .panel, .modal-content {
-      box-shadow: 0 1px 3px ${e.theme.tileShadow}, 0 1px 2px ${e.theme.tileTextShadow};
+      box-shadow: 0 1px 3px ${theme.tileShadow}, 0 1px 2px ${theme.tileTextShadow};
     }
     .sk-cube-grid .sk-cube {
-      background-color: ${e.theme.darkBtnBg};
+      background-color: ${theme.darkBtnBg};
     }
     .dataTable thead .sorting:before {
-      color: ${e.theme.bodyText};
+      color: ${theme.bodyText};
     }
     .dataTable thead .sorting:after {
-      color: ${e.theme.bodyText};
+      color: ${theme.bodyText};
     }
     .table>thead {
-      background-color: ${themeStore.opacify(e.theme.headerBg, 0.3)};
+      background-color: ${themeStore.opacify(theme.headerBg, 0.3)};
     }
     .table>thead>tr>th {
-      border-bottom: 1px solid ${e.theme.headerBg};
+      border-bottom: 1px solid ${theme.headerBg};
     }
     .table>thead>tr>th, .table>tbody>tr>th, .table>tfoot>tr>th, .table>thead>tr>td, .table>tbody>tr>td, .table>tfoot>tr>td {
-      border-top: 1px solid ${e.theme.darkBtnBg};
+      border-top: 1px solid ${theme.darkBtnBg};
     }
     tr {
-      color: ${e.theme.tileText} !important;
+      color: ${theme.tileText} !important;
     }
     tr.even:hover, tr.odd:hover, tr.odd.selected, tr.even.selected {
-      background-color: ${e.theme.settingsItemHover} !important;
+      background-color: ${theme.settingsItemHover} !important;
     }
     tr.even {
-      background-color: ${themeStore.opacify(e.theme.tileBg, 0.34)} !important;
+      background-color: ${themeStore.opacify(theme.tileBg, 0.34)} !important;
     }
     tr.odd {
-      background-color: ${themeStore.opacify(e.theme.tileBgHover, 0.25)} !important;
+      background-color: ${themeStore.opacify(theme.tileBgHover, 0.25)} !important;
     }
     #thead-float {
       background-color: ${headerBg86} !important;
     }
     #thead-float > tr > th {
-      color: ${e.theme.darkBtnText} !important;
+      color: ${theme.darkBtnText} !important;
     }
     body > div.ReactModalPortal > div > div {
       -${vendor}-transition: ${prefs.animations ? 'background 0.5s ease-in, height 0.2s, width 0.2s, top 0.2s, left 0.2s, right 0.2s, bottom 0.2s' : 'initial'};
-      border: ${e.theme.tileShadow};
+      border: ${theme.tileShadow};
     }
     body > div.ReactModalPortal > div > div > div > div.row.ntg-tabs > div:nth-child(2) {
       -${vendor}-transition: ${prefs.animations ? 'background 0.5s ease-in, top 0.2s, left 0.2s' : 'initial'};
     }
     .rc-color-picker-panel {
-      background-color: ${e.theme.settingsBg};
+      background-color: ${theme.settingsBg};
     }
     .rc-color-picker-panel-inner {
-      background-color: ${e.theme.settingsBg};
-      border: 1px solid ${e.theme.tileShadow};
-      box-shadow: ${e.theme.tileShadow} 1px 1px 3px -1px;
+      background-color: ${theme.settingsBg};
+      border: 1px solid ${theme.tileShadow};
+      box-shadow: ${theme.tileShadow} 1px 1px 3px -1px;
     }
     .rc-color-picker-panel-params input {
-      color: ${e.theme.textFieldsText};
-      background-color: ${e.theme.textFieldsBg};
-      border: 0.5px solid ${e.theme.textFieldsBorder};
+      color: ${theme.textFieldsText};
+      background-color: ${theme.textFieldsBg};
+      border: 0.5px solid ${theme.textFieldsBorder};
     };
     .rc-slider {
-      background-color: ${themeStore.opacify(e.theme.darkBtnBg, 0.5)};
+      background-color: ${themeStore.opacify(theme.darkBtnBg, 0.5)};
     }
-    .rc-slider-step {
-      background: ${themeStore.opacify(e.theme.settingsBg, 0.35)};
+
+    .rc-slider-rail {
+      background: ${bodyColor50} !important;
     }
+
     .rc-slider-track {
-      background-color: ${lightBtnBg85};
+      background-color: ${darkBtnBg75};
     }
     .rc-slider-handle {
-      background-color: ${themeStore.opacify(e.theme.darkBtnBg, 0.9)};
+      background-color: ${bodyColor90};
       border: solid 2px ${lightBtnBg85};
     }
+    .rc-slider-handle-click-focused:focus {
+      border-color: ${bodyColor90};
+    }
     .rc-slider-handle:hover {
-      background-color: ${themeStore.opacify(e.theme.darkBtnBgHover, 0.9)};
-      border: solid 2px ${themeStore.opacify(e.theme.lightBtnBgHover, 0.85)};
+      background-color: ${themeStore.opacify(theme.darkBtnBgHover, 0.9)};
+      border: solid 2px ${themeStore.opacify(theme.lightBtnBgHover, 0.85)};
     }
     .__react_component_tooltip {
       z-index: 9999 !important;
       opacity: 1 !important;
-      color: ${e.theme.darkBtnText} !important;
+      color: ${theme.darkBtnText} !important;
       background-color: ${darkBtnBgOpaque} !important;
     }
     .__react_component_tooltip.type-dark.place-bottom:after {
@@ -1232,41 +1250,41 @@ const onThemeChange = (e) => {
       -${vendor}-transition: ${prefs.animations ? `-${vendor}-filter 0.2s ease-in` : 'initial'};
     }
     .alert-success {
-      color: ${e.theme.tileText};
-      background-color: ${e.theme.tileBgHover};
-      border-color: ${e.theme.tileShadow};
+      color: ${theme.tileText};
+      background-color: ${theme.tileBgHover};
+      border-color: ${theme.tileShadow};
     }
     .alert-danger {
-      color: ${e.theme.tileText};
-      background-color: ${e.theme.tileBg};
-      border-color: ${e.theme.tileShadow};
+      color: ${theme.tileText};
+      background-color: ${theme.tileBg};
+      border-color: ${theme.tileShadow};
     }
     .panel-flat>.panel-heading {
-      background-color: ${e.theme.tileBg};
+      background-color: ${theme.tileBg};
     }
     body {
-      color: ${e.theme.bodyText} !important;
-      background-color: ${e.theme.bodyBg} !important;
+      color: ${theme.bodyText} !important;
+      background-color: ${theme.bodyBg} !important;
     }
     .Slide:hover,
     .Toggle:hover {
-      background-color: ${e.theme.settingsItemHover};
+      background-color: ${theme.settingsItemHover};
     }
     .LargeBtn:not(.active), .LargeBtn:not(:hover) {
-      color: ${e.theme.lightBtnText};
-      background-color: ${themeStore.opacify(e.theme.lightBtnBg, 0.8)};
+      color: ${theme.lightBtnText};
+      background-color: ${themeStore.opacify(theme.lightBtnBg, 0.8)};
     }
     .LargeBtn.active {
-      color: ${e.theme.darkBtnText};
-      background-color: ${themeStore.opacify(e.theme.darkBtnBg, 0.8)};
+      color: ${theme.darkBtnText};
+      background-color: ${themeStore.opacify(theme.darkBtnBg, 0.8)};
     }
     .LargeBtn.active:hover {
-      color: ${e.theme.darkBtnText};
-      background-color: ${themeStore.opacify(e.theme.darkBtnBg, 0.9)};
+      color: ${theme.darkBtnText};
+      background-color: ${themeStore.opacify(theme.darkBtnBg, 0.9)};
     }
     .LargeBtn:not(.active):hover {
-      color: ${e.theme.lightBtnText};
-      background-color: ${e.theme.lightBtnBgHover};
+      color: ${theme.lightBtnText};
+      background-color: ${theme.lightBtnBgHover};
     }
     `;
 
@@ -1300,7 +1318,7 @@ const onThemeChange = (e) => {
       `;
     }
 
-    stateUpdate.theme = e.theme;
+    stateUpdate.theme = theme;
   }
 
   if (!state.isOptions
@@ -1312,15 +1330,15 @@ const onThemeChange = (e) => {
         display: inline-block !important;
         filter: blur(${prefs.screenshotBgBlur}px) !important;
         opacity: ${0.1 * prefs.screenshotBgOpacity} !important;
-        background-color: ${e.theme.bodyBg} !important;
+        background-color: ${theme.bodyBg} !important;
         background-image: url('${currentWallpaper.data}') !important;
         background-size: cover !important;
         z-index: -12;
       }
     `;
 
-    if (e.currentWallpaper) {
-      stateUpdate.currentWallpaper = e.currentWallpaper;
+    if (currentWallpaper) {
+      stateUpdate.currentWallpaper = currentWallpaper;
     }
   } else if (currentWallpaper !== undefined) {
     innerHTML += `
@@ -1328,7 +1346,7 @@ const onThemeChange = (e) => {
         display: none;
         filter: blur(${prefs.screenshotBgBlur}px) !important;
         opacity: 1;
-        background-color: ${e.theme.bodyBg} !important;
+        background-color: ${theme.bodyBg} !important;
         background-image: none !important;
         z-index: -12 !important;
       }
@@ -1340,12 +1358,13 @@ const onThemeChange = (e) => {
     style.innerHTML = innerHTML;
   }
 
-  if (e.wallpapers) {
-    stateUpdate.wallpapers = e.wallpapers;
+  if (wallpapers) {
+    stateUpdate.wallpapers = wallpapers;
   }
 
   state.set(stateUpdate, true);
 };
+
 
 if (process.env.NODE_ENV === 'development') window.themeStore = themeStore;
 

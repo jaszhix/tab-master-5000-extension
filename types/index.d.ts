@@ -181,10 +181,12 @@ declare global {
     wallpaper: number;
   }
 
-  interface Wallpaper {
+  interface _Wallpaper {
     data: string | number;
     id: number;
   }
+
+  type Wallpaper = _Wallpaper | null;
 
   interface WallpaperObject extends Array<Wallpaper> {
     wallpapers?: Wallpaper[];
@@ -213,6 +215,7 @@ declare global {
     screenshotBg: boolean;
     screenshotBgBlur: number;
     screenshotBgOpacity: number;
+    faviconCaching: boolean;
     blacklist: boolean;
     sidebar: boolean;
     sort: boolean;
@@ -348,7 +351,7 @@ declare global {
     theme?: Theme;
     savedThemes?: ThemeState[];
     wallpapers?: Wallpaper[];
-    currentWallpaper?: null;
+    currentWallpaper?: Wallpaper;
     colorPickerOpen?: boolean;
     // Chrome data
     chromeVersion?: number;
