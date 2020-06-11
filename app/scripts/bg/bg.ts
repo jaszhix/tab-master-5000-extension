@@ -237,7 +237,8 @@ class Bg {
 
   init = async () => {
     await prefsStore.init();
-    await this.querySessions();
+
+    if (this.state.prefs.sessionsSync) await this.querySessions();
   }
 
   prefsChange = async (e) => {
@@ -588,7 +589,12 @@ class Bg {
           await this.queryTabs(true, this.state.prefs, sender.tab.windowId);
           break;
         case 'getSessions':
-          await sendMsg({sessions: this.state.sessions, windowId: sender.tab.windowId});
+          if (!this.state.sessions.length) {
+            await this.querySessions();
+          } else {
+            await sendMsg({sessions: this.state.sessions, windowId: sender.tab.windowId});
+          }
+
           break;
         case 'queryBookmarks':
           if (msg.init || this.state.bookmarks.length === 0) {

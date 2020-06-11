@@ -41,8 +41,7 @@
   "permissions": [
     "tabs",
     "storage",
-    "unlimitedStorage",
-    "downloads"
+    "unlimitedStorage"
   ],
-  "optional_permissions": ["activeTab", "bookmarks", "history", "management", "<all_urls>"]
+  "optional_permissions": ["activeTab", "bookmarks", "history", "management", "downloads", "<all_urls>"]
 }

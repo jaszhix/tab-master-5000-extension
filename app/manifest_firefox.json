@@ -50,11 +50,9 @@
   "permissions": [
     "tabs",
     "storage",
-    "unlimitedStorage",
-    "management",
-    "downloads"
+    "unlimitedStorage"
   ],
-  "optional_permissions": ["activeTab", "bookmarks", "history", "<all_urls>"],
+  "optional_permissions": ["activeTab", "bookmarks", "history", "management", "downloads", "<all_urls>"],
   "applications": {
     "gecko": {
       "id": "tm5k@tabmaster.org"

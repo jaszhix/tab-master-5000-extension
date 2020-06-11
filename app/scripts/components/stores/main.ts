@@ -61,9 +61,16 @@ export const getChromeVersion = (): number => {
 };
 
 export const setPrefs = async (obj: Partial<PreferencesState>) => {
+  let response;
+
   state.set({prefs: obj}, true);
 
-  let response = await browser.runtime.sendMessage(chrome.runtime.id, {method: 'setPrefs', obj: obj});
+  try {
+    response = await browser.runtime.sendMessage(chrome.runtime.id, {method: 'setPrefs', obj: obj});
+  } catch (e) {
+    console.log(e);
+    return;
+  }
 
   if (!response?.prefs) return;
 
@@ -77,13 +84,15 @@ export const setPrefs = async (obj: Partial<PreferencesState>) => {
     }
   }
 
-  if (obj.sessionsSync) {
-    getSessions();
-  } else {
-    state.set({
-      sessions: [],
-      sessionTabs: [],
-    })
+  if ('sessionsSync' in obj) {
+    if (obj.sessionsSync) {
+      getSessions();
+    } else {
+      state.set({
+        sessions: [],
+        sessionTabs: [],
+      })
+    }
   }
 };
 
