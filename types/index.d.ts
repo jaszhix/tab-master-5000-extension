@@ -416,7 +416,6 @@ declare global {
     actions: ActionRecord[];
     windowId?: number;
     init: boolean;
-    focusSearchEntry: boolean;
   }
 
   interface BackgroundState extends State.Data {

@@ -1037,7 +1037,6 @@ class Bg {
           this.state.set({newTabs}, true);
         } else {
           await browser.tabs.update(newTabs[refNewTab].id, {active: true});
-          await sendMsg({focusSearchEntry: true, action: true});
         }
 
         return;

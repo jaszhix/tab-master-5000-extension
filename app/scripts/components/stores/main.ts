@@ -113,16 +113,6 @@ export const setMode = (mode: ViewMode, stateUpdate = {}) => {
   setPrefs(<PreferencesState>{mode: mode});
 };
 
-export const focusSearchEntry = () => {
-  setTimeout(() => {
-    let node = v('#main > div > div:nth-child(1) > div > div.tm-nav.ntg-form > div > div.col-xs-4 > div > input').n;
-
-    if (node) {
-      node.focus();
-    }
-  }, 0);
-};
-
 const handleMessage = function(s, msg, sender, sendResponse) {
   if (process.env.NODE_ENV === 'development') {
     switch (msg.type) {
@@ -175,8 +165,6 @@ const handleMessage = function(s, msg, sender, sendResponse) {
     state.set({screenshots: msg.screenshots});
   } else if (msg.hasOwnProperty('actions')) {
     state.set({actions: msg.actions});
-  } else if (msg.hasOwnProperty('focusSearchEntry')) {
-    focusSearchEntry();
   } else if (msg.type === 'appState') {
     state.set({topNavButton: msg.action});
   } else if (msg.type === 'checkSSCapture') {
@@ -357,7 +345,7 @@ export const setKeyBindings = (s: GlobalState) => {
   mouseTrap.bind('ctrl+f', (e) => {
     e.preventDefault();
     state.set({modal: {state: false, type: 'settings'}});
-    this.focusSearchEntry();
+    state.trigger('focusSearchEntry');
   });
   mouseTrap.bind('ctrl+alt+s', (e) => {
     e.preventDefault();

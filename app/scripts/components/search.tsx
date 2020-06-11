@@ -13,6 +13,21 @@ interface SearchProps {
 }
 
 class Search extends React.Component<SearchProps> {
+  ref: React.RefObject<HTMLInputElement> = React.createRef();
+  connectId: number;
+
+  componentDidMount() {
+    this.connectId = state.connect({
+      focusSearchEntry: this.focusSearchEntry
+    });
+  }
+
+  componentWillUnmount() {
+    state.disconnect(this.connectId);
+  }
+
+  focusSearchEntry = () => this.ref.current.focus()
+
   handleSearch = (e) => {
     state.set({search: e.target.value});
   }
@@ -78,6 +93,7 @@ class Search extends React.Component<SearchProps> {
                 noIconPadding={true}
               />
               <input
+                ref={this.ref}
                 type="text"
                 value={p.s.search}
                 className="form-control search-tabs"
