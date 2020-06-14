@@ -39,6 +39,12 @@ class LargeBtn extends React.Component<LargeBtnProps> {
   }
 }
 
+interface ButtonOption {
+  label: string;
+  icon: string;
+  key: ViewMode;
+}
+
 interface SidebarMenuProps {
   sessionsExist?: boolean;
   prefs?: PreferencesState;
@@ -74,12 +80,12 @@ export class SidebarMenu extends React.Component<SidebarMenuProps> {
   render = () => {
     let p = this.props;
 
-    let bookmarks = {label: utils.t('bookmarks'), icon: 'icon-bookmark4', key: 'bookmarks'};
-    let extensions = {label: utils.t('extensions'), icon: 'icon-puzzle', key: 'extensions'};
-    let apps = {label: utils.t('apps'), icon: 'icon-grid-alt', key: 'apps'};
+    let bookmarks: ButtonOption = {label: utils.t('bookmarks'), icon: 'icon-bookmark4', key: 'bookmarks'};
+    let extensions: ButtonOption = {label: utils.t('extensions'), icon: 'icon-puzzle', key: 'extensions'};
+    let apps: ButtonOption = {label: utils.t('apps'), icon: 'icon-grid-alt', key: 'apps'};
     let isChrome = p.chromeVersion > 1;
 
-    let lgBtnOptions = [
+    let lgBtnOptions: Array<ButtonOption[][]> = [
       [
         [
           {label: utils.t('tabs'), icon: 'icon-browser', key: 'tabs'},

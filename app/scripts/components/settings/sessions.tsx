@@ -339,7 +339,7 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
                     <div
                       onClick={() => this.expandSelectedSession(i)}
                       className={`sessionText expandable${s.expandedSession === i ? ' expanded' : ''}`}>
-                      {p.prefs.syncedSession === session.id ?
+                      {p.prefs.currentSyncedSession === session.id ?
                         <span
                           title={utils.t('synchronized')}
                           style={{
@@ -370,12 +370,12 @@ class Sessions extends React.Component<SessionsProps, SessionsState> {
                         data-tip={utils.t('restoreSession')}
                       />
                       <Btn
-                        onClick={() => setPrefs({syncedSession: p.prefs.syncedSession === session.id ? null : session.id})}
+                        onClick={() => setPrefs({currentSyncedSession: p.prefs.currentSyncedSession === session.id ? '' : session.id})}
                         className="sessionBtn"
                         icon="sync"
-                        faStyle={{fontWeight: p.prefs.syncedSession === session.id ? 600 : 'initial', position: 'relative', top: '0px'}}
+                        faStyle={{fontWeight: p.prefs.currentSyncedSession === session.id ? 600 : 'initial', position: 'relative', top: '0px'}}
                         noIconPadding={true}
-                        data-tip={p.prefs.syncedSession === session.id ? utils.t('desynchronizeSession') : utils.t('synchronizeSession')}
+                        data-tip={p.prefs.currentSyncedSession === session.id ? utils.t('desynchronizeSession') : utils.t('synchronizeSession')}
                       />
                       <Btn
                         id={`${i}`}

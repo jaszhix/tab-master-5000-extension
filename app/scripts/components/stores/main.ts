@@ -113,7 +113,12 @@ export const setMode = (mode: ViewMode, stateUpdate = {}) => {
   setPrefs(<PreferencesState>{mode: mode});
 };
 
-const handleMessage = function(s, msg, sender, sendResponse) {
+const handleMessage = function(
+  s: GlobalState,
+  msg: BgMessage,
+  sender: chrome.runtime.MessageSender,
+  sendResponse: (response?: any) => void,
+) {
   if (process.env.NODE_ENV === 'development') {
     switch (msg.type) {
       case 'error': {
@@ -136,8 +141,7 @@ const handleMessage = function(s, msg, sender, sendResponse) {
     && !msg.init
     && s.settings !== 'sessions'
     && !msg.action
-    && !msg.sessions
-    && !msg.windowIdQuery)
+    && !msg.sessions)
     || s.windowRestored
     || !s.windowId) {
     return;
@@ -154,10 +158,6 @@ const handleMessage = function(s, msg, sender, sendResponse) {
     || (msg.bookmarks && s.prefs.mode === 'bookmarks')
     || (msg.history && s.prefs.mode === 'history')
     || (msg.extensions && (s.prefs.mode === 'apps' || s.prefs.mode === 'extensions'))) {
-    if (s.modal.state) {
-      msg.modalOpen = true;
-    }
-
     window.tmWorker.postMessage({state: state.exclude(['modal', 'context', 'isOptions']), msg});
   } else if (msg.hasOwnProperty('sessions')) {
     state.set({sessions: msg.sessions});
@@ -167,11 +167,8 @@ const handleMessage = function(s, msg, sender, sendResponse) {
     state.set({actions: msg.actions});
   } else if (msg.type === 'appState') {
     state.set({topNavButton: msg.action});
-  } else if (msg.type === 'checkSSCapture') {
-    console.log('checkSSCapture: Sending screenshot to '+sender.tab.url);
-    sendResponse(filter(s.screenshots, ss => ss && ss.url === sender.tab.url));
   } else if (msg.type === 'startup') {
-    _.delay(()=>window.location.reload(), 500);
+    setTimeout(window.location.reload, 500);
   }
 };
 
@@ -275,11 +272,6 @@ export const init = () => {
     let s = state.get('*');
 
     console.log(`msg.windowId: `, msg.windowId);
-
-    if (msg.windowIdQuery) {
-      state.set({windowId: msg.windowIdQuery});
-      return;
-    }
 
     handleMessage(s, msg, sender, sendResponse);
   });

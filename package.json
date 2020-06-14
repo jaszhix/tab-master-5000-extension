@@ -45,7 +45,7 @@
     "@babel/runtime": "^7.9.6",
     "@hot-loader/react-dom": "^16.13.0",
     "@jaszhix/state": "^1.0.4",
-    "@jaszhix/utils": "^1.0.4",
+    "@jaszhix/utils": "^1.0.5",
     "@sentry/browser": "^5.15.5",
     "@sentry/types": "^5.15.5",
     "@sentry/webpack-plugin": "^1.11.1",

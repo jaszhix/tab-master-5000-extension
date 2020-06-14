@@ -425,7 +425,7 @@ class Theming extends React.Component<ThemingProps, ThemingState> {
   render = () => {
     let p = this.props;
     let s = this.state;
-    let themeFields = filter(themeStore.getThemeFields(), field => field.group === s.colorGroup);
+    let themeFields: ThemeField[] | Array<ThemeField[]> = filter(themeStore.getThemeFields(), (field) => field.group === s.colorGroup);
     let slice2 = Math.ceil(themeFields.length / 3);
     let slice3 = Math.round(themeFields.length * 0.66)
     let themeFields1 = themeFields.slice(0, slice2);
@@ -433,6 +433,7 @@ class Theming extends React.Component<ThemingProps, ThemingState> {
     let themeFields3 = themeFields.slice(slice3, themeFields.length);
 
     themeFields = [themeFields1, themeFields2, themeFields3];
+
     return (
       <div className="theming">
         <input type="file" onChange={(e)=>themeStore.import(e)} accept=".json" ref={this.getImportRef} style={style.hiddenInput} />

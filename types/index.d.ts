@@ -65,37 +65,39 @@ declare global {
     length: number;
   }
 
-  interface ChromeTab extends chrome.tabs.Tab {
+  // TBD: https://github.com/Microsoft/TypeScript/issues/16936
+
+  interface ChromeGenericCustom<Id, Index> {
+    id: Id;
+    index: Index;
+    url?: string;
+    title?: string;
     count?: number;
     domain?: string;
     timeStamp?: number;
-    openTab?: number;
-    description?: string;
+    openTab?: Id;
+    description: string;
     label?: string;
     sTimeStamp?: number;
-    enabled?: boolean;
+    enabled: boolean;
     lastVisitTime?: number;
     originSession?: string;
     folder?: string;
+    favIconUrl?: string;
+    originWindow?: number;
   }
 
-  type StringIDTab = Modify<ChromeTab, {
-    id?: string;
-  }>
+  type ChromeGeneric = ChromeGenericCustom<number | string, number | string>
 
-  // TBD: https://github.com/Microsoft/TypeScript/issues/16936
-  // @ts-ignore
-  interface ChromeExtensionInfo extends chrome.management.ExtensionInfo, StringIDTab {
-  }
-  // @ts-ignore
-  interface ChromeBookmarkTreeNode extends chrome.bookmarks.BookmarkTreeNode, StringIDTab {
-  }
+  type ChromeTab = Modify<chrome.tabs.Tab, ChromeGenericCustom<number | undefined, number>>/*  & number */;
 
-  // @ts-ignore
-  interface ChromeHistoryItem extends chrome.history.HistoryItem, StringIDTab {
-  }
+  type ChromeExtensionInfo = Modify<chrome.management.ExtensionInfo, ChromeGenericCustom<string, number>>;
 
-  type TabCollection = ChromeTab[] | ChromeBookmarkTreeNode[] | ChromeHistoryItem[] | ChromeExtensionInfo[];
+  type ChromeBookmarkTreeNode = Modify<chrome.bookmarks.BookmarkTreeNode, ChromeGenericCustom<string, number | undefined>>;
+
+  type ChromeHistoryItem = Modify<chrome.history.HistoryItem, ChromeGenericCustom<string,  number | undefined>>;
+
+  type ChromeItem = ChromeTab & ChromeBookmarkTreeNode & ChromeHistoryItem & ChromeExtensionInfo;
 
   interface ChromeWindow extends chrome.windows.Window {
     tabs: ChromeTab[];
@@ -171,6 +173,12 @@ declare global {
     tileButtonBg?: string;
   }
 
+  interface ThemeField {
+    themeKey: keyof Theme;
+    label: string;
+    group: string;
+  }
+
   interface ThemeState {
     id: number;
     created: number;
@@ -199,7 +207,9 @@ declare global {
     theme: Theme;
     themeId: number;
     wallpaperId: number;
-    getWallpapers: () => Promise<WallpaperObject>
+    wallpapers: Wallpaper[];
+    getWallpapers: () => Promise<WallpaperObject>;
+    getThemeFields: () => ThemeField[];
   }
 
   interface PreferencesState {
@@ -231,6 +241,7 @@ declare global {
     keyboardShortcuts: boolean;
     resolutionWarning: boolean;
     syncedSession: boolean;
+    currentSyncedSession: string;
     theme: number;
     wallpaper: string | number | null;
     tooltip: boolean;
@@ -356,8 +367,8 @@ declare global {
     // Chrome data
     chromeVersion?: number;
     windowId?: number;
-    searchCache?: TabCollection;
-    tileCache?: TabCollection;
+    searchCache?: ChromeItem[];
+    tileCache?: ChromeItem[];
     tabs?: ChromeTab[];
     allTabs?: ChromeTab[][];
     duplicateTabs?: string[];
@@ -429,14 +440,36 @@ declare global {
     extensions: ChromeExtensionInfo[];
     removed: ChromeTab[];
     newTabs: TabIDInfo[];
-    sessions: [];
-    screenshots: [];
+    sessions: SessionState[];
+    screenshots: Screenshot[];
     actions: ActionRecord[];
     chromeVersion: number;
     prefix: 'chrome' | 'moz';
     bookmarksListenersAttached: boolean;
     historyListenersAttached: boolean;
     managementListenersAttached: boolean;
+  }
+
+  interface WorkerMessage {
+    windows: ChromeWindow[];
+    screenshots: Screenshot[];
+    history: ChromeHistoryItem[];
+    bookmarks: ChromeBookmarkTreeNode[];
+    extensions: ChromeExtensionInfo[];
+    items: ChromeItem[]; // searchCache
+    data: ChromeItem[];
+    modeKey: ViewModeKey;
+    query: string; // search
+    sort: keyof ChromeItem[];
+    modalOpen: boolean;
+    init: boolean;
+  }
+
+  interface WorkerEvent {
+    data: {
+      state: GlobalState;
+      msg: WorkerMessage;
+    }
   }
 
   interface CursorState {

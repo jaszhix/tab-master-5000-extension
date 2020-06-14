@@ -605,7 +605,7 @@ const themeStore = <ThemeStore>init({
   getSelectedTheme: () => {
     return themeStore.theme;
   },
-  getThemeFields: () => {
+  getThemeFields: (): ThemeField[] => {
     return [
       {themeKey: 'bodyText', label: 'Body Text', group: 'general'},
       {themeKey: 'bodyBg', label: 'Body BG', group: 'general'},
@@ -781,9 +781,12 @@ const themeStore = <ThemeStore>init({
     themeStore.setTriggers();
   },
   removeWallpaper: (wpId) => {
-    let refWallpaper = find(themeStore.wallpapers, wallpaper => wallpaper.id === wpId);
+    let refWallpaper = findIndex(themeStore.wallpapers, wallpaper => wallpaper.id === wpId);
 
-    themeStore.wallpapers = _.without(themeStore.wallpapers, _.remove(themeStore.wallpapers, refWallpaper));
+    if (refWallpaper === -1) return;
+
+    themeStore.wallpapers.splice(refWallpaper, 1);
+
     themeStore.currentWallpaper = {data: -1};
     chrome.storage.local.set({wallpapers: themeStore.wallpapers});
     setPrefs({wallpaper: null});
@@ -862,12 +865,9 @@ const themeStore = <ThemeStore>init({
             id: ++themeStore.wallpaperId
           };
 
-          themeStore.wallpapers = [newWallpaper].concat(themeStore.wallpapers);
-          let savedWallpapers = filter(themeStore.wallpapers, (wp) => {
-            if (wp.id < 9000) {
-              return wp;
-            }
-          });
+          themeStore.wallpapers = (<Wallpaper[]>[newWallpaper]).concat(themeStore.wallpapers);
+
+          let savedWallpapers = filter(themeStore.wallpapers, (wp) => wp.id < 9000);
 
           chrome.storage.local.set({wallpapers: _.orderBy(savedWallpapers, 'created')});
           themeStore.setTriggers();

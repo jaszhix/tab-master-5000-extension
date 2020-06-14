@@ -24,11 +24,11 @@ chrome.runtime.onInstalled.addListener((details) => {
   eventState.onInstalled = details;
 });
 
-let syncSession = (sessions, prefs, windows=null) => {
+let syncSession = (sessions: SessionState[], prefs: PreferencesState, windows: ChromeWindow[] = null) => {
   let allTabs = [];
 
   if (typeof prefs.syncedSession !== 'undefined' && prefs.syncedSession && prefs.sessionsSync) {
-    let refSession = findIndex(sessions, session => session.id === prefs.syncedSession);
+    let refSession = findIndex(sessions, session => session.id === prefs.currentSyncedSession);
 
     if (refSession === -1) {
       return;
@@ -45,7 +45,7 @@ let syncSession = (sessions, prefs, windows=null) => {
     }
 
     sessions[refSession].tabs = allTabs;
-    sessions[refSession].timeStamp = new Date(Date.now());
+    sessions[refSession].timeStamp = Date.now();
     chrome.storage.local.set({sessions});
   }
 };
@@ -117,7 +117,7 @@ const capture = async (t: Bg, windowId, run = 0) => {
   throw new Error(`Unable to capture screenshot for ${windowId}`);
 }
 
-let createScreenshot = async (t, refWindow, refTab) => {
+let createScreenshot = async (t: Bg, refWindow, refTab) => {
   let tab, windowId, image;
 
   if (refWindow === -1 || refTab === -1) {
@@ -347,7 +347,7 @@ class Bg {
     Windows removed
     */
     chrome.windows.onRemoved.addListener(chromeHandler(async (windowId) => {
-      let refWindow = findIndex(this.state.windows, win => win.windowId === windowId);
+      let refWindow = findIndex(this.state.windows, win => win.id === windowId);
 
       if (refWindow !== -1) {
         this.state.windows.splice(refWindow, 1);
@@ -406,7 +406,9 @@ class Bg {
       console.log('onAttached: ', tabId, info);
       // FIXME:
       // @ts-ignore
-      this.createSingleItem(tabId, info.newWindowId);
+      let tab = find(this.state.removed, (tab) => tab.id === tabId);
+
+      if (tab) this.createSingleItem(tab, info.newWindowId);
     }));
     /*
     Tabs detached
@@ -515,7 +517,7 @@ class Bg {
         }
       }
 
-      if (url) await browser.tabs.update(tab.id, {url});
+      if (url) await browser.tabs.update(<number>tab.id, {url});
     }
   }
 
@@ -680,7 +682,7 @@ class Bg {
       let [firstNewTab, ...extraNewTabs] = blacklisted;
 
       for (let i = 0, len = extraNewTabs.length; i < len; i++) {
-        await browser.tabs.remove(extraNewTabs[i].id);
+        await browser.tabs.remove(<number>extraNewTabs[i].id);
       }
 
       this.state.newTabs.push(firstNewTab);
@@ -878,22 +880,22 @@ class Bg {
       }
 
       case (lastAction.type.indexOf('mut') !== -1 && (chromeVersion >= 46 || chromeVersion === 1)): {
-        await browser.tabs.update(lastAction.item.id, {muted: !lastAction.item.mutedInfo.muted});
+        await browser.tabs.update(<number>lastAction.item.id, {muted: !lastAction.item.mutedInfo.muted});
         break;
       }
 
       case (lastAction.type.indexOf('pin') > -1): {
-        await browser.tabs.update(lastAction.item.id, {pinned: !lastAction.item.pinned});
+        await browser.tabs.update(<number>lastAction.item.id, {pinned: !lastAction.item.pinned});
         break;
       }
 
       case (lastAction.type === 'create'): {
-        await browser.tabs.remove(lastAction.item.id);
+        await browser.tabs.remove(<number>lastAction.item.id);
         break;
       }
 
       case (lastAction.type === 'move'): {
-        await browser.tabs.move(lastAction.item.id, {index: lastAction.item.index});
+        await browser.tabs.move(<number>lastAction.item.id, {index: lastAction.item.index});
         break;
       }
     }
@@ -974,15 +976,6 @@ class Bg {
       return;
     }
 
-    // Check if called from onAttached, need to get full tab object from state.removed.
-    if (typeof e === 'number') {
-      e = find(removed, tab => tab.id === e);
-
-      if (!e) {
-        return;
-      }
-    }
-
 
     let urlMatch = e.url.match(domainRegex);
 
@@ -994,7 +987,7 @@ class Bg {
 
     for (let i = 0, len = blacklist.length; i < len; i++) {
       if (blacklist[i].indexOf(e.domain) > -1) {
-        await browser.tabs.remove(e.id);
+        await browser.tabs.remove(<number>e.id);
         return;
       }
     }
@@ -1036,7 +1029,7 @@ class Bg {
           newTabs.splice(refNewTab, 1);
           this.state.set({newTabs}, true);
         } else {
-          await browser.tabs.update(newTabs[refNewTab].id, {active: true});
+          await browser.tabs.update(<number>newTabs[refNewTab].id, {active: true});
         }
 
         return;
@@ -1054,7 +1047,7 @@ class Bg {
     if (refWindow === -1) return;
 
     // Check if this is a new tab, and clean up newTabs state.
-    let refNewTab = findIndex(this.state.newTabs, tab => tab === e);
+    let refNewTab = findIndex(this.state.newTabs, tab => tab.id === e);
 
     if (refNewTab !== -1) {
       this.state.newTabs.splice(refNewTab, 1);
@@ -1113,7 +1106,7 @@ class Bg {
 
     for (let i = 0, len = this.state.blacklist.length; i < len; i++) {
       if (this.state.blacklist[i].indexOf(tab.domain) > -1) {
-        await browser.tabs.remove(tab.id);
+        await browser.tabs.remove(<number>tab.id);
         return;
       }
     }
@@ -1168,7 +1161,7 @@ class Bg {
 
     // @ts-ignore
     this.state.windows[refWindow].tabs = v(this.state.windows[refWindow].tabs).move(refTab, tab.index).ns;
-    this.state.windows[refWindow].tabs[refTab].timeStamp = new Date(Date.now()).getTime();
+    this.state.windows[refWindow].tabs[refTab].timeStamp = Date.now();
 
     if (tab.pinned) {
       this.state.windows[refWindow].tabs = orderBy(uniqBy(this.state.windows[refWindow].tabs, 'id'), ['pinned'], ['desc']);

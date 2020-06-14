@@ -141,7 +141,7 @@ class Root extends React.Component<RootProps, RootState> {
           const {tabs}: GlobalState = this.props.s;
 
           for (let i = 0, len = tabs.length; i < len; i++) {
-            chrome.tabs.move(tabs[i].id, {index: i});
+            chrome.tabs.move(tabs[i].id as number, {index: i});
           }
 
           state.set({applyTabOrder: false});
@@ -193,14 +193,14 @@ class Root extends React.Component<RootProps, RootState> {
 
     if (opt === 'folder') {
       if (e) {
-        stateUpdate[p.s.modeKey] = filter(p.s[p.s.modeKey], function(item) {
+        (stateUpdate[p.s.modeKey] as ChromeItem[]) = filter((stateUpdate[p.s.modeKey] as ChromeItem[]), function(item) {
           if (p.s.prefs.mode === 'bookmarks') {
             return item.folder === e;
           }
 
           return item.originSession === e;
         });
-        stateUpdate.tileCache = p.s[p.s.modeKey];
+        stateUpdate.tileCache = p.s[p.s.modeKey] as ChromeItem[];
       } else {
         // @ts-ignore
         stateUpdate[p.s.modeKey] = p.s.tileCache;
@@ -250,7 +250,7 @@ class Root extends React.Component<RootProps, RootState> {
             {p.s.context.value ?
               <ContextMenu
                 actions={p.s.actions}
-                tabs={p.s[p.s.prefs.mode] as TabCollection}
+                tabs={p.s[p.s.prefs.mode] as ChromeItem[]}
                 prefs={p.s.prefs}
                 context={p.s.context}
                 duplicateTabs={p.s.duplicateTabs}

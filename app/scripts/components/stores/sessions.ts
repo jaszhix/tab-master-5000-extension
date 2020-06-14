@@ -178,11 +178,20 @@ export const importSessions = (sessions: SessionState[], e) => {
   reader.readAsText(e.target.files[0], 'UTF-8');
 };
 
-export const removeSessionTab = (sessions: SessionState[], session, _window, tab, sessionTabs?, sortOrder?) => {
+export const removeSessionTab = (
+  sessions: SessionState[],
+  session: number,
+  _window: number,
+  tab: number,
+  sessionTabs?: ChromeTab[],
+  sortOrder?: SortKey
+) => {
   let stateUpdate: Partial<GlobalState> = {};
 
   if (sessionTabs) {
-    let refSessionTab = findIndex(_.orderBy(sessionTabs, sortOrder), _tab => _tab.id === sessions[session].tabs[_window][tab].id);
+    let refSessionTab = findIndex(_.orderBy(sessionTabs, sortOrder), (_tab) => {
+      return _tab.id === sessions[session].tabs[_window][tab].id;
+    });
 
     if (sessionTabs.length === 0) {
       stateUpdate.search = '';
@@ -229,8 +238,8 @@ export const updateSession = (sessions: SessionState[], session: SessionState) =
   chrome.storage.local.set({sessions: sessions});
 };
 
-export const saveSession = async ({tabs, label}) => {
-  let sessions, session, item;
+export const saveSession = async ({tabs, label}: {tabs: ChromeTab[][], label: string}) => {
+  let sessions: {sessions: SessionState[]}, session: SessionState, item: any;
 
   tabs = filter(tabs, function(Window) {
     return Window && Window.length > 0;

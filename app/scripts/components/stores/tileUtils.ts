@@ -22,7 +22,7 @@ export const handleAppClick = (tab: ChromeExtensionInfo) => {
   }
 };
 
-export const activateTab = function(tab: ChromeTab) {
+export const activateTab = function(tab: ChromeGeneric) {
   if (!tab) {
     return;
   }
@@ -30,7 +30,7 @@ export const activateTab = function(tab: ChromeTab) {
   if (tab.hasOwnProperty('openTab') && !tab.openTab) {
     chrome.tabs.create({url: tab.url}, (t) => {
       let stateUpdate = {};
-      let index = findIndex(state[state.modeKey], item => item.id === tab.id);
+      let index = findIndex((state[state.modeKey] as ChromeGeneric[]), (item) => item.id === tab.id);
 
       _.assignIn(state[state.modeKey][index], t);
       state[state.modeKey][index].openTab = 1;
@@ -38,12 +38,12 @@ export const activateTab = function(tab: ChromeTab) {
       state.set(stateUpdate);
     });
   } else if (state.prefs.mode === 'apps' || state.prefs.mode === 'extensions') {
-    handleAppClick(<ChromeExtensionInfo><unknown>tab);
+    handleAppClick(<ChromeExtensionInfo>tab);
   } else if (typeof tab.id === 'number' || tab.openTab) {
-    chrome.tabs.update(tab.openTab ? tab.openTab : tab.id, {active: true});
+    chrome.tabs.update(<number>(tab.openTab ? tab.openTab : tab.id), {active: true});
 
-    if (tab.windowId !== state.windowId) {
-      chrome.windows.update(tab.windowId, {focused: true});
+    if ((<ChromeTab>tab).windowId !== state.windowId) {
+      chrome.windows.update((<ChromeTab>tab).windowId, {focused: true});
     }
   }
 
@@ -63,12 +63,12 @@ export const activateTab = function(tab: ChromeTab) {
   }
 };
 
-export const closeTab = (tab: ChromeTab) => {
+export const closeTab = (tab: ChromeGeneric) => {
   if (!tab) {
     return;
   }
 
-  let refItem = findIndex(state[state.modeKey], item => item.id === tab.id);
+  let refItem = findIndex((state[state.modeKey] as ChromeGeneric[]), item => item.id === tab.id);
 
   if (refItem === -1) {
     return;
@@ -77,34 +77,35 @@ export const closeTab = (tab: ChromeTab) => {
   let stateUpdate = {};
 
   if (state.prefs.mode === 'tabs' || tab.openTab) {
-    chrome.tabs.remove(tab.openTab ? tab.openTab : tab.id);
+    chrome.tabs.remove(<number>(tab.openTab ? tab.openTab : tab.id));
   } else if (state.prefs.mode === 'sessions') {
     // The sessionTabs array is unique, so we're re-mapping the tabs from the session data.
     let tabs = [];
-    let completeSessionTabs = map(state.sessions, (session: SessionState) => session.tabs);
+    let completeSessionTabs = map(state.sessions, (session) => session.tabs);
 
     each(completeSessionTabs, function(win) {
       tabs = tabs.concat(_.flatten(win));
-    });
-    tabs = filter(tabs, (_tab: ChromeTab) => _tab.url === tab.url);
-    each(tabs, function(tab) {
-      if (isNewTab(tab.url)) {
-        return;
-      }
 
-      let refSession = findIndex(state.sessions, session => session.id === tab.originSession);
-
-      each(state.sessions[refSession], function(w) {
-        if (!w || !w[tab.originWindow]) {
+      each(_.flatten(win), function(_tab) {
+        if (_tab.url === tab.url || isNewTab(_tab.url)) {
           return;
         }
 
-        let index = findIndex(w[tab.originWindow], w => w.id === tab.id);
+        let refSession = findIndex(state.sessions, session => session.id === _tab.originSession);
 
-        if (index > -1) {
-          removeSessionTab(state.sessions, refSession, tab.originWindow, index, state.sessionTabs, state.sort);
-          return;
-        }
+        // Iterating SessionState
+        each(state.sessions[refSession], function(value) {
+          if (!value || !value[_tab.originWindow]) {
+            return;
+          }
+
+          let index = findIndex(value[_tab.originWindow] as ChromeTab[], (t) => t.id === _tab.id);
+
+          if (index > -1) {
+            removeSessionTab(state.sessions, refSession, _tab.originWindow, index, state.sessionTabs, state.sort);
+            return;
+          }
+        });
       });
     });
   } else if (state.prefs.mode === 'bookmarks') {

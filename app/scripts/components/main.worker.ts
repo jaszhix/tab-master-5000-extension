@@ -32,13 +32,13 @@ const hasDuplicates = (array) => {
   return (new Set(array)).size !== array.length;
 };
 
-const getDuplicates = (array) => {
+const getDuplicates = <T>(array: T[]): T[] => {
   return filter(array, (x, i) => {
     return includes(array, x, i + 1);
   });
 };
 
-const checkDuplicateTabs = function(stateUpdate){
+const checkDuplicateTabs = function(stateUpdate: Partial<GlobalState>){
   let tabUrls = map(stateUpdate.tabs, function(tab) {
     return tab.url;
   })
@@ -68,7 +68,7 @@ let defaults = (iteration, windowId = -1) => {
   };
 };
 
-const sort = (state, data) => {
+const sort = (state, data: ChromeTab[]) => {
   let result;
 
   if (state.prefs.mode === 'tabs') {
@@ -88,7 +88,7 @@ const sort = (state, data) => {
   return result;
 };
 
-const checkFavicons = (state, tabs, stateUpdate: Partial<GlobalState> = {}) => {
+const checkFavicons = (state: GlobalState, tabs: ChromeGeneric[], stateUpdate: Partial<GlobalState> = {}) => {
   let ignoredCount = filter(tabs, function(tab) {
     return tab.favIconUrl === defaultFavicon
   }).length;
@@ -129,7 +129,7 @@ const checkFavicons = (state, tabs, stateUpdate: Partial<GlobalState> = {}) => {
     prefs: state.prefs,
     sort: stateUpdate.sort,
     direction: stateUpdate.direction
-  }, tabs);
+  }, tabs as ChromeTab[]);
   // @ts-ignore
   postMessage({stateUpdate});
 };
@@ -156,7 +156,7 @@ const searchChange = (query, items) => {
   postMessage({stateUpdate: {searchCache: _items, modeKey: 'searchCache'}});
 };
 
-const processHistory = function(s, msg) {
+const processHistory = function(s, msg: {history: (ChromeHistoryItem)[]}) {
   let {history} = msg;
   let tabs: ChromeHistoryItem[] = flatten(s.allTabs);
 
@@ -254,7 +254,7 @@ const processAppExtension = function(s, msg: {extensions: ChromeExtensionInfo[]}
   postMessage({stateUpdate});
 };
 
-const processSessionTabs = function(sessions, tabs, windowId) {
+const processSessionTabs = function(sessions, tabs: ChromeTab[], windowId) {
   if (!sessions) {
     // @ts-ignore
     postMessage({setPrefs: {mode: 'tabs'}});
@@ -295,7 +295,7 @@ const processSessionTabs = function(sessions, tabs, windowId) {
   return uniqBy(flatten(allTabs), 'url');
 }
 
-const processWindows = function(s, msg) {
+const processWindows = function(s, msg: Partial<WorkerMessage>) {
   let stateUpdate: Partial<GlobalState> = {
     allTabs: map(msg.windows, function(win) {
       return win.tabs;
@@ -353,17 +353,17 @@ const processWindows = function(s, msg) {
 
   // Prevent state being overriden from another window while session manager is in use
   if (!msg.modalOpen) {
-    stateUpdate[stateUpdate.modeKey] = filter(stateUpdate[stateUpdate.modeKey], function(item) {
+    (stateUpdate[stateUpdate.modeKey] as ChromeItem[]) = filter((stateUpdate[stateUpdate.modeKey] as ChromeItem[]), function(item) {
       return !isNewTab(item.url);
     });
-    checkFavicons(s, stateUpdate[stateUpdate.modeKey], stateUpdate);
+    checkFavicons(s, (stateUpdate[stateUpdate.modeKey] as ChromeItem[]), stateUpdate);
   } else {
     // @ts-ignore
     postMessage({stateUpdate});
   }
 };
 
-onmessage = function(e) {
+onmessage = function(e: WorkerEvent) {
   if (e.data.msg.windows) {
     processWindows(e.data.state, e.data.msg);
   } else if (e.data.msg.history) {

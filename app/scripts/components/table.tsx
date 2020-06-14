@@ -195,7 +195,7 @@ class Row extends React.Component<RowProps> {
                 style={style}
                 id={`column-${column}`}
                 className={css(p.dynamicStyles.columnCommon)}>
-                {column === 'mutedInfo' ? p.row[column].muted : p.row[column]}
+                {p.row[column]}
               </td>
             );
           }
@@ -430,11 +430,11 @@ class Table extends React.Component<TableProps, TableState> {
     if (this.willUnmount) return;
 
     const {prefs, chromeVersion} = state;
-    let rows: ChromeTab[] = [];
+    let rows: ChromeItem[] = [];
     let columns: SortKey[] = ['title', 'domain'];
 
     for (let i = 0, len = state[state.modeKey].length; i < len; i++) {
-      let row = state[state.modeKey][i] as ChromeTab;
+      let row = state[state.modeKey][i] as ChromeItem;
       let urlMatch;
 
       if (!row || !row.url) continue;

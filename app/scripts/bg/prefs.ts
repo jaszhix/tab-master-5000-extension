@@ -48,6 +48,7 @@ let baseThemePrefs: Partial<PreferencesState> = {
   wallpaper: null,
   alerts: true,
   sessionsSync: false,
+  currentSyncedSession: '',
 };
 
 let prefsStore = <PreferencesStore>init({

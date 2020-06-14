@@ -196,7 +196,7 @@ class ItemsContainer extends React.Component<ItemsContainerProps, ItemContainerS
 
     let index = p.s.tabs[end].index;
 
-    chrome.tabs.move(p.s.tabs[start].id, {index}, () => {
+    chrome.tabs.move(p.s.tabs[start].id as number, {index}, () => {
       queryTabs();
       setTimeout(() => {
         tryFn(() => this.dragged.el.parentNode.removeChild(this.placeholder));
@@ -291,7 +291,7 @@ class ItemsContainer extends React.Component<ItemsContainerProps, ItemContainerS
         ref={this.getRef}
         className="tile-body"
         style={containerStyle}>
-        {isTileView ? map(s[modeKey], (tab, i) => {
+        {isTileView ? map((s[modeKey] as ChromeItem[]), (tab, i) => {
           if (isNewTab(tab.url) || !tab.title) {
             return null;
           }

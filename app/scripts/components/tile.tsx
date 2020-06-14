@@ -18,7 +18,7 @@ const styles = StyleSheet.create({
 });
 
 export interface TileProps {
-  tab: ChromeTab & ChromeExtensionInfo;
+  tab: ChromeItem;
   prefs: PreferencesState;
   context: ContextState;
   theme: Theme;
@@ -46,7 +46,7 @@ export interface TileState {
   duplicate?: boolean;
   screenshot?: string;
   openTab?: boolean;
-  tab?: ChromeTab;
+  tab?: ChromeItem;
   i?: number;
 }
 
@@ -108,7 +108,7 @@ class Tile extends React.Component<TileProps, TileState> {
   }
 
   handleDuplicates = () => {
-    utils.checkDuplicateTabs(this.props.tab, (duplicate) => {
+    utils.checkDuplicateTabs(this.props.tab as ChromeTab, (duplicate) => {
       if (duplicate !== this.state.duplicate) this.setState({duplicate})
     });
   }

@@ -14,7 +14,7 @@ export interface ContextMenuProps {
   prefs: PreferencesState;
   theme: Theme;
   duplicateTabs: string[];
-  tabs: TabCollection;
+  tabs: ChromeItem[];
   chromeVersion: number;
 }
 
@@ -328,7 +328,7 @@ class ContextMenu extends React.Component<ContextMenuProps, ContextMenuState> {
     if (opt === 'muted') {
       return p.context.id.mutedInfo.muted;
     } else if (opt === 'duplicate') {
-      let duplicateTabs: ChromeTab[] = filter(p.tabs, (tab) => tab.url === p.context.id.url);
+      let duplicateTabs = filter(p.tabs, (tab) => tab.url === p.context.id.url);
 
       return p.duplicateTabs.indexOf(p.context.id.url) > -1 && p.context.id.id !== first(duplicateTabs).id;
     } else if (opt === 'actions') {
