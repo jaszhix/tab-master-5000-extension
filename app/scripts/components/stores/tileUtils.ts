@@ -109,7 +109,7 @@ export const closeTab = (tab: ChromeGeneric) => {
       });
     });
   } else if (state.prefs.mode === 'bookmarks') {
-    chrome.bookmarks.remove(<ChromeExtensionInfo['id']><unknown>tab.id);
+    chrome.bookmarks.remove(<string>tab.id);
   } else if (state.prefs.mode === 'history') {
     chrome.history.deleteUrl({url: tab.url});
   }

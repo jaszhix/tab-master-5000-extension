@@ -539,7 +539,6 @@ class Bg {
     }, 1000);
   }
 
-
   attachMessageListener = async (s) => {
     browser.runtime.onMessage.addListener(async (msg: any, sender: B.Runtime.MessageSender) => {
       console.log('Message from front-end: ', msg, sender);

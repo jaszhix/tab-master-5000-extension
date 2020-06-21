@@ -14,10 +14,10 @@ import SentryWebpackPlugin from '@sentry/webpack-plugin';
 const babelConfig = JSON.parse(fs.readFileSync('./.babelrc').toString());
 
 const aliases = Object.assign({
-  underscore: 'lodash'
+  underscore: 'lodash',
 }, require('lodash-loader').createLodashAliases());
 
-type EnvMode = 'development' | 'production'
+type EnvMode = 'development' | 'production';
 
 let {COMMIT_HASH, DEV_ENV, NODE_ENV, BUNDLE_ENTRY} = process.env;
 const ENV: EnvMode = <EnvMode>NODE_ENV || 'development';
@@ -149,7 +149,8 @@ const config: webpack.Configuration = {
     path: path.resolve(__dirname, `${CONTENT_BASE}/scripts`),
     filename: 'app.js',
     publicPath,
-    globalObject: 'this'
+    globalObject: 'this',
+    pathinfo: !PROD,
   },
   plugins: [
     new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
@@ -188,8 +189,15 @@ const config: webpack.Configuration = {
   },
   module: {
     rules: [
+
+      {
+        test: /\.(js|ts|tsx)$/,
+        use: ['source-map-loader'],
+        enforce: 'pre'
+      },
       {
         test: /\.worker\.ts$/,
+        enforce: 'post',
         use: {
           loader: 'worker-loader',
           options: {
@@ -201,6 +209,7 @@ const config: webpack.Configuration = {
       {
         test: /\.(ts|tsx)$/,
         exclude: /node_modules(?!\/rc-color-picker)/,
+        enforce: 'post',
         use: [
           {
             loader: 'lodash-loader'
@@ -223,6 +232,7 @@ const config: webpack.Configuration = {
       {
         test: /\.(js|jsx|mjs)$/,
         exclude: /node_modules(?!\/rc-color-picker)/,
+        enforce: 'post',
         use: [
           {
             loader: 'lodash-loader'
@@ -232,11 +242,6 @@ const config: webpack.Configuration = {
             options: babelConfig
           }
         ],
-      },
-      {
-        test: /\.(js|ts|tsx)$/,
-        use: ['source-map-loader'],
-        enforce: 'pre'
       },
       {
         test: /\.css$/,
@@ -264,7 +269,7 @@ const config: webpack.Configuration = {
       },
     ],
   },
-  devtool: 'source-map',
+  devtool: PROD ? 'hidden-source-map' : 'inline-cheap-module-source-map',
   stats: {
     children: false
   },
@@ -291,7 +296,6 @@ if (PROD && ENTRY) {
   }
 
   config.entry = ['@babel/polyfill', config.entry];
-  config.devtool = 'hidden-source-map';
 
   config.plugins.push(
     new BundleAnalyzerPlugin({
@@ -349,6 +353,18 @@ if (PROD && ENTRY) {
     }
   }
 } else {
+  Object.assign(config.optimization, {
+    namedModules: true,
+    namedChunks: true,
+    flagIncludedChunks: false,
+    occurrenceOrder: false,
+    concatenateModules: false,
+    noEmitOnErrors: false,
+    checkWasmTypes: false,
+    minimize: false,
+    removeAvailableModules: false
+  });
+
   config.devServer = {
     port: 8009,
     hot: true,
@@ -361,6 +377,8 @@ if (PROD && ENTRY) {
   };
 
   config.plugins.push(
+    new webpack.NamedModulesPlugin(),
+    new webpack.NamedChunksPlugin(),
     new webpack.NoEmitOnErrorsPlugin(),
     new webpack.HotModuleReplacementPlugin(),
     new webpack.LoaderOptionsPlugin({
