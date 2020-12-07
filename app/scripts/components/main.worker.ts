@@ -134,8 +134,32 @@ const checkFavicons = (state: GlobalState, tabs: ChromeGeneric[], stateUpdate: P
   postMessage({stateUpdate});
 };
 
-const searchChange = (query, items) => {
-  let _items;
+const searchChange = (query: string, items: ChromeGeneric[]) => {
+  // Check property lookup syntax
+  if (query.includes(':')) {
+    let modified = [];
+    let [property, value] = query.split(':');
+
+    [value, query] = value.split(/\s/);
+
+    each(items, (item) => {
+      if (item[property]
+        && ((typeof item[property] === 'string' && item[property] === value)
+          || item[property].toString() === value)) {
+        modified.push(item);
+      }
+    });
+
+    if (!query) {
+      // @ts-ignore
+      postMessage({stateUpdate: {searchCache: modified, modeKey: 'searchCache'}});
+      return;
+    }
+
+    items = modified;
+
+    console.log(query)
+  }
 
   tryFn(() => {
     let itemsSearch = new Fuse(items, {
@@ -150,10 +174,10 @@ const searchChange = (query, items) => {
       threshold: 0.4
     });
 
-    _items = map(orderBy(itemsSearch.search(query.toLowerCase()), 'score'), item => item.item);
-  }, () => _items = items);
+    items = map(orderBy(itemsSearch.search(query.toLowerCase()), 'score'), item => item.item);
+  });
   // @ts-ignore
-  postMessage({stateUpdate: {searchCache: _items, modeKey: 'searchCache'}});
+  postMessage({stateUpdate: {searchCache: items, modeKey: 'searchCache'}});
 };
 
 const processHistory = function(s, msg: {history: (ChromeHistoryItem)[]}) {
