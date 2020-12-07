@@ -157,8 +157,6 @@ const searchChange = (query: string, items: ChromeGeneric[]) => {
     }
 
     items = modified;
-
-    console.log(query)
   }
 
   tryFn(() => {
