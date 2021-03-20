@@ -1,0 +1,769 @@
+{
+  "appName": {
+    "message": "标签页大师 5000",
+    "description": "The title of the application, displayed in the web store."
+  },
+  "appDesc": {
+    "message": "集标签页、历史记录、会话以及扩展管理功能于一身的一把瑞士军刀。",
+    "description":"The description of the application, displayed in the web store."
+  },
+  "hi": {
+    "message": "Hi"
+  },
+  "tab": {
+    "message": "标签页"
+  },
+  "newTab": {
+    "message": "新标签页"
+  },
+  "options": {
+    "message": "选项"
+  },
+  "close": {
+    "message": "关闭"
+  },
+  "remove": {
+    "message": "移除"
+  },
+  "pin": {
+    "message": "固定"
+  },
+  "unpin": {
+    "message": "取消固定"
+  },
+  "mute": {
+    "message": "静音"
+  },
+  "unmute": {
+    "message": "取消静音"
+  },
+  "addTo": {
+    "message": "添加到"
+  },
+  "removeFrom": {
+    "message": "移除于"
+  },
+  "allFrom": {
+    "message": "所有来自"
+  },
+  "allLeft": {
+    "message": "标签页到左端"
+  },
+  "allRight": {
+    "message": "标签页到右端"
+  },
+  "bookmarks": {
+    "message": "书签"
+  },
+  "tabs": {
+    "message": "标签页"
+  },
+  "sessions": {
+    "message": "会话"
+  },
+  "history": {
+    "message": "历史记录"
+  },
+  "extensions": {
+    "message": "扩展"
+  },
+  "apps": {
+    "message": "应用"
+  },
+  "undo": {
+    "message": "撤销"
+  },
+  "allDuplicates": {
+    "message": "所有重复项"
+  },
+  "allSearchResults": {
+    "message": "所有搜索结果"
+  },
+  "reload": {
+    "message": "重新载入"
+  },
+  "reloadSelected": {
+    "message": "重新载入选中项"
+  },
+  "copyURLToClipboard": {
+    "message": "复制网址到剪贴板"
+  },
+  "selectAllFromDomain": {
+    "message": "来自此域名全部选中"
+  },
+  "invertSelection": {
+    "message": "反转选中状态"
+  },
+  "togglePinningOf": {
+    "message": "切换固定状态 - "
+  },
+  "toggleMutingOf": {
+    "message": "切换静音状态 - "
+  },
+  "selectedDomains": {
+    "message": "个选中的域名"
+  },
+  "items": {
+    "message": "项"
+  },
+  "createShortcutsFor": {
+    "message": "创建快捷键 - "
+  },
+  "createShortcut": {
+    "message": "创建快捷键"
+  },
+  "openFullScreen": {
+    "message": "打开全屏"
+  },
+  "openAsAPinnedTab": {
+    "message": "打开为固定的标签页"
+  },
+  "openAsA": {
+    "message": "打开为"
+  },
+  "toggle": {
+    "message": "切换"
+  },
+  "disable": {
+    "message": "禁用"
+  },
+  "enable": {
+    "message": "启用"
+  },
+  "uninstall": {
+    "message": "卸载"
+  },
+  "removalOf": {
+    "message": "移除操作："
+  },
+  "creationOf": {
+    "message": "创建操作："
+  },
+  "mutingOf": {
+    "message": "静音操作："
+  },
+  "unmutingOf": {
+    "message": "取消静音操作："
+  },
+  "pinningOf": {
+    "message": "固定操作："
+  },
+  "unpinningOf": {
+    "message": "取消固定操作："
+  },
+  "movingOf": {
+    "message": "移动操作："
+  },
+  "pressEnterToSearch": {
+    "message": "按回车键（Enter）执行搜索"
+  },
+  "google": {
+    "message": "Google"
+  },
+  "newVersionAvailable": {
+    "message": "有新版本了"
+  },
+  "updatedTo": {
+    "message": "已更新至"
+  },
+  "thankYouForInstallingTM5K": {
+    "message": "感谢您安装 标签页大师 5000"
+  },
+  "downloadingAndCachingFavicons": {
+    "message": "正在下载和缓存网站图标..."
+  },
+  "search": {
+    "message": "搜索"
+  },
+  "resetData": {
+    "message": "重置将删除所有数据。开始前请备份您的会话和主题。"
+  },
+  "encounteredError": {
+    "message": "Tab Master 遇到一个错误，无法完成初始化。很抱歉带来不便，请到“支持”选项卡了解如何报告问题"
+  },
+  "chromeWebStore": {
+    "message": "Chrome 网上应用店"
+  },
+  "orAsAnIssueOn": {
+    "message": "或提报问题到"
+  },
+  "github": {
+    "message": "Github"
+  },
+  "soThisIssueCanBeInvestigated": {
+    "message": "以便调查您遇到的问题。"
+  },
+  "tile": {
+    "message": "平铺"
+  },
+  "table": {
+    "message": "表格"
+  },
+  "format": {
+    "message": "格式"
+  },
+  "settings": {
+    "message": "设置"
+  },
+  "sessionManager": {
+    "message": "会话管理器"
+  },
+  "theming": {
+    "message": "主题"
+  },
+  "viewMode": {
+    "message": "查看模式"
+  },
+  "sortBy": {
+    "message": "排序方式"
+  },
+  "folder": {
+    "message": "文件夹"
+  },
+  "dateAdded": {
+    "message": "添加日期"
+  },
+  "website": {
+    "message": "网站"
+  },
+  "title": {
+    "message": "标题"
+  },
+  "open": {
+    "message": "打开"
+  },
+  "originalOrder": {
+    "message": "原始顺序"
+  },
+  "mostVisited": {
+    "message": "最常访问"
+  },
+  "lastVisit": {
+    "message": "最后访问"
+  },
+  "offlineEnabled": {
+    "message": "离线已启用"
+  },
+  "duplicateTab": {
+    "message": "重复标签页"
+  },
+  "loading": {
+    "message": "正在加载"
+  },
+  "tabOrder": {
+    "message": "标签页顺序"
+  },
+  "updated": {
+    "message": "已更新"
+  },
+  "mostUsed": {
+    "message": "最常用"
+  },
+  "audible": {
+    "message": "有声音"
+  },
+  "label": {
+    "message": "标签"
+  },
+  "apply": {
+    "message": "应用"
+  },
+  "homepage": {
+    "message": "首页"
+  },
+  "preferences": {
+    "message": "设置"
+  },
+  "permissions": {
+    "message": "权限"
+  },
+  "about": {
+    "message": "关于"
+  },
+  "addonsManagerHint": {
+    "message": "从“新标签页”来更改任何设置前，请关闭“附加组件管理器”。"
+  },
+  "newTabOverride": {
+    "message": "代替新标签页"
+  },
+  "newTabOverrideTip": {
+    "message": "控制新建一个标签页后看到什么画面。"
+  },
+  "newTabOverrideOption1": {
+    "message": "浏览器默认设置"
+  },
+  "newTabOverrideOption2": {
+    "message": "自定义"
+  },
+  "enableContextMenu": {
+    "message": "启用右键菜单"
+  },
+  "enableContextMenuTip": {
+    "message": "此选项控制右击时是否弹出菜单。如果禁用该选项，将无法触及某些标签页控制功能。"
+  },
+  "enableDraggableTabReordering": {
+    "message": "启用拖拽标签页调整顺序"
+  },
+  "enableDraggableTabReorderingTip": {
+    "message": "启用此选项后您可以拖拽方块/表格行重排标签页顺序。"
+  },
+  "singleNewTab": {
+    "message": "每个窗口只保留一个新标签页"
+  },
+  "singleNewTabTip": {
+    "message": "启用此选项后将强制关闭窗口中非当前焦点的所有新标签页。这对于老旧计算机可能有用。"
+  },
+  "closeOnActivate": {
+    "message": "激活标签页时关闭新标签页"
+  },
+  "closeOnActivateTip": {
+    "message": "控制单击标签页方块/表格行时是否关闭本扩展的标签页。"
+  },
+  "allTabs": {
+    "message": "跨窗口显示所有标签页"
+  },
+  "allTabsTip": {
+    "message": "控制在方块/表格界面下是否显示所有窗口的标签页。"
+  },
+  "trackMostUsed": {
+    "message": "追踪最常用的标签页"
+  },
+  "trackMostUsedTip": {
+    "message": "持续记录标签页被激活的次数。这将新增一种排序模式。"
+  },
+  "autoDiscard": {
+    "message": "启用自动休眠标签页以节省内存"
+  },
+  "autoDiscardTip": {
+    "message": "此选项将允许 标签页大师 5000 在一段时间后自动将标签页清出内存。操作不会关闭标签页，但下次激活该标签页时需要重新加载其内容。"
+  },
+  "autoDiscardClearTime": {
+    "message": "不活跃超过如下时间后休眠标签页以节省内存"
+  },
+  "time": {
+    "message": "时间"
+  },
+  "hour": {
+    "message": "时"
+  },
+  "minute": {
+    "message": "分"
+  },
+  "minutes": {
+    "message": "分钟"
+  },
+  "s": {
+    "message": "秒"
+  },
+  "animations": {
+    "message": "启用动画"
+  },
+  "animationsTip": {
+    "message": "此选项控制标签页操作的动画及模糊效果。硬件加速效果不佳的低端计算机上禁用它们也许能提升表现。"
+  },
+  "duplicate": {
+    "message": "启用重复标签页脉动提示"
+  },
+  "duplicateTip": {
+    "message": "此选项将在所有重复且非首个的标签页上显示一个脉冲提示，以便您注意到和了解有多少重复的标签页。"
+  },
+  "screenshot": {
+    "message": "启用标签页画面截图"
+  },
+  "screenshotTip": {
+    "message": "启用此功能后，会在标签页方块的背景上显示标签页被点击后的截图。截图存储在浏览器中，直至下次激活页面。仅适用于授权的来源，另见权限面板。"
+  },
+  "screenshotDiskUsage": {
+    "message": "截图占用的磁盘空间"
+  },
+  "faviconsDiskUsage": {
+    "message": "网站图标占用的磁盘空间"
+  },
+  "screenshotDiskUsageTip": {
+    "message": "如果您发现有性能问题，清除截图缓存有时会有效果。缓存超过 50 MB 后，会自动清除超过 3 天的截图。"
+  },
+  "screenshotBg": {
+    "message": "启用悬停时画面截图放入背景"
+  },
+  "screenshotBgTip": {
+    "message": "此设置决定，在您悬停于一个有画面截图的标签页时，是否将截图填入新标签页的背景来实现全尺寸展现。画面截图会经模糊并与背景混合。"
+  },
+  "tooltip": {
+    "message": "启用悬停提示"
+  },
+  "tooltipTip": {
+    "message": "切换是否在鼠标悬停于选项时看到更详细的提示说明。"
+  },
+  "alerts": {
+    "message": "启用警告"
+  },
+  "alertsTip": {
+    "message": "切换是否在右下角弹出通知。"
+  },
+  "errorTelemetry": {
+    "message": "启用匿名错误报告"
+  },
+  "errorTelemetryTip": {
+    "message": "启用此选项有助于改进本扩展。当代码触发了错误时，您的浏览器、操作系统、IP 地址以及本扩展的设置数据（黑名单除外）将发送至 Sentry，附一份错误堆栈，以便开发人员针对性查明错误并在之后的版本中修正。"
+  },
+  "screenshotBgOpacity": {
+    "message": "设定背景图片不透明度"
+  },
+  "screenshotBgOpacityTip": {
+    "message": "控制背景截图和壁纸的不透明强度。"
+  },
+  "screenshotBgBlur": {
+    "message": "设定背景图片模糊强度"
+  },
+  "screenshotBgBlurTip": {
+    "message": "控制背景截图、壁纸和固定背景的不透明强度。"
+  },
+  "tabSizeHeight": {
+    "message": "设置平铺尺寸"
+  },
+  "tabSizeHeightTip": {
+    "message": "控制方块尺寸。"
+  },
+  "tablePadding": {
+    "message": "设定表格行内边距"
+  },
+  "tablePaddingTip": {
+    "message": "控制表格行模式下的文字及图标间留下多少间距。"
+  },
+  "resetSearchOnClick": {
+    "message": "搜索结果上单击时重置搜索"
+  },
+  "resetSearchOnClickTip": {
+    "message": "在搜索结果上单击后重置搜索以便恢复显示所有内容。"
+  },
+  "sessionsSync": {
+    "message": "启用会话管理器"
+  },
+  "sessionsSyncTip": {
+    "message": "会话管理器可以追踪和保存当前打开的标签页。"
+  },
+  "faviconCaching": {
+    "message": "启用网站图标缓存"
+  },
+  "faviconCachingTip": {
+    "message": "启用时，本扩展会将网站图标（Favicon）存储到磁盘以减少图像下载需求，以及确保没有互联网连接时也顺利显示。"
+  },
+  "actions": {
+    "message": "启用标签页操作的撤销"
+  },
+  "actionsTip": {
+    "message": "启用此选项后允许您用快捷键 CTRL+Z 撤销一次对标签页的操作，也可在标签页视图下右击标签页方块，右键菜单。"
+  },
+  "keyboardShortcuts": {
+    "message": "启用键盘快捷键"
+  },
+  "blacklist": {
+    "message": "启用网站黑名单"
+  },
+  "blacklistTip": {
+    "message": "请输入空格分隔的域名列表，匹配的页面始终会自动关闭。对对于拦截某些浪费时间或者完全不想看的网站有一定作用。"
+  },
+  "blacklistPlaceholder": {
+    "message": "输入空格分隔的域名列表..."
+  },
+  "ctrlZ": {
+    "message": "撤销（需要标签页操作）"
+  },
+  "sidebar": {
+    "message": "侧栏"
+  },
+  "restoreDefaultPrefs": {
+    "message": "恢复默认设置"
+  },
+  "restoreDefaultPrefsConfirm": {
+    "message": "确认重置设置"
+  },
+  "clearFaviconCache": {
+    "message": "清除网站图标缓存"
+  },
+  "clearScreenshotCache": {
+    "message": "清除标签页截图缓存"
+  },
+  "saveSession": {
+    "message": "保存会话"
+  },
+  "and": {
+    "message": "和"
+  },
+  "areNotValidDomains": {
+    "message": "不是有效的网站域名。"
+  },
+  "isNotValidDomain": {
+    "message": "不是一个有效的网站域名。"
+  },
+  "save": {
+    "message": "保存"
+  },
+  "savedSessions": {
+    "message": "会话已保存"
+  },
+  "currentSession": {
+    "message": "当前会话"
+  },
+  "export": {
+    "message": "导出"
+  },
+  "import": {
+    "message": "导入"
+  },
+  "editLabel": {
+    "message": "编辑标签"
+  },
+  "cancelEdit": {
+    "message": "取消编辑"
+  },
+  "removeTheme": {
+    "message": "移除主题"
+  },
+  "searchSession": {
+    "message": "搜索会话"
+  },
+  "synchronized": {
+    "message": "已同步"
+  },
+  "synchronizeSession": {
+    "message": "同步会话"
+  },
+  "desynchronizeSession": {
+    "message": "解除会话同步"
+  },
+  "restoreSession": {
+    "message": "还原会话"
+  },
+  "removeSession": {
+    "message": "移除会话"
+  },
+  "removeWindow": {
+    "message": "移除窗口"
+  },
+  "removeOrigin": {
+    "message": "移除此 Origin"
+  },
+  "window": {
+    "message": "窗口"
+  },
+  "closeWindow": {
+    "message": "关闭窗口"
+  },
+  "restoreWindow": {
+    "message": "还原窗口"
+  },
+  "removeTab": {
+    "message": "移除标签页"
+  },
+  "closeTab": {
+    "message": "关闭标签页"
+  },
+  "new": {
+    "message": "新建"
+  },
+  "theme": {
+    "message": "主题"
+  },
+  "saveTheme": {
+    "message": "保存主题"
+  },
+  "copy": {
+    "message": "复制"
+  },
+  "copyTheme": {
+    "message": "复制主题"
+  },
+  "update": {
+    "message": "更新"
+  },
+  "updateTheme": {
+    "message": "更新主题"
+  },
+  "updateLabel": {
+    "message": "更新标签"
+  },
+  "bodyHeaderAndFields": {
+    "message": "正文、标题和字段"
+  },
+  "buttons": {
+    "message": "按钮"
+  },
+  "tiles": {
+    "message": "方块"
+  },
+  "importWallpaper": {
+    "message": "导入壁纸"
+  },
+  "custom": {
+    "message": "自定义"
+  },
+  "tm5k": {
+    "message": "TM5K"
+  },
+  "colorScheme": {
+    "message": "颜色方案"
+  },
+  "wallpaper": {
+    "message": "壁纸"
+  },
+  "chromesque": {
+    "message": "镀铬方"
+  },
+  "leafy": {
+    "message": "叶绿"
+  },
+  "mellowDark": {
+    "message": "醇黑"
+  },
+  "midnightPurple": {
+    "message": "深紫"
+  },
+  "forestGreen": {
+    "message": "森林绿"
+  },
+  "pastelSummer": {
+    "message": "盛夏"
+  },
+  "redmondFlat": {
+    "message": "绅士黑"
+  },
+  "blueOut": {
+    "message": "蜕变蓝"
+  },
+  "highRise": {
+    "message": "深蓝"
+  },
+  "tabMasterVanilla": {
+    "message": "香草"
+  },
+  "bodyText": {
+    "message": "正文文本"
+  },
+  "bodyBg": {
+    "message": "正文背景"
+  },
+  "headerBg": {
+    "message": "标题背景"
+  },
+  "textFieldsText": {
+    "message": "文本框"
+  },
+  "textFieldsPlaceholder": {
+    "message": "文本框预设文本"
+  },
+  "textFieldsBg": {
+    "message": "文本框背景"
+  },
+  "textFieldsBorder": {
+    "message": "文本框边框"
+  },
+  "settingsBg": {
+    "message": "设置背景色"
+  },
+  "settingsItemHover": {
+    "message": "设置项（悬停）"
+  },
+  "darkBtnText": {
+    "message": "深色按钮文本"
+  },
+  "darkBtnTextShadow": {
+    "message": "深色按钮文本阴影"
+  },
+  "darkBtnBg": {
+    "message": "深色按钮背景色"
+  },
+  "darkBtnBgHover": {
+    "message": "深色按钮背景色（悬停）"
+  },
+  "lightBtnText": {
+    "message": "明亮按钮文本"
+  },
+  "lightBtnTextShadow": {
+    "message": "明亮按钮文本阴影"
+  },
+  "lightBtnBg": {
+    "message": "明亮按钮背景色"
+  },
+  "lightBtnBgHover": {
+    "message": "明亮按钮背景色（悬停）"
+  },
+  "tileBg": {
+    "message": "方块背景"
+  },
+  "tileBgHover": {
+    "message": "方块背景（悬停）"
+  },
+  "tileText": {
+    "message": "方块文本"
+  },
+  "tileTextShadow": {
+    "message": "方块文本阴影"
+  },
+  "tileShadow": {
+    "message": "方块阴影"
+  },
+  "tileX": {
+    "message": "方块关闭按钮"
+  },
+  "tileXHover": {
+    "message": "方块关闭按钮（悬停）"
+  },
+  "tilePin": {
+    "message": "方块固定按钮"
+  },
+  "tilePinHover": {
+    "message": "方块固定按钮（悬停）"
+  },
+  "tilePinned": {
+    "message": "方块已固定按钮"
+  },
+  "tileMute": {
+    "message": "方块静音按钮"
+  },
+  "tileMuteHover": {
+    "message": "方块静音按钮（悬停）"
+  },
+  "tileMuteAudible": {
+    "message": "方块有声音按钮"
+  },
+  "tileMuteAudibleHover": {
+    "message": "方块有声音按钮（悬停）"
+  },
+  "tileButtonBg": {
+    "message": "方块按钮背景色"
+  },
+  "releaseNotes": {
+    "message": "发行日志"
+  },
+  "support": {
+    "message": "支持"
+  },
+  "attribution": {
+    "message": "组件"
+  },
+  "attributionHeader": {
+    "message": "本软件（TM5K）的成功也受益于如下项目。"
+  },
+  "attributionFooter": {
+    "message": "包括按下列许可证授权的壁纸："
+  },
+  "contribute": {
+    "message": "捐款"
+  },
+  "contributeHeader": {
+    "message": "为何捐款？"
+  },
+  "specialThanks": {
+    "message": "特别感谢"
+  },
+  "license": {
+    "message": "许可协议"
+  },
+  "descending": {
+    "message": "降序"
+  },
+  "ascending": {
+    "message": "升序"
+  }
+}
