@@ -2,7 +2,7 @@
   "name": "__MSG_appName__",
   "short_name": "TM5K",
   "version": "2.10.0",
-  "manifest_version": 2,
+  "manifest_version": 3,
   "description": "__MSG_appDesc__",
   "icons": {
     "16": "images/icon-16.png",
@@ -25,12 +25,9 @@
   "options_page": "options.html",
   "default_locale": "en",
   "background": {
-    "scripts": [
-      "scripts/background.js"
-    ],
-    "persistent": true
+    "service_worker": "build/background.js"
   },
-  "browser_action": {
+  "action": {
     "default_icon": {
       "19": "images/icon-19.png",
       "38": "images/icon-38.png"
@@ -43,5 +40,9 @@
     "storage",
     "unlimitedStorage"
   ],
-  "optional_permissions": ["activeTab", "bookmarks", "history", "management", "downloads", "<all_urls>"]
+  "host_permissions": [
+    "http://127.0.0.1/*",
+    "*://*/*"
+  ],
+  "optional_permissions": ["activeTab", "bookmarks", "history", "management", "downloads"]
 }

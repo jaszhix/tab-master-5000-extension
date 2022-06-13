@@ -3,7 +3,10 @@ import {browser} from 'webextension-polyfill-ts';
 import type * as B from 'webextension-polyfill-ts'; // eslint-disable-line no-unused-vars
 chrome.runtime.setUninstallURL('https://docs.google.com/forms/d/e/1FAIpQLSeNuukS1pTpeZgtMgE-xg0o1R-b5br-JdWJE7I2SfXMOdfjUQ/viewform');
 import {throttle, cloneDeep, isEqual, first, last, orderBy, uniqBy, without} from 'lodash';
-import v from 'vquery';
+// @ts-ignore
+globalThis.window = {};
+const v = require('vquery');
+
 import uuid from 'node-uuid';
 import * as Sentry from '@sentry/browser';
 import {findIndex, find, each} from '@jaszhix/utils';
@@ -242,7 +245,7 @@ class Bg {
   }
 
   prefsChange = async (e) => {
-    let s = this.state;
+    let s = state.get('*');
 
     console.log('prefsChange', s);
 
@@ -428,7 +431,8 @@ class Bg {
       }
     });
 
-    chrome.browserAction.onClicked.addListener(this.openTabMaster)
+    // @ts-ignore
+    chrome.action.onClicked.addListener(this.openTabMaster)
 
     await this.attachMessageListener(s);
 

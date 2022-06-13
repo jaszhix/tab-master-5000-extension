@@ -24,9 +24,9 @@ const ENV: EnvMode = <EnvMode>NODE_ENV || 'development';
 const PROD = ENV === 'production';
 const ENTRY = BUNDLE_ENTRY;
 const SKIP_MINIFY = JSON.parse(process.env.SKIP_MINIFY || PROD ? 'false' : 'true');
-const publicPath = PROD ? '/' : 'http://127.0.0.1:8009/app/scripts/';
+const publicPath = PROD ? '/' : '/build/';
 
-const CONTENT_BASE = SKIP_MINIFY ? 'sources' : 'dist';
+const CONTENT_BASE = SKIP_MINIFY ? 'app' : 'dist';
 const WORKDIR = PROD ? CONTENT_BASE : 'app';
 const manifestPath = `./${WORKDIR}/manifest.json`;
 
@@ -146,7 +146,7 @@ const config: webpack.Configuration = {
     'index.tsx',
   ],
   output: {
-    path: path.resolve(__dirname, `${CONTENT_BASE}/scripts`),
+    path: path.resolve(__dirname, `${CONTENT_BASE}/build`),
     filename: 'app.js',
     publicPath,
     globalObject: 'this',
@@ -202,7 +202,7 @@ const config: webpack.Configuration = {
           loader: 'worker-loader',
           options: {
             name: '[name].js',
-            publicPath: PROD ? '/scripts/' : publicPath
+            publicPath: '/build/'
           }
         }
       },
@@ -373,7 +373,8 @@ if (PROD && ENTRY) {
     contentBase: path.join(__dirname, 'dist'),
     headers: {'Access-Control-Allow-Origin': '*'},
     disableHostCheck: true,
-    publicPath
+    publicPath,
+    writeToDisk: true,
   };
 
   config.plugins.push(

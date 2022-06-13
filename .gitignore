@@ -21,3 +21,4 @@ source_maps/
 releases
 logs
 tm5k-dist*
+app/build

@@ -27,9 +27,9 @@ fs.ensureDirSync('./releases');
 gulp.task('build-bg', function() {
   config.entry = './app/scripts/bg/bg.ts';
   config.output.filename = 'background.js';
-  return gulp.src('./app/scripts/background.js', {allowEmpty: true})
+  return gulp.src('./app/build/background.js', {allowEmpty: true})
     .pipe(webpackStream(config))
-    .pipe(gulp.dest('./app/scripts/'));
+    .pipe(gulp.dest('./app/build/'));
 });
 
 gulp.task('build', gulp.series('build-bg', function() {
