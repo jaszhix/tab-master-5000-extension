@@ -24,7 +24,7 @@ const ENV: EnvMode = <EnvMode>NODE_ENV || 'development';
 const PROD = ENV === 'production';
 const ENTRY = BUNDLE_ENTRY;
 const SKIP_MINIFY = JSON.parse(process.env.SKIP_MINIFY || PROD ? 'false' : 'true');
-const publicPath = PROD ? '/' : '/build/';
+const publicPath = '/build/';
 
 const CONTENT_BASE = SKIP_MINIFY ? 'app' : 'dist';
 const WORKDIR = PROD ? CONTENT_BASE : 'app';
@@ -202,7 +202,7 @@ const config: webpack.Configuration = {
           loader: 'worker-loader',
           options: {
             name: '[name].js',
-            publicPath: '/build/'
+            publicPath,
           }
         }
       },

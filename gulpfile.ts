@@ -44,7 +44,10 @@ gulp.task('backup-source-maps', function() {
 });
 
 gulp.task('clean', function() {
-  return del([`./${WORKDIR}/**/**/*`]);
+  return del([
+    `./${WORKDIR}/**/**/**/*`,
+    './app/build/**/**/**/*'
+  ]);
 });
 
 gulp.task('copy', function() {
@@ -66,7 +69,7 @@ gulp.task('copy', function() {
 });
 
 gulp.task('copyChunks', function() {
-  return gulp.src([`./${WORKDIR}/scripts/*.app.js`])
+  return gulp.src([`./${WORKDIR}/build/*.app.js`])
     .pipe(gulp.dest(`./${WORKDIR}/`));
 });
 
