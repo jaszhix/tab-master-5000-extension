@@ -18,7 +18,6 @@ import {Btn, Col, Row} from '../bootstrap';
 import {Toggle, OriginEntry} from './preferences';
 
 const optionalPermissions = [
-    'activeTab',
     'downloads',
     'bookmarks',
     'history',
@@ -26,7 +25,6 @@ const optionalPermissions = [
 ];
 
 const permissionLabels = {
-  activeTab: 'Capture active tab (screenshot capturing)',
   downloads: 'Manage your downloads (export sessions, themes)',
   bookmarks: 'Read and change your bookmarks',
   history: 'Read and change your browsing history',
@@ -104,7 +102,6 @@ class Permissions extends React.Component<PermissionsProps, PermissionsState> {
 
           if (!origins.length) {
             setPrefs({
-              screenshot: false,
               faviconCaching: false,
             });
           }
@@ -163,7 +160,7 @@ class Permissions extends React.Component<PermissionsProps, PermissionsState> {
           </Row>
         </Col>
         <Col size="6">
-          <h4 data-tip={`<div style="max-width: 400px;">Matching URL patterns of websites TM5K is allowed to read and change data from. This is used for screenshot capturing and caching favicons for later use. Limiting the origin scope will result in the extension redownloading website favicons.</div>`}>Origins</h4>
+          <h4 data-tip={`<div style="max-width: 400px;">Matching URL patterns of websites TM5K is allowed to read and change data from. This is used for caching favicons for later use. Limiting the origin scope will result in the extension redownloading website favicons.</div>`}>Origins</h4>
           <Row>
             <Toggle
               dataId="<all_urls>"

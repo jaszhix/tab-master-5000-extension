@@ -15,7 +15,6 @@ let basePrefs: Partial<PreferencesState> = {
   context: true,
   animations: true,
   duplicate: true,
-  screenshot: false,
   screenshotBg: false,
   screenshotBgBlur: 5,
   screenshotBgOpacity: 5,
@@ -102,10 +101,6 @@ let prefsStore = <PreferencesStore>init({
 
   checkPermissions(prefs: Partial<PreferencesState>) {
     const {permissions} = prefsStore;
-
-    if (!permissions.includes('activeTab') && prefs.screenshot) {
-      prefs.screenshot = false;
-    }
 
     if ((!permissions.includes('bookmarks') && prefs.mode === 'bookmarks')
       || (!permissions.includes('history') && prefs.mode === 'history')

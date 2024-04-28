@@ -367,15 +367,6 @@
   "duplicateTip": {
     "message": "This option will make all duplicates tabs pulsate except the first tab. This makes it easier to see how many duplicate tabs you have open."
   },
-  "screenshot": {
-    "message": "Enable tab screenshots"
-  },
-  "screenshotTip": {
-    "message": "Enabling this feature adds a screen shot of a tab in a tab tile's background once its been clicked. After a screenshot is active, it is stored in Chrome until the page is active again. Only works on permitted origins (see Permissions)."
-  },
-  "screenshotDiskUsage": {
-    "message": "Screenshot disk usage"
-  },
   "faviconsDiskUsage": {
     "message": "Favicon disk usage"
   },
@@ -480,9 +471,6 @@
   },
   "clearFaviconCache": {
     "message": "Clear Favicon Cache"
-  },
-  "clearScreenshotCache": {
-    "message": "Clear Screenshot Cache"
   },
   "saveSession": {
     "message": "Save Session"

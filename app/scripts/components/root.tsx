@@ -14,7 +14,7 @@ import {assignIn} from 'lodash';
 import v from 'vquery';
 import {each, filter, tryFn} from '@jaszhix/utils';
 
-import {handleMode, getWindowId, getSessions, getTabs, getScreenshots, getActions, setPrefs, setFavicon} from './stores/main';
+import {handleMode, getWindowId, getSessions, getTabs, getActions, setPrefs, setFavicon} from './stores/main';
 import {themeStore, onThemeChange} from './stores/theme';
 import {AsyncComponent} from './utils';
 import Sidebar from './sidebar';
@@ -170,12 +170,6 @@ class Root extends React.Component<RootProps, RootState> {
       if (p.s.prefs.sessionsSync) getSessions();
 
       getTabs(true);
-
-      if (p.s.prefs.screenshot) {
-        getScreenshots().then((screenshots) => {
-          state.set({screenshots: screenshots});
-        });
-      }
 
       if (p.s.prefs.actions) {
         getActions().then((actions) => {

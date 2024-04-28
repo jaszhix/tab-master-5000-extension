@@ -367,15 +367,6 @@
   "duplicateTip": {
     "message": "此选项将在所有重复且非首个的标签页上显示一个脉冲提示，以便您注意到和了解有多少重复的标签页。"
   },
-  "screenshot": {
-    "message": "启用标签页画面截图"
-  },
-  "screenshotTip": {
-    "message": "启用此功能后，会在标签页方块的背景上显示标签页被点击后的截图。截图存储在浏览器中，直至下次激活页面。仅适用于授权的来源，另见权限面板。"
-  },
-  "screenshotDiskUsage": {
-    "message": "截图占用的磁盘空间"
-  },
   "faviconsDiskUsage": {
     "message": "网站图标占用的磁盘空间"
   },
@@ -480,9 +471,6 @@
   },
   "clearFaviconCache": {
     "message": "清除网站图标缓存"
-  },
-  "clearScreenshotCache": {
-    "message": "清除标签页截图缓存"
   },
   "saveSession": {
     "message": "保存会话"

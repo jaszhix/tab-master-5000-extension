@@ -221,7 +221,6 @@ declare global {
     context: boolean;
     animations: boolean;
     duplicate: boolean;
-    screenshot: boolean;
     screenshotBg: boolean;
     screenshotBgBlur: number;
     screenshotBgOpacity: number;
@@ -255,7 +254,6 @@ declare global {
   }
 
   interface PermissionsState {
-    screenshot: boolean;
     bookmarks: boolean;
     history: boolean;
     management: boolean;
@@ -298,12 +296,6 @@ declare global {
     domain: string;
   }
 
-  interface ScreenshotState {
-    url: string;
-    data: string;
-    timeStamp: number;
-  }
-
   interface ModalState {
     state: boolean;
     type: null;
@@ -340,7 +332,6 @@ declare global {
     actions?: ActionRecord[];
     windowRestored?: boolean;
     isOptions?: boolean;
-    screenshotClear?: boolean;
     // UI
     search?: string;
     width?: number;
@@ -377,7 +368,6 @@ declare global {
     apps?: ChromeExtensionInfo[];
     extensions?: ChromeExtensionInfo[];
     favicons?: FaviconState[];
-    screenshots?: ScreenshotState[];
     sort?: SortKey;
     direction?: 'desc' | 'asc';
   }
@@ -406,19 +396,12 @@ declare global {
     historyOnVisitRemoved: chrome.history.RemovedResult;
   }
 
-  interface Screenshot {
-    url: string;
-    data: string;
-    timeStamp: number;
-  }
-
   interface BgMessage {
     e: any;
     args: any[];
-    type: 'startup' | 'appState' | 'prefs' | 'screenshot' | 'error' | 'log';
+    type: 'startup' | 'appState' | 'prefs' | 'error' | 'log';
     action: boolean | 'newVersion' | 'installed' | 'versionUpdate';
     noPermissions: 'bookmarks' | 'history' | 'management';
-    screenshots?: Screenshot[];
     sessions?: SessionState[];
     windows: ChromeWindow[];
     bookmarks: ChromeBookmarkTreeNode[];
@@ -441,7 +424,6 @@ declare global {
     removed: ChromeTab[];
     newTabs: TabIDInfo[];
     sessions: SessionState[];
-    screenshots: Screenshot[];
     actions: ActionRecord[];
     chromeVersion: number;
     prefix: 'chrome' | 'moz';
@@ -452,7 +434,6 @@ declare global {
 
   interface WorkerMessage {
     windows: ChromeWindow[];
-    screenshots: Screenshot[];
     history: ChromeHistoryItem[];
     bookmarks: ChromeBookmarkTreeNode[];
     extensions: ChromeExtensionInfo[];

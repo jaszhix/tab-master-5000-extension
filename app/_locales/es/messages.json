@@ -365,15 +365,6 @@
   "duplicateTip": {
     "message": "Esta opción hará que pulsen todas las pestañas de duplicados excepto la primera. Esto hace que sea más fácil ver cuántas pestañas duplicadas tiene abierto."
   },
-  "screenshot": {
-    "message": "Habilitar capturas de pantalla de pestañas"
-  },
-  "screenshotTip": {
-    "message": "Al habilitar esta función, se agrega una captura de pantalla de una pestaña en el fondo de un mosaico de pestañas una vez que se hace clic en ella. Una vez que se activa una captura de pantalla, se almacena en Chrome hasta que la página vuelva a estar activa. Solo funciona en orígenes permitidos (ver Permisos)."
-  },
-  "screenshotDiskUsage": {
-    "message": "Uso del disco de captura de pantalla"
-  },
   "faviconsDiskUsage": {
     "message": "Uso del disco Favicon"
   },
@@ -478,9 +469,6 @@
   },
   "clearFaviconCache": {
     "message": "Borrar caché de Favicon"
-  },
-  "clearScreenshotCache": {
-    "message": "Borrar Captura de pantalla"
   },
   "saveSession": {
     "message": "Guardar la sesión"

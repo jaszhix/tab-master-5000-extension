@@ -462,9 +462,7 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
   buildFooter = async () => {
     let {prefs, options, modal} = this.props;
     let {restoreDefaultsConfirm} = this.state;
-    let faviconsBytesInUse = 0, screenshotsBytesInUse = 0;
-
-    if (prefs.screenshot) screenshotsBytesInUse = await getBytesInUse('screenshots');
+    let faviconsBytesInUse = 0;
 
     if (prefs.faviconCaching) faviconsBytesInUse = await getBytesInUse('favicons');
 
@@ -482,14 +480,6 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
           faStyle={{position: 'relative', top: '-2px'}}>
           {restoreDefaultsConfirm ? utils.t('restoreDefaultPrefsConfirm') : utils.t('restoreDefaultPrefs')}
         </Btn>
-        {prefs.screenshot ?
-          <Btn
-            onClick={this.handleScreenshotClear}
-            className="settingBtn"
-            icon="trash"
-            faStyle={{paddingRight: '8px'}}>
-            {utils.t('clearScreenshotCache')}
-          </Btn> : null}
         {prefs.faviconCaching ?
           <Btn
             onClick={this.handleFaviconClear}
@@ -500,7 +490,6 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
           </Btn> : null}
         <div className="disk-usage-container">
           <div>{faviconsBytesInUse ? `${utils.t('faviconsDiskUsage')}: ${utils.formatBytes(faviconsBytesInUse, 2)}` : null}</div>
-          <div>{screenshotsBytesInUse ? `${utils.t('screenshotDiskUsage')}: ${utils.formatBytes(screenshotsBytesInUse, 2)}` : null}</div>
         </div>
       </div>
     );
@@ -539,15 +528,6 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
     }
   }
 
-  handleScreenshotPref = async (opt) => {
-    let granted = await requestPermission('activeTab', '<all_urls>');
-
-    if (!granted) return;
-
-    this.handleClick(opt);
-    this.buildFooter();
-  }
-
   handleFaviconCachingChange = async (opt) => {
     let granted = await requestPermission(undefined, '<all_urls>');
 
@@ -570,14 +550,6 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
     let output = isMinute && discardTime === 30 ? 0.5 : isMinute && discardTime === 15 ? 0.25 : discardTime;
 
     setPrefs({autoDiscardTime: output * 3600000});
-  }
-
-  handleScreenshotClear = async () => {
-    await browser.storage.local.remove('screenshots');
-
-    this.buildFooter();
-
-    state.set({screenshotClear: true, screenshots: []});
   }
 
   handleFaviconClear = async () => {
@@ -729,20 +701,6 @@ class Preferences extends React.Component<PreferencesComponentProps, Preferences
                   label={utils.t('duplicate')}
                   data-tip={utils.t('duplicateTip')}
                 /> : null}
-            </Toggle>
-            <Toggle
-              onClick={() => this.handleScreenshotPref('screenshot')}
-              on={p.prefs.screenshot} label={utils.t('screenshot')}
-              data-tip={utils.t('screenshotTip')}>
-              {p.prefs.screenshot ?
-                <Toggle
-                  onClick={() => this.handleClick('screenshotBg')}
-                  on={p.prefs.screenshotBg}
-                  child={true}
-                  label={utils.t('screenshotBg')}
-                  data-tip={utils.t('screenshotBgTip')}
-                />
-              : null}
             </Toggle>
             <Toggle
               onClick={() => this.handleClick('tooltip')}

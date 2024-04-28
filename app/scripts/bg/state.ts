@@ -42,7 +42,6 @@ const initialState = <BackgroundState>{
   removed: [],
   newTabs: [],
   sessions: [],
-  screenshots: [],
   actions: [],
   chromeVersion,
   prefix,

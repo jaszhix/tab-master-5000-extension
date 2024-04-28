@@ -44,7 +44,6 @@ export interface TileState {
   pinning?: boolean;
   dataUrl?: string;
   duplicate?: boolean;
-  screenshot?: string;
   openTab?: boolean;
   tab?: ChromeItem;
   i?: number;
@@ -69,7 +68,6 @@ class Tile extends React.Component<TileProps, TileState> {
       pinning: false,
       dataUrl: null,
       duplicate: false,
-      screenshot: null,
       openTab: false,
       tab: this.props.tab,
       i: this.props.i
@@ -79,16 +77,11 @@ class Tile extends React.Component<TileProps, TileState> {
 
     this.connectId = state.connect({
       duplicateTabs: this.handleDuplicates,
-      screenshots: this.updateScreenshot,
-      screenshotClear: () => {
-        this.setState({screenshot: null}, () => state.set({screenshotClear: false}));
-      },
       theme: () => this.shouldUpdate = true,
     });
   }
 
   componentDidMount = () => {
-    this.updateScreenshot();
     this.handleDuplicates();
   }
 
@@ -98,7 +91,7 @@ class Tile extends React.Component<TileProps, TileState> {
       return true;
     }
 
-    return (!isEqual(this.props, nP) || !isEqual(this.state, nS) || state.screenshotClear)
+    return (!isEqual(this.props, nP) || !isEqual(this.state, nS))
       && state.settings !== 'sessions';
   }
 
@@ -111,21 +104,6 @@ class Tile extends React.Component<TileProps, TileState> {
     utils.checkDuplicateTabs(this.props.tab as ChromeTab, (duplicate) => {
       if (duplicate !== this.state.duplicate) this.setState({duplicate})
     });
-  }
-
-  updateScreenshot = () => {
-    if (!state.prefs.screenshot) {
-      if (this.state.screenshot) this.setState({screenshot: null});
-
-      return;
-    }
-
-    const {tab} = this.props;
-    const refSS = findIndex(state.screenshots, ss => ss && ss.url === tab.url);
-
-    if (refSS > -1) {
-      this.setState({screenshot: state.screenshots[refSS].data});
-    }
   }
 
   filterFolders = (folderName) => {
@@ -152,16 +130,6 @@ class Tile extends React.Component<TileProps, TileState> {
     let p = this.props;
 
     this.setState({hover: true});
-
-    if (p.prefs.screenshot && p.prefs.screenshotBg) {
-      if (s.screenshot && p.prefs.mode !== 'apps') {
-        themeStore.trigger('currentWallpaper', {hoverWallpaper: {data: s.screenshot}, theme: p.theme});
-      } else if (p.wallpaper && p.wallpaper.data !== -1) {
-        themeStore.trigger('currentWallpaper', {hoverWallpaper: {data: p.wallpaper.data}, theme: p.theme});
-      } else {
-        document.getElementById('bgImg').style.backgroundImage = '';
-      }
-    }
   }
 
   handleHoverOut = () => {
@@ -207,7 +175,7 @@ class Tile extends React.Component<TileProps, TileState> {
   }
 
   handleCloseTab = () => {
-    this.setState({duplicate: false, close: true, screenshot: null});
+    this.setState({duplicate: false, close: true});
     utils.closeTab(this.props.tab);
   }
 
@@ -261,7 +229,7 @@ class Tile extends React.Component<TileProps, TileState> {
       transition: p.prefs.animations ? 'opacity 0.2s, white-space 0.1s' : 'initial'
     };
 
-    const dynamicStyles = (StyleSheet as StyleSheetStatic).create({
+    const dynamicStyles = (StyleSheet as unknown as StyleSheetStatic).create({
       ST1: Object.assign({
         top: `${p.prefs.tabSizeHeight - 40}px`,
         cursor: p.prefs.mode === 'sessions' || p.prefs.mode === 'bookmarks' ? 'default' : 'initial'
@@ -278,11 +246,11 @@ class Tile extends React.Component<TileProps, TileState> {
         float: 'left',
         margin: '6px',
         backgroundColor: s.hover ? p.theme.tileBgHover : p.theme.tileBg,
-        backgroundImage: `url('${s.screenshot ? s.screenshot : p.tab.favIconUrl}')`,
-        backgroundBlendMode: s.screenshot ? 'multiply, lighten' : 'luminosity',
+        backgroundImage: `url('${p.tab.favIconUrl}')`,
+        backgroundBlendMode: 'luminosity',
         backgroundPosition: 'center',
-        backgroundSize: s.screenshot ? 'cover' : 'contain',
-        backgroundRepeat: s.screenshot ? 'initial' : 'no-repeat',
+        backgroundSize: 'contain',
+        backgroundRepeat: 'no-repeat',
         overflow: 'hidden',
         zIndex: 50,
         opacity: s.close ? 0 : p.tab.hasOwnProperty('enabled') && !p.tab.enabled ? 0.5 : hasDiscarded && p.tab.discarded ? 0.5 : 1,
@@ -300,7 +268,7 @@ class Tile extends React.Component<TileProps, TileState> {
         backgroundBlendMode: 'luminosity',
         backgroundPosition: 'center',
         backgroundSize: '1px, auto, contain',
-        opacity: s.screenshot ? 0.4 : 0.8,
+        opacity: 0.8,
         transition: p.prefs.animations ? 'padding 0.1s, height 0.1s, opacity 0.1s, background-size 0.1s' : 'initial',
         transitionTimingFunction: 'ease-in-out',
         zIndex: s.hover ? 2 : 1,

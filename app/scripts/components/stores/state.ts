@@ -10,7 +10,6 @@ const state: GlobalState = init({
   actions: [],
   windowRestored: false,
   isOptions: document.querySelector('#options'),
-  screenshotClear: false,
   // UI
   search: '',
   width: window.innerWidth,

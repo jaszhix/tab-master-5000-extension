@@ -325,12 +325,6 @@ const processWindows = function(s, msg: Partial<WorkerMessage>) {
     modeKey: 'tabs'
   };
 
-  if (msg.init) {
-    if (msg.screenshots) {
-      stateUpdate.screenshots = msg.screenshots;
-    }
-  }
-
   if (s.prefs.mode === 'tabs') {
     if (s.modeKey === 'tabs') {
       stateUpdate.sort = s.sort;

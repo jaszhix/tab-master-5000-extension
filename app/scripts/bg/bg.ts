@@ -95,83 +95,6 @@ const resize = (image) => {
   });
 }
 
-const capture = async (t: Bg, windowId, run = 0) => {
-  let image;
-
-  if (t.image) {
-    image = t.image;
-    t.image = null;
-    return image;
-  }
-
-  await timeout(500);
-
-  image = await browser.tabs.captureVisibleTab(windowId, {format: 'jpeg', quality: 10});
-
-  if (image) {
-    return await resize(image);
-  }
-
-  if (run <= 1) {
-    await timeout(500);
-    return capture(t, windowId, run++)
-  }
-
-  throw new Error(`Unable to capture screenshot for ${windowId}`);
-}
-
-let createScreenshot = async (t: Bg, refWindow, refTab) => {
-  let tab, windowId, image;
-
-  if (refWindow === -1 || refTab === -1) {
-    return;
-  }
-
-  if (typeof t.state.windows[refWindow].tabs[refTab] === 'undefined') {
-    return;
-  }
-
-  if (isNewTab(t.state.windows[refWindow].tabs[refTab].url)) {
-    return;
-  }
-
-  if (t.state.screenshots === undefined) {
-    t.state.screenshots = [];
-  }
-
-  windowId = t.state.windows[refWindow].id;
-  tab = t.state.windows[refWindow].tabs[refTab];
-
-  try {
-    image = await capture(t, windowId);
-  } catch (e) {
-    sendError(e);
-    return;
-  }
-
-  let screenshot: Screenshot = {
-    url: tab.url,
-    data: image,
-    timeStamp: Date.now()
-  };
-
-  let refScreenshot = findIndex(t.state.screenshots, ss => ss && ss.url === tab.url);
-
-  if (refScreenshot > -1) {
-    t.state.screenshots[refScreenshot] = screenshot;
-  } else {
-    t.state.screenshots.push(screenshot);
-  }
-
-  await browser.storage.local.set({screenshots: t.state.screenshots});
-
-  t.state.set({screenshots: t.state.screenshots});
-
-  await sendMsg({screenshots: t.state.screenshots, windowId});
-};
-
-let createScreenshotThrottled = throttle(createScreenshot, 2000, {leading: true});
-
 let synchronizeSession = throttle(syncSession, 100, {leading: true});
 
 let setAction = (t: Bg, type, oldTabInstance, newTabInstance=null) => {
@@ -281,8 +204,6 @@ class Bg {
 
     await this.attachListeners(s);
     await this.queryTabs(null, s.prefs);
-
-    if (s.prefs.screenshot) await this.queryScreenshots();
   }
 
   attachListeners = async (state) => {
@@ -324,13 +245,6 @@ class Bg {
 
       if (changed.hasOwnProperty('sessions') && areaName === 'local') {
         this.state.set({sessions: changed.sessions.newValue});
-
-        if (this.state.prefs && this.state.prefs.screenshot) {
-          await sendMsg({sessions: changed.sessions.newValue});
-        }
-      } else if (changed.hasOwnProperty('screenshots') && areaName === 'local' && this.state.prefs && this.state.prefs.screenshot) {
-        this.state.set({screenshots: changed.screenshots.newValue});
-        await sendMsg({screenshots: changed.screenshots.newValue, action: true});
       } else if (changed.hasOwnProperty('blacklist')) {
         this.state.set({blacklist: changed.blacklist.newValue});
       }
@@ -586,7 +500,6 @@ class Bg {
           await sendMsg({
             windows: this.state.windows,
             windowId: sender.tab.windowId,
-            screenshots: this.state.screenshots,
             init: msg.init
           });
           break;
@@ -620,19 +533,6 @@ class Bg {
         case 'queryExtensions':
           await this.queryExtensions(sender.tab.windowId);
           break;
-        case 'getScreenshots':
-          return {screenshots: this.state.screenshots, windowId: sender.tab.windowId};
-
-        case 'screenshot': {
-          this.image = msg.image;
-
-          let refWindow = findIndex(this.state.windows, win => win.id === sender.tab.windowId);
-          let refTab = findIndex(this.state.windows[refWindow].tabs, tab => tab.id === sender.tab.id);
-
-          createScreenshotThrottled(this, refWindow, refTab);
-          break;
-        }
-
         case 'removeSingleWindow':
           this.removeSingleWindow(msg.windowId);
           break;
@@ -806,19 +706,6 @@ class Bg {
     await sendMsg({sessions: sessions});
   }
 
-  queryScreenshots = async () => {
-    let shots = await browser.storage.local.get('screenshots');
-    let index = [];
-
-    if (shots && shots.screenshots) {
-      index = shots.screenshots;
-    } else {
-      await browser.storage.local.set({screenshots: []});
-    }
-
-    this.state.set({screenshots: index});
-  }
-
   openTabMaster = async () => {
     let {chromeVersion, prefix} = this.state;
     let id;
@@ -946,10 +833,6 @@ class Bg {
     }
 
     this.state.set({windows}, true);
-
-    if (prefs && prefs.screenshot) {
-      await createScreenshotThrottled(this, refWindow, refTab);
-    }
   }
 
   createSingleItem = async (e: ChromeTab, windowId?: number, recursion = 0) => {

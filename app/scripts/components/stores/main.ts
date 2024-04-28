@@ -76,14 +76,6 @@ export const setPrefs = async (obj: Partial<PreferencesState>) => {
 
   console.log('setPrefs: ', obj);
 
-  if ('screenshot' in obj) {
-    if (obj.screenshot) {
-      state.set({screenshots: await getScreenshots()});
-    } else {
-      state.set({screenshots: []});
-    }
-  }
-
   if ('sessionsSync' in obj) {
     if (obj.sessionsSync) {
       getSessions();
@@ -161,8 +153,6 @@ const handleMessage = function(
     window.tmWorker.postMessage({state: state.exclude(['modal', 'context', 'isOptions']), msg});
   } else if (msg.hasOwnProperty('sessions')) {
     state.set({sessions: msg.sessions});
-  } else if (msg.hasOwnProperty('screenshots')) {
-    state.set({screenshots: msg.screenshots});
   } else if (msg.hasOwnProperty('actions')) {
     state.set({actions: msg.actions});
   } else if (msg.type === 'appState') {
@@ -203,20 +193,6 @@ export const getSessions = () => {
 
 export const getTabs = (init = false) => {
   chrome.runtime.sendMessage(chrome.runtime.id, {method: 'getTabs', init});
-};
-
-export const getScreenshots = (): Promise<string[]> => {
-  return new Promise((resolve, reject) => {
-    chrome.runtime.sendMessage(chrome.runtime.id, {method: 'getScreenshots'}, (response) => {
-      console.log(response);
-
-      if (response && response.screenshots) {
-        resolve(response.screenshots);
-      } else {
-        reject([]);
-      }
-    });
-  });
 };
 
 export const getActions = (): Promise<ActionRecord[]> => {
