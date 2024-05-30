@@ -1,5 +1,11 @@
 #### Release Notes
 
+##### v2.11.0 / *5-30-24*
+
+* New zh-CN translation added by YFdyh000.
+* Added support for Chrome Manifest V3.
+  - Screenshot feature has been removed due to API incompatibilities.
+
 ##### v2.10.0 / *9-30-20*
 
 * Added ability to override TM5K's control of the New Tab page.

@@ -303,7 +303,7 @@ class ReleaseNotes extends React.Component<ReleaseNotesProps, ReleaseNotesState>
       <div>
         <img className="ntg-about" style={{top: '20px'}} src={tm5kLogo} />
         <Link href="https://eff.org" target="_blank">
-          <img style={{position: 'absolute', top: '50px', right:'8%', height: '120px', opacity: '0.7'}} src="../../images/eff-member-badge-2020.png" />
+          <img style={{position: 'absolute', top: '50px', right:'8%', height: '120px', opacity: '0.7'}} src="../../images/eff-member-badge-2024.png" />
         </Link>
         <Col size="1" />
         <Col size="10" className="ntg-release">
