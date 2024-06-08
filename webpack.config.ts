@@ -3,10 +3,9 @@ import {execSync} from 'child_process';
 import path from 'path';
 import webpack from 'webpack';
 import autoprefixer from 'autoprefixer';
-import ExtractTextPlugin from 'extract-text-webpack-plugin';
+import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import {BundleAnalyzerPlugin} from 'webpack-bundle-analyzer';
 import TerserPlugin from 'terser-webpack-plugin';
-import SentryWebpackPlugin from '@sentry/webpack-plugin';
 
 const babelConfig = JSON.parse(fs.readFileSync('./.babelrc').toString());
 
@@ -114,12 +113,6 @@ let scssLoaders: webpack.RuleSetUse[] = [
 if (!PROD) {
   cssLoaders = [<webpack.RuleSetUse>'style-loader'].concat(cssLoaders);
   scssLoaders = [<webpack.RuleSetUse>'style-loader'].concat(scssLoaders);
-
-  babelConfig.plugins.push('react-hot-loader/babel');
-
-  Object.assign(aliases, {
-    'react-dom': '@hot-loader/react-dom',
-  })
 }
 
 const config: webpack.Configuration = {
@@ -129,9 +122,8 @@ const config: webpack.Configuration = {
     '@babel/polyfill',
     'index.tsx'
   ] : [
-    '@hot-loader/react-dom',
-    'webpack-dev-server/client?http://127.0.0.1:8009',
-    'webpack/hot/only-dev-server',
+    'webpack/hot/dev-server',
+    'webpack-dev-server/client?hot=true&hostname=localhost&port=8009',
     'index.tsx',
   ],
   output: {
@@ -142,17 +134,19 @@ const config: webpack.Configuration = {
     pathinfo: !PROD,
   },
   plugins: [
-    new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
-    // new LodashModuleReplacementPlugin({
-    //   cloning: true,
-    //   flattening: true,
-    //   shorthands: true
-    // }),
+    new webpack.IgnorePlugin({
+      resourceRegExp: /^\.\/locale$/,
+      contextRegExp: /moment$/
+    }),
     new webpack.DefinePlugin({
       'process.env': {
          NODE_ENV: JSON.stringify(NODE_ENV)
        }
-    })
+    }),
+    new MiniCssExtractPlugin({
+      filename: PROD ? '[name].[contenthash].css' : '[name].css',
+      chunkFilename: PROD ? '[id].[contenthash].css' : '[id].css',
+    }),
   ],
   optimization: {
     splitChunks: {
@@ -161,7 +155,10 @@ const config: webpack.Configuration = {
       minChunks: 2,
       maxAsyncRequests: 5,
       maxInitialRequests: 3,
-      name: true,
+      name(module, chunks, cacheGroupKey) {
+        // Custom naming logic
+        return `${cacheGroupKey}-${chunks.map(chunk => chunk.name).join('~')}`;
+      },
       cacheGroups: {
         default: {
           minChunks: 2,
@@ -178,11 +175,10 @@ const config: webpack.Configuration = {
   },
   module: {
     rules: [
-
       {
         test: /\.(js|ts|tsx)$/,
         use: ['source-map-loader'],
-        enforce: 'pre'
+        enforce: 'pre',
       },
       {
         test: /\.worker\.ts$/,
@@ -190,10 +186,10 @@ const config: webpack.Configuration = {
         use: {
           loader: 'worker-loader',
           options: {
-            name: '[name].js',
+            filename: '[name].js',
             publicPath,
-          }
-        }
+          },
+        },
       },
       {
         test: /\.(ts|tsx)$/,
@@ -201,20 +197,20 @@ const config: webpack.Configuration = {
         enforce: 'post',
         use: [
           {
-            loader: 'lodash-loader'
+            loader: 'lodash-loader',
           },
           {
             loader: 'babel-loader',
-            options: babelConfig
+            options: babelConfig,
           },
           {
             loader: 'ts-loader',
             options: {
               compilerOptions: {
                 // Preserve code splitting
-                module: 'esnext'
-              }
-            }
+                module: 'esnext',
+              },
+            },
           },
         ],
       },
@@ -224,37 +220,42 @@ const config: webpack.Configuration = {
         enforce: 'post',
         use: [
           {
-            loader: 'lodash-loader'
+            loader: 'lodash-loader',
           },
           {
             loader: 'babel-loader',
-            options: babelConfig
-          }
+            options: babelConfig,
+          },
         ],
       },
       {
         test: /\.css$/,
-        use: <webpack.RuleSetUse>
-          (PROD ? ExtractTextPlugin.extract(<any>{
-          fallback: 'style-loader',
-          use: cssLoaders
-        }) : cssLoaders),
+        use: [
+          PROD ? MiniCssExtractPlugin.loader : 'style-loader',
+          'css-loader',
+        ],
       },
       {
         test: /\.scss$/,
-        use: <webpack.RuleSetUse>
-          (PROD ? ExtractTextPlugin.extract(<any>{
-          fallback: 'style-loader',
-          use: scssLoaders
-        }) : scssLoaders),
+        use: [
+          PROD ? MiniCssExtractPlugin.loader : 'style-loader',
+          'css-loader',
+          'sass-loader',
+        ],
       },
       {
         test: /\.(ttf|eot|svg|woff(2)?)(\S+)?$/,
-        loader: 'file-loader?name=[name].[ext]'
+        type: 'asset/resource',
+        generator: {
+          filename: '[name][ext]',
+        },
       },
       {
         test: /\.(png|jpg|gif)$/,
-        loader: 'file-loader?name=[name].[ext]'
+        type: 'asset/resource',
+        generator: {
+          filename: '[name][ext]',
+        },
       },
     ],
   },
@@ -268,7 +269,16 @@ const config: webpack.Configuration = {
        path.join(__dirname, 'app/scripts/components')
     ],
     extensions: ['.js', '.jsx', '.tsx', '.ts', '.json'],
-    alias: aliases
+    alias: aliases,
+    fallback: {
+      "crypto": false,
+      "stream": false,
+      "assert": false,
+      "http": false,
+      "https": false,
+      "os": false,
+      "url": false,
+    }
   },
 };
 
@@ -276,7 +286,6 @@ if (PROD && ENTRY) {
   if (ENTRY === 'app') {
     config.entry = './app/scripts/components/index.tsx';
     config.output.filename = 'app.js';
-    // config.plugins.push(new ExtractTextPlugin({filename: 'main.css', allChunks: false}));
   } else if (ENTRY === 'bg') {
     config.entry = './app/scripts/bg/bg.ts';
     config.output.filename = 'background.js';
@@ -291,7 +300,7 @@ if (PROD && ENTRY) {
       openAnalyzer: false,
       analyzerMode: 'static',
       reportFilename: `../bundleReports/${ENTRY}-${COMMIT_HASH}-bundleReport.html`,
-    })
+    }),
   );
 
   if (!SKIP_MINIFY) {
@@ -300,10 +309,8 @@ if (PROD && ENTRY) {
       minimizer: [
         new TerserPlugin({
           parallel: true,
-          sourceMap: true,
           terserOptions: {
             ecma: undefined,
-            warnings: false,
             parse: {},
             compress: {
               drop_console: true,
@@ -321,52 +328,20 @@ if (PROD && ENTRY) {
         }),
       ],
     });
-
-    if (fs.existsSync('./.sentryclirc')) {
-      config.plugins.push(
-        new SentryWebpackPlugin({
-          include: '.',
-          ignoreFile: '.sentrycliignore',
-          ignore: [
-            'node_modules',
-            'sources',
-            'source_maps',
-            'app',
-            'webpack.config.js',
-            'gulpfile.js',
-          ],
-          configFile: 'sentry.properties'
-        })
-      );
-    }
   }
 } else {
   Object.assign(config.optimization, {
-    namedModules: true,
-    namedChunks: true,
+    chunkIds: 'named',
+    moduleIds: 'named',
     flagIncludedChunks: false,
-    occurrenceOrder: false,
     concatenateModules: false,
-    noEmitOnErrors: false,
+    emitOnErrors: false,
     checkWasmTypes: false,
     minimize: false,
     removeAvailableModules: false
   });
 
-  config.devServer = {
-    port: 8009,
-    hot: true,
-    inline: false,
-    historyApiFallback: true,
-    contentBase: path.join(__dirname, 'dist'),
-    headers: {'Access-Control-Allow-Origin': '*'},
-    disableHostCheck: true,
-    publicPath,
-    writeToDisk: true,
-  };
-
   config.plugins.push(
-    new webpack.NamedChunksPlugin(),
     new webpack.HotModuleReplacementPlugin(),
     new webpack.LoaderOptionsPlugin({
       debug: true,

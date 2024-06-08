@@ -1,6 +1,6 @@
 import {browser} from 'webextension-polyfill-ts';
 import _ from 'lodash';
-import uuid from 'node-uuid';
+import * as uuid from 'uuid';
 import ReactTooltip from 'react-tooltip';
 import {each, findIndex, filter, cloneDeep} from '@jaszhix/utils';
 

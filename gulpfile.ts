@@ -28,12 +28,14 @@ gulp.task('build-bg', function() {
   config.entry = './app/scripts/bg/bg.ts';
   config.output.filename = 'background.js';
   return gulp.src('./app/build/background.js', {allowEmpty: true})
+    // @ts-ignore
     .pipe(webpackStream(config))
     .pipe(gulp.dest('./app/build/'));
 });
 
 gulp.task('build', gulp.series('build-bg', function() {
   return gulp.src('./app/scripts/components/index.tsx', {allowEmpty: true})
+    // @ts-ignore
     .pipe(webpackStream(config))
     .pipe(gulp.dest('./app/scripts/'));
 }));

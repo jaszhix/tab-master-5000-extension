@@ -7,7 +7,7 @@ import {throttle, cloneDeep, isEqual, first, last, orderBy, uniqBy, without} fro
 globalThis.window = {};
 const v = require('vquery');
 
-import uuid from 'node-uuid';
+import * as uuid from 'uuid';
 import * as Sentry from '@sentry/browser';
 import {findIndex, find, each} from '@jaszhix/utils';
 import {eventState, state} from './state';

@@ -9,6 +9,7 @@
     "allowJs": false,
     "resolveJsonModule": true,
     "declaration": false,
+    "strict": false,
     "jsx": "react",
     "baseUrl": "./app/scripts/components",
     "typeRoots" : [

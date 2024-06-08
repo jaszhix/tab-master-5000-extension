@@ -1,5 +1,5 @@
 import Fuse from 'fuse.js';
-import uuid from 'node-uuid';
+import * as uuid from 'uuid';
 import {assignIn, cloneDeep, merge, orderBy, uniqBy, flatten, last} from 'lodash';
 import {each, find, findIndex, filter, map, tryFn} from '@jaszhix/utils';
 
