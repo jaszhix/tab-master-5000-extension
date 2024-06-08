@@ -425,7 +425,7 @@ class Theming extends React.Component<ThemingProps, ThemingState> {
   render = () => {
     let p = this.props;
     let s = this.state;
-    let themeFields: ThemeField[] | Array<ThemeField[]> = filter(themeStore.getThemeFields(), (field) => field.group === s.colorGroup);
+    let themeFields = filter(themeStore.getThemeFields(), (field: ThemeField) => field.group === s.colorGroup);
     let slice2 = Math.ceil(themeFields.length / 3);
     let slice3 = Math.round(themeFields.length * 0.66)
     let themeFields1 = themeFields.slice(0, slice2);

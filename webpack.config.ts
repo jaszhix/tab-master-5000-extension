@@ -3,11 +3,8 @@ import {execSync} from 'child_process';
 import path from 'path';
 import webpack from 'webpack';
 import autoprefixer from 'autoprefixer';
-import cssnano from 'cssnano';
 import ExtractTextPlugin from 'extract-text-webpack-plugin';
 import {BundleAnalyzerPlugin} from 'webpack-bundle-analyzer';
-import LodashModuleReplacementPlugin from 'lodash-webpack-plugin';
-import SizePlugin from 'size-plugin';
 import TerserPlugin from 'terser-webpack-plugin';
 import SentryWebpackPlugin from '@sentry/webpack-plugin';
 
@@ -61,18 +58,6 @@ const postcssPlugins = () => {
     })
   ];
 
-  processors.push(
-    cssnano({
-      preset: ['default', {
-        safe: true,
-        discardComments: {
-          removeAll: true
-        }
-      }]
-
-    })
-  );
-
   return processors;
 }
 
@@ -88,7 +73,9 @@ let cssLoaders: webpack.RuleSetUse[] = [
     loader: 'postcss-loader',
     options: {
       sourceMap: true,
-      plugins: postcssPlugins
+      postcssOptions: {
+        plugins: postcssPlugins
+      },
     }
   },
 ];
@@ -105,7 +92,9 @@ let scssLoaders: webpack.RuleSetUse[] = [
     loader: 'postcss-loader',
     options: {
       sourceMap: true,
-      plugins: postcssPlugins
+      postcssOptions: {
+        plugins: postcssPlugins
+      }
     }
   },
   {
@@ -154,11 +143,11 @@ const config: webpack.Configuration = {
   },
   plugins: [
     new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
-    new LodashModuleReplacementPlugin({
-      cloning: true,
-      flattening: true,
-      shorthands: true
-    }),
+    // new LodashModuleReplacementPlugin({
+    //   cloning: true,
+    //   flattening: true,
+    //   shorthands: true
+    // }),
     new webpack.DefinePlugin({
       'process.env': {
          NODE_ENV: JSON.stringify(NODE_ENV)
@@ -287,7 +276,7 @@ if (PROD && ENTRY) {
   if (ENTRY === 'app') {
     config.entry = './app/scripts/components/index.tsx';
     config.output.filename = 'app.js';
-    config.plugins.push(new ExtractTextPlugin({filename: 'main.css', allChunks: false}));
+    // config.plugins.push(new ExtractTextPlugin({filename: 'main.css', allChunks: false}));
   } else if (ENTRY === 'bg') {
     config.entry = './app/scripts/bg/bg.ts';
     config.output.filename = 'background.js';
@@ -324,7 +313,6 @@ if (PROD && ENTRY) {
             mangle: false,
             module: false,
             toplevel: false,
-            nameCache: null,
             ie8: false,
             keep_classnames: true,
             keep_fnames: true,
@@ -378,14 +366,11 @@ if (PROD && ENTRY) {
   };
 
   config.plugins.push(
-    new webpack.NamedModulesPlugin(),
     new webpack.NamedChunksPlugin(),
-    new webpack.NoEmitOnErrorsPlugin(),
     new webpack.HotModuleReplacementPlugin(),
     new webpack.LoaderOptionsPlugin({
       debug: true,
     }),
-    new SizePlugin()
   );
 }
 

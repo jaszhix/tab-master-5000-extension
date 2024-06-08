@@ -1,5 +1,5 @@
 import React from 'react'; // eslint-disable-line no-unused-vars
-import Loadable from 'react-loadable';
+import loadable from '@loadable/component';
 
 const sanitizeRegex = /[^a-z0-9]/gi;
 
@@ -74,10 +74,6 @@ const Loading = function(props: LoadingProps): React.ReactElement {
   }
 };
 
-export const AsyncComponent = function(opts: Loadable.Options<unknown, any>) {
-  return Loadable(Object.assign({
-    loading: Loading,
-    delay: 200,
-    timeout: 10000,
-  }, opts));
+export const AsyncComponent = function(opts: {loader: () => void}) {
+  return loadable(opts.loader)
 };
