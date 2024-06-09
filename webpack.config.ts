@@ -144,8 +144,8 @@ const config: webpack.Configuration = {
        }
     }),
     new MiniCssExtractPlugin({
-      filename: PROD ? '[name].[contenthash].css' : '[name].css',
-      chunkFilename: PROD ? '[id].[contenthash].css' : '[id].css',
+      filename: '[name].css',
+      chunkFilename: '[id].css',
     }),
   ],
   optimization: {
